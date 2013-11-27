@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Requirements TargetServiceID="CloudService">
+    <Requirement TargetServiceLevel="SERVICE_TOPOLOGY">
+        <TargetMonitoredElementID>YCSBClient</TargetMonitoredElementID>
+	<TargetMetric name="latency" type="QUALITY"/>
+        <Condition ID="latencyCond" Type="LESS_EQUAL">
+            <MetricValue ValueType="NUMERIC">
+                <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">0.5</Value>
+            </MetricValue>
+        </Condition>
+    </Requirement>
+    
+</Requirements>

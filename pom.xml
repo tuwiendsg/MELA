@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>eu.celar.multilevel-metrics-evaluation</groupId>
+  <artifactId>MELA-Core-Pom</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <name>MELA-Core</name>
+  <description>The core components of MELA </description>  
+   
+  <packaging>pom</packaging>
+  
+  <modules>
+        <module>MELA-DataService</module>
+        <module>MELA-AnalysisService</module>
+        <module>MELA-Common</module>
+  </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.50</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.12</version>
+        </dependency>
+    </dependencies>
+   
+
+</project>

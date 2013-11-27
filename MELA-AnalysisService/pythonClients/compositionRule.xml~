@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CompositionRulesConfiguration>
+    <MetricsCompositionRules>
+        
+
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>DataNodeServiceUnit</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="cpu_usage"/>
+            <Operation value="100" type="ADD">
+                  <Operation value="-1" type="MUL">
+                         <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                   		 <ReferenceMetric type="RESOURCE" measurementUnit="%" name="cpu_idle"/>
+                </Operation>
+            </Operation>
+            </Operation>
+        </CompositionRule>
+ 
+    </MetricsCompositionRules>
+    <HistoricalMetricsCompositionRules>
+        
+     </HistoricalMetricsCompositionRules>    
+</CompositionRulesConfiguration>

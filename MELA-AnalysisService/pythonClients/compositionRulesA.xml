@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CompositionRulesConfiguration>
+    <MetricsCompositionRules>
+         <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="cpuUsageAVG"/>
+            <Operation value="100" type="ADD">
+                  <Operation value="-1" type="MUL">
+                    <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                   	 <ReferenceMetric type="RESOURCE" measurementUnit="%"  name="cpu_idle"/>
+                    </Operation>
+                 </Operation>
+            </Operation>
+        </CompositionRule> 
+ 
+       <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>ServiceUnitA</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="cpuIdleAVG"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                  <ReferenceMetric type="RESOURCE" measurementUnit="%"  name="cpu_idle"/>
+            </Operation>
+        </CompositionRule>  
+ 
+    </MetricsCompositionRules>
+    <HistoricalMetricsCompositionRules>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>LoadBalancerServiceUnit</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="no" name="activeConnections"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" name="activeConnections"/>
+            </Operation>
+        </CompositionRule>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>EventProcessingServiceUnit</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="no" name="throughput"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" name="throughput"/>
+            </Operation>
+        </CompositionRule>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>EventProcessingServiceUnit</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="no" name="responseTime"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" name="responseTime"/>
+            </Operation>
+        </CompositionRule>
+    </HistoricalMetricsCompositionRules>
+</CompositionRulesConfiguration>

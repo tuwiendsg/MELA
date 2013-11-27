@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CompositionRulesConfiguration>
+    <MetricsCompositionRules>        
+
+         <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="cpuUsage"/>
+            <Operation value="100" type="ADD">
+                  <Operation value="-1" type="MUL">
+                    <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                   	 <ReferenceMetric type="RESOURCE" measurementUnit="%"  name="cpu_idle"/>
+                    </Operation>
+                 </Operation>
+            </Operation>
+        </CompositionRule> 
+
+
+        <CompositionRule TargetMonitoredElementLevel="VM">
+            <ResultingMetric type="RESOURCE" measurementUnit="ms" name="numberOfVMs"/>
+            <Operation value="1" type="SET_VALUE"/>
+        </CompositionRule>
+
+ 
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="ms" name="numberOfVMs"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="SUM">
+                <ReferenceMetric type="RESOURCE" name="numberOfVMs"/>
+            </Operation>
+        </CompositionRule>
+
+       <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>ServiceUnitB</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="GB" name="avg_free_mem"/>
+            <Operation type="DIV" value="1024">
+            <Operation type="DIV" value="1024"> 
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" measurementUnit="KB" name="mem_free"/>
+                <!--<SourceMonitoredElementID>LoadBalancerServiceUnit</SourceMonitoredElementID>-->
+            </Operation>
+            </Operation>
+            </Operation>
+        </CompositionRule>
+
+         <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+            <TargetMonitoredElementID>ServiceTopologyA</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="GB" name="avg_free_mem"/>
+            <Operation type="DIV" value="1024">
+            <Operation type="DIV" value="1024"> 
+            <Operation MetricSourceMonitoredElementLevel="SERVICE_UNIT" type="AVG">
+                <ReferenceMetric type="RESOURCE" measurementUnit="KB" name="mem_free"/>
+                <TargetMonitoredElementID>ServiceUnitB</TargetMonitoredElementID>
+                <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                     <ReferenceMetric type="RESOURCE" measurementUnit="KB" name="mem_free"/>
+                </Operation>
+            </Operation>
+            </Operation>
+            </Operation>
+        </CompositionRule> 
+
+       <CompositionRule TargetMonitoredElementLevel="SERVICE">
+            <ResultingMetric type="COST" measurementUnit="$" name="cost"/>
+            <Operation type="MUL" value="0.12"> 
+            <Operation MetricSourceMonitoredElementLevel="SERVICE_UNIT" type="SUM">
+                <ReferenceMetric type="RESOURCE" name="numberOfVMs"/>
+            </Operation>
+            </Operation>
+        </CompositionRule> 
+
+    </MetricsCompositionRules>
+     
+</CompositionRulesConfiguration>

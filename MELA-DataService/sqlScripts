@@ -1,0 +1,19 @@
+create table MonitoringSeq (ID int IDENTITY, timestamp DATETIME);
+create table Timestamp (ID int IDENTITY, monSeqID int, timestamp DATETIME, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );
+create table MetricValue (ID int IDENTITY, monSeqID int, timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), value VARCHAR(50),   vmIP VARCHAR (50), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID)  );
+
+
+drop table MetricValue;
+drop table Timestamp;
+drop table MonitoringSeq;
+
+//for now all dates are strings
+create table MonitoringSeq (ID int IDENTITY, timestamp VARCHAR(200));
+create table Timestamp (ID int IDENTITY, monSeqID int, timestamp VARCHAR(200), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );
+create table MetricValue (ID int IDENTITY, monSeqID int, timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), metrictype VARCHAR(20), value VARCHAR(50),  vmIP VARCHAR (50), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID)  );
+
+
+
+delete from metricvalue;
+delete from timestamp;
+delete from monitoringseq;

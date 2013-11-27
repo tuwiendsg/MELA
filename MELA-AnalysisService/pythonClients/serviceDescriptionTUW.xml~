@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MonitoredElement id="CloudService" level="SERVICE">
+    <MonitoredElement id="ServiceTopologyA" level="SERVICE_TOPOLOGY">
+        <MonitoredElement id="ServiceUnitA" level="SERVICE_UNIT">
+           <MonitoredElement id="10.99.0.151" level="VM"/> 
+           <MonitoredElement id="10.99.0.147" level="VM"/>
+        </MonitoredElement>   
+        <MonitoredElement id="ServiceUnitB" level="SERVICE_UNIT">
+           <MonitoredElement id="10.99.0.83" level="VM"/>             
+        </MonitoredElement>   
+    </MonitoredElement>
+</MonitoredElement>

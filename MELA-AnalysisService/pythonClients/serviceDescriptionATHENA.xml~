@@ -1,0 +1,35 @@
+<MonitoredElement id="PilotApplication" level="SERVICE">
+    <MonitoredElement id="MainTopology" level="SERVICE_TOPOLOGY">
+  <MonitoredElement id="YCSBClient" level="SERVICE_UNIT">
+   <MonitoredElement id="83.212.115.199" level="VM"/> 
+   <MonitoredElement id="83.212.121.127" level="VM"/> 
+   <MonitoredElement id="83.212.125.101" level="VM"/> 
+  <!--  <MonitoredElement id="83.212.116.154" level="VM"/> -->
+   <MonitoredElement id="83.212.117.118" level="VM"/> 
+   <MonitoredElement id="83.212.117.119" level="VM"/>
+ 
+        </MonitoredElement>          
+  <MonitoredElement id="CassandraNode" level="SERVICE_UNIT">
+         <MonitoredElement id="83.212.116.239" level="VM"/> 
+         <MonitoredElement id="83.212.117.11" level="VM"/>
+         <MonitoredElement id="83.212.117.124" level="VM"/>
+         <MonitoredElement id="83.212.117.108" level="VM"/> 
+   <MonitoredElement id="83.212.117.125" level="VM"/> 
+         <MonitoredElement id="83.212.117.126" level="VM"/>
+   <MonitoredElement id="83.212.117.31" level="VM"/> 
+         <!-- <MonitoredElement id="83.212.122.156" level="VM"/> -->
+         <!--<MonitoredElement id="83.212.117.123" level="VM"/> -->
+   <!--<MonitoredElement id="83.212.106.9" level="VM"/> -->
+         <!--<MonitoredElement id="83.212.111.233" level="VM"/>-->
+         <!--<MonitoredElement id="83.212.125.226" level="VM"/>-->
+        </MonitoredElement> 
+    </MonitoredElement>
+</MonitoredElement>
+
+
+
+ 
+
+
+
+

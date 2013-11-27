@@ -1,0 +1,8 @@
+curl http://IP/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/elasticityspace -H "Accept: application/json" -H "Content-Type: application/xml" -X POST -d "<MonitoredElement id=\"YCSBClient\" level=\"SERVICE_UNIT\"/>"
+
+ 
+
+\\submit action executing
+
+
+curl http://localhost:8080/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/addexecutingactions -H "Content-Type: application/xml" -X POST -d "<Action targetEntityID=\"YCSBClient\" action=\"SCALING OUT\"/>"

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CompositionRulesConfiguration>
+    <MetricsCompositionRules>
+        <CompositionRule TargetMonitoredElementLevel="VM">
+            <ResultingMetric type="RESOURCE" measurementUnit="ms" name="numberOfVMs"/>
+            <Operation value="1" type="SET_VALUE"/>
+        </CompositionRule>
+
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="avgCpuUsage"/>
+            <Operation value="100" type="ADD">
+		    <Operation value="-1" type="MUL">
+			    <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+				<ReferenceMetric type="RESOURCE" name="cpuIdle"/>
+			    </Operation>
+		    </Operation>
+            </Operation>
+        </CompositionRule>
+ 
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="avgMemUsage"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" name="memUsedPercent" measurementUnit="%"/>
+            </Operation>
+        </CompositionRule> 
+        
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="numberOf" name="numberOfVMs"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="SUM">
+                <ReferenceMetric type="RESOURCE" name="numberOfVMs"/>
+            </Operation>
+        </CompositionRule>
+       
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>LoadGenerator</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="req/s" name="throughput"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="MAX">
+                <ReferenceMetric type="RESOURCE" name="ycsb_throughput"/>
+            </Operation>
+        </CompositionRule>
+	<CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>LoadGenerator</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="ms" name="latency"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="KEEP_FIRST">
+                <ReferenceMetric type="RESOURCE" name="ycsb_latency"/>
+            </Operation>
+        </CompositionRule>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+            <TargetMonitoredElementID>LoadGeneratorCluster</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="ms" name="latency"/>
+            <Operation MetricSourceMonitoredElementLevel="SERVICE_UNIT" type="KEEP">
+                <ReferenceMetric type="RESOURCE" measurementUnit="ms" name="latency"/>
+                <SourceMonitoredElementID>LoadGenerator</SourceMonitoredElementID>
+            </Operation>
+        </CompositionRule>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+            <TargetMonitoredElementID>LoadGeneratorCluster</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="req/s" name="troughput"/>
+            <Operation MetricSourceMonitoredElementLevel="SERVICE_UNIT" type="KEEP">
+                <ReferenceMetric type="RESOURCE" measurementUnit="req/s" name="troughput"/>
+                <SourceMonitoredElementID>LoadGenerator</SourceMonitoredElementID>
+            </Operation>
+        </CompositionRule>
+ 
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+            <ResultingMetric type="RESOURCE" measurementUnit="$" name="cost"/>
+            <Operation value="0.12" type="MUL">
+                <Operation MetricSourceMonitoredElementLevel="SERVICE_UNIT" type="SUM">
+                    <ReferenceMetric type="RESOURCE" name="numberOfVMs"/>
+                </Operation>
+            </Operation>
+        </CompositionRule>
+
+        <CompositionRule TargetMonitoredElementLevel="SERVICE">
+            <ResultingMetric type="RESOURCE" measurementUnit="$" name="cost"/>
+                <Operation MetricSourceMonitoredElementLevel="SERVICE_TOPOLOGY" type="SUM">
+                    <ReferenceMetric type="RESOURCE" name="cost"/>
+                </Operation>
+              </CompositionRule>
+    </MetricsCompositionRules>
+    <HistoricalMetricsCompositionRules>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="cpuUsage"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" name="cpuTotal"/>
+            </Operation>
+        </CompositionRule>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="memUsage"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" name="memUsedPercent" measurementUnit="%"/>
+            </Operation>
+        </CompositionRule>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>LoadGenerator</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="req/s" name="throughput"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" name="ycsb_throughput"/>
+            </Operation>
+        </CompositionRule>
+	<CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>LoadGenerator</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="ms" name="latency"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" name="ycsb_latency"/>
+            </Operation>
+        </CompositionRule>
+    </HistoricalMetricsCompositionRules>
+</CompositionRulesConfiguration>

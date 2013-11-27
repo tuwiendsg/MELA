@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MonitoredElement id="CloudService" level="SERVICE">
+    <MonitoredElement id="DataEndServiceTopology" level="SERVICE_TOPOLOGY">
+        <MonitoredElement id="CassandraController" level="SERVICE_UNIT"/>
+        <MonitoredElement id="CassandraNode" level="SERVICE_UNIT"/>
+    </MonitoredElement>
+    <MonitoredElement id="EventProcessingServiceTopology" level="SERVICE_TOPOLOGY">
+        <MonitoredElement id="LoadBalancer" level="SERVICE_UNIT"/>
+        <MonitoredElement id="WebService" level="SERVICE_UNIT"/>
+    </MonitoredElement>
+</MonitoredElement>

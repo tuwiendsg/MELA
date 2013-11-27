@@ -1,0 +1,4 @@
+python ./submitServiceDescription.py
+python ./submitMetricCompositionRules.py
+#python ./submitRequirements.py
+

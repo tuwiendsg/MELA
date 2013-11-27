@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CompositionRulesConfiguration>
+    <MetricsCompositionRules>
+    
+        
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>YCSBClient</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="ops" name="AAAAA"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" measurementUnit="ops"  name="ycsb_throughput"/>     
+            </Operation>
+        </CompositionRule>
+
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>YCSBClient</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="ops" name="SUM_troughput"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="SUM">
+                <ReferenceMetric type="RESOURCE" measurementUnit="ops"  name="ycsb_throughput"/>     
+            </Operation>
+        </CompositionRule>
+        
+         
+    </MetricsCompositionRules>
+</CompositionRulesConfiguration>

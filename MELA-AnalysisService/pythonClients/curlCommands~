@@ -1,0 +1,23 @@
+submit service config,composition rules and requirements
+curl http://localhost:8080/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/servicedescription -H "Content-Type: application/xml" -X PUT --data @./serviceDescriptionTUW.xml
+
+curl http://localhost:8080/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/metricscompositionrules -H "Content-Type: application/xml" -X PUT --data @./compositionRules.xml
+
+curl http://localhost:8080/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/servicerequirements -H "Content-Type: application/xml" -X PUT --data @./compositionRules.xml
+ 
+
+curl http://IP/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/elasticityspace -H "Accept: application/json" -H "Content-Type: application/xml" -X POST -d "<MonitoredElement id=\"YCSBClient\" level=\"SERVICE_UNIT\"/>"
+
+
+\\submit action executing
+
+
+curl http://localhost:8080/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/addexecutingactions -H "Content-Type: application/xml" -X POST -d "<Action targetEntityID=\"YCSBClient\" action=\"SCALING OUT\"/>"
+
+
+curl http://83.212.117.112/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/elasticityspace -H "Accept: application/json" -H "Content-Type: application/xml" -X POST -d "<MonitoredElement id=\"YCSBClient\" level=\"SERVICE_UNIT\"/>"
+
+
+curl http://83.212.117.112/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/elasticityspace -H "Accept: application/json" -H "Content-Type: application/xml" -X POST -d "<MonitoredElement id=\"PilotApplication\" level=\"SERVICE\"/>"
+
+
