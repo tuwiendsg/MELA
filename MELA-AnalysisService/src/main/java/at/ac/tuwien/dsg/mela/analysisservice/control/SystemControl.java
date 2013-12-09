@@ -34,6 +34,7 @@ import at.ac.tuwien.dsg.mela.analysisservice.engines.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.analysisservice.gui.ConvertToJSON;
 import at.ac.tuwien.dsg.mela.analysisservice.report.AnalysisReport;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.AbstractDataAccess;
+import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.log4j.Level;
 import org.json.simple.JSONObject;
 
@@ -98,6 +100,7 @@ public class SystemControl {
 
     protected SystemControl() {
 //        dataAccess = DataAccesForTestsOnly.createInstance();
+    	
         dataAccess = DataAccess.createInstance();
 
         instantMonitoringDataEnrichmentEngine = new DataAggregationEngine();
@@ -115,6 +118,11 @@ public class SystemControl {
         }
 
         aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela");
+        ConfigurationXMLRepresentation  configurationXMLRepresentation = aggregatedMonitoringDataSQLAccess.getLatestConfiguration();
+        serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
+        setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
+        
+        requirements = configurationXMLRepresentation.getRequirements();
     }
 
     public synchronized MonitoredElement getServiceConfiguration() {

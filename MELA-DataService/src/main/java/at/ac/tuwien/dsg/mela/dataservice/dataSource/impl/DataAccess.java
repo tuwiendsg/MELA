@@ -141,10 +141,17 @@ public class DataAccess extends AbstractDataAccess {
         bfsTraversalQueue.add(rootMonitoringSnapshot);
         serviceMonitoringSnapshot.addMonitoredData(rootMonitoringSnapshot);
 
+        //used in determining if we have specified a VM, or just ServiceUnit
+        MonitoredElement lowestLevelFoundMonitoredElement = null;
+        MonitoredElementMonitoringSnapshot lowestLevelFoundMonitoredSnapshot = null;
+
         while (!bfsTraversalQueue.isEmpty()) {
             MonitoredElementMonitoringSnapshot element = bfsTraversalQueue.remove(0);
             MonitoredElement processedElement = element.getMonitoredElement();
             elements.put(processedElement, processedElement);
+            lowestLevelFoundMonitoredElement = processedElement;
+            lowestLevelFoundMonitoredSnapshot = element;
+
 //            if(processedElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
 //                vms.put(processedElement, processedElement);
 //            }
@@ -155,53 +162,87 @@ public class DataAccess extends AbstractDataAccess {
                 element.addChild(monitoredElementMonitoringSnapshot);
                 serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
                 bfsTraversalQueue.add(monitoredElementMonitoringSnapshot);
+
             }
 
         }
- 
+
         //iterate trough the GangliaCluster, extract each VM monitoring data, build an MonitoredElementMonitoringSnapshot from it and add it to the ServiceMonitoringSnapshot
 
         Collection<HostInfo> gangliaHostsInfo = gangliaClusterInfo.getHostsInfo();
 
-        for (HostInfo gangliaHostInfo : gangliaHostsInfo) {
-            HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
+        if (lowestLevelFoundMonitoredElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
+
+            for (HostInfo gangliaHostInfo : gangliaHostsInfo) {
+                HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
 //            MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot();
 
-            //currently we assume for VMs that their ID is their IP (as this si what is unique for them in a single cloud deployment on the same network space)
-            MonitoredElement monitoredElement = new MonitoredElement(gangliaHostInfo.getIp());
-            monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
+                //currently we assume for VMs that their ID is their IP (as this si what is unique for them in a single cloud deployment on the same network space)
+                MonitoredElement monitoredElement = new MonitoredElement(gangliaHostInfo.getIp());
+                monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
 
-            //represent all monitored metrics in mapToElasticitySpace
-            for (MetricInfo gangliaMetricInfo : gangliaHostInfo.getMetrics()) {
-                Metric metric = new Metric();
-                metric.setName(gangliaMetricInfo.getName());
-                metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
-                MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
-                monitoredMetricValues.put(metric, metricValue);
+                //represent all monitored metrics in mapToElasticitySpace
+                for (MetricInfo gangliaMetricInfo : gangliaHostInfo.getMetrics()) {
+                    Metric metric = new Metric();
+                    metric.setName(gangliaMetricInfo.getName());
+                    metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
+                    MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
+                    monitoredMetricValues.put(metric, metricValue);
 //                if (metric.getName().equals(DDD)) {
 //                    monitoredElement = new MonitoredElement();
 //                    monitoredElement.setId(gangliaMetricInfo.getValue());
 //                    monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
 //                }
-            }
+                }
 
-            //if we have found a metric containing a MonitoredElementID, and if that ID is present in our structure
-            //add it as VM level child to the found Service ID (this is the logic under our ganglia deployment so far)
-            if (monitoredElement != null && elements.containsKey(monitoredElement)) {
-                //get the monitored element from the supplied service structure,  where is connected with service units
-                MonitoredElement structureElement = elements.get(monitoredElement);
+                //if we have found a metric containing a MonitoredElementID, and if that ID is present in our structure
+                //add it as VM level child to the found Service ID (this is the logic under our ganglia deployment so far)
+                if (monitoredElement != null && elements.containsKey(monitoredElement)) {
+                    //get the monitored element from the supplied service structure,  where is connected with service units
+                    MonitoredElement structureElement = elements.get(monitoredElement);
 //                MonitoredElement vmLevelElement = new MonitoredElement();
 //                vmLevelElement.setId(gangliaHostInfo.getIp());
 //                vmLevelElement.setName(gangliaHostInfo.getIp());
 //                vmLevelElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
 //                structureElement.addElement(vmLevelElement);
 
-                MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureElement, monitoredMetricValues);
+                    MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureElement, monitoredMetricValues);
 
-                //also add VM monitoring info to children tree
+                    //also add VM monitoring info to children tree
 //                serviceMonitoringSnapshot.getMonitoredData(monitoredElement).addChild(monitoredElementMonitoringSnapshot);
 
+                    serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
+                }
+            }
+        } else {
+            //else we add all hosts to the found service unit
+
+            for (HostInfo gangliaHostInfo : gangliaHostsInfo) {
+                HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
+//                MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot();
+
+                //currently we assume for VMs that their ID is their IP (as this si what is unique for them in a single cloud deployment on the same network space)
+                MonitoredElement monitoredElement = new MonitoredElement(gangliaHostInfo.getIp());
+                monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
+
+                //represent all monitored metrics in mapToElasticitySpace
+                for (MetricInfo gangliaMetricInfo : gangliaHostInfo.getMetrics()) {
+                    Metric metric = new Metric();
+                    metric.setName(gangliaMetricInfo.getName());
+                    metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
+                    MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
+                    monitoredMetricValues.put(metric, metricValue);
+                }
+
+
+//                MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, monitoredMetricValues);
+//                lowestLevelFoundMonitoredSnapshot.addChild(monitoredElementMonitoringSnapshot);
+                
+                MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, monitoredMetricValues);
+                lowestLevelFoundMonitoredSnapshot.addChild(monitoredElementMonitoringSnapshot);
                 serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
+                //add IPs to it 
+                lowestLevelFoundMonitoredElement.addElement(monitoredElement);
             }
         }
 

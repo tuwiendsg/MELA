@@ -22,6 +22,7 @@ import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.ElSpaceDefaultFunctio
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElPthwFunction.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.analysisservice.engines.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.analysisservice.engines.InstantMonitoringDataAnalysisEngine;
+import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToCSV;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.evalaution.PerformanceReport;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
@@ -51,7 +52,7 @@ import org.junit.Test;
  * @E-mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
-public class PerformanceEvalOffline {
+public class EvalCloudCom {
 
     public static void main(String[] args) throws JAXBException, FileNotFoundException, IOException {
         AbstractDataAccess dataAccess;
@@ -113,81 +114,75 @@ public class PerformanceEvalOffline {
 
         int maxMonSnapshots = 1810;
 
+        elasticitySpaceFunction = null;
+
         //report without sql access
         {
 
 
 
-            PerformanceReport performanceReport = new PerformanceReport(new String[]{monSnapshotsCountKey, monitoringSnapshotKey, elasticitySpaceAnalysysKey, elasticityPathwayAnalysysKey});
 
             //do the test
 
             for (int i = 0; i < maxMonSnapshots; i++) {
-                
+
 //                Runtime.getRuntime().gc();
-                
+
 
                 elasticitySpaceFunction = new ElSpaceDefaultFunction(serviceStructure);
                 elasticitySpaceFunction.setRequirements(requirements);
 
-                 
+
 //                if (i % 100 == 0) {
                 System.out.println("Evaluating WITHOUT SQL on snapshot " + i);
 //                }
 
                 ServiceMonitoringSnapshot monitoringData = dataAccess.getMonitoredData(serviceStructure);
-                
-              
+
+
 
                 if (monitoringData == null) {
                     break;
                 }
 
-                //profile aggregation
-                Date beforeAggregation = new Date();
                 ServiceMonitoringSnapshot aggregated = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, monitoringData);
-                Date afterAggregation = new Date();
-                performanceReport.addReportEntry(monitoringSnapshotKey, "" + (afterAggregation.getTime() - beforeAggregation.getTime()));
 
                 aggregatedMonitoringDataSQLAccess.writeMonitoringData(aggregated);
 
-                LightweightEncounterRateElasticityPathway elasticityPathway = null;
-
-//                ElasticitySpace tempSpace = new ElasticitySpace(serviceStructure);
-                List<Metric> metrics = null;
-
-                performanceReport.addReportEntry(monSnapshotsCountKey, "" + i);
-
-                List<ServiceMonitoringSnapshot> extractedData = aggregatedMonitoringDataSQLAccess.extractMonitoringData(0, i);
-
-
-                //profile trianing el space
-                Date beforeSpace = new Date();
-
-                elasticitySpaceFunction.trainElasticitySpace(extractedData);
-
-                Date afterSpace = new Date();
-                performanceReport.addReportEntry(elasticitySpaceAnalysysKey, "" + (afterSpace.getTime() - beforeSpace.getTime()));
-
-                Map<Metric, List<MetricValue>> map = elasticitySpaceFunction.getElasticitySpace().getMonitoredDataForService(serviceStructure);
-
-                Date beforePathway = new Date();
-                if (map != null && metrics == null) {
-                    metrics = new ArrayList<Metric>(map.keySet());
-                    //we need to know the number of weights to add in instantiation
-                    elasticityPathway = new LightweightEncounterRateElasticityPathway(metrics.size());
-                }
-
-                elasticityPathway.trainElasticityPathway(map);
-                Date afterPathway = new Date();
-                performanceReport.addReportEntry(elasticityPathwayAnalysysKey, "" + (afterPathway.getTime() - beforePathway.getTime()));
 
             }
 
-            performanceReport.writeToCSVFile("/home/daniel-tuwien/Documents/CELAR_GIT/multilevel-metrics-evaluation/MELA-Core/MELA-AnalysisService/perfTestResults/evalOfflineWithoutSQLAccess.csv");
+        }
+
+        List<ServiceMonitoringSnapshot> extractedData = aggregatedMonitoringDataSQLAccess.extractMonitoringData();
+        if (extractedData != null) {
+            //for each extracted snapshot, trim it to contain data only for the targetedMonitoredElement (minimizes RAM usage)
+            for (ServiceMonitoringSnapshot monitoringSnapshot : extractedData) {
+//                monitoringSnapshot.keepOnlyDataForElement(element);
+                elasticitySpaceFunction.trainElasticitySpace(monitoringSnapshot);
+            }
+        }
+
+        ElasticitySpace space = elasticitySpaceFunction.getElasticitySpace();
+
+        for (MonitoredElement element : serviceStructure) {
+
+//            ConvertToCSV.writeWholeElasticitySpaceToCSV(element, space, "/home/daniel-tuwien/Documents/DSG_SVN/papers/IJBDI_cloud_com_extended/figures/experiments/MELA/new/" + element.getId() + "_space.csv");
+
+            Map<Metric, List<MetricValue>> map = space.getMonitoredDataForService(element);
+            if (map != null) {
+                ArrayList<Metric> metrics = new ArrayList<Metric>(map.keySet());
+                LightweightEncounterRateElasticityPathway elasticityPathway = new LightweightEncounterRateElasticityPathway(metrics.size());
+                elasticityPathway.trainElasticityPathway(map);
+                ConvertToCSV.writeCSVFromElasticitySituationsGroups(elasticityPathway.getSituationGroups(), metrics, "/home/daniel-tuwien/Documents/DSG_SVN/papers/IJBDI_cloud_com_extended/figures/experiments/MELA/new/" + element.getId() + "_pathway.csv");
+            }
+
+
         }
 
 
-         
+
+
+
     }
 }

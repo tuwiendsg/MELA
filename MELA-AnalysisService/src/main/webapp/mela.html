@@ -156,7 +156,7 @@
             var octogon = "m 0,-5 6.63341,-7.14443 11.95156,0 6.46184,7.14443 0,8.97271 -6.46184,6.58185 -11.95156,0 -6.63341,-6.58185 z";
             var auxRect = "m -32,5 0,-13.25825 30.14043,0 0,13.25825 z"
 
-            var margin = {top:10, right:120, bottom:20, left:120},
+            var margin = {top:10, right:120, bottom:20, left:140},
             width = window.innerWidth ,
             height = window.innerHeight - 100, //850
             i = 0,
@@ -214,7 +214,7 @@
             .attr("x", legendleftX)
             .attr("y", legendleftY + 35)
             .attr("height", 110)
-            .attr("width", 170)
+            .attr("width", 200)
             .style("stroke", "black")
             .style("fill", "white").on("dblclick", setSelectedMetric).on("click", setSelectedMetricOneLevel);
 
@@ -274,7 +274,7 @@
                 if (d == "legend") {
                     return  "16";
                 } else {
-                    return "12";
+                    return "18";
                 }
             })
             .text(function (d, i) {
@@ -322,7 +322,7 @@
                 //                // Normalize for fixed-depth.
                 nodes.forEach(function (d) {
                     if (d.type =="requirement"){
-                        d.y=2/3 * d.depth* depth; 
+                       d.y = d.depth * depth;
                     }else if(!d.type.match(/SERVIC.*|V.*/g) || (d.type =="requirement")){
                         if(d.parent.children){
                             var hasComplexChildren;
@@ -478,7 +478,7 @@
                 .attr("dy", -5)
                 .attr("dx", -15)
                 .style("font-size", function (d) {
-                    return d.children ? 13 : 13;
+                    return d.children ? 18 : 18;
                 })
                 .attr("font-style", function (d) {
                     return d.children ? "normal" : "italic";
@@ -519,7 +519,7 @@
                 })
                 .attr("dy", -5)
                 .style("font-size", function (d) {
-                    return d.children ? 13 : 13;
+                    return d.children ? 18 : 18;
                 })
                 .attr("font-style", function (d) {
                     return d.children ? "normal" : "italic";
@@ -534,7 +534,7 @@
                     return d.value ? 0 : 10;
                 })
                 .style("font-size", function (d) {
-                    return d.children ? 13 : 13;
+                    return d.children ? 18 : 18;
                 })
                 .attr("text-anchor", function (d) {
                     return d.ip ? "end" : "start";
@@ -640,7 +640,7 @@
                 // Normalize for fixed-depth.
                 nodes.forEach(function (d) {
                     if (d.type =="requirement"){
-                        d.y=2/3 * d.depth* depth;
+                         d.y = d.depth * depth;
                     }else  if(!d.type.match(/SERVIC.*|V.*/g)){
                         if(d.parent.children){
                             var hasComplexChildren;
@@ -756,7 +756,7 @@
                     return  d.ip || d.children ? "end" : "start";
                 })
                 .style("font-size", function (d) {
-                    return d.children ? 13 : 13;
+                    return d.children ? 19 : 19;
                 })
                 .attr("font-style", function (d) {
                     return d.children ? "normal" : "italic";
@@ -834,7 +834,7 @@
                 .attr("dy", -5)
                 .attr("dx", -15)
                 .style("font-size", function (d) {
-                    return d.children ? 13 : 13;
+                    return d.children ? 19 : 19;
                 })
                 .attr("font-style", function (d) {
                     return d.children ? "normal" : "italic";
@@ -860,7 +860,7 @@
                 })
                 .attr("dy", -5)
                 .style("font-size", function (d) {
-                    return d.children ? 13 : 13;
+                    return d.children ? 19 : 19;
                 })
                 .attr("font-style", function (d) {
                     return d.children ? "normal" : "italic";
