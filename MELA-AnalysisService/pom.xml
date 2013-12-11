@@ -14,18 +14,18 @@
 	<url>http://maven.apache.org</url>
 
 	<dependencies>
-<!-- 		<dependency> -->
-<!-- 			<groupId>javax.servlet</groupId> -->
-<!-- 			<artifactId>servlet-api</artifactId> -->
-<!-- 			<version>2.5</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>javax.servlet.jsp</groupId> -->
-<!-- 			<artifactId>jsp-api</artifactId> -->
-<!-- 			<version>2.1</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>javax.servlet</groupId> -->
+		<!-- <artifactId>servlet-api</artifactId> -->
+		<!-- <version>2.5</version> -->
+		<!-- <scope>provided</scope> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>javax.servlet.jsp</groupId> -->
+		<!-- <artifactId>jsp-api</artifactId> -->
+		<!-- <version>2.1</version> -->
+		<!-- <scope>provided</scope> -->
+		<!-- </dependency> -->
 
 		<!-- <dependency> -->
 		<!-- <groupId>com.google.guava</groupId> -->
@@ -48,6 +48,11 @@
 			<artifactId>json-simple</artifactId>
 			<version>1.1</version>
 			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-all</artifactId>
+			<version>5.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -178,8 +183,9 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-
-			<plugin>
+ 
+                        
+                        <plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
 				<version>2.1</version>
@@ -191,17 +197,39 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
-                            <!--<path>/MELA-AnalysisService-0.1-SNAPSHOT</path>-->
-                            <finalName>${project.artifactId}-${project.version}.war</finalName>
-                            <!--<mainClass>at.ac.tuwien.dsg.daas.main.Main</mainClass>-->
-                            <!-- optional, needed only if you want to use a preconfigured server.xml file -->
-                            <!--                            <serverXml>src/main/tomcatconf/server.xml</serverXml>-->
-                            <!-- optional values which can be configurable -->
-                            <!--                            <attachArtifactClassifier>default value is exec-war but you can customize</attachArtifactClassifier>
-                            <attachArtifactClassifierType>default value is jar</attachArtifactClassifierType>-->
+							<path>/MELA-AnalysisService-0.1-SNAPSHOT</path> 
+							<finalName>${project.artifactId}-${project.version}.war.jar</finalName>
+							<!--<mainClass>at.ac.tuwien.dsg.daas.main.Main</mainClass> -->
+							<!-- optional, needed only if you want to use a preconfigured server.xml 
+								file -->
+							<!-- <serverXml>src/main/tomcatconf/server.xml</serverXml> -->
+							<!-- optional values which can be configurable -->
+							<!-- <attachArtifactClassifier>default value is exec-war but you can 
+								customize</attachArtifactClassifier> <attachArtifactClassifierType>default 
+								value is jar</attachArtifactClassifierType> -->
 						</configuration>
 					</execution>
-					 
+                                        
+                                        <execution>
+						<id>tomcat-create-standalone-war</id>
+						<goals>
+							<goal>exec-war</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<path>/MELA-AnalysisService-0.1-SNAPSHOT</path> 
+							<finalName>${project.artifactId}-${project.version}.war</finalName>
+							<!--<mainClass>at.ac.tuwien.dsg.daas.main.Main</mainClass> -->
+							<!-- optional, needed only if you want to use a preconfigured server.xml 
+								file -->
+							<!-- <serverXml>src/main/tomcatconf/server.xml</serverXml> -->
+							<!-- optional values which can be configurable -->
+							<!-- <attachArtifactClassifier>default value is exec-war but you can 
+								customize</attachArtifactClassifier> <attachArtifactClassifierType>default 
+								value is jar</attachArtifactClassifierType> -->
+						</configuration>
+					</execution>
+
 				</executions>
 			</plugin>
 		</plugins>

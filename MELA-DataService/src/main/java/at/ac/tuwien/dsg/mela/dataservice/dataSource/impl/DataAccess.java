@@ -89,8 +89,8 @@ public class DataAccess extends AbstractDataAccess {
             Configuration.getLogger(DataAccess.class).log(Priority.ERROR, "MELA-DataService data access mode not specified or not recognized");
             return new DataAccess(new DummyDataSource());
         }
-    }
 
+    }
     /**
      * @param MonitoredElement the root element of the Service Structure
      * hierarchy

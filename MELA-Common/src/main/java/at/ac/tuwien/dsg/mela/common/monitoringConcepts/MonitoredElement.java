@@ -147,7 +147,6 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
     /**
      * @return BREADTH_FIRST iterator
      */
-    @Override
     public Iterator<MonitoredElement> iterator() {
         return new ApplicationComponentIterator(this);
     }
@@ -184,17 +183,14 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
         }
 
-        @Override
         public boolean hasNext() {
             return elementsIterator.hasNext();
         }
 
-        @Override
         public MonitoredElement next() {
             return elementsIterator.next();
         }
 
-        @Override
         public void remove() {
             throw new UnsupportedOperationException("Unsupported yet");
         }

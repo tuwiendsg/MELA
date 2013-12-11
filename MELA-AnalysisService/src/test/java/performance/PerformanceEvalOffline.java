@@ -20,7 +20,6 @@ import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.ElSpaceDefaultFunction;
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElPthwFunction.LightweightEncounterRateElasticityPathway;
-import at.ac.tuwien.dsg.mela.analysisservice.engines.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.analysisservice.engines.InstantMonitoringDataAnalysisEngine;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.evalaution.PerformanceReport;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
@@ -31,7 +30,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.AggregatedMonitoringDataSQLAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.AbstractDataAccess;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccesForTestsOnly;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,14 +54,12 @@ public class PerformanceEvalOffline {
 
     public static void main(String[] args) throws JAXBException, FileNotFoundException, IOException {
         AbstractDataAccess dataAccess;
-        DataAggregationEngine instantMonitoringDataEnrichmentEngine;
         InstantMonitoringDataAnalysisEngine instantMonitoringDataAnalysisEngine;
         ElasticitySpaceFunction elasticitySpaceFunction;
         AggregatedMonitoringDataSQLAccess aggregatedMonitoringDataSQLAccess;
 
-        dataAccess = DataAccesForTestsOnly.createInstance();
+        dataAccess = DataAccessWithAutoStructureDetection.createInstance();
 
-        instantMonitoringDataEnrichmentEngine = new DataAggregationEngine();
         instantMonitoringDataAnalysisEngine = new InstantMonitoringDataAnalysisEngine();
 
         aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela");
@@ -145,7 +142,7 @@ public class PerformanceEvalOffline {
 
                 //profile aggregation
                 Date beforeAggregation = new Date();
-                ServiceMonitoringSnapshot aggregated = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, monitoringData);
+                ServiceMonitoringSnapshot aggregated = aggregatedMonitoringDataSQLAccess.extractLatestMonitoringData();
                 Date afterAggregation = new Date();
                 performanceReport.addReportEntry(monitoringSnapshotKey, "" + (afterAggregation.getTime() - beforeAggregation.getTime()));
 

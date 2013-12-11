@@ -167,7 +167,6 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
      * if the values can;t be compared. -1 if this smaller than argument, 1 if
      * greater, 0 if equal or can't compare
      */
-    @Override
     public int compareTo(MetricValue o) {
 
         Object otherValue = o.getValue();

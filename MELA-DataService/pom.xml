@@ -1,156 +1,193 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>eu.celar.multilevel-metrics-evaluation</groupId>
-		<artifactId>MELA-Core-Pom</artifactId>
-		<version>0.1-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>eu.celar.multilevel-metrics-evaluation</groupId>
+        <artifactId>MELA-Core-Pom</artifactId>
+        <version>0.1-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>MELA-DataService</artifactId>
-	<version>0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <artifactId>MELA-DataService</artifactId>
+    <packaging>jar</packaging>
 
-	<name>MELA-DataService</name>
-	<url>http://maven.apache.org</url>
+    <name>MELA-DataService</name>
+    <url>http://maven.apache.org</url>
 
-	<profiles>
-		<profile>
-			<id>Celar</id>
-			<activation>
-				<property>
-					<name>platform</name>
-					<value>Celar</value>
-				</property>
-			</activation>
+    <profiles>
+        <profile>
+            <id>Celar</id>
+            <activation>
+                <property>
+                    <name>platform</name>
+                    <value>Celar</value>
+                </property>
+            </activation>
 
-			<dependencies>
-				<dependency>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-					<version>3.8.1</version>
-					<scope>test</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.hsqldb</groupId>
-					<artifactId>hsqldb</artifactId>
-					<version>2.3.0</version>
-				</dependency>
+            <dependencies>
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>3.8.1</version>
+                    <scope>test</scope>
+                </dependency>
 
-				<dependency>
-					<groupId>com.jcraft</groupId>
-					<artifactId>jsch</artifactId>
-					<version>0.1.50</version>
-				</dependency>
+                <dependency>
+                    <groupId>com.googlecode.json-simple</groupId>
+                    <artifactId>json-simple</artifactId>
+                    <version>1.1</version>
+                    <type>jar</type>
+                </dependency>
 
-				<dependency>
-					<groupId>eu.celar.multilevel-metrics-evaluation</groupId>
-					<artifactId>MELA-Common</artifactId>
-					<version>0.1-SNAPSHOT</version>
-					<type>jar</type>
-				</dependency>
+                <dependency>
+                    <groupId>org.hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                    <version>2.3.0</version>
+                </dependency>
 
-				<dependency>
-					<groupId>eu.celar.multilevel-metrics-evaluation</groupId>
-					<artifactId>MELA-JCatascopia-Client</artifactId>
-					<version>0.1-SNAPSHOT</version>
-					<type>jar</type>
-				</dependency>
+                <dependency>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                    <version>0.1.50</version>
+                </dependency>
 
-			</dependencies>
+                <dependency>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>activemq-all</artifactId>
+                    <version>5.5.0</version>
+                </dependency>
+                
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <version>1.5.2</version>
+                </dependency>
 
-		</profile>
+                <dependency>
+                    <groupId>eu.celar.multilevel-metrics-evaluation</groupId>
+                    <artifactId>MELA-Common</artifactId>
+                    <version>0.1-SNAPSHOT</version>
+                    <type>jar</type>
+                </dependency>
 
-		<profile>
-			<id>Standalone</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
+                <dependency>
+                    <groupId>eu.celar.multilevel-metrics-evaluation</groupId>
+                    <artifactId>MELA-JCatascopia-Client</artifactId>
+                    <version>0.1-SNAPSHOT</version>
+                    <type>jar</type>
+                </dependency>
 
-			<dependencies>
-				<dependency>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-					<version>3.8.1</version>
-					<scope>test</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.hsqldb</groupId>
-					<artifactId>hsqldb</artifactId>
-					<version>2.3.0</version>
-				</dependency>
+            </dependencies>
 
-				<dependency>
-					<groupId>com.jcraft</groupId>
-					<artifactId>jsch</artifactId>
-					<version>0.1.50</version>
-				</dependency>
+        </profile>
 
-				<dependency>
-					<groupId>eu.celar.multilevel-metrics-evaluation</groupId>
-					<artifactId>MELA-Common</artifactId>
-					<version>0.1-SNAPSHOT</version>
-					<type>jar</type>
-				</dependency>
+        <profile>
+            <id>Standalone</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 
-			</dependencies>
+            <dependencies>
+                <dependency>
+                    <groupId>com.googlecode.json-simple</groupId>
+                    <artifactId>json-simple</artifactId>
+                    <version>1.1</version>
+                    <type>jar</type>
+                </dependency>
+				
+                <dependency>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>activemq-all</artifactId>
+                    <version>5.5.0</version>
+                </dependency>
 
-		</profile>
-	</profiles>
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>3.8.1</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                    <version>2.3.0</version>
+                </dependency>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>1.7</version>
-				<configuration>
-					<configuration>
-						<transformers>
-							<transformer
-								implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-								<manifestEntries>
-									<Main-Class>main.Main</Main-Class>
-								</manifestEntries>
-							</transformer>
-						</transformers>
-					</configuration>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<!--<addClasspath>true</addClasspath> -->
-							<!--<classpathPrefix>lib/</classpathPrefix> -->
-							<mainClass>main.Main</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
+                <dependency>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                    <version>0.1.50</version>
+                </dependency>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.0.1</version>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>1.5.2</version>
+    </dependency>
+                <dependency>
+                    <groupId>eu.celar.multilevel-metrics-evaluation</groupId>
+                    <artifactId>MELA-Common</artifactId>
+                    <version>0.1-SNAPSHOT</version>
+                    <type>jar</type>
+                </dependency>
 
-		</plugins>
-	</build>
+            </dependencies>
+
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.7</version>
+                <configuration>
+                    <configuration>
+                        <transformers>
+                            <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <manifestEntries>
+                                    <Main-Class>main.Main</Main-Class>
+                                </manifestEntries>
+                            </transformer>
+                        </transformers>
+                    </configuration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <!--<addClasspath>true</addClasspath> -->
+                            <!--<classpathPrefix>lib/</classpathPrefix> -->
+                            <mainClass>main.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.1</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>

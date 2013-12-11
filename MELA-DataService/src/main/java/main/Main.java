@@ -19,7 +19,9 @@
  */
 package main;
 
+import at.ac.tuwien.dsg.mela.dataservice.DataCollectionService;
 import at.ac.tuwien.dsg.mela.dataservice.MELADataService;
+import at.ac.tuwien.dsg.mela.dataservice.api.DataServiceActiveMQAPI;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
@@ -30,11 +32,17 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         final MELADataService service = new MELADataService();
         service.startServer();
+        
+        DataCollectionService dataCollectionService =  DataCollectionService.getInstance();
+        DataServiceActiveMQAPI activeMQAPI = new DataServiceActiveMQAPI(dataCollectionService);
+                
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 service.stopServer();
             }
         });
+        
+        activeMQAPI.run();
     }
 }

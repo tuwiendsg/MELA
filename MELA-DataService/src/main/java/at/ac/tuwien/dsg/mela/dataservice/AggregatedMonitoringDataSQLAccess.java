@@ -155,7 +155,7 @@ public class AggregatedMonitoringDataSQLAccess {
             c.createStatement().execute("create table IF NOT EXISTS Timestamp (ID int IDENTITY, monSeqID int, timestamp VARCHAR(200), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
             c.createStatement().execute("create table IF NOT EXISTS MetricValue (ID int IDENTITY, monSeqID int, timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), metrictype VARCHAR(20), value VARCHAR(50),  vmIP VARCHAR (50), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID));");
             //this creates a table used to store on rows the ServiceStructure, CompositionRules, and Requirements
-            c.createStatement().executeQuery("create table Configuration (ID int IDENTITY, configuration OTHER);");
+            c.createStatement().executeQuery("create table IF NOT EXISTS Configuration (ID int IDENTITY, configuration OTHER);");
             c.commit();
         } catch (SQLException ex) {
             Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
@@ -304,6 +304,45 @@ public class AggregatedMonitoringDataSQLAccess {
             return monitoringSnapshots;
         }
     }
+    
+    /**
+    *
+    * @param startIndex from which monitored entry ID to start extracting
+    * @param count max number of elements to return
+    * @return returns maximum count elements
+    */
+   public ServiceMonitoringSnapshot extractLatestMonitoringData() {
+       connection = getConnection();
+       PreparedStatement getMonitoringEntryPreparedStatement = null;
+       {
+           try {
+               String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where "
+                       + "ID = (SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + ");";
+               getMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
+           } catch (SQLException ex) {
+               Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+           }
+       }
+
+
+       ServiceMonitoringSnapshot monitoringSnapshot = null;
+       try {
+          
+           ResultSet resultSet = getMonitoringEntryPreparedStatement.executeQuery();
+           if (resultSet != null) {
+
+               while (resultSet.next()) {
+                     monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(1);
+                     break;
+               }
+           }
+
+       } catch (SQLException ex) {
+           Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+       } finally {
+           return monitoringSnapshot;
+       }
+   }
 
     /**
      *
@@ -342,7 +381,7 @@ public class AggregatedMonitoringDataSQLAccess {
     public ConfigurationXMLRepresentation getLatestConfiguration() {
         connection = getConnection();
 
-        String sql = "SELECT data from Configuration where ID=(Select max(ID) from Configuration);";
+        String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration);";
         ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
         
         try {

@@ -49,11 +49,11 @@ import javax.xml.bind.JAXBException;
 @XmlRootElement(name = "Configuration")
 public class ConfigurationXMLRepresentation implements Serializable {
 
-    @XmlElement(name = "CompositionRules", required = false)
+    @XmlElement(name = "ServiceStructure", required = false)
     private MonitoredElement serviceConfiguration;
-    @XmlElement(name = "CompositionRules", required = false)
+    @XmlElement(name = "CompositionRulesConfiguration", required = false)
     private CompositionRulesConfiguration compositionRulesConfiguration;
-    @XmlElement(name = "CompositionRules", required = false)
+    @XmlElement(name = "Requirements", required = false)
     private Requirements requirements;
 
     public MonitoredElement getServiceConfiguration() {
@@ -126,7 +126,7 @@ public class ConfigurationXMLRepresentation implements Serializable {
         //retrieve the default config from files
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
-            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/config/default/structure.xml");
+            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/dataServiceConfig/default/structure.xml");
             serviceConfiguration = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(fileStream);
         } catch (JAXBException ex) {
             Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.SEVERE, null, ex);
@@ -135,7 +135,7 @@ public class ConfigurationXMLRepresentation implements Serializable {
         //retrieve the default config from files
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
-            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/config/default/compositionRules.xml");
+            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/dataServiceConfig/default/compositionRules.xml");
             compositionRulesConfiguration = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(fileStream);
         } catch (JAXBException ex) {
             Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.SEVERE, null, ex);
@@ -144,7 +144,7 @@ public class ConfigurationXMLRepresentation implements Serializable {
         //retrieve the default config from files
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
-            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/config/default/requirements.xml");
+            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/dataServiceConfig/default/requirements.xml");
             requirements = (Requirements) jAXBContext.createUnmarshaller().unmarshal(fileStream);
         } catch (JAXBException ex) {
             Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.SEVERE, null, ex);

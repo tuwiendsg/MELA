@@ -22,6 +22,7 @@ package at.ac.tuwien.dsg.mela.analysisservice.utils;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -55,21 +56,21 @@ public class Configuration {
         return Logger.getLogger(loggerClass);
     }
 
-    public static int getDataPoolingInterval() {
-        if (configuration.containsKey("DATA_COLLECTION_INTERVAL_IN_SECONDS")) {
-            return Integer.parseInt(configuration.getProperty("DATA_COLLECTION_INTERVAL_IN_SECONDS"));
-        } else {
-            return 5; //default 5 seconds
-        }
-    }
-
-    public static int getDataAggregationWindows() {
-        if (configuration.containsKey("DATA_AGGREGATION_WINDOWS")) {
-            return Integer.parseInt(configuration.getProperty("DATA_AGGREGATION_WINDOWS"));
-        } else {
-            return 2; //default 2 frames
-        }
-    }
+//    public static int getDataPoolingInterval() {
+//        if (configuration.containsKey("DATA_COLLECTION_INTERVAL_IN_SECONDS")) {
+//            return Integer.parseInt(configuration.getProperty("DATA_COLLECTION_INTERVAL_IN_SECONDS"));
+//        } else {
+//            return 5; //default 5 seconds
+//        }
+//    }
+//
+//    public static int getDataAggregationWindows() {
+//        if (configuration.containsKey("DATA_AGGREGATION_WINDOWS")) {
+//            return Integer.parseInt(configuration.getProperty("DATA_AGGREGATION_WINDOWS"));
+//        } else {
+//            return 2; //default 2 frames
+//        }
+//    }
 
     public static Boolean isElasticityAnalysisEnabled() {
         if (configuration.containsKey("ELASTICITY_ANALYSIS_ENABLED")) {
@@ -79,28 +80,32 @@ public class Configuration {
         }
     }
 
-    public static int getDataServicePort() {
-        if (configuration.containsKey("MELA_DATA_SERVICE_PORT")) {
-            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE_PORT"));
-        } else {
-            return 9123; //default 2 frames
-        }
-    }
 
     public static String getDataServiceIP() {
-        if (configuration.containsKey("MELA_DATA_SERVICE_IP")) {
-            return configuration.getProperty("MELA_DATA_SERVICE_IP");
+        if (configuration.containsKey("MELA_DATA_SERVICE.IP")) {
+            return configuration.getProperty("MELA_DATA_SERVICE.IP");
         } else {
             return "localhost";
         }
     }
     
-    
-    public static String getJCatascopiaIP() {
-        if (configuration.containsKey("JCATASCOPIA_IP")) {
-            return configuration.getProperty("JCATASCOPIA_IP");
+    public static int getDataServicePort() {
+        if (configuration.containsKey("MELA_DATA_SERVICE.DATA_PORT")) {
+            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.DATA_PORT"));
         } else {
-            return "localhost";
+            return 9123;
         }
+    }
+    
+    public static int getDataServiceConfigurationPort() {
+        if (configuration.containsKey("MELA_DATA_SERVICE.CONFIGURATION_PORT")) {
+            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.CONFIGURATION_PORT"));
+        } else {
+            return 9124;
+        }
+    }
+    
+    public static void setProperty(String property, Object value){
+    	configuration.put(property, value);
     }
 }

@@ -51,34 +51,34 @@ import org.apache.log4j.Priority;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
-public class DataAccesForTestsOnly extends AbstractDataAccess {
+public class DataAccessWithAutoStructureDetection extends AbstractDataAccess {
 
     private DataSourceI gangliaDataSourceI;
 
-    private DataAccesForTestsOnly(DataSourceI gangliaDataSourceI) {
+    private DataAccessWithAutoStructureDetection(DataSourceI gangliaDataSourceI) {
         this.gangliaDataSourceI = gangliaDataSourceI;
     }
 
-    public static DataAccesForTestsOnly createInstance() {
+    public static DataAccessWithAutoStructureDetection createInstance() {
         
         String accessType = Configuration.getMonitoringDataAccessMethod();
         
         if (accessType.equalsIgnoreCase("Ganglia")) {
             DataSourceI dataSource = new LocalGangliaLiveDataSource();
-            return new DataAccesForTestsOnly(dataSource);
+            return new DataAccessWithAutoStructureDetection(dataSource);
         } else if (accessType.equalsIgnoreCase("RemoteGanglia")) {
             DataSourceI dataSource = new RemoteGangliaLiveDataSource();
-            return new DataAccesForTestsOnly(dataSource);
+            return new DataAccessWithAutoStructureDetection(dataSource);
         } else if (accessType.equalsIgnoreCase("JCatascopia")) {
-            Configuration.getLogger(DataAccesForTestsOnly.class).log(Priority.ERROR, "JCatascopia adapter not yet implemented. Using dummy.");
-            return new DataAccesForTestsOnly(new DummyDataSource());
+            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "JCatascopia adapter not yet implemented. Using dummy.");
+            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
         } else if (accessType.equalsIgnoreCase("Replay")) {
             String monitoringSeqID = Configuration.getStoredMonitoringSequenceID();
             DataSourceI dataSourceI = new GangliaSQLDataSource(monitoringSeqID, "mela", "mela");
-            return new DataAccesForTestsOnly(dataSourceI);
+            return new DataAccessWithAutoStructureDetection(dataSourceI);
         } else {
-            Configuration.getLogger(DataAccesForTestsOnly.class).log(Priority.ERROR, "MELA-DataService data access mode not specified or not recognized");
-            return new DataAccesForTestsOnly(new DummyDataSource());
+            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "MELA-DataService data access mode not specified or not recognized");
+            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
         }
     }
 

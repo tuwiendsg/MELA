@@ -60,9 +60,9 @@ public class MELA_WS {
 
     private static SystemControl systemControl;
 
-    static {
+     {
 //        Configuration.getLogger(MELA_WS.class).log(Level.INFO, "MELA started");
-        systemControl = SystemControlFactory.getSystemControlInstance();
+          systemControl = SystemControlFactory.getSystemControlInstance();
     }
     @Context
     private UriInfo context;

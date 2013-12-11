@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Date;
 import java.util.Properties;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -49,11 +50,11 @@ public class Configuration {
         try {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 //            ClassLoader classLoader = Configuration.class.getClassLoader();
-            InputStream propertiesStream = Configuration.class.getResourceAsStream("/config/Config.properties");
+            InputStream propertiesStream = Configuration.class.getResourceAsStream("/dataServiceConfig/Config.properties");
 
             configuration.load(propertiesStream);
 
-            InputStream log4jStream = Configuration.class.getResourceAsStream("/config/Log4j.properties");
+            InputStream log4jStream = Configuration.class.getResourceAsStream("/dataServiceConfig/Log4j.properties");
 
             if (log4jStream != null) {
                 PropertyConfigurator.configure(log4jStream);
@@ -85,17 +86,37 @@ public class Configuration {
 //            }
 //        };
 //    }
+    
+    public static int getDataPoolingInterval() {
+        if (configuration.containsKey("DATA_COLLECTION_INTERVAL_IN_SECONDS")) {
+            return Integer.parseInt(configuration.getProperty("DATA_COLLECTION_INTERVAL_IN_SECONDS"));
+        } else {
+            return 5; //default 5 seconds
+        }
+    }
+
+    public static int getDataAggregationWindows() {
+        if (configuration.containsKey("DATA_AGGREGATION_WINDOWS")) {
+            return Integer.parseInt(configuration.getProperty("DATA_AGGREGATION_WINDOWS"));
+        } else {
+            return 2; //default 2 frames
+        }
+    }
+    
+    public static void setProperty(String property, Object value){
+    	configuration.put(property, value);
+    }
 
     public static String getSecurityCertificatePath() {
         return configuration.getProperty("PEM_CERT_PATH");
     }
 
     public static String getGangliaPort() {
-        return configuration.getProperty("GANGLIA_PORT");
+        return configuration.getProperty("DATA_SOURCE.PORT");
     }
 
     public static String getAccessMachineIP() {
-        return configuration.getProperty("ACCESS_MACHINE_IP");
+        return configuration.getProperty("DATA_SOURCE.IP");
     }
 
     public static String getMonitoredElementIDMetricName() {
@@ -111,37 +132,54 @@ public class Configuration {
     }
 
     public static String getMonitoringDataAccessMethod() {
-        return configuration.getProperty("MONITORING_DATA_ACCESS");
+        return configuration.getProperty("DATA_SOURCE.TYPE");
     }
 
     public static String getStoredMonitoringSequenceID() {
         return configuration.getProperty("MONITORING_SEQ_ID");
     }
-
-    public static int getDataServicePort() {
-        if (configuration.containsKey("MELA_DATA_SERVICE_PORT")) {
-            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE_PORT"));
-        } else {
-            return 9123; //default 2 frames
-        }
-    }
+//
+//    public static int getDataServicePort() {
+//        if (configuration.containsKey("MELA_DATA_SERVICE.PORT")) {
+//            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.PORT"));
+//        } else {
+//            return 9123; //default 2 frames
+//        }
+//    }
 
     public static String getDataServiceIP() {
-        if (configuration.containsKey("MELA_DATA_SERVICE_IP")) {
-            return configuration.getProperty("MELA_DATA_SERVICE_IP");
+        if (configuration.containsKey("MELA_DATA_SERVICE.IP")) {
+            return configuration.getProperty("MELA_DATA_SERVICE.IP");
         } else {
             return "localhost";
         }
     }
-
-    public static String getJCatascopiaIP() {
-        if (configuration.containsKey("JCATASCOPIA_IP")) {
-            return configuration.getProperty("JCATASCOPIA_IP");
+    
+    public static int getDataServicePort() {
+        if (configuration.containsKey("MELA_DATA_SERVICE.DATA_PORT")) {
+            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.DATA_PORT"));
         } else {
-            return "localhost";
+            return 9123;
+        }
+    }
+    
+    public static int getDataServiceConfigurationPort() {
+        if (configuration.containsKey("MELA_DATA_SERVICE.CONFIGURATION_PORT")) {
+            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.CONFIGURATION_PORT"));
+        } else {
+            return 9124;
         }
     }
 
+    public static Object getValue(String key) {
+        if (configuration.containsKey(key)) {
+            return configuration.getProperty(key);
+        } else {
+            return null;
+        }
+    }
+
+    
     public static String getDatabaseFileLocation() {
         if (configuration.containsKey("DATA_BASE_LOCATION_PATH")) {
             return configuration.getProperty("DATA_BASE_LOCATION_PATH");
