@@ -38,12 +38,14 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Priority;
 
@@ -59,15 +61,15 @@ public class DataAccessWithAutoStructureDetection extends AbstractDataAccess {
         this.gangliaDataSourceI = gangliaDataSourceI;
     }
 
-    public static DataAccessWithAutoStructureDetection createInstance() {
+    public static DataAccessWithAutoStructureDetection createInstance(String monSeqID) {
         
         String accessType = Configuration.getMonitoringDataAccessMethod();
         
         if (accessType.equalsIgnoreCase("Ganglia")) {
-            DataSourceI dataSource = new LocalGangliaLiveDataSource();
+            DataSourceI dataSource = new LocalGangliaLiveDataSource(monSeqID);
             return new DataAccessWithAutoStructureDetection(dataSource);
         } else if (accessType.equalsIgnoreCase("RemoteGanglia")) {
-            DataSourceI dataSource = new RemoteGangliaLiveDataSource();
+            DataSourceI dataSource = new RemoteGangliaLiveDataSource(monSeqID);
             return new DataAccessWithAutoStructureDetection(dataSource);
         } else if (accessType.equalsIgnoreCase("JCatascopia")) {
             Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "JCatascopia adapter not yet implemented. Using dummy.");

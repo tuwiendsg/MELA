@@ -23,6 +23,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitorin
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
+import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +38,7 @@ import org.apache.log4j.Logger;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "CompositionRule")
 @XmlType(propOrder = {"targetMonitoredElementLevel", "targetMonitoredElementIDs", "resultingMetric", "operation"})
-public class CompositionRule {
+public class CompositionRule implements Serializable{
 
     @XmlAttribute(name = "TargetMonitoredElementLevel", required = true)
     private MonitoredElement.MonitoredElementLevel targetMonitoredElementLevel;

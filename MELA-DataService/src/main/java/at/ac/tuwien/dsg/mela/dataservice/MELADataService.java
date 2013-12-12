@@ -23,13 +23,15 @@ import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 import java.net.Socket;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 import org.apache.log4j.Level;
 import org.hsqldb.Server;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
 public class MELADataService {
@@ -42,36 +44,146 @@ public class MELADataService {
             server.setDaemon(true);
             server.setDatabaseName(0, "melaDataServiceDB");
             server.setDatabasePath(0, "file:" + Configuration.getDatabaseFileLocation() + "/melaDataServiceDB" + ";user=mela;password=mela");
-
+            server.setPort(Configuration.getDataServicePort());
             server.setAddress(Configuration.getDataServiceIP());
 
-//        int hyperSQLPort = 1234;
-//
-//		do {
-//			try {
-//
-//				Socket sock = new Socket("localhost", hyperSQLPort);
-//				sock.close();
-//				hyperSQLPort++;
-//
-//			} catch (Exception e) {
-//				// if exception, then port is not open
-            server.setPort(Configuration.getDataServicePort());
-//				Configuration.setProperty("HYPERSQL.PORT", hyperSQLPort);
-//				break;
-//			}
-//		} while (true);
+            Thread thread = new Thread() {
+                public void run() {
+                    server.start();
+                    Configuration.getLogger(this.getClass()).log(Level.INFO, "SQL Server started");
+                }
+            };
+            thread.start();
+
+            // int hyperSQLPort = 1234;
+            //
+            // do {
+            // try {
+            //
+            // Socket sock = new Socket("localhost", hyperSQLPort);
+            // sock.close();
+            // hyperSQLPort++;
+            //
+            // } catch (Exception e) {
+            // // if exception, then port is not open
+
+            // Configuration.setProperty("HYPERSQL.PORT", hyperSQLPort);
+            // break;
+            // }
+            // } while (true);
 
         }
 
-        Thread thread = new Thread() {
-            public void run() {
-                server.start();
-                Configuration.getLogger(this.getClass()).log(Level.INFO, "SQL Server started");
-                new AggregatedMonitoringDataSQLAccess("mela", "mela").createDatabaseStructure();
+    }
+
+    public void createInitialStructure() {
+        // if database empty, create initial database structure
+        try {
+            Class.forName("org.hsqldb.jdbc.JDBCDriver");
+        } catch (Exception ex) {
+            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+
+        Connection connection = null;
+        // instantiate connection first
+        {
+
+            // if the SQL connection fails, try to reconnect, as the
+            // MELA_DataService might not be running.
+            // BUSY wait used
+            while (connection == null) {
+                try {
+                    connection = DriverManager.getConnection("jdbc:hsqldb:hsql://" + Configuration.getDataServiceIP() + ":" + Configuration.getDataServicePort()
+                            + "/melaDataServiceDB", "mela", "mela");
+                } catch (SQLException ex) {
+                    Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+                    Configuration.getLogger(this.getClass()).log(Level.WARN, "Could not connect to sql data end. Retrying in 1 second");
+                }
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                }
             }
-        };
-        thread.start();
+        }
+
+        try {
+            connection.createStatement().execute("drop table IF EXISTS AggregatedData;");
+            connection.createStatement().execute("drop table IF EXISTS Configuration;");
+            connection.createStatement().execute("drop table IF EXISTS MetricValue;");
+            connection.createStatement().execute("drop table IF EXISTS Timestamp;");
+            connection.createStatement().execute("drop table IF EXISTS MonitoringSeq;");
+
+            connection.createStatement().execute("create table MonitoringSeq (ID VARCHAR(200) PRIMARY KEY);");
+            connection.createStatement().execute(
+                    "create table Timestamp (ID int IDENTITY, monSeqID VARCHAR(200), timestamp VARCHAR(200), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
+            connection
+                    .createStatement()
+                    .execute(
+                    "create table MetricValue (ID int IDENTITY, monSeqID VARCHAR(200), timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), metrictype VARCHAR(20), value VARCHAR(50),  vmIP VARCHAR (50), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID));");
+            // this creates a table used to store on rows the
+            // ServiceStructure,
+            // CompositionRules, and Requirements
+            connection.createStatement().execute("create table Configuration (ID int IDENTITY, configuration LONGVARCHAR);");
+            connection.createStatement().execute(
+                    "create table AggregatedData (ID int IDENTITY, monSeqID VARCHAR(200), data OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
+
+            connection.commit();
+        } catch (SQLException ex) {
+            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+    }
+
+    public void createInitialStructureIfItDoesNotExist() {
+        // if database empty, create initial database structure
+        try {
+            Class.forName("org.hsqldb.jdbc.JDBCDriver");
+        } catch (Exception ex) {
+            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+
+        Connection connection = null;
+        // instantiate connection first
+        {
+
+            // if the SQL connection fails, try to reconnect, as the
+            // MELA_DataService might not be running.
+            // BUSY wait used
+            while (connection == null) {
+                try {
+                    connection = DriverManager.getConnection("jdbc:hsqldb:hsql://" + Configuration.getDataServiceIP() + ":" + Configuration.getDataServicePort()
+                            + "/melaDataServiceDB", "mela", "mela");
+                } catch (SQLException ex) {
+                    Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+                    Configuration.getLogger(this.getClass()).log(Level.WARN, "Could not connect to sql data end. Retrying in 1 second");
+                }
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+        try {
+            connection.createStatement().execute("create table IF NOT EXISTS MonitoringSeq (ID VARCHAR(200) PRIMARY KEY);");
+            connection.createStatement().execute(
+                    "create table IF NOT EXISTS Timestamp (ID int IDENTITY, monSeqID VARCHAR(200), timestamp VARCHAR(200), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
+            connection
+                    .createStatement()
+                    .execute(
+                    "create table IF NOT EXISTS MetricValue (ID int IDENTITY, monSeqID VARCHAR(200), timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), metrictype VARCHAR(20), value VARCHAR(50),  vmIP VARCHAR (50), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID));");
+            // this creates a table used to store on rows the
+            // ServiceStructure,
+            // CompositionRules, and Requirements
+            connection.createStatement().execute("create table IF NOT EXISTS Configuration (ID int IDENTITY, configuration LONGVARCHAR);");
+            connection.createStatement().execute(
+                    "create table IF NOT EXISTS AggregatedData (ID int IDENTITY, monSeqID VARCHAR(200), data OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
+
+            connection.commit();
+        } catch (SQLException ex) {
+            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
     }
 
     public void stopServer() {

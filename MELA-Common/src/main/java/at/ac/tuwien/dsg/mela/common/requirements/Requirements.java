@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.common.requirements;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.UUID;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Requirements")
-public class Requirements {
+public class Requirements implements Serializable {
 
     @XmlAttribute(name = "TargetServiceID", required = true)
     private String targetServiceID;

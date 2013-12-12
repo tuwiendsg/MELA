@@ -22,8 +22,11 @@ package at.ac.tuwien.dsg.mela.dataservice;
 import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+import java.io.Reader;
 
-import com.jcraft.jsch.ConfigRepository;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.sql.Clob;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,6 +37,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBContext;
 
 import org.apache.log4j.Level;
 
@@ -47,12 +51,17 @@ public class AggregatedMonitoringDataSQLAccess {
     private String username;
     private String password;
     private Connection connection;
-//    private PreparedStatement insertMonitoringEntryPreparedStatement;
-//    private PreparedStatement getMonitoringEntryPreparedStatement;
-//    private PreparedStatement getEntriesCountPreparedStatement;
+    private String monitoringSequenceID;
+    private PreparedStatement insertMonitoringEntryPreparedStatement;
+    private PreparedStatement insertConfigurationPreparedStatement;
+    private PreparedStatement getMonitoringEntryPreparedStatement;
+    private PreparedStatement getEntriesCountPreparedStatement;
+    private PreparedStatement getLastAggregatedDataStatement;
+    private PreparedStatement getAllAggregatedDataStatement;
 
-    public AggregatedMonitoringDataSQLAccess(String username, String password) {
+    public AggregatedMonitoringDataSQLAccess(String username, String password, String monitoringSequenceID) {
 
+        this.monitoringSequenceID = monitoringSequenceID;
         this.username = username;
         this.password = password;
 
@@ -82,31 +91,81 @@ public class AggregatedMonitoringDataSQLAccess {
             }
         }
 
-//        {//create a new table to hold the elasticity space
-//            Statement deleteTableIfExisting = null;
-//            try {
-//                deleteTableIfExisting = connection.createStatement();
-//                deleteTableIfExisting.executeQuery("DROP TABLE " + AGGREGATED_DATA_TABLE_NAME + " IF EXISTS");
-//            } catch (SQLException ex) {
-//                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-//            }
-//        }
-//
-//
-//        { //create a new table to hold the elasticity space
-//            Statement createTable = null;
-//            try {
-//                createTable = connection.createStatement();
-//                createTable.executeQuery("create table " + AGGREGATED_DATA_TABLE_NAME + " (ID int IDENTITY, data OTHER);");
-//            } catch (SQLException ex) {
-//                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-//            }
-//        }
-//        createDatabaseStructure();
-        recreateElasticitySpaceTable();
+        //ServiceID is used in retrieving historical monitoring data (if needed)
+        try {
+            Statement addSeqStmt = connection.createStatement();
+            addSeqStmt.executeUpdate("insert into MonitoringSeq (ID) VALUES ('" + monitoringSequenceID + "')");
+            addSeqStmt.close();
+        } catch (SQLException ex) {
+            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+
+
+        //prepare statements
+        {
+            try {
+                String sql = "INSERT INTO " + AGGREGATED_DATA_TABLE_NAME + " (data, monSeqID) "
+                        + "VALUES (?, ?)";
+                insertMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+        {
+            try {
+                String sql = "INSERT INTO Configuration (configuration) "
+                        + "VALUES (?)";
+                insertConfigurationPreparedStatement = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+                return;
+            }
+        }
+
+
+
+        {
+            try {
+                String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where "
+                        + "ID > (?) AND ID < (?) AND monSeqID=(?);";
+                getMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+        {
+            try {
+                String sql = "SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + " WHERE monSeqID=?;";
+                getEntriesCountPreparedStatement = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+
+        {
+            try {
+
+                String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID = (SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=?);";
+                getLastAggregatedDataStatement = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+        {
+            try {
+
+                String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=?;";
+                getAllAggregatedDataStatement = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
 
     }
-//    
 
     private Connection getConnection() {
         try {
@@ -136,81 +195,16 @@ public class AggregatedMonitoringDataSQLAccess {
         return connection;
     }
 
-    public final void recreateElasticitySpaceTable() {
-        Connection c = getConnection();
-        try {
-            c.createStatement().executeQuery("DROP TABLE " + AGGREGATED_DATA_TABLE_NAME + " IF EXISTS");
-            c.createStatement().executeQuery("create table " + AGGREGATED_DATA_TABLE_NAME + " (ID int IDENTITY, data OTHER);");
-            c.commit();
-        } catch (SQLException ex) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-        }
-
-    }
-
-    public final void createDatabaseStructure() {
-        Connection c = getConnection();
-        try {
-            c.createStatement().execute("create table IF NOT EXISTS MonitoringSeq (ID int IDENTITY, timestamp VARCHAR(200));");
-            c.createStatement().execute("create table IF NOT EXISTS Timestamp (ID int IDENTITY, monSeqID int, timestamp VARCHAR(200), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
-            c.createStatement().execute("create table IF NOT EXISTS MetricValue (ID int IDENTITY, monSeqID int, timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), metrictype VARCHAR(20), value VARCHAR(50),  vmIP VARCHAR (50), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID));");
-            //this creates a table used to store on rows the ServiceStructure, CompositionRules, and Requirements
-            c.createStatement().executeQuery("create table IF NOT EXISTS Configuration (ID int IDENTITY, configuration OTHER);");
-            c.commit();
-        } catch (SQLException ex) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-        }
-
-
-    }
-
     public void writeMonitoringData(ServiceMonitoringSnapshot monitoringSnapshot) {
         connection = getConnection();
-        PreparedStatement insertMonitoringEntryPreparedStatement = null;
-        {
-            try {
-                String sql = "INSERT INTO " + AGGREGATED_DATA_TABLE_NAME + " (data) "
-                        + "VALUES (?)";
-                insertMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
-            } catch (SQLException ex) {
-                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-                return;
-            }
-        }
+
 
         //if the firstMonitoringSequenceTimestamp is null, insert new monitoring sequence
+
+
         try {
             insertMonitoringEntryPreparedStatement.setObject(1, monitoringSnapshot);
-            insertMonitoringEntryPreparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
-            try {
-                connection.commit();
-                /// connection.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            }
-        }
-    }
-
-    public void writeConfig(ConfigurationXMLRepresentation configurationXMLRepresentation) {
-        connection = getConnection();
-        PreparedStatement insertMonitoringEntryPreparedStatement = null;
-        {
-            try {
-                String sql = "INSERT INTO Configuration (configuration) "
-                        + "VALUES (?)";
-                insertMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
-            } catch (SQLException ex) {
-                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-                return;
-            }
-        }
-
-        //if the firstMonitoringSequenceTimestamp is null, insert new monitoring sequence
-        try {
-            insertMonitoringEntryPreparedStatement.setObject(1, configurationXMLRepresentation);
+            insertMonitoringEntryPreparedStatement.setString(2, monitoringSequenceID);
             insertMonitoringEntryPreparedStatement.executeUpdate();
         } catch (SQLException ex) {
             Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
@@ -227,18 +221,9 @@ public class AggregatedMonitoringDataSQLAccess {
     //gets the maximum ID encountered
     public int getRecordsCount() {
         connection = getConnection();
-        PreparedStatement getEntriesCountPreparedStatement = null;
-        {
-            try {
-                String sql = "SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + ";";
-                getEntriesCountPreparedStatement = connection.prepareStatement(sql);
-            } catch (SQLException ex) {
-                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-                return 0;
-            }
-        }
 
         try {
+            getEntriesCountPreparedStatement.setString(1, monitoringSequenceID);
             ResultSet resultSet = getEntriesCountPreparedStatement.executeQuery();
             if (resultSet != null) {
                 resultSet.next();
@@ -268,22 +253,14 @@ public class AggregatedMonitoringDataSQLAccess {
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int startIndex, int count) {
         connection = getConnection();
-        PreparedStatement getMonitoringEntryPreparedStatement = null;
-        {
-            try {
-                String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where "
-                        + "ID > (?) AND ID < (?);";
-                getMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
-            } catch (SQLException ex) {
-                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-            }
-        }
 
 
         List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
         try {
             getMonitoringEntryPreparedStatement.setInt(1, startIndex);
             getMonitoringEntryPreparedStatement.setInt(2, startIndex + count);
+            getMonitoringEntryPreparedStatement.setString(3, monitoringSequenceID);
+
             ResultSet resultSet = getMonitoringEntryPreparedStatement.executeQuery();
             if (resultSet != null) {
 
@@ -316,14 +293,10 @@ public class AggregatedMonitoringDataSQLAccess {
         ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot();
 
         connection = getConnection();
-        PreparedStatement getMonitoringEntryPreparedStatement = null;
-
         try {
 
-            String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID = (SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + ");";
-            getMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
-
-            ResultSet resultSet = getMonitoringEntryPreparedStatement.executeQuery();
+            getLastAggregatedDataStatement.setString(1, monitoringSequenceID);
+            ResultSet resultSet = getLastAggregatedDataStatement.executeQuery();
             if (resultSet != null) {
 
                 while (resultSet.next()) {
@@ -348,11 +321,10 @@ public class AggregatedMonitoringDataSQLAccess {
     public List<ServiceMonitoringSnapshot> extractMonitoringData() {
         connection = getConnection();
 
-        String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + ";";
-
         List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
         try {
-            ResultSet resultSet = connection.createStatement().executeQuery(sql);
+            getAllAggregatedDataStatement.setString(1, monitoringSequenceID);
+            ResultSet resultSet = getAllAggregatedDataStatement.executeQuery();
             if (resultSet != null) {
 
                 while (resultSet.next()) {
@@ -373,25 +345,66 @@ public class AggregatedMonitoringDataSQLAccess {
         }
     }
 
-    public ConfigurationXMLRepresentation getLatestConfiguration() {
-        connection = getConnection();
+    public static ConfigurationXMLRepresentation getLatestConfiguration(String username, String password) {
+        Connection c = null;
+        //if the SQL connection fails, try to reconnect, as the MELA_DataService might not be running.
+        //BUSY wait used
+        do {
+            try {
+                c = DriverManager.getConnection("jdbc:hsqldb:hsql://" + Configuration.getDataServiceIP() + ":" + Configuration.getDataServicePort() + "/melaDataServiceDB", username, password);
+            } catch (SQLException ex) {
+                Configuration.getLogger(AggregatedMonitoringDataSQLAccess.class).log(Level.ERROR, ex);
+                Configuration.getLogger(AggregatedMonitoringDataSQLAccess.class).log(Level.WARN, "Could not connect to sql data end. Retrying in 1 second");
+            }
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+        } while (c == null);
 
         String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration);";
         ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
 
         try {
-            ResultSet resultSet = connection.createStatement().executeQuery(sql);
+            ResultSet resultSet = c.createStatement().executeQuery(sql);
             if (resultSet != null) {
-
                 while (resultSet.next()) {
-                    configurationXMLRepresentation = (ConfigurationXMLRepresentation) resultSet.getObject(1);
+                    Reader repr = resultSet.getClob(1).getCharacterStream();
+                    JAXBContext context = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
+                    configurationXMLRepresentation = (ConfigurationXMLRepresentation) context.createUnmarshaller().unmarshal(repr);
                 }
             }
 
         } catch (SQLException ex) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+            Configuration.getLogger(AggregatedMonitoringDataSQLAccess.class).log(Level.ERROR, ex);
         } finally {
             return configurationXMLRepresentation;
+        }
+    }
+
+    public void writeConfig(ConfigurationXMLRepresentation configurationXMLRepresentation) {
+        connection = getConnection();
+
+        //if the firstMonitoringSequenceTimestamp is null, insert new monitoring sequence
+        try {
+            JAXBContext context = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
+            StringWriter stringWriter = new StringWriter();
+            context.createMarshaller().marshal(configurationXMLRepresentation, stringWriter);
+            Clob clob = connection.createClob();
+            clob.setString(1, stringWriter.getBuffer().toString());
+
+            insertConfigurationPreparedStatement.setClob(1, clob);
+            insertConfigurationPreparedStatement.executeUpdate();
+        } catch (Exception ex) {
+            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+        } finally {
+            try {
+                connection.commit();
+                /// connection.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
         }
     }
 

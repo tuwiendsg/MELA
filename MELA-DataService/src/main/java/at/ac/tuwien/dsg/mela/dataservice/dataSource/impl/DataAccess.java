@@ -50,22 +50,25 @@ import org.apache.log4j.Priority;
 public class DataAccess extends AbstractDataAccess {
 
     private DataSourceI gangliaDataSourceI;
+    
+    //such as timestamp || service ID
+//    private String monSeqID;
 
     private DataAccess(DataSourceI gangliaDataSourceI) {
         this.gangliaDataSourceI = gangliaDataSourceI;
     }
 
-    public static DataAccess createInstance() {
+    public static DataAccess createInstance(String monSeqID) {
 
         String accessType = Configuration.getMonitoringDataAccessMethod();
 
         if (accessType.equalsIgnoreCase("Ganglia")) {
             Configuration.getLogger(DataAccess.class).log(Level.INFO, "Using Local Ganglia data source");
-            DataSourceI dataSource = new LocalGangliaLiveDataSource();
+            DataSourceI dataSource = new LocalGangliaLiveDataSource(monSeqID);
             return new DataAccess(dataSource);
         } else if (accessType.equalsIgnoreCase("RemoteGanglia")) {
             Configuration.getLogger(DataAccess.class).log(Level.INFO, "Using Remote Ganglia data source");
-            DataSourceI dataSource = new RemoteGangliaLiveDataSource();
+            DataSourceI dataSource = new RemoteGangliaLiveDataSource(monSeqID);
             return new DataAccess(dataSource);
         } else if (accessType.equalsIgnoreCase("JCatascopia")) {
             Configuration.getLogger(DataAccess.class).log(Level.INFO, "Using JCatascopia data source");

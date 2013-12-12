@@ -41,7 +41,9 @@ import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToXML;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.exceptions.ConfigurationException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 import at.ac.tuwien.dsg.mela.dataservice.AggregatedMonitoringDataSQLAccess;
+import at.ac.tuwien.dsg.mela.dataservice.DataCollectionService;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -76,17 +78,11 @@ public class ElasticityAnalysisManager {
 
         instantMonitoringDataAnalysisEngine = new InstantMonitoringDataAnalysisEngine();
 
-        aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela");
-        ConfigurationXMLRepresentation configurationXMLRepresentation = aggregatedMonitoringDataSQLAccess.getLatestConfiguration();
-
-
-//        try {
-//            MelaDataServiceConfigurationAPIConnector.sendConfiguration(configurationXMLRepresentation);
-//        } catch (JMSException e) {
-//            // TODO Auto-generated catch block
-//            Logger.getLogger(this.getClass()).log(Level.ERROR,null,e);
-//        }
-
+        //get latest config
+        ConfigurationXMLRepresentation configurationXMLRepresentation = AggregatedMonitoringDataSQLAccess.getLatestConfiguration("mela", "mela");
+ 
+        //open proper sql access
+        aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela", configurationXMLRepresentation.getServiceConfiguration().getId());
         setInitialServiceConfiguration(configurationXMLRepresentation.getServiceConfiguration());
         setInitialCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
         setInitialRequirements(configurationXMLRepresentation.getRequirements());
@@ -110,6 +106,13 @@ public class ElasticityAnalysisManager {
         if (requirements != null) {
             elasticitySpaceFunction.setRequirements(requirements);
         }
+        try {
+            aggregatedMonitoringDataSQLAccess.closeConnection();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela", serviceConfiguration.getId());
 
         MelaDataServiceConfigurationAPIConnector.sendUpdatedServiceStructure(serviceConfiguration);
     }

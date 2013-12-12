@@ -86,7 +86,7 @@ public class Configuration {
 //            }
 //        };
 //    }
-    
+
     public static int getDataPoolingInterval() {
         if (configuration.containsKey("DATA_COLLECTION_INTERVAL_IN_SECONDS")) {
             return Integer.parseInt(configuration.getProperty("DATA_COLLECTION_INTERVAL_IN_SECONDS"));
@@ -102,9 +102,9 @@ public class Configuration {
             return 2; //default 2 frames
         }
     }
-    
-    public static void setProperty(String property, Object value){
-    	configuration.put(property, value);
+
+    public static void setProperty(String property, Object value) {
+        configuration.put(property, value);
     }
 
     public static String getSecurityCertificatePath() {
@@ -154,7 +154,7 @@ public class Configuration {
             return "localhost";
         }
     }
-    
+
     public static int getDataServicePort() {
         if (configuration.containsKey("MELA_DATA_SERVICE.DATA_PORT")) {
             return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.DATA_PORT"));
@@ -162,7 +162,7 @@ public class Configuration {
             return 9123;
         }
     }
-    
+
     public static int getDataServiceConfigurationPort() {
         if (configuration.containsKey("MELA_DATA_SERVICE.CONFIGURATION_PORT")) {
             return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.CONFIGURATION_PORT"));
@@ -179,7 +179,6 @@ public class Configuration {
         }
     }
 
-    
     public static String getDatabaseFileLocation() {
         if (configuration.containsKey("DATA_BASE_LOCATION_PATH")) {
             return configuration.getProperty("DATA_BASE_LOCATION_PATH");
@@ -188,11 +187,19 @@ public class Configuration {
         }
     }
 
-	public static boolean automatedStructureDetection() {
-		if (configuration.containsKey("SERVICE_STRUCTURE_DETECTION")) {
+    public static boolean automatedStructureDetection() {
+        if (configuration.containsKey("SERVICE_STRUCTURE_DETECTION")) {
             return configuration.getProperty("SERVICE_STRUCTURE_DETECTION").equalsIgnoreCase("AUTOMATIC");
         } else {
             return false;
         }
-	}
+    }
+
+    public static boolean continuousOperation() {
+         if (configuration.containsKey("OPERATION_MODE")) {
+            return configuration.getProperty("OPERATION_MODE").equalsIgnoreCase("continuous");
+        } else {
+            return false;
+        }
+    }
 }

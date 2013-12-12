@@ -17,7 +17,7 @@
 package performance;
 
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
-import at.ac.tuwien.dsg.mela.dataservice.MonDataSQLWriteAccess;
+import at.ac.tuwien.dsg.mela.dataservice.RawMonitoringDataSQLAccess;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -35,23 +35,23 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class LoadMonitoredDataInSQL {
 
-    @SuppressWarnings("empty-statement")
-    public static void main(String[] args) throws JAXBException, FileNotFoundException, SQLException {
-        Yaml yaml = new Yaml();
-        Iterable<Object> objects = yaml.loadAll(new FileReader(new File("/home/daniel-tuwien/Documents/DSG_SVN/papers/IJBDI_cloud_com_extended/figures/experiments/MELA/monitoringSat_Jun_29_20_01_04_CEST_2013")));
-//        List<ClusterInfo> clusterInfos = new ArrayList<ClusterInfo>();
-        MonDataSQLWriteAccess access = new MonDataSQLWriteAccess("mela", "mela");
-        
-        for (Object o : objects) {
-//            clusterInfos.add((ClusterInfo) o);
-            access.writeMonitoringData((ClusterInfo) o);
-//            System.out.println((ClusterInfo) o);
-        }
-        
-        
-        access.closeConnection();
-        
-        
-
-    }
+//    @SuppressWarnings("empty-statement")
+//    public static void main(String[] args) throws JAXBException, FileNotFoundException, SQLException {
+//        Yaml yaml = new Yaml();
+//        Iterable<Object> objects = yaml.loadAll(new FileReader(new File("/home/daniel-tuwien/Documents/DSG_SVN/papers/IJBDI_cloud_com_extended/figures/experiments/MELA/monitoringSat_Jun_29_20_01_04_CEST_2013")));
+////        List<ClusterInfo> clusterInfos = new ArrayList<ClusterInfo>();
+//        MonDataSQLWriteAccess access = new MonDataSQLWriteAccess("mela", "mela");
+//        
+//        for (Object o : objects) {
+////            clusterInfos.add((ClusterInfo) o);
+//            access.writeMonitoringData((ClusterInfo) o);
+////            System.out.println((ClusterInfo) o);
+//        }
+//        
+//        
+//        access.closeConnection();
+//        
+//        
+//
+//    }
 }

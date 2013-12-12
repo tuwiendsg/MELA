@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -29,16 +30,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jms.JMSException;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
@@ -48,9 +48,6 @@ import at.ac.tuwien.dsg.mela.dataservice.dataSource.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
-import at.ac.tuwien.dsg.mela.dataservice.utils.ConvertToJSON;
-
-import org.json.simple.JSONObject;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -92,11 +89,7 @@ public class DataCollectionService {
 
     protected DataCollectionService() {
 
-        if (Configuration.automatedStructureDetection()) {
-            dataAccess = DataAccessWithAutoStructureDetection.createInstance();
-        } else {
-            dataAccess = DataAccess.createInstance();
-        }
+
 
         instantMonitoringDataEnrichmentEngine = new DataAggregationEngine();
 
@@ -104,19 +97,22 @@ public class DataCollectionService {
         historicalMonitoringData = new ArrayList<ServiceMonitoringSnapshot>();
         monitoringTimer = new Timer();
 //        selfReference = this;
-        actionsInExecution = new ConcurrentHashMap<MonitoredElement,  List<String>>();
-        startMonitoring();
+        actionsInExecution = new ConcurrentHashMap<MonitoredElement, List<String>>();
+
 
         if ((int) (monitoringIntervalInSeconds / aggregationWindowsCount) == 0) {
             aggregationWindowsCount = 1 * monitoringIntervalInSeconds;
         }
 
-        aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela");
-        ConfigurationXMLRepresentation configurationXMLRepresentation = aggregatedMonitoringDataSQLAccess.getLatestConfiguration();
+
+        //get latest config
+        ConfigurationXMLRepresentation configurationXMLRepresentation = AggregatedMonitoringDataSQLAccess.getLatestConfiguration("mela", "mela");
+
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
-
         requirements = configurationXMLRepresentation.getRequirements();
+
+        startMonitoring();
     }
 
     public static DataCollectionService getInstance() {
@@ -127,7 +123,7 @@ public class DataCollectionService {
         return serviceConfiguration;
     }
 
-    public synchronized void addExecutingAction(String targetEntityID,  List<String> actionName) {
+    public synchronized void addExecutingAction(String targetEntityID, List<String> actionName) {
         MonitoredElement element = new MonitoredElement(targetEntityID);
         actionsInExecution.put(element, actionName);
     }
@@ -137,7 +133,7 @@ public class DataCollectionService {
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
 
         requirements = configurationXMLRepresentation.getRequirements();
-
+         
         startMonitoring();
     }
 
@@ -145,14 +141,19 @@ public class DataCollectionService {
         MonitoredElement element = new MonitoredElement(targetEntityID);
         if (actionsInExecution.containsKey(element)) {
             actionsInExecution.get(element).removeAll(actionName);
-        }  
+        }
     }
- 
 
     public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
         this.serviceConfiguration = serviceConfiguration;
         monitoringTimer.cancel();
         monitoringTimer.purge();
+        try {
+            aggregatedMonitoringDataSQLAccess.closeConnection();
+        } catch (SQLException e) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, null, e);
+        }
+        aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela", serviceConfiguration.getId());
         startMonitoring();
     }
 
@@ -197,39 +198,9 @@ public class DataCollectionService {
 //        return compositionRulesConfiguration;
 //    }
     public synchronized void setCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
-        if (dataAccess != null) {
-            dataAccess.getMetricFilters().clear();
-            //add data access metric filters for the source of each composition rule
-            for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
-                //go trough each CompositionOperation and extract the source metrics
-
-                List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
-                queue.add(compositionRule.getOperation());
-
-                while (!queue.isEmpty()) {
-                    CompositionOperation operation = queue.remove(0);
-                    queue.addAll(operation.getSubOperations());
-
-                    Metric targetMetric = operation.getTargetMetric();
-                    //metric can be null if a composition rule artificially creates a metric using SET_VALUE
-                    if (targetMetric != null) {
-                        MetricFilter metricFilter = new MetricFilter();
-                        metricFilter.setId(targetMetric.getName() + "_Filter");
-                        metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
-                        Collection<Metric> metrics = new ArrayList<Metric>();
-                        metrics.add(new Metric(targetMetric.getName()));
-                        metricFilter.setMetrics(metrics);
-                        dataAccess.addMetricFilter(metricFilter);
-                    }
-                }
-            }
+        
             this.compositionRulesConfiguration = compositionRulesConfiguration;
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl."
-                    + "Metric filters to get metrics targeted by composition rules will not be added");
-            this.compositionRulesConfiguration = compositionRulesConfiguration;
-        }
-
+ 
     }
 
 //    public synchronized AbstractDataAccess getDataAccess() {
@@ -312,6 +283,42 @@ public class DataCollectionService {
 //        return latestMonitoringData;
 //    }
     public synchronized void startMonitoring() {
+
+        //open proper sql access
+        aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela", serviceConfiguration.getId());
+        aggregatedMonitoringDataSQLAccess.writeConfig(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
+
+        if (Configuration.automatedStructureDetection()) {
+            dataAccess = DataAccessWithAutoStructureDetection.createInstance(serviceConfiguration.getId());
+        } else {
+            dataAccess = DataAccess.createInstance(serviceConfiguration.getId());
+        }
+        
+        //set metric filters on data access
+        for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
+            //go trough each CompositionOperation and extract the source metrics
+
+            List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+            queue.add(compositionRule.getOperation());
+
+            while (!queue.isEmpty()) {
+                CompositionOperation operation = queue.remove(0);
+                queue.addAll(operation.getSubOperations());
+
+                Metric targetMetric = operation.getTargetMetric();
+                //metric can be null if a composition rule artificially creates a metric using SET_VALUE
+                if (targetMetric != null) {
+                    MetricFilter metricFilter = new MetricFilter();
+                    metricFilter.setId(targetMetric.getName() + "_Filter");
+                    metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+                    Collection<Metric> metrics = new ArrayList<Metric>();
+                    metrics.add(new Metric(targetMetric.getName()));
+                    metricFilter.setMetrics(metrics);
+                    dataAccess.addMetricFilter(metricFilter);
+                }
+            }
+        }
+
         monitoringTimer = new Timer();
 
         task = new TimerTask() {
@@ -330,8 +337,8 @@ public class DataCollectionService {
 
                         if (compositionRulesConfiguration != null) {
                             latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
-                            for(MonitoredElement element : actionsInExecution.keySet()){
-                                latestMonitoringData.setExecutingActions(element,actionsInExecution.get(element));
+                            for (MonitoredElement element : actionsInExecution.keySet()) {
+                                latestMonitoringData.setExecutingActions(element, actionsInExecution.get(element));
                             }
                         }
 
@@ -361,6 +368,11 @@ public class DataCollectionService {
     }
 
     public synchronized void stopMonitoring() {
+        try {
+            aggregatedMonitoringDataSQLAccess.closeConnection();
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(DataCollectionService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
         task.cancel();
     }
 //    public synchronized String getLatestMonitoringDataINJSON() {

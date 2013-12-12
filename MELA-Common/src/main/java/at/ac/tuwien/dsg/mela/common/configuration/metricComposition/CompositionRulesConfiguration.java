@@ -17,6 +17,7 @@
  */
 package at.ac.tuwien.dsg.mela.common.configuration.metricComposition;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 
 
@@ -27,7 +28,7 @@ import javax.xml.bind.annotation.*;
  **/
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "CompositionRulesConfiguration")
-public class CompositionRulesConfiguration {
+public class CompositionRulesConfiguration implements Serializable{
 
     @XmlAttribute(name = "TargetServiceID", required = true)
     private String targetServiceID;

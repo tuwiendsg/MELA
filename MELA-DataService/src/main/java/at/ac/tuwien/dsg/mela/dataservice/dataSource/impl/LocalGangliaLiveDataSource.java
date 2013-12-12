@@ -19,7 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
-import at.ac.tuwien.dsg.mela.dataservice.MonDataSQLWriteAccess;
+import at.ac.tuwien.dsg.mela.dataservice.RawMonitoringDataSQLAccess;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringSystemInfo;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataAccess.DataSourceI;
@@ -28,21 +28,26 @@ import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
+
 import java.io.*;
+
 import org.apache.log4j.Level;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
 public class LocalGangliaLiveDataSource implements DataSourceI {
 
     private Yaml yaml = new Yaml();
-    private MonDataSQLWriteAccess dataSQLWriteAccess;
+    private RawMonitoringDataSQLAccess dataSQLWriteAccess;
+    //timestamp || service ID
+    private String monSeqID;
 
-    {
-        dataSQLWriteAccess = new MonDataSQLWriteAccess("mela", "mela");
+    public LocalGangliaLiveDataSource(String monSeqID) {
+        super();
+        this.monSeqID = monSeqID;
+        dataSQLWriteAccess = new RawMonitoringDataSQLAccess("mela", "mela", monSeqID);
     }
 
     public ClusterInfo getMonitoringData() throws DataAccessException {

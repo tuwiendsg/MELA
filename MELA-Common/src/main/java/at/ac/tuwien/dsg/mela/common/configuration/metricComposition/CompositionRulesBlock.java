@@ -18,6 +18,7 @@
 
 package at.ac.tuwien.dsg.mela.common.configuration.metricComposition;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -31,7 +32,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  **/
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MetricsCompositionRules")
-public class CompositionRulesBlock {
+public class CompositionRulesBlock implements Serializable{
 
     {
         compositionRules = new ArrayList<CompositionRule>();

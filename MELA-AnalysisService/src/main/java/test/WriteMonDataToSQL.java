@@ -19,7 +19,7 @@
 package test;
 
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
-import at.ac.tuwien.dsg.mela.dataservice.MonDataSQLWriteAccess;
+import at.ac.tuwien.dsg.mela.dataservice.RawMonitoringDataSQLAccess;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.SQLException;
@@ -35,31 +35,31 @@ import org.yaml.snakeyaml.Yaml;
  **/
 public class WriteMonDataToSQL {
 
-    public static void main(String[] args) throws SQLException {
-        String monitoringFile = "/home/daniel-tuwien/Documents/DSG_SVN/software/tmp_prototypes/MELA_MAVEN/src/main/resources/config/monitoringSat_Jun_29_19_14_46_CEST_2013";
-        Map<String, ClusterInfo> temp = new LinkedHashMap<String, ClusterInfo>();
-
-        MonDataSQLWriteAccess access = new MonDataSQLWriteAccess("mela","mela");
-
-        try {
-            Yaml yaml = new Yaml();
-            Iterable<Object> iterable = yaml.loadAll(new FileInputStream(new File(monitoringFile)));
-
-            for (Object o : iterable) {
-                ClusterInfo gangliaClusterInfo = (ClusterInfo) o;
-                if (!temp.containsKey(gangliaClusterInfo.getLocaltime())) {
-                    temp.put(gangliaClusterInfo.getLocaltime(), gangliaClusterInfo);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        for (ClusterInfo gangliaClusterInfo : temp.values()) {
-            access.writeMonitoringData(gangliaClusterInfo);
-        }
-        access.closeConnection();
-
-    }
+//    public static void main(String[] args) throws SQLException {
+//        String monitoringFile = "/home/daniel-tuwien/Documents/DSG_SVN/software/tmp_prototypes/MELA_MAVEN/src/main/resources/config/monitoringSat_Jun_29_19_14_46_CEST_2013";
+//        Map<String, ClusterInfo> temp = new LinkedHashMap<String, ClusterInfo>();
+//
+//        MonDataSQLWriteAccess access = new MonDataSQLWriteAccess("mela","mela");
+//
+//        try {
+//            Yaml yaml = new Yaml();
+//            Iterable<Object> iterable = yaml.loadAll(new FileInputStream(new File(monitoringFile)));
+//
+//            for (Object o : iterable) {
+//                ClusterInfo gangliaClusterInfo = (ClusterInfo) o;
+//                if (!temp.containsKey(gangliaClusterInfo.getLocaltime())) {
+//                    temp.put(gangliaClusterInfo.getLocaltime(), gangliaClusterInfo);
+//                }
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        for (ClusterInfo gangliaClusterInfo : temp.values()) {
+//            access.writeMonitoringData(gangliaClusterInfo);
+//        }
+//        access.closeConnection();
+//
+//    }
 }
