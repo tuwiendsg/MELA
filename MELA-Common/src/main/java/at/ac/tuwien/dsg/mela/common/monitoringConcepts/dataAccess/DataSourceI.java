@@ -19,7 +19,7 @@
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataAccess;
 
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.jaxbEntities.ClusterInfo;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
 
 
 /**

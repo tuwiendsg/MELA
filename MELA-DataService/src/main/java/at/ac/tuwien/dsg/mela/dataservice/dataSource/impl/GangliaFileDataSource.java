@@ -18,7 +18,7 @@
 
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
  
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.jaxbEntities.ClusterInfo;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataAccess.DataSourceI;
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import java.io.InputStream;

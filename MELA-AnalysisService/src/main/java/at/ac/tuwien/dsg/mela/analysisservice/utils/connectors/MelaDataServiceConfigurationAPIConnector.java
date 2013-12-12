@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.api.DataServiceActiveMQAPI;
@@ -31,23 +32,23 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     public static void sendConfiguration(
             ConfigurationXMLRepresentation configurationXMLRepresentation)
-            throws JMSException {
+    {
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
 
             StringWriter writer = new StringWriter();
             jAXBContext.createMarshaller().marshal(configurationXMLRepresentation, writer);
 
-            sendConfigMessage(DataServiceActiveMQAPI.SUBMIT_CONFIGURATION_COMMAND,
+            sendMessage(DataServiceActiveMQAPI.SUBMIT_CONFIGURATION_COMMAND,
                     writer.getBuffer().toString());
-            Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.INFO,"Config submitted");
+            Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.INFO, "Config submitted");
         } catch (JAXBException ex) {
             Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
         }
     }
 
     public static void sendCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration)
-            throws JMSException {
+           {
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
 
@@ -55,14 +56,14 @@ public class MelaDataServiceConfigurationAPIConnector {
             jAXBContext.createMarshaller().marshal(compositionRulesConfiguration, writer);
 
 
-            sendConfigMessage(DataServiceActiveMQAPI.SUBMIT_COMPOSITION_RULES, writer.getBuffer().toString());
+            sendMessage(DataServiceActiveMQAPI.SUBMIT_COMPOSITION_RULES, writer.getBuffer().toString());
         } catch (JAXBException ex) {
             Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
         }
     }
 
     public static void sendRequirements(Requirements requirements)
-            throws JMSException {
+           {
 
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
@@ -71,7 +72,7 @@ public class MelaDataServiceConfigurationAPIConnector {
             jAXBContext.createMarshaller().marshal(requirements, writer);
 
 
-            sendConfigMessage(DataServiceActiveMQAPI.SUBMIT_REQUIREMENTS, writer.getBuffer().toString());
+            sendMessage(DataServiceActiveMQAPI.SUBMIT_REQUIREMENTS, writer.getBuffer().toString());
         } catch (JAXBException ex) {
             Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
         }
@@ -79,7 +80,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     }
 
-    public static void sendUpdatedServiceStructure(MonitoredElement serviceConfiguration) throws JMSException {
+    public static void sendUpdatedServiceStructure(MonitoredElement serviceConfiguration) {
 
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
@@ -88,34 +89,86 @@ public class MelaDataServiceConfigurationAPIConnector {
             jAXBContext.createMarshaller().marshal(serviceConfiguration, writer);
 
 
-            sendConfigMessage(DataServiceActiveMQAPI.UPDATE_SERVICE_STRUCTURE, writer.getBuffer().toString());
+            sendMessage(DataServiceActiveMQAPI.UPDATE_SERVICE_STRUCTURE, writer.getBuffer().toString());
         } catch (JAXBException ex) {
             Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
         }
 
     }
 
-    private static void sendConfigMessage(String key, String value) throws JMSException {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
-                System.getProperty("ActiveMQProtocol", "tcp") + "://"
-                + Configuration.getDataServiceIP() + ":"
+    public static void addExecutingAction(String targetEntityID, String actionName) {
+        try {
+            JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
+            ActionXML action = new ActionXML();
+            MonitoredElement element = new MonitoredElement(targetEntityID);
+            action.setElement(element);
+            action.addAction(actionName);
+
+            StringWriter writer = new StringWriter();
+            jAXBContext.createMarshaller().marshal(action, writer);
+
+
+            sendMessage(DataServiceActiveMQAPI.ADD_EXECUTING_ACTION, writer.getBuffer().toString());
+        } catch (JAXBException ex) {
+            Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
+        }
+
+    }
+
+    public static void removeExecutingAction(String targetEntityID, String actionName) {
+         try {
+            JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
+            ActionXML action = new ActionXML();
+            MonitoredElement element = new MonitoredElement(targetEntityID);
+            action.setElement(element);
+            action.addAction(actionName);
+
+            StringWriter writer = new StringWriter();
+            jAXBContext.createMarshaller().marshal(action, writer);
+
+
+            sendMessage(DataServiceActiveMQAPI.REMOVE_EXECUTING_ACTION, writer.getBuffer().toString());
+        } catch (JAXBException ex) {
+            Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
+        }
+    }
+
+    private static void sendMessage(String key, String value) {
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(System.getProperty("ActiveMQProtocol", "tcp") + "://" + Configuration.getDataServiceIP() + ":"
                 + Configuration.getDataServiceConfigurationPort());
 
-        Connection connection = connectionFactory.createConnection();
-        connection.start();
-        Session session = connection.createSession(false,
-                Session.AUTO_ACKNOWLEDGE);
+        Connection connection = null;
 
-        Destination destination = session.createQueue("MELADataService.Config");
+        do {
+            try {
+                connection = connectionFactory.createConnection();
+                connection.start();
+            } catch (JMSException e) {
+                Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, "Waiting for MELA-DataService to start");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e1) {
+                }
+            }
+        } while (connection == null);
 
-        MessageProducer producer = session.createProducer(destination);
-        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+        try {
 
-        MapMessage message = session.createMapMessage();
-        message.setObject(key, value);
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-        producer.send(message);
-        session.close();
-        connection.close();
+            Destination destination = session.createQueue("MELADataService.Config");
+
+            MessageProducer producer = session.createProducer(destination);
+            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+            MapMessage message = session.createMapMessage();
+            message.setObject(key, value);
+
+            producer.send(message);
+            session.close();
+            connection.close();
+        } catch (JMSException ex) {
+            Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
+        }
     }
 }

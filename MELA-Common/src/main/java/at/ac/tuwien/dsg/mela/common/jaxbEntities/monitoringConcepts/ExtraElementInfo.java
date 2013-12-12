@@ -16,12 +16,12 @@
  * the License.
  */
 
-package at.ac.tuwien.dsg.mela.common.monitoringConcepts.jaxbEntities;
+package at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts;
 
-import javax.xml.bind.annotation.*;
-import java.util.ArrayList;
-import java.util.Collection;
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Author: Daniel Moldovan 
@@ -30,32 +30,36 @@ import java.util.Collection;
  **/
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "EXTRA_DATA")
-public class ExtraDataInfo {
+@XmlRootElement(name = "EXTRA_ELEMENT")
+public class ExtraElementInfo {
 
-    @XmlElement(name = "EXTRA_ELEMENT")
-    private Collection<ExtraElementInfo> gangliaExtraElementInfo;
+    @XmlAttribute(name = "NAME")
+    private String name;
 
-    {
-        gangliaExtraElementInfo = new ArrayList<ExtraElementInfo>();
+    @XmlAttribute(name = "VAL")
+    private String value;
+
+    public String getName() {
+        return name;
     }
 
-    public Collection<ExtraElementInfo> getGangliaExtraElementInfo() {
-        return gangliaExtraElementInfo;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setGangliaExtraElementInfo(Collection<ExtraElementInfo> gangliaExtraElementInfo) {
-        this.gangliaExtraElementInfo = gangliaExtraElementInfo;
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 
     @Override
     public String toString() {
-        String info = "ExtraDataInfo{" +
-                "ExtraElementInfo=";
-        for (ExtraElementInfo elementInfo : gangliaExtraElementInfo) {
-            info += "\t " + elementInfo + "\n";
-        }
-        info += '}';
-        return info;
+        return "ExtraElementInfo{" +
+                "name='" + name + '\'' +
+                ", value='" + value + '\'' +
+                '}';
     }
 }

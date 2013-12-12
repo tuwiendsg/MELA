@@ -39,117 +39,133 @@ import org.apache.activemq.broker.BrokerService;
 
 import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.dataservice.DataCollectionService;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
- * 
+ *
  */
 public class DataServiceActiveMQAPI implements Runnable {
 
-	private DataCollectionService collectionService;
+    private DataCollectionService collectionService;
 
-	public DataServiceActiveMQAPI(DataCollectionService collectionService) {
-		super();
-		this.collectionService = collectionService;
-	}
+    public DataServiceActiveMQAPI(DataCollectionService collectionService) {
+        super();
+        this.collectionService = collectionService;
+    }
+    public static final String SUBMIT_CONFIGURATION_COMMAND = "SubmitConfig";
+    public static final String SUBMIT_COMPOSITION_RULES = "SubmitCompositionRules";
+    public static final String SUBMIT_REQUIREMENTS = "SubmitServiceStructure";
+    public static final String UPDATE_SERVICE_STRUCTURE = "UpdateServiceStructure";
+    public static final String ADD_EXECUTING_ACTION = "AddExecutingAction";
+    public static final String REMOVE_EXECUTING_ACTION = "RemoveExecutingAction";
+    private BrokerService broker;
 
-	public static final String SUBMIT_CONFIGURATION_COMMAND = "SubmitConfig";
-	public static final String SUBMIT_COMPOSITION_RULES = "SubmitCompositionRules";
-	public static final String SUBMIT_REQUIREMENTS = "SubmitServiceStructure";
-	public static final String UPDATE_SERVICE_STRUCTURE = "UpdateServiceStructure";
-	private BrokerService broker;
+    public class CommandConsumer implements MessageListener {
 
-	public class CommandConsumer implements MessageListener {
+        public synchronized void onException(JMSException ex) {
+            System.out.println("JMS Exception occured.  Shutting down client.");
+        }
 
-		public synchronized void onException(JMSException ex) {
-			System.out.println("JMS Exception occured.  Shutting down client.");
-		}
+        public void onMessage(Message message) {
 
-		public void onMessage(Message message) {
+            if (message instanceof MapMessage) {
 
-			if (message instanceof MapMessage) {
-				
-				try {
-					
-					MapMessage mapMessage = (MapMessage) message;
-					if (mapMessage.itemExists(SUBMIT_CONFIGURATION_COMMAND)) {
-						String cfg = (String) mapMessage.getObject(SUBMIT_CONFIGURATION_COMMAND);
+                try {
 
-						JAXBContext jAXBContext = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
-						ConfigurationXMLRepresentation repr = (ConfigurationXMLRepresentation) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    MapMessage mapMessage = (MapMessage) message;
+                    if (mapMessage.itemExists(SUBMIT_CONFIGURATION_COMMAND)) {
+                        String cfg = (String) mapMessage.getObject(SUBMIT_CONFIGURATION_COMMAND);
 
-						collectionService.setConfiguration(repr);
+                        JAXBContext jAXBContext = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
+                        ConfigurationXMLRepresentation repr = (ConfigurationXMLRepresentation) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-					} else if (mapMessage.itemExists(SUBMIT_COMPOSITION_RULES)) {
-						String cfg = (String) mapMessage.getObject(SUBMIT_COMPOSITION_RULES);
+                        collectionService.setConfiguration(repr);
 
-						JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
-						CompositionRulesConfiguration repr = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    } else if (mapMessage.itemExists(SUBMIT_COMPOSITION_RULES)) {
+                        String cfg = (String) mapMessage.getObject(SUBMIT_COMPOSITION_RULES);
 
-						collectionService.setCompositionRulesConfiguration(repr);
-					} else if (mapMessage.itemExists(UPDATE_SERVICE_STRUCTURE)) {
-						String cfg = (String) mapMessage.getObject(UPDATE_SERVICE_STRUCTURE);
+                        JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
+                        CompositionRulesConfiguration repr = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-						JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
-						MonitoredElement repr = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                        collectionService.setCompositionRulesConfiguration(repr);
+                    } else if (mapMessage.itemExists(UPDATE_SERVICE_STRUCTURE)) {
+                        String cfg = (String) mapMessage.getObject(UPDATE_SERVICE_STRUCTURE);
 
-						collectionService.updateServiceConfiguration(repr);
-					}
+                        JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
+                        MonitoredElement repr = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-				} catch (JAXBException ex) {
-					Logger.getLogger(DataServiceActiveMQAPI.class.getName()).log(Level.SEVERE, null, ex);
-				} catch (JMSException ex) {
-					Logger.getLogger(CommandConsumer.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			} else {
-				System.out.println("Unrecognized message: " + message);
-			}
+                        collectionService.updateServiceConfiguration(repr);
+                    } else if (mapMessage.itemExists(ADD_EXECUTING_ACTION)) {
+                        String cfg = (String) mapMessage.getObject(ADD_EXECUTING_ACTION);
 
-		}
-	}
+                        JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
+                        ActionXML action = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-	public void run() {
-		try {
-			broker = new BrokerService();
-			broker.setUseJmx(true);
-			try {
-				broker.addConnector(System.getProperty("ActiveMQProtocol", "tcp") + "://" + Configuration.getDataServiceIP() + ":"
-						+ Configuration.getDataServiceConfigurationPort());
-				broker.start();
-			} catch (Exception e) {
-				Logger.getLogger(CommandConsumer.class.getName()).log(Level.SEVERE, null, e);
-			}
+                        collectionService.addExecutingAction(action.getElement().getId(), action.getActions());
+                    } else if (mapMessage.itemExists(REMOVE_EXECUTING_ACTION)) {
+                        String cfg = (String) mapMessage.getObject(REMOVE_EXECUTING_ACTION);
 
-			// Create a ConnectionFactory
-			ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(System.getProperty("ActiveMQProtocol", "tcp") + "://" + Configuration.getDataServiceIP()
-					+ ":" + Configuration.getDataServiceConfigurationPort());
+                        JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
+                        ActionXML action = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-			// Create a Connection
-			Connection connection = connectionFactory.createConnection();
-			connection.start();
+                        collectionService.removeExecutingAction(action.getElement().getId(), action.getActions());
+                    }
 
-			// Create a Session
-			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                } catch (JAXBException ex) {
+                    Logger.getLogger(DataServiceActiveMQAPI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (JMSException ex) {
+                    Logger.getLogger(CommandConsumer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                System.out.println("Unrecognized message: " + message);
+            }
 
-			// Create the destination (Topic or Queue)
-			Destination destination = session.createQueue("MELADataService.Config");
+        }
+    }
 
-			// Create a MessageConsumer from the Session to the Topic or
-			// Queue
-			MessageConsumer consumer = session.createConsumer(destination);
-			consumer.setMessageListener(new CommandConsumer());
-		} catch (JMSException ex) {
-			Logger.getLogger(DataServiceActiveMQAPI.class.getName()).log(Level.SEVERE, null, ex);
-		}
+    public void run() {
+        try {
+            broker = new BrokerService();
+            broker.setUseJmx(true);
+            try {
+                broker.addConnector(System.getProperty("ActiveMQProtocol", "tcp") + "://" + Configuration.getDataServiceIP() + ":"
+                        + Configuration.getDataServiceConfigurationPort());
+                broker.start();
+            } catch (Exception e) {
+                Logger.getLogger(CommandConsumer.class.getName()).log(Level.SEVERE, null, e);
+            }
 
-	}
+            // Create a ConnectionFactory
+            ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(System.getProperty("ActiveMQProtocol", "tcp") + "://" + Configuration.getDataServiceIP()
+                    + ":" + Configuration.getDataServiceConfigurationPort());
 
-	@Override
-	protected void finalize() throws Throwable {
-		broker.stop();
-		super.finalize();
-	}
+            // Create a Connection
+            Connection connection = connectionFactory.createConnection();
+            connection.start();
+
+            // Create a Session
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            // Create the destination (Topic or Queue)
+            Destination destination = session.createQueue("MELADataService.Config");
+
+            // Create a MessageConsumer from the Session to the Topic or
+            // Queue
+            MessageConsumer consumer = session.createConsumer(destination);
+            consumer.setMessageListener(new CommandConsumer());
+        } catch (JMSException ex) {
+            Logger.getLogger(DataServiceActiveMQAPI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        broker.stop();
+        super.finalize();
+    }
 }

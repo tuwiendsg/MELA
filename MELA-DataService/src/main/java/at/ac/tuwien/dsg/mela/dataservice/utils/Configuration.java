@@ -187,4 +187,12 @@ public class Configuration {
             return ".";
         }
     }
+
+	public static boolean automatedStructureDetection() {
+		if (configuration.containsKey("SERVICE_STRUCTURE_DETECTION")) {
+            return configuration.getProperty("SERVICE_STRUCTURE_DETECTION").equalsIgnoreCase("AUTOMATIC");
+        } else {
+            return false;
+        }
+	}
 }

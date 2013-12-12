@@ -19,7 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.analysisservice.control;
 
-import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
@@ -30,19 +30,17 @@ import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.ElSpaceDefaultFunctio
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElPthwFunction.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.Neuron;
 import at.ac.tuwien.dsg.mela.analysisservice.engines.InstantMonitoringDataAnalysisEngine;
-import at.ac.tuwien.dsg.mela.analysisservice.gui.ConvertToJSON;
+import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToJSON;
 import at.ac.tuwien.dsg.mela.analysisservice.report.AnalysisReport;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
-import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
-import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.connectors.MelaDataServiceConfigurationAPIConnector;
+import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToXML;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.exceptions.ConfigurationException;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 import at.ac.tuwien.dsg.mela.dataservice.AggregatedMonitoringDataSQLAccess;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccess;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,15 +48,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.JMSException;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
-
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -66,41 +61,32 @@ import org.json.simple.JSONObject;
  * Delegates the functionality of configuring MELA for instant monitoring and
  * analysis
  */
-public class SystemControl {
+public class ElasticityAnalysisManager {
 
-    private AbstractDataAccess dataAccess;
+//    private AbstractDataAccess dataAccess;
     private Requirements requirements;
     private CompositionRulesConfiguration compositionRulesConfiguration;
     private MonitoredElement serviceConfiguration;
     private InstantMonitoringDataAnalysisEngine instantMonitoringDataAnalysisEngine;
     //used in determining the service elasticity space
     private ElasticitySpaceFunction elasticitySpaceFunction;
-    private Map<MonitoredElement, String> actionsInExecution;
     private AggregatedMonitoringDataSQLAccess aggregatedMonitoringDataSQLAccess;
 
-    protected SystemControl() {
-//        dataAccess = DataAccesForTestsOnly.createInstance();
-
-        dataAccess = DataAccess.createInstance();
+    protected ElasticityAnalysisManager() {
 
         instantMonitoringDataAnalysisEngine = new InstantMonitoringDataAnalysisEngine();
 
-//        latestMonitoringData = new ServiceMonitoringSnapshot();
-
-//        selfReference = this;
-        actionsInExecution = new ConcurrentHashMap<MonitoredElement, String>();
-
         aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela");
         ConfigurationXMLRepresentation configurationXMLRepresentation = aggregatedMonitoringDataSQLAccess.getLatestConfiguration();
-        
 
-        try {
-            MelaDataServiceConfigurationAPIConnector.sendConfiguration(configurationXMLRepresentation);
-        } catch (JMSException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        
+
+//        try {
+//            MelaDataServiceConfigurationAPIConnector.sendConfiguration(configurationXMLRepresentation);
+//        } catch (JMSException e) {
+//            // TODO Auto-generated catch block
+//            Logger.getLogger(this.getClass()).log(Level.ERROR,null,e);
+//        }
+
         setInitialServiceConfiguration(configurationXMLRepresentation.getServiceConfiguration());
         setInitialCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
         setInitialRequirements(configurationXMLRepresentation.getRequirements());
@@ -111,21 +97,11 @@ public class SystemControl {
     }
 
     public synchronized void addExecutingAction(String targetEntityID, String actionName) {
-        MonitoredElement element = new MonitoredElement(targetEntityID);
-        actionsInExecution.put(element, actionName);
+        MelaDataServiceConfigurationAPIConnector.addExecutingAction(targetEntityID, actionName);
     }
 
     public synchronized void removeExecutingAction(String targetEntityID, String actionName) {
-        MonitoredElement element = new MonitoredElement(targetEntityID);
-        if (actionsInExecution.containsKey(element)) {
-            actionsInExecution.remove(element);
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.INFO, "Action " + actionName + " on monitored element " + targetEntityID + " not found.");
-        }
-    }
-
-    public synchronized Map<MonitoredElement, String> getActionsInExecution() {
-        return actionsInExecution;
+        MelaDataServiceConfigurationAPIConnector.removeExecutingAction(targetEntityID, actionName);
     }
 
     public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
@@ -135,21 +111,16 @@ public class SystemControl {
             elasticitySpaceFunction.setRequirements(requirements);
         }
 
-        try {
-            MelaDataServiceConfigurationAPIConnector.sendUpdatedServiceStructure(serviceConfiguration);
-        } catch (JMSException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        MelaDataServiceConfigurationAPIConnector.sendUpdatedServiceStructure(serviceConfiguration);
     }
-    
+
     private synchronized void setInitialServiceConfiguration(MonitoredElement serviceConfiguration) {
         this.serviceConfiguration = serviceConfiguration;
         elasticitySpaceFunction = new ElSpaceDefaultFunction(serviceConfiguration);
         if (requirements != null) {
             elasticitySpaceFunction.setRequirements(requirements);
         }
- 
+
     }
 
     //actually removes all VMs and Virtual Clusters from the ServiceUnit and adds new ones.
@@ -172,12 +143,7 @@ public class SystemControl {
             }
         }
 
-        try {
-            MelaDataServiceConfigurationAPIConnector.sendUpdatedServiceStructure(this.serviceConfiguration);
-        } catch (JMSException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        MelaDataServiceConfigurationAPIConnector.sendUpdatedServiceStructure(this.serviceConfiguration);
 
     }
 
@@ -189,14 +155,10 @@ public class SystemControl {
         this.requirements = requirements;
         elasticitySpaceFunction.setRequirements(requirements);
 //        
-        try {
-			MelaDataServiceConfigurationAPIConnector.sendRequirements(requirements);
-		} catch (JMSException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        MelaDataServiceConfigurationAPIConnector.sendRequirements(requirements);
+
     }
-    
+
     private synchronized void setInitialRequirements(Requirements requirements) {
         this.requirements = requirements;
         elasticitySpaceFunction.setRequirements(requirements);
@@ -208,115 +170,108 @@ public class SystemControl {
     }
 
     public synchronized void setCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
-        if (dataAccess != null) {
-            dataAccess.getMetricFilters().clear();
-            //add data access metric filters for the source of each composition rule
-            for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
-                //go trough each CompositionOperation and extract the source metrics
+//        if (dataAccess != null) {
+//            dataAccess.getMetricFilters().clear();
+//            //add data access metric filters for the source of each composition rule
+//            for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
+//                //go trough each CompositionOperation and extract the source metrics
+//
+//                List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+//                queue.add(compositionRule.getOperation());
+//
+//                while (!queue.isEmpty()) {
+//                    CompositionOperation operation = queue.remove(0);
+//                    queue.addAll(operation.getSubOperations());
+//
+//                    Metric targetMetric = operation.getTargetMetric();
+//                    //metric can be null if a composition rule artificially creates a metric using SET_VALUE
+//                    if (targetMetric != null) {
+//                        MetricFilter metricFilter = new MetricFilter();
+//                        metricFilter.setId(targetMetric.getName() + "_Filter");
+//                        metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+//                        Collection<Metric> metrics = new ArrayList<Metric>();
+//                        metrics.add(new Metric(targetMetric.getName()));
+//                        metricFilter.setMetrics(metrics);
+//                        dataAccess.addMetricFilter(metricFilter);
+//                    }
+//                }
+//            }
+        this.compositionRulesConfiguration = compositionRulesConfiguration;
 
-                List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
-                queue.add(compositionRule.getOperation());
+        MelaDataServiceConfigurationAPIConnector.sendCompositionRules(compositionRulesConfiguration);
 
-                while (!queue.isEmpty()) {
-                    CompositionOperation operation = queue.remove(0);
-                    queue.addAll(operation.getSubOperations());
-
-                    Metric targetMetric = operation.getTargetMetric();
-                    //metric can be null if a composition rule artificially creates a metric using SET_VALUE
-                    if (targetMetric != null) {
-                        MetricFilter metricFilter = new MetricFilter();
-                        metricFilter.setId(targetMetric.getName() + "_Filter");
-                        metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
-                        Collection<Metric> metrics = new ArrayList<Metric>();
-                        metrics.add(new Metric(targetMetric.getName()));
-                        metricFilter.setMetrics(metrics);
-                        dataAccess.addMetricFilter(metricFilter);
-                    }
-                }
-            }
-            this.compositionRulesConfiguration = compositionRulesConfiguration;
-
-            try {
-                MelaDataServiceConfigurationAPIConnector.sendCompositionRules(compositionRulesConfiguration);
-            } catch (JMSException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl."
-                    + "Metric filters to get metrics targeted by composition rules will not be added");
-            this.compositionRulesConfiguration = compositionRulesConfiguration;
-        }
-
-    }
-    
-     private synchronized void setInitialCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
-        if (dataAccess != null) {
-            dataAccess.getMetricFilters().clear();
-            //add data access metric filters for the source of each composition rule
-            for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
-                //go trough each CompositionOperation and extract the source metrics
-
-                List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
-                queue.add(compositionRule.getOperation());
-
-                while (!queue.isEmpty()) {
-                    CompositionOperation operation = queue.remove(0);
-                    queue.addAll(operation.getSubOperations());
-
-                    Metric targetMetric = operation.getTargetMetric();
-                    //metric can be null if a composition rule artificially creates a metric using SET_VALUE
-                    if (targetMetric != null) {
-                        MetricFilter metricFilter = new MetricFilter();
-                        metricFilter.setId(targetMetric.getName() + "_Filter");
-                        metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
-                        Collection<Metric> metrics = new ArrayList<Metric>();
-                        metrics.add(new Metric(targetMetric.getName()));
-                        metricFilter.setMetrics(metrics);
-                        dataAccess.addMetricFilter(metricFilter);
-                    }
-                }
-            }
-            this.compositionRulesConfiguration = compositionRulesConfiguration;
-
-            
-
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl."
-                    + "Metric filters to get metrics targeted by composition rules will not be added");
-            this.compositionRulesConfiguration = compositionRulesConfiguration;
-        }
+//        } else {
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager."
+//                    + "Metric filters to get metrics targeted by composition rules will not be added");
+//            this.compositionRulesConfiguration = compositionRulesConfiguration;
+//        }
 
     }
 
-    public synchronized AbstractDataAccess getDataAccess() {
-        return dataAccess;
+    private synchronized void setInitialCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
+//        if (dataAccess != null) {
+//            dataAccess.getMetricFilters().clear();
+//            //add data access metric filters for the source of each composition rule
+//            for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
+//                //go trough each CompositionOperation and extract the source metrics
+//
+//                List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+//                queue.add(compositionRule.getOperation());
+//
+//                while (!queue.isEmpty()) {
+//                    CompositionOperation operation = queue.remove(0);
+//                    queue.addAll(operation.getSubOperations());
+//
+//                    Metric targetMetric = operation.getTargetMetric();
+//                    //metric can be null if a composition rule artificially creates a metric using SET_VALUE
+//                    if (targetMetric != null) {
+//                        MetricFilter metricFilter = new MetricFilter();
+//                        metricFilter.setId(targetMetric.getName() + "_Filter");
+//                        metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+//                        Collection<Metric> metrics = new ArrayList<Metric>();
+//                        metrics.add(new Metric(targetMetric.getName()));
+//                        metricFilter.setMetrics(metrics);
+//                        dataAccess.addMetricFilter(metricFilter);
+//                    }
+//                }
+//            }
+        this.compositionRulesConfiguration = compositionRulesConfiguration;
+
+
+//
+//        } else {
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager."
+//                    + "Metric filters to get metrics targeted by composition rules will not be added");
+//            this.compositionRulesConfiguration = compositionRulesConfiguration;
+//        }
+
     }
 
-    public synchronized void setDataAccess(AbstractDataAccess dataAccess) {
-        this.dataAccess = dataAccess;
-    }
-
-    public synchronized ServiceMonitoringSnapshot getRawMonitoringData() {
-        if (dataAccess != null) {
-            Date before = new Date();
-            ServiceMonitoringSnapshot monitoredData = dataAccess.getMonitoredData(serviceConfiguration);;
-            Date after = new Date();
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Raw monitoring data access time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
-            return monitoredData;
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
-            return new ServiceMonitoringSnapshot();
-        }
-    }
-
+//    public synchronized AbstractDataAccess getDataAccess() {
+//        return dataAccess;
+//    }
+//
+//    public synchronized void setDataAccess(AbstractDataAccess dataAccess) {
+//        this.dataAccess = dataAccess;
+//    }
+//    public synchronized ServiceMonitoringSnapshot getRawMonitoringData() {
+////        if (dataAccess != null) {
+//            Date before = new Date();
+//            ServiceMonitoringSnapshot monitoredData = dataAccess.getMonitoredData(serviceConfiguration);;
+//            Date after = new Date();
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Raw monitoring data access time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+//            return monitoredData;
+////        } else {
+////            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager");
+////            return new ServiceMonitoringSnapshot();
+////        }
+//    }
 //
 //    private synchronized ServiceMonitoringSnapshot getAggregatedMonitoringData(ServiceMonitoringSnapshot rawMonitoringData) {
 //        if (dataAccess != null) {
 //            return instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, rawMonitoringData);
 //        } else {
-//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager");
 //            return new ServiceMonitoringSnapshot();
 //        }
 //    }
@@ -324,60 +279,59 @@ public class SystemControl {
 //        if (dataAccess != null) {
 //            return instantMonitoringDataAnalysisEngine.analyzeRequirements(instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, rawMonitoringData), requirements);
 //        } else {
-//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager");
 //            return new AnalysisReport(new ServiceMonitoringSnapshot(), new Requirements());
 //        }
 //    }
     public synchronized AnalysisReport analyzeLatestMonitoringData() {
-        if (dataAccess != null) {
-            return instantMonitoringDataAnalysisEngine.analyzeRequirements(aggregatedMonitoringDataSQLAccess.extractLatestMonitoringData(), requirements);
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
-            return new AnalysisReport(new ServiceMonitoringSnapshot(), new Requirements());
-        }
+//        if (dataAccess != null) {
+        return instantMonitoringDataAnalysisEngine.analyzeRequirements(aggregatedMonitoringDataSQLAccess.extractLatestMonitoringData(), requirements);
+//        } else {
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager");
+//            return new AnalysisReport(new ServiceMonitoringSnapshot(), new Requirements());
+//        }
     }
 
     public synchronized Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement MonitoredElement) throws ConfigurationException {
-        if (dataAccess != null) {
-            return dataAccess.getAvailableMetricsForMonitoredElement(MonitoredElement);
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
-            return new ArrayList<Metric>();
-        }
+//        if (dataAccess != null) {
+//            return dataAccess.getAvailableMetricsForMonitoredElement(MonitoredElement);
+//        } else {
+        Configuration.getLogger(this.getClass()).log(Level.WARN, "Implement method for retrieving available metrics for element");
+        return new ArrayList<Metric>();
+//        }
     }
 
-    public synchronized void addMetricFilter(MetricFilter metricFilter) {
-        if (dataAccess != null) {
-            dataAccess.addMetricFilter(metricFilter);
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
-        }
-    }
-
-    public synchronized void addMetricFilters(Collection<MetricFilter> newFilters) {
-        if (dataAccess != null) {
-            dataAccess.addMetricFilters(newFilters);
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
-        }
-    }
-
-    public synchronized void removeMetricFilter(MetricFilter metricFilter) {
-        if (dataAccess != null) {
-            dataAccess.removeMetricFilter(metricFilter);
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
-        }
-    }
-
-    public synchronized void removeMetricFilters(Collection<MetricFilter> filtersToRemove) {
-        if (dataAccess != null) {
-            dataAccess.removeMetricFilters(filtersToRemove);
-        } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
-        }
-    }
-
+//    public synchronized void addMetricFilter(MetricFilter metricFilter) {
+//        if (dataAccess != null) {
+//            dataAccess.addMetricFilter(metricFilter);
+//        } else {
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager");
+//        }
+//    }
+//
+//    public synchronized void addMetricFilters(Collection<MetricFilter> newFilters) {
+//        if (dataAccess != null) {
+//            dataAccess.addMetricFilters(newFilters);
+//        } else {
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager");
+//        }
+//    }
+//
+//    public synchronized void removeMetricFilter(MetricFilter metricFilter) {
+//        if (dataAccess != null) {
+//            dataAccess.removeMetricFilter(metricFilter);
+//        } else {
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager");
+//        }
+//    }
+//
+//    public synchronized void removeMetricFilters(Collection<MetricFilter> filtersToRemove) {
+//        if (dataAccess != null) {
+//            dataAccess.removeMetricFilters(filtersToRemove);
+//        } else {
+//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on ElasticityAnalysisManager");
+//        }
+//    }
     public synchronized ServiceMonitoringSnapshot getLatestMonitoringData() {
         return aggregatedMonitoringDataSQLAccess.extractLatestMonitoringData();
     }
@@ -531,7 +485,7 @@ public class SystemControl {
 
     }
 
-    public synchronized String getElasticitySpace(MonitoredElement element) {
+    public synchronized String getElasticitySpaceJSON(MonitoredElement element) {
 
         //if no service configuration, we can't have elasticity space function
         //if no compositionRulesConfiguration we have no data
@@ -570,12 +524,81 @@ public class SystemControl {
         return jsonRepr;
     }
 
+    /**
+     *
+     * @param element
+     * @return also contains the monitored values
+     */
+    public synchronized ElasticitySpaceXML getCompleteElasticitySpaceXML(MonitoredElement element) {
+
+
+        Date before = new Date();
+
+        List<ServiceMonitoringSnapshot> extractedData = aggregatedMonitoringDataSQLAccess.extractMonitoringData();
+        if (extractedData != null) {
+            for (ServiceMonitoringSnapshot monitoringSnapshot : extractedData) {
+                elasticitySpaceFunction.trainElasticitySpace(monitoringSnapshot);
+            }
+        }
+
+        ElasticitySpaceXML elasticitySpaceXML = ConvertToXML.convertElasticitySpaceToXMLCompletely(elasticitySpaceFunction.getElasticitySpace(), element);
+
+        elasticitySpaceFunction.resetElasticitySpace();
+        if (requirements != null) {
+            elasticitySpaceFunction.setRequirements(requirements);
+        }
+
+        Date after = new Date();
+        Configuration.getLogger(this.getClass()).log(Level.WARN, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        return elasticitySpaceXML;
+    }
+
+    /**
+     *
+     * @param element
+     * @return contains only the Metric and their ElasticityBoundaries
+     */
+    public synchronized ElasticitySpaceXML getElasticitySpaceXML(MonitoredElement element) {
+
+
+        Date before = new Date();
+
+        List<ServiceMonitoringSnapshot> extractedData = aggregatedMonitoringDataSQLAccess.extractMonitoringData();
+        if (extractedData != null) {
+            for (ServiceMonitoringSnapshot monitoringSnapshot : extractedData) {
+                elasticitySpaceFunction.trainElasticitySpace(monitoringSnapshot);
+            }
+        }
+
+        ElasticitySpaceXML elasticitySpaceXML = ConvertToXML.convertElasticitySpaceToXML(elasticitySpaceFunction.getElasticitySpace(), element);
+
+        elasticitySpaceFunction.resetElasticitySpace();
+        if (requirements != null) {
+            elasticitySpaceFunction.setRequirements(requirements);
+        }
+
+        Date after = new Date();
+        Configuration.getLogger(this.getClass()).log(Level.WARN, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        return elasticitySpaceXML;
+    }
+
     public synchronized String getLatestMonitoringDataINJSON() {
         Date before = new Date();
-        String converted = ConvertToJSON.convertMonitoringSnapshot(aggregatedMonitoringDataSQLAccess.extractLatestMonitoringData(), requirements, actionsInExecution);
+        ServiceMonitoringSnapshot serviceMonitoringSnapshot = aggregatedMonitoringDataSQLAccess.extractLatestMonitoringData();
+        Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysisResult = instantMonitoringDataAnalysisEngine.analyzeRequirements(serviceMonitoringSnapshot, requirements).getRequirementsAnalysisResult();
+        String converted = ConvertToJSON.convertMonitoringSnapshot(serviceMonitoringSnapshot, requirements);
         Date after = new Date();
         Configuration.getLogger(this.getClass()).log(Level.WARN, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return converted;
+    }
+
+    public synchronized MonitoredElement getLatestServiceStructure() {
+        Date before = new Date();
+        ServiceMonitoringSnapshot serviceMonitoringSnapshot = aggregatedMonitoringDataSQLAccess.extractLatestMonitoringData();
+
+        Date after = new Date();
+        Configuration.getLogger(this.getClass()).log(Level.WARN, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        return serviceMonitoringSnapshot.getMonitoredService();
     }
 
     public synchronized String getMetricCompositionRules() {

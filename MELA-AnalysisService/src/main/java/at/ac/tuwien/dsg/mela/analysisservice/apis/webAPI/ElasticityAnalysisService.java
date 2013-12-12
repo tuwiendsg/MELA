@@ -23,13 +23,14 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.analysisservice.control.SystemControl;
+import at.ac.tuwien.dsg.mela.analysisservice.control.ElasticityAnalysisManager;
 import at.ac.tuwien.dsg.mela.analysisservice.control.SystemControlFactory;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.exceptions.ConfigurationException;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -54,20 +55,20 @@ import org.apache.log4j.Level;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
-@Provider 
+@Provider
 @Path("/")
-public class MELA_WS {
+public class ElasticityAnalysisService {
 
-    private static SystemControl systemControl;
+    private ElasticityAnalysisManager systemControl;
 
-     {
-//        Configuration.getLogger(MELA_WS.class).log(Level.INFO, "MELA started");
-          systemControl = SystemControlFactory.getSystemControlInstance();
+    {
+//        Configuration.getLogger(ElasticityAnalysisService.class).log(Level.INFO, "MELA started");
+        systemControl = SystemControlFactory.getSystemControlInstance();
     }
     @Context
     private UriInfo context;
 
-    public MELA_WS() {
+    public ElasticityAnalysisService() {
     }
 
     @POST
@@ -106,7 +107,37 @@ public class MELA_WS {
     @Consumes("application/xml")
     @Produces("application/json")
     public String getLatestElasticitySpaceInJSON(MonitoredElement element) {
-        return systemControl.getElasticitySpace(element);
+        return systemControl.getElasticitySpaceJSON(element);
+    }
+
+    /**
+     *
+     * @param element the MonitoredElement for which the elasticity space must
+     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
+     * SERVICE_TOPOLOGY, etc)
+     * @return the elasticity space in XML WITH historical monitoring data
+     */
+    @POST
+    @Path("/elasticityspacecompletexml")
+    @Consumes("application/xml")
+    @Produces("application/xml")
+    public ElasticitySpaceXML getLatestElasticitySpaceInXMLComplete(MonitoredElement element) {
+        return systemControl.getCompleteElasticitySpaceXML(element);
+    }
+
+    /**
+     *
+     * @param element the MonitoredElement for which the elasticity space must
+     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
+     * SERVICE_TOPOLOGY, etc)
+     * @return the elasticity space in XML WITH historical monitoring data
+     */
+    @POST
+    @Path("/elasticityspacexml")
+    @Consumes("application/xml")
+    @Produces("application/xml")
+    public ElasticitySpaceXML getLatestElasticitySpaceInXML(MonitoredElement element) {
+        return systemControl.getElasticitySpaceXML(element);
     }
 
     /**
@@ -198,7 +229,7 @@ public class MELA_WS {
             String result = xStream.toXML(strings);
             return result;
         } catch (ConfigurationException ex) {
-            Logger.getLogger(MELA_WS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            Logger.getLogger(ElasticityAnalysisService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             return "<Metrics/>";
         }
 
@@ -222,7 +253,17 @@ public class MELA_WS {
     @Produces("application/json")
     public String getLatestMonitoringDataInJSON() {
         return systemControl.getLatestMonitoringDataINJSON();
+    }
 
+    /**
+     *
+     * @return the service structure containing all virtual machines currently running service units
+     */
+    @GET
+    @Path("/servicestructure")
+    @Produces("application/xml")
+    public MonitoredElement getLatestServiceStructure() {
+        return systemControl.getLatestServiceStructure();
     }
 
     @GET

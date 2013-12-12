@@ -43,6 +43,8 @@ public class AnalysisReport {
     // stores requirement analysis information by LEVEL, then by MonitoredElement. Service Element also stores hierarchical info
     //list of  AnalysisReportEntry as there is 1 report for all conditions for each target METRIC
     private Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, List<AnalysisReportEntry>>> analysisReport;
+    private Map<Requirement,Map<MonitoredElement,Boolean>> requirementsAnalysisResult;
+    
 
     private boolean clean = true;
 
@@ -51,9 +53,16 @@ public class AnalysisReport {
 
         analysisReport = new ConcurrentHashMap<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, List<AnalysisReportEntry>>>(serviceMonitoringSnapshot.getMonitoredData().keySet().size());
 
+        requirementsAnalysisResult = new ConcurrentHashMap<Requirement, Map<MonitoredElement,Boolean>>(requirements.getRequirements().size());
+        
         List<Requirement> requirementList = requirements.getRequirements();
 
         for (Requirement requirement : requirementList) {
+            
+            Map<MonitoredElement,Boolean> requirementEvaluationResult = new ConcurrentHashMap<MonitoredElement, Boolean>();
+            
+            requirementsAnalysisResult.put(requirement, requirementEvaluationResult);
+            
             MonitoredElement.MonitoredElementLevel targetLevel = requirement.getTargetMonitoredElementLevel();
             Map<MonitoredElement, MonitoredElementMonitoringSnapshot> targetElements = serviceMonitoringSnapshot.getMonitoredData(targetLevel, requirement.getTargetMonitoredElementIDs());
 
@@ -74,6 +83,8 @@ public class AnalysisReport {
                     if(!analysisReportEntry.isClean()){
                         clean = false;
                     }
+                    
+                    requirementEvaluationResult.put(entry.getKey(), analysisReportEntry.isClean());
                     analysis.add(analysisReportEntry);
                 }
 
@@ -98,6 +109,11 @@ public class AnalysisReport {
     public Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, List<AnalysisReportEntry>>> getAnalysisReport() {
         return analysisReport;
     }
+
+    public Map<Requirement, Map<MonitoredElement, Boolean>> getRequirementsAnalysisResult() {
+        return requirementsAnalysisResult;
+    }
+    
 
     public boolean isClean() {
         return clean;

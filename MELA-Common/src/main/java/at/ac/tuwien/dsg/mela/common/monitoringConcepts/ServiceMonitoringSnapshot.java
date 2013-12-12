@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -20,18 +22,19 @@ package at.ac.tuwien.dsg.mela.common.monitoringConcepts;
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import java.io.Serializable;
 import java.util.*;
+import java.util.Map.Entry;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
-
- 
- * Contains monitoring data structured by
- * MonitoredElementLevel and also hierarchically The contained MAPS are
- * synchronized as much as possible (not completely, so more work needed), maybe
- * not necessary, but I envision parallel composition rule application and data
- * processing The current issue is that Collections.synchronizedMap returns MAP,
- * which JAXB does not know how to process.
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
+ *
+ * Contains monitoring data structured by MonitoredElementLevel and also
+ * hierarchically The contained MAPS are synchronized as much as possible (not
+ * completely, so more work needed), maybe not necessary, but I envision
+ * parallel composition rule application and data processing The current issue
+ * is that Collections.synchronizedMap returns MAP, which JAXB does not know how
+ * to process.
  */
 public class ServiceMonitoringSnapshot implements Serializable {
 
@@ -115,8 +118,7 @@ public class ServiceMonitoringSnapshot implements Serializable {
         }
         return new MonitoredElementMonitoringSnapshot(MonitoredElement, new LinkedHashMap<Metric, MetricValue>());
     }
-    
-    
+
     public void keepOnlyDataForElement(MonitoredElement monitoredElement) {
         if (!monitoredData.containsKey(monitoredElement.getLevel())) {
             return;
@@ -137,13 +139,19 @@ public class ServiceMonitoringSnapshot implements Serializable {
         }
     }
 
+    public MonitoredElement getMonitoredService() {
+        if (monitoredData.containsKey(MonitoredElement.MonitoredElementLevel.SERVICE)) {
+            return monitoredData.get(MonitoredElement.MonitoredElementLevel.SERVICE).keySet().iterator().next();
+        } else {
+            return new MonitoredElement();
+        }
+    }
 
-   
-    public Collection<MonitoredElement> getMonitoredMonitoredElements(MonitoredElement.MonitoredElementLevel level) {
+    public Collection<MonitoredElement> getMonitoredElements(MonitoredElement.MonitoredElementLevel level) {
         return monitoredData.get(level).keySet();
     }
 
-    public Collection<MonitoredElement> getMonitoredMonitoredElements(MonitoredElement.MonitoredElementLevel level, Collection<String> MonitoredElementIDs) {
+    public Collection<MonitoredElement> getMonitoredElements(MonitoredElement.MonitoredElementLevel level, Collection<String> MonitoredElementIDs) {
         if (!monitoredData.containsKey(level)) {
             return new ArrayList<MonitoredElement>();
         }
@@ -237,5 +245,18 @@ public class ServiceMonitoringSnapshot implements Serializable {
         }
 
         return description;
+    }
+
+    public void setExecutingActions(MonitoredElement element, List<String> actions) {
+
+        for (MonitoredElement.MonitoredElementLevel level : monitoredData.keySet()) {
+            for (Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> entry : monitoredData.get(level).entrySet()) {
+                if (entry.getKey().getId().contains(element.getId())) {
+                    entry.getValue().setExecutingActions(actions);
+                    break;
+                }
+            }
+        }
+
     }
 }

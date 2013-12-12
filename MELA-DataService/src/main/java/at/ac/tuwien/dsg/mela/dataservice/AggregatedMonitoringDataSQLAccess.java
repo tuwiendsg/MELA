@@ -72,7 +72,7 @@ public class AggregatedMonitoringDataSQLAccess {
                     connection = DriverManager.getConnection("jdbc:hsqldb:hsql://" + Configuration.getDataServiceIP() + ":" + Configuration.getDataServicePort() + "/melaDataServiceDB", username, password);
                 } catch (SQLException ex) {
                     Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-                    Configuration.getLogger(this.getClass()).log(Level.WARN, "Could not conenct to sql data end. Retrying in 1 second");
+                    Configuration.getLogger(this.getClass()).log(Level.WARN, "Could not connect to sql data end. Retrying in 1 second");
                 }
                 try {
                     Thread.sleep(5000);
@@ -193,7 +193,7 @@ public class AggregatedMonitoringDataSQLAccess {
             }
         }
     }
-    
+
     public void writeConfig(ConfigurationXMLRepresentation configurationXMLRepresentation) {
         connection = getConnection();
         PreparedStatement insertMonitoringEntryPreparedStatement = null;
@@ -304,45 +304,40 @@ public class AggregatedMonitoringDataSQLAccess {
             return monitoringSnapshots;
         }
     }
-    
+
     /**
-    *
-    * @param startIndex from which monitored entry ID to start extracting
-    * @param count max number of elements to return
-    * @return returns maximum count elements
-    */
-   public ServiceMonitoringSnapshot extractLatestMonitoringData() {
-       connection = getConnection();
-       PreparedStatement getMonitoringEntryPreparedStatement = null;
-       {
-           try {
-               String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where "
-                       + "ID = (SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + ");";
-               getMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
-           } catch (SQLException ex) {
-               Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-           }
-       }
+     *
+     * @param startIndex from which monitored entry ID to start extracting
+     * @param count max number of elements to return
+     * @return returns maximum count elements
+     */
+    public ServiceMonitoringSnapshot extractLatestMonitoringData() {
 
+        ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot();
 
-       ServiceMonitoringSnapshot monitoringSnapshot = null;
-       try {
-          
-           ResultSet resultSet = getMonitoringEntryPreparedStatement.executeQuery();
-           if (resultSet != null) {
+        connection = getConnection();
+        PreparedStatement getMonitoringEntryPreparedStatement = null;
 
-               while (resultSet.next()) {
-                     monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(1);
-                     break;
-               }
-           }
+        try {
 
-       } catch (SQLException ex) {
-           Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-       } finally {
-           return monitoringSnapshot;
-       }
-   }
+            String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID = (SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + ");";
+            getMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
+
+            ResultSet resultSet = getMonitoringEntryPreparedStatement.executeQuery();
+            if (resultSet != null) {
+
+                while (resultSet.next()) {
+                    monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(1);
+                    break;
+                }
+            }
+
+        } catch (SQLException ex) {
+            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+        } finally {
+            return monitoringSnapshot;
+        }
+    }
 
     /**
      *
@@ -383,13 +378,13 @@ public class AggregatedMonitoringDataSQLAccess {
 
         String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration);";
         ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
-        
+
         try {
             ResultSet resultSet = connection.createStatement().executeQuery(sql);
             if (resultSet != null) {
 
                 while (resultSet.next()) {
-                	configurationXMLRepresentation = (ConfigurationXMLRepresentation) resultSet.getObject(1);
+                    configurationXMLRepresentation = (ConfigurationXMLRepresentation) resultSet.getObject(1);
                 }
             }
 
@@ -400,7 +395,6 @@ public class AggregatedMonitoringDataSQLAccess {
         }
     }
 
-    
 //   
 //        
 //        
@@ -428,6 +422,6 @@ public class AggregatedMonitoringDataSQLAccess {
 //
 //    }
     public void closeConnection() throws SQLException {
-           connection.close();
+        connection.close();
     }
 }

@@ -24,16 +24,16 @@ package at.ac.tuwien.dsg.mela.analysisservice.control;
 
  **/
 public class SystemControlFactory {
-    private static SystemControl systemControl;
+    private static ElasticityAnalysisManager systemControl;
 
     static {
-        systemControl = new SystemControl();
+        systemControl = new ElasticityAnalysisManager();
     }
 
     private SystemControlFactory() {
     }
     
-    public static synchronized SystemControl getSystemControlInstance() {
+    public static synchronized ElasticityAnalysisManager getSystemControlInstance() {
         return systemControl;
     }
 }

@@ -17,7 +17,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.gui;
+package at.ac.tuwien.dsg.mela.analysisservice.utils.converters;
 
 import at.ac.tuwien.dsg.mela.common.requirements.Condition;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
@@ -33,6 +33,7 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionR
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,12 +42,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.apache.log4j.Level;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
 public class ConvertToJSON {
@@ -260,7 +262,7 @@ public class ConvertToJSON {
 //
 //        return string;
 //    }
-    public static String convertMonitoringSnapshot(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Requirements requirements, Map<MonitoredElement, String> actionsInExecution) {
+    public static String convertMonitoringSnapshot(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Requirements requirements) {
 
         if (serviceMonitoringSnapshot == null) {
             return "";
@@ -292,6 +294,176 @@ public class ConvertToJSON {
                 }
             }
         }
+
+
+        //assumes there is one SERVICE level element per snapshot
+        Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> monitoredData = serviceMonitoringSnapshot.getMonitoredData();
+        if (monitoredData != null && monitoredData.containsKey(MonitoredElement.MonitoredElementLevel.SERVICE)) {
+
+            //access root service element
+            MonitoredElement rootElement = monitoredData.get(MonitoredElement.MonitoredElementLevel.SERVICE).keySet().iterator().next();
+
+            JSONObject root = new JSONObject();
+            root.put("name", rootElement.getId());
+            root.put("type", "" + rootElement.getLevel());
+
+            //going trough the serviceStructure element tree in a BFS manner
+            List<MyPair> processing = new ArrayList<MyPair>();
+            processing.add(new MyPair(rootElement, root));
+
+            while (!processing.isEmpty()) {
+                MyPair myPair = processing.remove(0);
+                JSONObject object = myPair.jsonObject;
+                MonitoredElement element = myPair.MonitoredElement;
+
+
+
+                JSONArray children = (JSONArray) object.get("children");
+                if (children == null) {
+                    children = new JSONArray();
+                    object.put("children", children);
+                }
+
+                //add children
+                for (MonitoredElement child : element.getContainedElements()) {
+                    JSONObject childElement = new JSONObject();
+                    childElement.put("name", child.getId());
+                    childElement.put("type", "" + child.getLevel());
+                    JSONArray childrenChildren = new JSONArray();
+                    childElement.put("children", childrenChildren);
+                    processing.add(new MyPair(child, childElement));
+                    children.add(childElement);
+                }
+
+                JSONArray metrics = new JSONArray();
+                if (monitoredData.containsKey(element.getLevel())) {
+                    MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = monitoredData.get(element.getLevel()).get(element);
+
+                    List<String> actions = monitoredElementMonitoringSnapshot.getExecutingActions();
+                    //currently showing only first action
+                    String actionsName = "";
+
+                    for (String a : actions) {
+                        actionsName += a + ";";
+                    }
+                    if (!actions.isEmpty()) {
+                        object.put("attention", true);
+                        object.put("actionName", actionsName);
+                    }
+
+                    //add metrics
+                    for (Map.Entry<Metric, MetricValue> entry : monitoredElementMonitoringSnapshot.getMonitoredData().entrySet()) {
+                        JSONObject metric = new JSONObject();
+                        if (entry.getKey().getName().contains("serviceID")) {
+                            continue;
+                        }
+                        metric.put("name", entry.getValue().getValueRepresentation() + " [ " + entry.getKey().getName() + " (" + entry.getKey().getMeasurementUnit() + ") ]");
+                        metric.put("type", "metric");
+
+                        //if we have requirements for this service element ID
+                        if (requirementsMap.containsKey(element.getId())) {
+                            Map<Metric, List<Requirement>> reqMap = requirementsMap.get(element.getId());
+
+                            //if we have requirement for this metric
+                            if (reqMap.containsKey(entry.getKey())) {
+                                List<Requirement> list = reqMap.get(entry.getKey());
+                                //for all metric requirements, add the metric conditions in JSON
+                                JSONArray conditions = new JSONArray();
+
+                                for (Requirement requirement : list) {
+                                    for (Condition condition : requirement.getConditions()) {
+                                        JSONObject conditionJSON = new JSONObject();
+                                        conditionJSON.put("name", "MUST BE " + condition.toString());
+                                        conditionJSON.put("type", "requirement");
+                                        conditions.add(conditionJSON);
+                                    }
+                                }
+                                metric.put("children", conditions);
+                            }
+                        }
+
+//                JSONObject value = new JSONObject();
+//                value.put("name",""+entry.getValue().getValueRepresentation());
+//                value.put("type","metric");
+//
+//                JSONArray valueChildren = new JSONArray();
+//                valueChildren.add(value);
+//
+//                metric.put("children", valueChildren);
+
+                        children.add(metric);
+                    }
+
+//                    //add requirements
+//                    if (requirementsMap.containsKey(element.getId())) {
+//                        for (Requirement requirement : requirementsMap.get(element.getId())) {
+//                            JSONObject requirementJSON = new JSONObject();
+//                            requirementJSON.put("name", requirement.getMetric().getName());
+//                            requirementJSON.put("type", "requirement");
+//                            //for all conditions add children to requirement (if more conditions per metric)
+//                            JSONArray conditions = new JSONArray();
+//                            for (Condition condition : requirement.getConditions()) {
+//                                JSONObject conditionJSON = new JSONObject();
+//                                conditionJSON.put("name", condition.toString());
+//                                conditionJSON.put("type", "condition");
+//                                conditions.add(conditionJSON);
+//                            }
+//                            requirementJSON.put("children", conditions);
+//                            children.add(requirementJSON);
+//                        }
+//
+//                    }
+                }
+//            object.put("metrics", metrics);
+
+
+            }
+
+
+
+            String string = root.toJSONString();
+//            string = string.replaceAll("\"", "!");
+
+            return string;
+        } else {
+            JSONObject root = new JSONObject();
+            root.put("name", "No monitoring data");
+            return "{\"name\":\"No Data\",\"type\":\"METRIC\"}";
+        }
+    }
+
+    public static String convertMonitoringSnapshot(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysysResult, Map<MonitoredElement, String> actionsInExecution) {
+
+        if (serviceMonitoringSnapshot == null) {
+            return "";
+        }
+
+        //transform the requirements list in a map which can be used when building the JSON representation
+        Map<String, Map<Metric, List<Requirement>>> requirementsMap = new HashMap<String, Map<Metric, List<Requirement>>>();
+
+        //for each requirement
+        for (Requirement requirement : reqAnalysysResult.keySet()) {
+            //for each service element ID targeted by the requirement
+            for (String id : requirement.getTargetMonitoredElementIDs()) {
+                if (requirementsMap.containsKey(id)) {
+                    Map<Metric, List<Requirement>> reqMap = requirementsMap.get(id);
+                    if (reqMap.containsKey(requirement.getMetric())) {
+                        reqMap.get(requirement.getMetric()).add(requirement);
+                    } else {
+                        List<Requirement> list = new ArrayList<Requirement>();
+                        list.add(requirement);
+                        reqMap.put(requirement.getMetric(), list);
+                    }
+                } else {
+                    Map<Metric, List<Requirement>> reqMap = new HashMap<Metric, List<Requirement>>();
+                    List<Requirement> list = new ArrayList<Requirement>();
+                    list.add(requirement);
+                    reqMap.put(requirement.getMetric(), list);
+                    requirementsMap.put(id, reqMap);
+                }
+            }
+        }
+
 
 
         //assumes there is one SERVICE level element per snapshot
@@ -364,6 +536,7 @@ public class ConvertToJSON {
                                         JSONObject conditionJSON = new JSONObject();
                                         conditionJSON.put("name", "MUST BE " + condition.toString());
                                         conditionJSON.put("type", "requirement");
+                                        conditionJSON.put("fulfilled", reqAnalysysResult.get(requirement).get(element));
                                         conditions.add(conditionJSON);
                                     }
                                 }

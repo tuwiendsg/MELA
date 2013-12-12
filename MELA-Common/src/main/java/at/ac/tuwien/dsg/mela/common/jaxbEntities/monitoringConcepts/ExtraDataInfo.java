@@ -16,12 +16,12 @@
  * the License.
  */
 
-package at.ac.tuwien.dsg.mela.common.monitoringConcepts.jaxbEntities;
+package at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.Collection;
+
 
 /**
  * Author: Daniel Moldovan 
@@ -30,36 +30,32 @@ import javax.xml.bind.annotation.XmlRootElement;
  **/
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "EXTRA_ELEMENT")
-public class ExtraElementInfo {
+@XmlRootElement(name = "EXTRA_DATA")
+public class ExtraDataInfo {
 
-    @XmlAttribute(name = "NAME")
-    private String name;
+    @XmlElement(name = "EXTRA_ELEMENT")
+    private Collection<ExtraElementInfo> gangliaExtraElementInfo;
 
-    @XmlAttribute(name = "VAL")
-    private String value;
-
-    public String getName() {
-        return name;
+    {
+        gangliaExtraElementInfo = new ArrayList<ExtraElementInfo>();
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public Collection<ExtraElementInfo> getGangliaExtraElementInfo() {
+        return gangliaExtraElementInfo;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+    public void setGangliaExtraElementInfo(Collection<ExtraElementInfo> gangliaExtraElementInfo) {
+        this.gangliaExtraElementInfo = gangliaExtraElementInfo;
     }
 
     @Override
     public String toString() {
-        return "ExtraElementInfo{" +
-                "name='" + name + '\'' +
-                ", value='" + value + '\'' +
-                '}';
+        String info = "ExtraDataInfo{" +
+                "ExtraElementInfo=";
+        for (ExtraElementInfo elementInfo : gangliaExtraElementInfo) {
+            info += "\t " + elementInfo + "\n";
+        }
+        info += '}';
+        return info;
     }
 }

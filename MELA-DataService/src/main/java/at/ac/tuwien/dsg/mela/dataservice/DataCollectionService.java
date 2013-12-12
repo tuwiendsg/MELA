@@ -46,6 +46,7 @@ import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccess;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 import at.ac.tuwien.dsg.mela.dataservice.utils.ConvertToJSON;
 
@@ -78,7 +79,7 @@ public class DataCollectionService {
     private int aggregationWindowsCount = Configuration.getDataAggregationWindows();
     private Timer monitoringTimer;
     //holding MonitoredElement name, and Actions Name
-    private Map<MonitoredElement, String> actionsInExecution;
+    private Map<MonitoredElement, List<String>> actionsInExecution;
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
     private AggregatedMonitoringDataSQLAccess aggregatedMonitoringDataSQLAccess;
     //used in monitoring 
@@ -90,9 +91,12 @@ public class DataCollectionService {
 //    private SystemControl selfReference;
 
     protected DataCollectionService() {
-//        dataAccess = DataAccesForTestsOnly.createInstance();
 
-        dataAccess = DataAccess.createInstance();
+        if (Configuration.automatedStructureDetection()) {
+            dataAccess = DataAccessWithAutoStructureDetection.createInstance();
+        } else {
+            dataAccess = DataAccess.createInstance();
+        }
 
         instantMonitoringDataEnrichmentEngine = new DataAggregationEngine();
 
@@ -100,8 +104,8 @@ public class DataCollectionService {
         historicalMonitoringData = new ArrayList<ServiceMonitoringSnapshot>();
         monitoringTimer = new Timer();
 //        selfReference = this;
-        actionsInExecution = new ConcurrentHashMap<MonitoredElement, String>();
-//        startMonitoring();
+        actionsInExecution = new ConcurrentHashMap<MonitoredElement,  List<String>>();
+        startMonitoring();
 
         if ((int) (monitoringIntervalInSeconds / aggregationWindowsCount) == 0) {
             aggregationWindowsCount = 1 * monitoringIntervalInSeconds;
@@ -123,10 +127,11 @@ public class DataCollectionService {
         return serviceConfiguration;
     }
 
-//    public synchronized void addExecutingAction(String targetEntityID, String actionName) {
-//        MonitoredElement element = new MonitoredElement(targetEntityID);
-//        actionsInExecution.put(element, actionName);
-//    }
+    public synchronized void addExecutingAction(String targetEntityID,  List<String> actionName) {
+        MonitoredElement element = new MonitoredElement(targetEntityID);
+        actionsInExecution.put(element, actionName);
+    }
+
     public synchronized void setConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
@@ -136,17 +141,14 @@ public class DataCollectionService {
         startMonitoring();
     }
 
-//    public synchronized void removeExecutingAction(String targetEntityID, String actionName) {
-//        MonitoredElement element = new MonitoredElement(targetEntityID);
-//        if (actionsInExecution.containsKey(element)) {
-//            actionsInExecution.remove(element);
-//        } else {
-//            Configuration.getLogger(this.getClass()).log(Level.INFO, "Action " + actionName + " on monitored element " + targetEntityID + " not found.");
-//        }
-//    }
-//    public synchronized Map<MonitoredElement, String> getActionsInExecution() {
-//        return actionsInExecution;
-//    }
+    public synchronized void removeExecutingAction(String targetEntityID, List<String> actionName) {
+        MonitoredElement element = new MonitoredElement(targetEntityID);
+        if (actionsInExecution.containsKey(element)) {
+            actionsInExecution.get(element).removeAll(actionName);
+        }  
+    }
+ 
+
     public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
         this.serviceConfiguration = serviceConfiguration;
         monitoringTimer.cancel();
@@ -328,6 +330,9 @@ public class DataCollectionService {
 
                         if (compositionRulesConfiguration != null) {
                             latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
+                            for(MonitoredElement element : actionsInExecution.keySet()){
+                                latestMonitoringData.setExecutingActions(element,actionsInExecution.get(element));
+                            }
                         }
 
                         //if we have no composition function, we have no metrics, so it does not make sense to train the elasticity space

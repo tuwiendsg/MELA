@@ -16,7 +16,7 @@
  * the License.
  */
 
-package at.ac.tuwien.dsg.mela.common.monitoringConcepts.jaxbEntities;
+package at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;

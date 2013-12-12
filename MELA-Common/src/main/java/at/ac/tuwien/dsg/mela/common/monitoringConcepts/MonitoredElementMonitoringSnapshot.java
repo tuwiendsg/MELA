@@ -53,11 +53,14 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     @XmlElement(name = "Metrics", required = false)
     @XmlJavaTypeAdapter(MonitoringEntriesAdapter.class)
     private HashMap<Metric, MetricValue> monitoredData;
+    @XmlElement(name = "Action", required = false)
+    private List<String> executingActions;
     @XmlElement(name = "MonitoredElementSnapshot")
     private ArrayList<MonitoredElementMonitoringSnapshot> children;
 
     {
         monitoredData = new LinkedHashMap<Metric, MetricValue>();
+        executingActions = new ArrayList<String>();
         children = new ArrayList<MonitoredElementMonitoringSnapshot>();
     }
 
@@ -122,6 +125,22 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
 
     public synchronized void removeChild(MonitoredElementMonitoringSnapshot child) {
         this.children.remove(child);
+    }
+
+    public List<String> getExecutingActions() {
+        return executingActions;
+    }
+
+    public void setExecutingActions(List<String> executingActions) {
+        this.executingActions = executingActions;
+    }
+
+    public void addExecutingActions(List<String> executingActions) {
+        this.executingActions.addAll(executingActions);
+    }
+
+    public void addExecutingAction(String executingAction) {
+        this.executingActions.add(executingAction);
     }
 
     public synchronized void keepMetrics(Collection<Metric> metrics) {
