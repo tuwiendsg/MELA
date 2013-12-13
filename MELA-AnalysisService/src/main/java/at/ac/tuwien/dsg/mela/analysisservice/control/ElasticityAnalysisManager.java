@@ -39,6 +39,7 @@ import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.connectors.MelaDataServiceConfigurationAPIConnector;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToXML;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.exceptions.ConfigurationException;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 import at.ac.tuwien.dsg.mela.dataservice.AggregatedMonitoringDataSQLAccess;
 import at.ac.tuwien.dsg.mela.dataservice.DataCollectionService;
@@ -485,6 +486,60 @@ public class ElasticityAnalysisManager {
         }
 
 
+
+    }
+    
+    
+    public synchronized ElasticityPathwayXML getElasticityPathwayInXML(MonitoredElement element) {
+
+    	ElasticityPathwayXML elasticityPathwayXML = new ElasticityPathwayXML();
+
+        //if no service configuration, we can't have elasticity space function
+        //if no compositionRulesConfiguration we have no data
+        if (!Configuration.isElasticityAnalysisEnabled() || serviceConfiguration == null && compositionRulesConfiguration != null) {
+            Configuration.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
+            return elasticityPathwayXML;
+        }
+
+        Date before = new Date();
+
+
+//        int recordsCount = aggregatedMonitoringDataSQLAccess.getRecordsCount();
+
+        //first, read from the sql of monitoring data, in increments of 10, and train the elasticity space function
+        LightweightEncounterRateElasticityPathway elasticityPathway = null;
+
+        ElasticitySpace tempSpace = new ElasticitySpace(serviceConfiguration);
+        List<Metric> metrics = null;
+
+        List<ServiceMonitoringSnapshot> extractedData = aggregatedMonitoringDataSQLAccess.extractMonitoringData();
+        if (extractedData != null) {
+            //for each extracted snapshot, train the space
+            for (ServiceMonitoringSnapshot monitoringSnapshot : extractedData) {
+                tempSpace.addMonitoringData(monitoringSnapshot);
+            }
+        }
+        Map<Metric, List<MetricValue>> map = tempSpace.getMonitoredDataForService(element);
+        if (map != null && metrics == null) {
+            metrics = new ArrayList<Metric>(map.keySet());
+            //we need to know the number of weights to add in instantiation
+            elasticityPathway = new LightweightEncounterRateElasticityPathway(metrics.size());
+        }
+
+        elasticityPathway.trainElasticityPathway(map);
+
+
+        List<Neuron> neurons = elasticityPathway.getSituationGroups();
+        if (metrics == null) {
+            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
+             
+            return elasticityPathwayXML;
+        } else {
+        	elasticityPathwayXML = ConvertToXML.convertElasticityPathwayToXML(metrics, neurons, element);
+            Date after = new Date();
+            Configuration.getLogger(this.getClass()).log(Level.WARN, "El Pathway cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+            return elasticityPathwayXML;
+        }
 
     }
 

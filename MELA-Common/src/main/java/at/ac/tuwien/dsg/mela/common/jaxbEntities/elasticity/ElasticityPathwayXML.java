@@ -18,85 +18,106 @@ package at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity;
 
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ExtraElementInfo;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+
 import java.util.ArrayList;
 import java.util.Collection;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- *
+ * 
  * @Author Daniel Moldovan
  * @E-mail: d.moldovan@dsg.tuwien.ac.at
- *
+ * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "ElasticitySpaceDimension")
+@XmlRootElement(name = "ElasticityPathway")
 public class ElasticityPathwayXML {
 
-    @XmlElement(name = "DimensionMetric")
-    private Metric metric;
-    @XmlElement(name = "RecordedValue")
-    private Collection<MetricValue> metricValues;
+	@XmlElement(name = "MonitoredElement")
+	private MonitoredElement element;
 
-    {
-        metricValues = new ArrayList<MetricValue>();
-    }
-    @XmlElement(name = "UpperBoundary")
-    private MetricValue upperBoundary;
-    @XmlElement(name = "LowerBoundary")
-    private MetricValue lowerBoundary;
+	@XmlElement(name = "Metrics")
+	private Collection<Metric> metrics;
+	
+	@XmlElement(name = "EncounterGroup")
+	private Collection<ElasticityPathwayGroupXML> groups;
+	 
+	 
+	
+	{
+		metrics = new ArrayList<Metric>();
+		groups = new ArrayList<ElasticityPathwayGroupXML>();
+	}
 
-    public ElasticityPathwayXML() {
-    }
+	public ElasticityPathwayXML() {
+	}
 
-    public ElasticityPathwayXML(Metric metric, Collection<MetricValue> metricValues,
-            MetricValue upperBoundary, MetricValue lowerBoundary) {
-        this.metric = metric;
-        this.metricValues = metricValues;
-        this.upperBoundary = upperBoundary;
-        this.lowerBoundary = lowerBoundary;
-    }
+	public ElasticityPathwayXML(Collection<Metric> metrics) {
+		this.metrics = metrics;
+	}
 
-    public Metric getMetric() {
-        return metric;
-    }
+	public MonitoredElement getElement() {
+		return element;
+	}
 
-    public void setMetric(Metric metric) {
-        this.metric = metric;
-    }
+	public void setElement(MonitoredElement element) {
+		this.element = element;
+	}
 
-    public Collection<MetricValue> getMetricValues() {
-        return metricValues;
-    }
+	public Collection<Metric> getMetrics() {
+		return metrics;
+	}
 
-    public void setMetricValues(Collection<MetricValue> metricValues) {
-        this.metricValues = metricValues;
-    }
+	public void setMetrics(Collection<Metric> metric) {
+		this.metrics = metric;
+	}
 
-    public void addMetricValues(Collection<MetricValue> metricValues) {
-        this.metricValues.addAll(metricValues);
-    }
-    
-     public void addMetricValue(MetricValue metricValue) {
-        this.metricValues.add(metricValue);
-    }
+	public void addMetrics(Collection<Metric> metric) {
+		this.metrics.addAll(metric);
+	}
 
-    public MetricValue getUpperBoundary() {
-        return upperBoundary;
-    }
+	public void addMetric(Metric metric) {
+		this.metrics.add(metric);
+	}
 
-    public void setUpperBoundary(MetricValue upperBoundary) {
-        this.upperBoundary = upperBoundary;
-    }
+	public void removeMetrics(Collection<Metric> metric) {
+		this.metrics.removeAll(metric);
+	}
 
-    public MetricValue getLowerBoundary() {
-        return lowerBoundary;
-    }
+	public void removeMetric(Metric metric) {
+		this.metrics.remove(metric);
+	}
 
-    public void setLowerBoundary(MetricValue lowerBoundary) {
-        this.lowerBoundary = lowerBoundary;
-    }
+	public Collection<ElasticityPathwayGroupXML> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Collection<ElasticityPathwayGroupXML> groups) {
+		this.groups = groups;
+	}
+	
+	public void addGroups(Collection<ElasticityPathwayGroupXML> groups) {
+		this.groups.addAll(groups);
+	}
+	
+	public void addGroup(ElasticityPathwayGroupXML group) {
+		this.groups.add(group);
+	}
+	
+	public void removeGroups(Collection<ElasticityPathwayGroupXML> groups) {
+		this.groups.removeAll(groups);
+	}
+	
+	public void removeGroup(ElasticityPathwayGroupXML group) {
+		this.groups.remove(group);
+	}
+	
+	
+
 }

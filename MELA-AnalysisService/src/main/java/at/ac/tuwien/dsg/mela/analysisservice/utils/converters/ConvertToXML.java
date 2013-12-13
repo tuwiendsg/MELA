@@ -16,14 +16,22 @@
  */
 package at.ac.tuwien.dsg.mela.analysisservice.utils.converters;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Level;
+
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.Neuron;
+import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayGroupXML;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayGroupXML.ElasticityPathwayGroupEntryXML;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceDimensionXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -104,5 +112,34 @@ public class ConvertToXML {
         elasticitySpaceXML.setElement(element);
 
         return elasticitySpaceXML;
+    }
+    
+    
+    public static ElasticityPathwayXML convertElasticityPathwayToXML(List<Metric> metrics, List<Neuron> elPathwayGroups, MonitoredElement monitoredElement) {
+        
+    	ElasticityPathwayXML elasticityPathwayXML = new ElasticityPathwayXML();
+    	
+    	if (elPathwayGroups == null || metrics == null) {
+            Configuration.getLogger(ConvertToJSON.class).log(Level.WARN, "Elasticity Pathway is null");
+            return elasticityPathwayXML;
+        }
+    	elasticityPathwayXML.setElement(monitoredElement);
+    	elasticityPathwayXML.setMetrics(metrics);
+         
+
+        for (Neuron neuron : elPathwayGroups) {
+        	ElasticityPathwayGroupXML groupXML = new ElasticityPathwayGroupXML();
+        	groupXML.setEncounterRate(neuron.getUsagePercentage());
+           
+            List<Double> values = neuron.getWeights();
+            for (int i = 0; i < values.size(); i++) {
+            	ElasticityPathwayGroupEntryXML entryXML = new ElasticityPathwayGroupEntryXML(metrics.get(i), new MetricValue(values.get(i)));
+            	groupXML.addEntry(entryXML);
+            }
+            elasticityPathwayXML.addGroup(groupXML);
+        }
+
+        return elasticityPathwayXML;
+ 
     }
 }

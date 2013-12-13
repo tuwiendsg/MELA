@@ -30,6 +30,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.exceptions.ConfigurationException;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 
 import com.thoughtworks.xstream.XStream;
@@ -92,6 +93,30 @@ public class ElasticityAnalysisService {
 
 //        Runtime.getRuntime().gc();
         return systemControl.getElasticityPathway(element);
+//        return ConvertToJSON.convertElasticityPathway(new ArrayList<Metric>(map.keySet()), neurons);
+    }
+    
+    @POST
+    @Path("/elasticitypathwayxml")
+    @Consumes("application/xml")
+    @Produces("application/xml")
+    public ElasticityPathwayXML getElasticityPathwayInXML(MonitoredElement element) {
+//        ElasticitySpace elasticitySpace = systemControl.getElasticitySpace();
+//        Map<Metric, List<MetricValue>> map = elasticitySpace.getMonitoredDataForService(element);
+//        
+//        
+//      ElasticitySpace elasticitySpace = systemControl.getElasticitySpace();
+//        Map<Metric, List<MetricValue>> map = systemControl.getElasticityPathway(element);
+//        
+//        if (map == null) {
+//            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
+//            JSONObject elSpaceJSON = new JSONObject();
+//            elSpaceJSON.put("name", "Service not found");
+//            return elSpaceJSON.toJSONString();
+//        }
+
+//        Runtime.getRuntime().gc();
+        return systemControl.getElasticityPathwayInXML(element);
 //        return ConvertToJSON.convertElasticityPathway(new ArrayList<Metric>(map.keySet()), neurons);
     }
 
