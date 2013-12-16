@@ -131,7 +131,7 @@ public class Configuration {
         return configuration.getProperty("ACCESS_MACHINE_USER_NAME");
     }
 
-    public static String getMonitoringDataAccessMethod() {
+    public static String getDefaultMonitoringDataAccessMethod() {
         return configuration.getProperty("DATA_SOURCE.TYPE");
     }
 

@@ -36,8 +36,8 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
     @XmlAttribute(name = "id", required = true)
     private String id;
 //    @XmlAttribute(name = "ip", required = false)
-//    private String ip;
     @XmlAttribute(name = "name", required = true)
+//    private String ip;
     private String name;
     @XmlAttribute(name = "level", required = true)
     private MonitoredElementLevel level;
@@ -133,6 +133,7 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 //        if (ip != null ? !ip.equals(that.ip) : that.ip != null) return false;
 //        if (name != null ? !name.equals(that.name) : that.name != null) return false;
 
+        //TODO: add also level when checking for equality
         return true;
     }
 

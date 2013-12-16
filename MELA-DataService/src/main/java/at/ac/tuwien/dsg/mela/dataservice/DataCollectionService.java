@@ -30,7 +30,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -41,10 +40,10 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionR
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
@@ -67,7 +66,7 @@ public class DataCollectionService {
     //used for data Aggregation over time
     private List<ServiceMonitoringSnapshot> historicalMonitoringData;
     //used if somewone wants freshest data
-    private ServiceMonitoringSnapshot latestMonitoringData;
+//    private ServiceMonitoringSnapshot latestMonitoringData;
     //interval at which RAW monitoring data is collected
     private int monitoringIntervalInSeconds = Configuration.getDataPoolingInterval();
     //interval over which raw monitoring data is aggregated.
@@ -79,6 +78,8 @@ public class DataCollectionService {
     private Map<MonitoredElement, List<String>> actionsInExecution;
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
     private AggregatedMonitoringDataSQLAccess aggregatedMonitoringDataSQLAccess;
+ 
+    
     //used in monitoring 
     private TimerTask task = new TimerTask() {
         @Override
@@ -336,14 +337,11 @@ public class DataCollectionService {
                         }
 
                         if (compositionRulesConfiguration != null) {
-                            latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
+                        	ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
                             for (MonitoredElement element : actionsInExecution.keySet()) {
                                 latestMonitoringData.setExecutingActions(element, actionsInExecution.get(element));
                             }
-                        }
-
-                        //if we have no composition function, we have no metrics, so it does not make sense to train the elasticity space
-                        if (compositionRulesConfiguration != null) {
+                         
                             //write monitoring data in sql
                             Date before = new Date();
                             aggregatedMonitoringDataSQLAccess.writeMonitoringData(latestMonitoringData);
@@ -373,7 +371,8 @@ public class DataCollectionService {
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(DataCollectionService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        task.cancel();
+//        task.cancel();
+        monitoringTimer.cancel();
     }
 //    public synchronized String getLatestMonitoringDataINJSON() {
 //        Date before = new Date();

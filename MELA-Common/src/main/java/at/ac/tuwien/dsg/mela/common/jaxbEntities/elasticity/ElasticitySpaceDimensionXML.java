@@ -16,15 +16,16 @@
  */
 package at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity;
 
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ExtraElementInfo;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import java.util.ArrayList;
 import java.util.Collection;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 
 /**
  *

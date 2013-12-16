@@ -17,10 +17,11 @@
 
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataAccess.DataSourceI;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPoolingDataSource;
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+
 import org.apache.log4j.Priority;
 
 /**
@@ -29,10 +30,10 @@ import org.apache.log4j.Priority;
  * @E-mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
-public class DummyDataSource implements DataSourceI{
+public class DummyDataSource extends AbstractPoolingDataSource{
 
-    public ClusterInfo getMonitoringData() throws DataAccessException {
-        ClusterInfo clusterInfo = new ClusterInfo();
+    public MonitoringData getMonitoringData() throws DataAccessException {
+    	MonitoringData clusterInfo = new MonitoringData();
         Configuration.getLogger(this.getClass()).log(Priority.INFO, "Using DUMMY Data Source");
         return clusterInfo;
     }

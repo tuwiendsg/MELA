@@ -16,7 +16,7 @@
  * the License.
  */
 
-package at.ac.tuwien.dsg.mela.dataservice.dataSource;
+package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
 import java.util.ArrayList;
 import java.util.Collection;

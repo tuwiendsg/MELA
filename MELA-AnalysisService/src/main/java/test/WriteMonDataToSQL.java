@@ -18,14 +18,6 @@
 
 package test;
 
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
-import at.ac.tuwien.dsg.mela.dataservice.RawMonitoringDataSQLAccess;
-import java.io.File;
-import java.io.FileInputStream;
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import org.yaml.snakeyaml.Yaml;
 
 
 /**

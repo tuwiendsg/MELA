@@ -49,7 +49,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class MonitoredElementMonitoringSnapshot implements Serializable, Iterable<MonitoredElementMonitoringSnapshot> {
 
     @XmlElement(name = "MonitoredElement", required = false)
-    private MonitoredElement MonitoredElement;
+    private MonitoredElement monitoredElement;
     @XmlElement(name = "Metrics", required = false)
     @XmlJavaTypeAdapter(MonitoringEntriesAdapter.class)
     private HashMap<Metric, MetricValue> monitoredData;
@@ -65,12 +65,12 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     }
 
     public MonitoredElementMonitoringSnapshot(MonitoredElement MonitoredElement, HashMap<Metric, MetricValue> monitoredData) {
-        this.MonitoredElement = MonitoredElement;
+        this.monitoredElement = MonitoredElement;
         this.monitoredData = monitoredData;
     }
 
     public MonitoredElementMonitoringSnapshot(MonitoredElement MonitoredElement) {
-        this.MonitoredElement = MonitoredElement;
+        this.monitoredElement = MonitoredElement;
     }
 
     public MonitoredElementMonitoringSnapshot() {
@@ -104,7 +104,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     }
 
     public synchronized MonitoredElement getMonitoredElement() {
-        return MonitoredElement;
+        return monitoredElement;
     }
 
     public synchronized MetricValue getValueForMetric(Metric metric) {

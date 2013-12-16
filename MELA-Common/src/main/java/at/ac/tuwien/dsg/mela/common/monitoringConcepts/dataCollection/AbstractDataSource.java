@@ -16,17 +16,23 @@
  * the License.
  */
 
-package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataAccess;
+package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
-
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 
 /**
  * Author: Daniel Moldovan 
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public interface DataSourceI {
-    public ClusterInfo getMonitoringData() throws DataAccessException;
+public abstract class AbstractDataSource {
+	
+	 
+    protected AbstractDataSource() {
+    }
+    
+    public abstract MonitoringData getMonitoringData() throws DataAccessException;
+
 }

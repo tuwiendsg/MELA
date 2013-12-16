@@ -16,7 +16,7 @@
  */
 package performance;
 
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
+ 
 import at.ac.tuwien.dsg.mela.dataservice.RawMonitoringDataSQLAccess;
 import java.io.File;
 import java.io.FileNotFoundException;

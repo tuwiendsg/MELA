@@ -19,17 +19,15 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice;
 
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.ClusterInfo;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.HostInfo;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
-import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.logging.Logger;
+
 import org.apache.log4j.Level;
+
+import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -94,38 +92,39 @@ public class RawMonitoringDataSQLAccess {
 
     }
 
-    public void writeMonitoringData(ClusterInfo gangliaClusterInfo) {
-         
-        //insert timestamp value
-        String timestamp = gangliaClusterInfo.getLocaltime();
-        try {
-            insertIntoTimestamp.setString(1, timestamp);
-            insertIntoTimestamp.executeUpdate();
-        } catch (SQLException ex) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-        }
-
-
-        //for all monitored metrics insert in the metric values 
-        for (HostInfo gangliaHostInfo : gangliaClusterInfo.getHostsInfo()) {
-            String vmIP = gangliaHostInfo.getIp();
-            for (MetricInfo gangliaMetricInfo : gangliaHostInfo.getMetrics()) {
-                try {
-                    insertMonitoringData.setString(1, timestamp);
-                    insertMonitoringData.setString(2, gangliaMetricInfo.getName());
-                    insertMonitoringData.setString(3, gangliaMetricInfo.getUnits());
-                    insertMonitoringData.setString(4, gangliaMetricInfo.getType());
-                    insertMonitoringData.setString(5, gangliaMetricInfo.getValue());
-                    insertMonitoringData.setString(6, vmIP);
-
-                    insertMonitoringData.executeUpdate();
-                } catch (SQLException ex) {
-                    Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-                }
-            }
-        }
-         
-    }
+    //TODO: rewrite to support multiple data source on multiple levels
+//    public void writeMonitoringData(ClusterInfo gangliaClusterInfo) {
+//         
+//        //insert timestamp value
+//        String timestamp = gangliaClusterInfo.getLocaltime();
+//        try {
+//            insertIntoTimestamp.setString(1, timestamp);
+//            insertIntoTimestamp.executeUpdate();
+//        } catch (SQLException ex) {
+//            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+//        }
+//
+//
+//        //for all monitored metrics insert in the metric values 
+//        for (MonitoredElementData gangliaHostInfo : gangliaClusterInfo.getHostsInfo()) {
+//            String vmIP = gangliaHostInfo.getIp();
+//            for (MetricInfo gangliaMetricInfo : gangliaHostInfo.getMetrics()) {
+//                try {
+//                    insertMonitoringData.setString(1, timestamp);
+//                    insertMonitoringData.setString(2, gangliaMetricInfo.getName());
+//                    insertMonitoringData.setString(3, gangliaMetricInfo.getUnits());
+//                    insertMonitoringData.setString(4, gangliaMetricInfo.getType());
+//                    insertMonitoringData.setString(5, gangliaMetricInfo.getValue());
+//                    insertMonitoringData.setString(6, vmIP);
+//
+//                    insertMonitoringData.executeUpdate();
+//                } catch (SQLException ex) {
+//                    Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+//                }
+//            }
+//        }
+//         
+//    }
 
     public void closeConnection() throws SQLException {
         connection.close();

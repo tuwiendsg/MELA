@@ -30,35 +30,20 @@ import java.util.logging.Logger;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "METRIC")
+@XmlRootElement(name = "Metric")
 public class MetricInfo {
 
-    @XmlAttribute(name = "NAME", required = true)
+    @XmlAttribute(name = "Name", required = true)
     private String name;
-    @XmlAttribute(name = "VAL", required = true)
+    @XmlAttribute(name = "Value", required = true)
     private String value;
-    @XmlAttribute(name = "TYPE", required = true)
+    @XmlAttribute(name = "Type", required = true)
     private String type;
-    @XmlAttribute(name = "UNITS")
+    @XmlAttribute(name = "Units")
     private String units;
-    @XmlAttribute(name = "TN")
-    private String tn;
-    @XmlAttribute(name = "TMAX")
-    private String tmax;
-    @XmlAttribute(name = "DMAX")
-    private String dmax;
-    @XmlAttribute(name = "SLOPE")
-    private String slope;
+     
     private Object convertedValue;
-    @XmlAttribute(name = "SOURCE")
-    private String source;
-    @XmlElement(name = "EXTRA_DATA")
-    private Collection<ExtraDataInfo> gangliaExtraDataInfoCollection;
-
-    {
-        gangliaExtraDataInfoCollection = new ArrayList<ExtraDataInfo>();
-    }
-
+     
     public String getName() {
         return name;
     }
@@ -132,53 +117,6 @@ public class MetricInfo {
         this.units = units;
     }
 
-    public String getTn() {
-        return tn;
-    }
-
-    public void setTn(String tn) {
-        this.tn = tn;
-    }
-
-    public String getTmax() {
-        return tmax;
-    }
-
-    public void setTmax(String tmax) {
-        this.tmax = tmax;
-    }
-
-    public String getDmax() {
-        return dmax;
-    }
-
-    public void setDmax(String dmax) {
-        this.dmax = dmax;
-    }
-
-    public String getSlope() {
-        return slope;
-    }
-
-    public void setSlope(String slope) {
-        this.slope = slope;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public Collection<ExtraDataInfo> getGangliaExtraDataInfoCollection() {
-        return gangliaExtraDataInfoCollection;
-    }
-
-    public void setGangliaExtraDataInfoCollection(Collection<ExtraDataInfo> gangliaExtraDataInfoCollection) {
-        this.gangliaExtraDataInfoCollection = gangliaExtraDataInfoCollection;
-    }
 
     @Override
     public String toString() {
@@ -187,17 +125,7 @@ public class MetricInfo {
                 + ", value='" + value + '\''
                 + ", type='" + type + '\''
                 + ", units='" + units + '\''
-                + ", tn='" + tn + '\''
-                + ", tmax='" + tmax + '\''
-                + ", dmax='" + dmax + '\''
-                + ", slope='" + slope + '\''
-                + ", source='" + source + '\''
-                + ", gangliaExtraDataInfoCollection=";
-
-        for (ExtraDataInfo dataInfo : gangliaExtraDataInfoCollection) {
-            info += "\t " + dataInfo.toString() + "\n";
-        }
-        info += '}';
+                + "}";
         return info;
     }
 }
