@@ -57,101 +57,33 @@ public class DataAccess extends AbstractDataAccess {
     // currently supports only monitoring data pooling. push based monitoring
     // support will be added in the future
 
-    private List<AbstractDataSource> dataSources;
-    private List<Timer> dataSourcesPoolingTimers;
-    private Map<AbstractDataSource, MonitoringData> freshestMonitoredData = new HashMap<AbstractDataSource, MonitoringData>();
+//    private List<AbstractDataSource> dataSources;
+//    private List<Timer> dataSourcesPoolingTimers;
+//    private Map<AbstractDataSource, MonitoringData> freshestMonitoredData = new HashMap<AbstractDataSource, MonitoringData>();
+//
+//    // such as timestamp || service ID
+//    // private String monSeqID;
+//    {
+//        freshestMonitoredData = Collections.synchronizedMap(new HashMap<AbstractDataSource, MonitoringData>());
+//        dataSourcesPoolingTimers = new ArrayList<Timer>();
+//        dataSources = new ArrayList<AbstractDataSource>();
+//    }
 
-    // such as timestamp || service ID
-    // private String monSeqID;
-    {
-        freshestMonitoredData = Collections.synchronizedMap(new HashMap<AbstractDataSource, MonitoringData>());
-        dataSourcesPoolingTimers = new ArrayList<Timer>();
-        dataSources = new ArrayList<AbstractDataSource>();
-    }
-
-    //
-    // private synchronized void updateMonitoredData(IDataSource
-    // dataSource,MonitoringData data){
-    // for(MonitoredElementData elData: data.getMonitoredElementDatas()){
-    //
-    // }
-    // }
-    public static DataAccess createInstance(String monSeqID) {
-
-        String accessType = Configuration.getDefaultMonitoringDataAccessMethod();
-
-        if (accessType.equalsIgnoreCase("Ganglia")) {
-            AbstractDataSource dataSource = new GangliaDataSource();
-            return new DataAccess(dataSource);
-        } else if (accessType.equalsIgnoreCase("JCatascopia")) {
-            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "JCatascopia adapter not yet implemented. Using dummy.");
-            return new DataAccess(new DummyDataSource());
-        } else if (accessType.equalsIgnoreCase("Replay")) {
-            String monitoringSeqID = Configuration.getStoredMonitoringSequenceID();
-            return new DataAccess(new DummyDataSource());
-        } else {
-            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "MELA-DataService data access mode not specified or not recognized");
-            return new DataAccess(new DummyDataSource());
-        }
-
+    /**
+     * Left as this in case we want to limit in the future the nr of DataAccess instances we create and maybe use a pool of instances 
+     * @return
+     */
+    public static DataAccess createInstance() {
+    	
+        return new DataAccess();
     }
 
     // starts with a data collection source, as at least one is needed
-    private DataAccess(AbstractDataSource dataSource) {
-        this.dataSources.add(dataSource);
-
-        this.dataSourcesPoolingTimers.add(createMonitoringTimer(dataSource));
-
-        // when VM is shutdown ensure the data pooling timers are also shut down
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                for (Timer timer : dataSourcesPoolingTimers) {
-                    timer.cancel();
-                }
-            }
-        });
-
+    private DataAccess( ) {
+         
     }
 
-    public synchronized void addDataSource(AbstractDataSource dataSource) {
-        this.dataSources.add(dataSource);
-        this.dataSourcesPoolingTimers.add(createMonitoringTimer(dataSource));
-    }
-
-    public synchronized void removeDataSource(AbstractDataSource dataSource) {
-        this.dataSources.remove(dataSource);
-
-    }
-
-    private Timer createMonitoringTimer(final AbstractDataSource dataSource) {
-        Timer timer = new Timer();
-        if (dataSource instanceof AbstractPoolingDataSource) {
-            final AbstractPoolingDataSource abstractPoolingDataSource = (AbstractPoolingDataSource) dataSource;
-
-            TimerTask dataCollectionTask = new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        // pool data source
-                        MonitoringData data = dataSource.getMonitoringData();
-
-                        // replace freshest monitoring data
-                        freshestMonitoredData.put(abstractPoolingDataSource, data);
-                    } catch (DataAccessException e) {
-                        // TODO Auto-generated catch block
-                        Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Level.ERROR, null, e);
-                    }
-
-                }
-            };
-            timer.scheduleAtFixedRate(dataCollectionTask, 0, abstractPoolingDataSource.getPoolingInterval());
-        } else {
-            // TODO: needs to be implemented
-            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "Not supporting yet data source of type " + dataSource.getClass().getName());
-        }
-        return timer;
-    }
+    
 
     /**
      * @param MonitoredElement the root element of the Service Structure

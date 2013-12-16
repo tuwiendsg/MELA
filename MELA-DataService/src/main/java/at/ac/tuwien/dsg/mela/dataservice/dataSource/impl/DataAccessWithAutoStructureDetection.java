@@ -62,21 +62,22 @@ public class DataAccessWithAutoStructureDetection extends AbstractDataAccess {
 
     public static DataAccessWithAutoStructureDetection createInstance(String monSeqID) {
         
-        String accessType = Configuration.getDefaultMonitoringDataAccessMethod();
-        
-        if (accessType.equalsIgnoreCase("Ganglia")) {
-            AbstractDataSource dataSource = new GangliaDataSource();
-            return new DataAccessWithAutoStructureDetection(dataSource);
-        } else if (accessType.equalsIgnoreCase("JCatascopia")) {
-            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "JCatascopia adapter not yet implemented. Using dummy.");
-            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
-        } else if (accessType.equalsIgnoreCase("Replay")) {
-            String monitoringSeqID = Configuration.getStoredMonitoringSequenceID();
-            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
-        } else {
-            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "MELA-DataService data access mode not specified or not recognized");
-            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
-        }
+//        String accessType = Configuration.getDefaultMonitoringDataAccessMethod();
+//        
+//        if (accessType.equalsIgnoreCase("Ganglia")) {
+//            AbstractDataSource dataSource = new GangliaDataSource();
+//            return new DataAccessWithAutoStructureDetection(dataSource);
+//        } else if (accessType.equalsIgnoreCase("JCatascopia")) {
+//            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "JCatascopia adapter not yet implemented. Using dummy.");
+//            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
+//        } else if (accessType.equalsIgnoreCase("Replay")) {
+//            String monitoringSeqID = Configuration.getStoredMonitoringSequenceID();
+//            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
+//        } else {
+//            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "MELA-DataService data access mode not specified or not recognized");
+//            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
+//        }
+    	throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
     }
 
     /**

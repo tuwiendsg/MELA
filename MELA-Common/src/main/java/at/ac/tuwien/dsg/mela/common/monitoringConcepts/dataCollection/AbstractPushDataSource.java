@@ -19,10 +19,18 @@
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
+import java.util.Map;
+
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
 public abstract class AbstractPushDataSource extends AbstractDataSource{
+
+	public AbstractPushDataSource(Map<String, String> configuration) {
+		super(configuration);
+		// TODO Auto-generated constructor stub
+	}
 	//TO BE IMPLEMENTED
+	
 }

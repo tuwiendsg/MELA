@@ -111,13 +111,13 @@ public class Configuration {
         return configuration.getProperty("PEM_CERT_PATH");
     }
 
-    public static String getGangliaPort() {
-        return configuration.getProperty("DATA_SOURCE.PORT");
-    }
-
-    public static String getAccessMachineIP() {
-        return configuration.getProperty("DATA_SOURCE.IP");
-    }
+//    public static String getGangliaPort() {
+//        return configuration.getProperty("DATA_SOURCE.PORT");
+//    }
+//
+//    public static String getAccessMachineIP() {
+//        return configuration.getProperty("DATA_SOURCE.IP");
+//    }
 
     public static String getMonitoredElementIDMetricName() {
         return "serviceUnitID";

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -51,15 +52,19 @@ import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
 public class GangliaDataSource extends AbstractPoolingDataSource {
+	
+	 
+    public GangliaDataSource(Map<String, String> configuration) {
+		super(configuration);
+		// TODO Auto-generated constructor stub
+	}
 
-    public GangliaDataSource() {
-        super();
-    }
-
-    public MonitoringData getMonitoringData() throws DataAccessException {
+	public MonitoringData getMonitoringData() throws DataAccessException {
 
         //todo: configure dinamically port and IP
-        String cmd = "telnet " + Configuration.getAccessMachineIP() + " " + Configuration.getGangliaPort();
+        String cmd = "telnet " 
+        + (configuration.containsKey("ganglia.ip")? configuration.get("ganglia.ip") : "localhost")
+        		+ " " + (configuration.containsKey("ganglia.port")? configuration.get("ganglia.port") : "8649");
         String content = "";
 
         try {

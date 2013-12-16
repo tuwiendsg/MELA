@@ -18,6 +18,8 @@
 
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
+import java.util.Map;
+
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
@@ -28,9 +30,10 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.Monitore
 
  **/
 public abstract class AbstractDataSource {
-	
+	protected Map<String, String> configuration;
 	 
-    protected AbstractDataSource() {
+    protected AbstractDataSource(Map<String, String> configuration) {
+    	this.configuration = configuration;
     }
     
     public abstract MonitoringData getMonitoringData() throws DataAccessException;

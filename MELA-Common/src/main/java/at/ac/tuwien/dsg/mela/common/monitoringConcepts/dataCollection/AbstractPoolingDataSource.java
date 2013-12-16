@@ -18,6 +18,8 @@
  * the License.
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
+
+import java.util.Map;
  
 
 /**
@@ -35,6 +37,10 @@ public abstract class AbstractPoolingDataSource extends AbstractDataSource{
 	public void setPoolingInterval(int poolingInterval) {
 		this.poolingInterval = poolingInterval;
 	}
-	
+
+	public AbstractPoolingDataSource(Map<String, String> configuration) {
+		super(configuration);
+		// TODO Auto-generated constructor stub
+	}
 	
 }

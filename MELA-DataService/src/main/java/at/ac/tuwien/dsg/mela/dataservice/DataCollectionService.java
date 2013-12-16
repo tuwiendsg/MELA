@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.jcraft.jsch.ConfigRepository;
+
 import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
@@ -44,8 +46,12 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDa
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
+import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSourceConfig;
+import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSourceConfigs;
+import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSourcesManager;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.GangliaDataSource;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 /**
@@ -290,10 +296,29 @@ public class DataCollectionService {
         aggregatedMonitoringDataSQLAccess.writeConfig(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
         if (Configuration.automatedStructureDetection()) {
+         
             dataAccess = DataAccessWithAutoStructureDetection.createInstance(serviceConfiguration.getId());
         } else {
-            dataAccess = DataAccess.createInstance(serviceConfiguration.getId());
+            dataAccess = DataAccess.createInstance();
         }
+        
+        //read data sources configuration file
+        DataSourceConfigs dataSources =   DataSourcesManager.readDataSourcesConfiguration();
+        for(DataSourceConfig config: dataSources.getConfigs() ){
+        	
+        	//transform configuration options in kei-value pairs
+        	
+        	Map<String, String> configuration = new HashMap<String, String>();
+        	for(String configEntry : config.getProperties()){
+        	    String[] info = configEntry.split("=");
+        	    configuration.put(info[0], info[1]);
+        	}
+        	if(config.getType().equalsIgnoreCase("ganglia")){
+        		GangliaDataSource dataSource = new GangliaDataSource(configuration);
+        		dataAccess.addDataSource(dataSource);
+        	}
+        }
+        
         
         //set metric filters on data access
         for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
