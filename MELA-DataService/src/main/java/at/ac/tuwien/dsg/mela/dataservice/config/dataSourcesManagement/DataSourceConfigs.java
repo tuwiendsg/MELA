@@ -38,7 +38,7 @@ import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSource
 public class DataSourceConfigs {
 	
 	 
-	@XmlElement(name = "Property", required = true)
+	@XmlElement(name = "DataSource", required = true)
 	private Collection<DataSourceConfig> configs;
 
 	{

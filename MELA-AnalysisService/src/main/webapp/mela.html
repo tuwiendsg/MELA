@@ -562,7 +562,7 @@
                 link.enter().insert("path", "g")
                 .attr("class", "link")
                 .attr("d", function (d) {
-                    var o = {x:source.x0, y:source.y0};
+                    var o = {x:source.x, y:source.y};
                     return diagonal({source:o, target:o});
                 })
                 .style("stroke-dasharray", function (d) {
@@ -674,7 +674,7 @@
                 .attr("class", "node")
                 .attr("transform", function (d) {
                     //                    if (d.type != "requirement") {
-                    return "translate(" + source.y0 + "," + source.x0 + ")";
+                    return "translate(" + source.y + "," + source.x + ")";
                     //                    }
                     //                    else {
                     //                        return "translate(" + (d.parent.y0) + "," + d.parent.x0 + ")";
@@ -880,10 +880,10 @@
                 .attr("class", "link")
                 .attr("d", function (d) {
                     if (d.target.type == "metric") {
-                        var o = {x:source.x0, y:source.y0};
+                        var o = {x:source.x, y:source.y};
                         return diagonal({source:o, target:o});
                     }else{
-                        var o = {x:source.x0, y:source.y0};
+                        var o = {x:source.x, y:source.y};
                         return diagonal({source:o, target:o});
                     }
                 })

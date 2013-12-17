@@ -60,6 +60,7 @@ public class DataServiceActiveMQAPI implements Runnable {
     public static final String SUBMIT_COMPOSITION_RULES = "SubmitCompositionRules";
     public static final String SUBMIT_REQUIREMENTS = "SubmitServiceStructure";
     public static final String UPDATE_SERVICE_STRUCTURE = "UpdateServiceStructure";
+    public static final String SET_SERVICE_STRUCTURE = "SetServiceStructure";
     public static final String ADD_EXECUTING_ACTION = "AddExecutingAction";
     public static final String REMOVE_EXECUTING_ACTION = "RemoveExecutingAction";
     private BrokerService broker;
@@ -92,7 +93,14 @@ public class DataServiceActiveMQAPI implements Runnable {
                         CompositionRulesConfiguration repr = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
                         collectionService.setCompositionRulesConfiguration(repr);
-                    } else if (mapMessage.itemExists(UPDATE_SERVICE_STRUCTURE)) {
+                    }else if (mapMessage.itemExists(SET_SERVICE_STRUCTURE)) {
+                        String cfg = (String) mapMessage.getObject(SET_SERVICE_STRUCTURE);
+
+                        JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
+                        MonitoredElement repr = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+
+                        collectionService.setServiceConfiguration(repr);
+                    }else if (mapMessage.itemExists(UPDATE_SERVICE_STRUCTURE)) {
                         String cfg = (String) mapMessage.getObject(UPDATE_SERVICE_STRUCTURE);
 
                         JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);

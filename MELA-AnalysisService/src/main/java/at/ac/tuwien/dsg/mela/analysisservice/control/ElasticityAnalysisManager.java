@@ -115,7 +115,7 @@ public class ElasticityAnalysisManager {
         }
         aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela", serviceConfiguration.getId());
 
-        MelaDataServiceConfigurationAPIConnector.sendUpdatedServiceStructure(serviceConfiguration);
+        MelaDataServiceConfigurationAPIConnector.sendServiceStructure(serviceConfiguration);
     }
 
     private synchronized void setInitialServiceConfiguration(MonitoredElement serviceConfiguration) {

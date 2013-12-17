@@ -53,243 +53,184 @@ import org.apache.log4j.Priority;
  *
  */
 public class DataAccessWithAutoStructureDetection extends AbstractDataAccess {
+	/**
+	 * Left as this in case we want to limit in the future the nr of DataAccess
+	 * instances we create and maybe use a pool of instances
+	 * 
+	 * @return
+	 */
+	public static DataAccessWithAutoStructureDetection createInstance() {
 
-    private AbstractDataSource gangliaDataSourceI;
+		return new DataAccessWithAutoStructureDetection();
+	}
 
-    private DataAccessWithAutoStructureDetection(AbstractDataSource gangliaDataSourceI) {
-        this.gangliaDataSourceI = gangliaDataSourceI;
-    }
+	private DataAccessWithAutoStructureDetection() {
 
-    public static DataAccessWithAutoStructureDetection createInstance(String monSeqID) {
-        
-//        String accessType = Configuration.getDefaultMonitoringDataAccessMethod();
-//        
-//        if (accessType.equalsIgnoreCase("Ganglia")) {
-//            AbstractDataSource dataSource = new GangliaDataSource();
-//            return new DataAccessWithAutoStructureDetection(dataSource);
-//        } else if (accessType.equalsIgnoreCase("JCatascopia")) {
-//            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "JCatascopia adapter not yet implemented. Using dummy.");
-//            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
-//        } else if (accessType.equalsIgnoreCase("Replay")) {
-//            String monitoringSeqID = Configuration.getStoredMonitoringSequenceID();
-//            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
-//        } else {
-//            Configuration.getLogger(DataAccessWithAutoStructureDetection.class).log(Priority.ERROR, "MELA-DataService data access mode not specified or not recognized");
-//            return new DataAccessWithAutoStructureDetection(new DummyDataSource());
-//        }
-    	throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
-    }
+	}
 
-    /**
-     * @param MonitoredElement the root element of the Service Structure
-     * hierarchy
-     * @return ServiceMonitoringSnapshot containing the monitored data organized
-     * both in tree and by level Searches in the Ganglia HOSTS monitoring for
-     * MonitoredElement ID, and if it finds such ID searches it in the supplied
-     * Service structure, after, adds the monitoring information as a
-     * sub-element MonitoredElement of VM level to the element having the found
-     * ID
-     */
-    @Override
-    public synchronized ServiceMonitoringSnapshot getMonitoredData(MonitoredElement m) {
-//
-//        if (m == null) {
-//            Configuration.getLogger(this.getClass()).log(Level.WARN, "No supplied service configuration");
-//            return new ServiceMonitoringSnapshot();
-//        }
-//        MonitoredElement structureRoot = m.clone();
-//
-//        ClusterInfo gangliaClusterInfo = null;
-//        ServiceMonitoringSnapshot serviceMonitoringSnapshot = new ServiceMonitoringSnapshot();
-//
-//        try {
-//            gangliaClusterInfo = gangliaDataSourceI.getMonitoringData();
-//            if (gangliaClusterInfo == null) {
-//                return new ServiceMonitoringSnapshot();
-//            }
-//        } catch (DataAccessException e) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, e.getMessage(), e);
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Terminating execution");
-//            System.exit(1);
-//        }
-//
-//        /**
-//         * Linear representation of MonitoredElement hierarchical tree. also
-//         * maintains the three structure using the .children relationship
-//         * between MonitoredElementMonitoringSnapshot instances
-//         */
-//        Map<MonitoredElement, MonitoredElement> elements = new LinkedHashMap<MonitoredElement, MonitoredElement>();
-//
-//        //traverse the MonitoredElement hierarchical tree in BFS and extract the serviceStructure elements
-//        List<MonitoredElementMonitoringSnapshot> bfsTraversalQueue = new ArrayList<MonitoredElementMonitoringSnapshot>();
-//        MonitoredElementMonitoringSnapshot rootMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureRoot, new LinkedHashMap<Metric, MetricValue>());
-//
-//        bfsTraversalQueue.add(rootMonitoringSnapshot);
-//        serviceMonitoringSnapshot.addMonitoredData(rootMonitoringSnapshot);
-//
-//        while (!bfsTraversalQueue.isEmpty()) {
-//            MonitoredElementMonitoringSnapshot element = bfsTraversalQueue.remove(0);
-//            MonitoredElement processedElement = element.getMonitoredElement();
-//            elements.put(processedElement, processedElement);
-//
-//            for (MonitoredElement child : processedElement.getContainedElements()) //add empty monitoring data for each serviceStructure element, to serve as a place where in the future composed metrics can be added
-//            {
-//                MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(child, new LinkedHashMap<Metric, MetricValue>());
-//                element.addChild(MonitoredElementMonitoringSnapshot);
-//                serviceMonitoringSnapshot.addMonitoredData(MonitoredElementMonitoringSnapshot);
-//                bfsTraversalQueue.add(MonitoredElementMonitoringSnapshot);
-//            }
-//
-//        }
-//
-//
-//        //iterate trough the GangliaCluster, extract each VM monitoring data, build an MonitoredElementMonitoringSnapshot from it and add it to the ServiceMonitoringSnapshot
-//
-//        Collection<MonitoredElementData> gangliaHostsInfo = gangliaClusterInfo.getHostsInfo();
-//
-//        for (MonitoredElementData gangliaHostInfo : gangliaHostsInfo) {
-//            HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
-////            MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot();
-//            MonitoredElement monitoredElement = null;
-//            //represent all monitored metrics in mapToElasticitySpace
-//            for (MetricInfo gangliaMetricInfo : gangliaHostInfo.getMetrics()) {
-//                Metric metric = new Metric();
-//                metric.setName(gangliaMetricInfo.getName());
-//                metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
-//                MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
-//                monitoredMetricValues.put(metric, metricValue);
-//                if (metric.getName().equals(Configuration.getMonitoredElementIDMetricName())) {
-//                    monitoredElement = new MonitoredElement();
-//                    monitoredElement.setId(gangliaMetricInfo.getValue());
-//                    monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
-//                }
-//            }
-//            //if we have found a metric containing a MonitoredElementID, and if that ID is present in our structure
-//            //add it as VM level child to the found Service ID (this is the logic under our ganglia deployment so far)
-//            if (monitoredElement != null && elements.containsKey(monitoredElement)) {
-//                MonitoredElement structureElement = elements.get(monitoredElement);
-//                MonitoredElement vmLevelElement = new MonitoredElement();
-//                vmLevelElement.setId(gangliaHostInfo.getIp());
-//                vmLevelElement.setName(gangliaHostInfo.getIp());
-//                vmLevelElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
-//                structureElement.addElement(vmLevelElement);
-//
-//                MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vmLevelElement, monitoredMetricValues);
-//
-//                //also add VM monitoring info to children tree
-//                //TODO: CHECK THIS: not sure if this does not introduce errors with SUM. In the case of not automatic structure detection, it DOES
-//                serviceMonitoringSnapshot.getMonitoredData(monitoredElement).addChild(MonitoredElementMonitoringSnapshot);
-//
-//                serviceMonitoringSnapshot.addMonitoredData(MonitoredElementMonitoringSnapshot);
-//            }
-//        }
-//
-//        // filter the monitoredMetricValues according to the metric filters if such exist
-//        // the filtering is done here after collections since I iterate trough all metrics above to find the MonitoredElementID
-//        // which is later used to determine to which level I need to map the data
-//        // also i can use the code below when I get data at diff levels and I move from Ganglia
-//        serviceMonitoringSnapshot.applyMetricFilters(metricFilters);
-//
-//        return serviceMonitoringSnapshot;
-    	throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
-    }
+	/**
+	 * @param MonitoredElement
+	 *            the root element of the Service Structure hierarchy
+	 * @return ServiceMonitoringSnapshot containing the monitored data organized
+	 *         both in tree and by level Searches in the Ganglia HOSTS
+	 *         monitoring for MonitoredElement ID, and if it finds such ID
+	 *         searches it in the supplied Service structure, after, adds the
+	 *         monitoring information as a sub-element MonitoredElement of VM
+	 *         level to the element having the found ID
+	 */
+	@Override
+	public synchronized ServiceMonitoringSnapshot getMonitoredData(MonitoredElement m) {
 
-    @Override
-    public synchronized MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement MonitoredElement) {
+		if (m == null) {
+			Configuration.getLogger(DataAccess.class).log(Level.WARN, "No supplied service configuration");
+			return new ServiceMonitoringSnapshot();
+		}
+		MonitoredElement structureRoot = m.clone();
 
-//        ClusterInfo gangliaClusterInfo = null;
-//        try {
-//            gangliaClusterInfo = gangliaDataSourceI.getMonitoringData();
-//            if (gangliaClusterInfo == null) {
-//                return new MonitoredElementMonitoringSnapshot();
-//            }
-//        } catch (DataAccessException e) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, e.getMessage(), e);
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Terminating execution");
-//            System.exit(1);
-//        }
-//
-//
-//        Collection<MonitoredElementData> gangliaHostsInfo = gangliaClusterInfo.getHostsInfo();
-//        for (MonitoredElementData gangliaHostInfo : gangliaHostsInfo) {
-//            HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
-////            MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot();
-//            MonitoredElement monitoredElement = null;
-//            //represent all monitored metrics in mapToElasticitySpace
-//            for (MetricInfo gangliaMetricInfo : gangliaHostInfo.getMetrics()) {
-//                Metric metric = new Metric();
-//                metric.setName(gangliaMetricInfo.getName());
-//                metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
-//                MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
-//                monitoredMetricValues.put(metric, metricValue);
-//                if (metric.getName().equals(Configuration.getMonitoredElementIDMetricName())) {
-//                    monitoredElement = new MonitoredElement();
-//                    monitoredElement.setId(gangliaMetricInfo.getValue());
-//                }
-//            }
-//            //if we have found a metric containing a MonitoredElementID, and if that ID is present in our structure
-//            //add it as VM level child to the found Service ID (this is the logic under our ganglia deployment so far)
-//            if (monitoredElement != null && MonitoredElement.equals(monitoredElement)) {
-//
-//                MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(MonitoredElement, monitoredMetricValues);
-//
-//                //filters are applied sequentially in cascade
-//                if (metricFilters.containsKey(MonitoredElement.getLevel())) {
-//                    for (MetricFilter filter : metricFilters.get(MonitoredElement.getLevel())) {
-//                        //if either the filter applies on all elements at one particular level (targetIDs are null or empty) either the filter targets the serviceStructure element ID
-//                        if (filter.getTargetMonitoredElementIDs() == null || filter.getTargetMonitoredElementIDs().size() == 0 || filter.getTargetMonitoredElementIDs().contains(MonitoredElement.getId())) {
-//                            monitoredElementMonitoringSnapshot.keepMetrics(filter.getMetrics());
-//                        }
-//                    }
-//                }
-//                return monitoredElementMonitoringSnapshot;
-//
-//            }
-//        }
-//        return new MonitoredElementMonitoringSnapshot();
-    	throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
-    }
+		// extract all VMs from the service structure
+		// Map<MonitoredElement, MonitoredElement> vms = new
+		// LinkedHashMap<MonitoredElement, MonitoredElement>();
 
-    @Override
-    public Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement MonitoredElement) {
-//        ClusterInfo gangliaClusterInfo = null;
-//        try {
-//            gangliaClusterInfo = gangliaDataSourceI.getMonitoringData();
-//            if (gangliaClusterInfo == null) {
-//                return new ArrayList<Metric>();
-//            }
-//        } catch (DataAccessException e) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, e.getMessage(), e);
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Terminating execution");
-//            System.exit(1);
-//        }
-//
-//
-//        Collection<MonitoredElementData> gangliaHostsInfo = gangliaClusterInfo.getHostsInfo();
-//        for (MonitoredElementData gangliaHostInfo : gangliaHostsInfo) {
-//
-//            Map<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
-////            MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot();
-//            MonitoredElement monitoredElement = null;
-//            //represent all monitored metrics in mapToElasticitySpace
-//            for (MetricInfo gangliaMetricInfo : gangliaHostInfo.getMetrics()) {
-//                Metric metric = new Metric();
-//                metric.setName(gangliaMetricInfo.getName());
-//                metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
-//                MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
-//                monitoredMetricValues.put(metric, metricValue);
-//                if (metric.getName().equals(Configuration.getMonitoredElementIDMetricName())) {
-//                    monitoredElement = new MonitoredElement();
-//                    monitoredElement.setId(gangliaMetricInfo.getValue());
-//                }
-//            }
-//            //if we have found a metric containing a MonitoredElementID, and if that ID is present in our structure
-//            //add it as VM level child to the found Service ID (this is the logic under our ganglia deployment so far)
-//            if (monitoredElement != null && MonitoredElement.equals(monitoredElement)) {
-//                return monitoredMetricValues.keySet();
-//            }
-//        }
-//        return new ArrayList<Metric>();
-    	throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
-    }
+		/**
+		 * Linear representation of MonitoredElement hierarchical tree. also
+		 * maintains the three structure using the .children relationship
+		 * between MonitoredElementMonitoringSnapshot instances
+		 */
+		Map<MonitoredElement, MonitoredElement> elements = new LinkedHashMap<MonitoredElement, MonitoredElement>();
+
+		ServiceMonitoringSnapshot serviceMonitoringSnapshot = new ServiceMonitoringSnapshot();
+
+		// traverse the MonitoredElement hierarchical tree in BFS and extract
+		// the serviceStructure elements
+		List<MonitoredElementMonitoringSnapshot> bfsTraversalQueue = new ArrayList<MonitoredElementMonitoringSnapshot>();
+		MonitoredElementMonitoringSnapshot rootMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureRoot,
+				new LinkedHashMap<Metric, MetricValue>());
+
+		bfsTraversalQueue.add(rootMonitoringSnapshot);
+		serviceMonitoringSnapshot.addMonitoredData(rootMonitoringSnapshot);
+
+		// used in determining if we have specified a VM, or just ServiceUnit
+		MonitoredElement lowestLevelFoundMonitoredElement = null;
+		MonitoredElementMonitoringSnapshot lowestLevelFoundMonitoredSnapshot = null;
+
+		while (!bfsTraversalQueue.isEmpty()) {
+			MonitoredElementMonitoringSnapshot element = bfsTraversalQueue.remove(0);
+			MonitoredElement processedElement = element.getMonitoredElement();
+			elements.put(processedElement, processedElement);
+			lowestLevelFoundMonitoredElement = processedElement;
+			lowestLevelFoundMonitoredSnapshot = element;
+
+			// if(processedElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
+			// vms.put(processedElement, processedElement);
+			// }
+
+			for (MonitoredElement child : processedElement.getContainedElements()) // add
+																					// empty
+																					// monitoring
+																					// data
+			// for each serviceStructure element, to serve as a place where
+			// in the future composite metrics can be added
+			{
+				MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(child,
+						new LinkedHashMap<Metric, MetricValue>());
+				element.addChild(monitoredElementMonitoringSnapshot);
+				serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
+				bfsTraversalQueue.add(monitoredElementMonitoringSnapshot);
+
+			}
+
+		}
+
+		// go through each monitored element and update the service monitoring
+		// snapshot
+		for (AbstractDataSource dataSource : freshestMonitoredData.keySet()) {
+			// maybe in the future we use data source information, but now we
+			// extract the monitored data directly
+
+			// maybe in the future we use information from MonitoringData, but
+			// now we extract the monitored data elements directly
+			for (MonitoredElementData elementData : freshestMonitoredData.get(dataSource).getMonitoredElementDatas()) {
+
+				// create MonitoredElementMonitoringSnapshot for each element
+				HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
+
+				MonitoredElement monitoredElement = null;
+				// represent all monitored metrics in mapToElasticitySpace
+				for (MetricInfo gangliaMetricInfo : elementData.getMetrics()) {
+					Metric metric = new Metric();
+					metric.setName(gangliaMetricInfo.getName());
+					metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
+					MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
+					monitoredMetricValues.put(metric, metricValue);
+					if (metric.getName().equals(Configuration.getMonitoredElementIDMetricName())) {
+						monitoredElement = new MonitoredElement();
+						monitoredElement.setId(gangliaMetricInfo.getValue());
+						monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+					}
+				}
+				// if we have found a metric containing a MonitoredElementID,
+				// and if that ID is present in our structure
+				// add it as VM level child to the found Service ID (this is the
+				// logic under our ganglia deployment so far)
+				if (monitoredElement != null && elements.containsKey(monitoredElement)) {
+					MonitoredElement structureElement = elements.get(monitoredElement);
+					MonitoredElement vmLevelElement = new MonitoredElement();
+					
+					vmLevelElement.setId(elementData.getMonitoredElement().getId());
+					vmLevelElement.setName(elementData.getMonitoredElement().getId());
+					vmLevelElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
+					structureElement.addElement(vmLevelElement);
+
+					MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vmLevelElement,
+							monitoredMetricValues);
+
+					// also add VM monitoring info to children tree
+					// TODO: CHECK THIS: not sure if this does not introduce
+					// errors with SUM. In the case of not automatic structure
+					// detection, it DOES
+					serviceMonitoringSnapshot.getMonitoredData(monitoredElement).addChild(MonitoredElementMonitoringSnapshot);
+
+					serviceMonitoringSnapshot.addMonitoredData(MonitoredElementMonitoringSnapshot);
+				}
+
+			}
+		}
+
+		// filter the monitoredMetricValues according to the metric filters if
+		// such exist
+		serviceMonitoringSnapshot.applyMetricFilters(metricFilters);
+
+		return serviceMonitoringSnapshot;
+
+	}
+
+	@Override
+	public synchronized MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement suppliedMonitoringElement) {
+		throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
+	}
+
+	@Override
+	public Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement suppliedMonitoringElement) {
+		Collection<Metric> metrics = new ArrayList<Metric>();
+		for (AbstractDataSource dataSource : freshestMonitoredData.keySet()) {
+			// maybe in the future we use data source information, but now we
+			// extract the monitored data directly
+
+			// maybe in the future we use information from MonitoringData, but
+			// now we extract the monitored data elements directly
+			for (MonitoredElementData elementData : freshestMonitoredData.get(dataSource).getMonitoredElementDatas()) {
+				MonitoredElement monitoredElement = elementData.getMonitoredElement();
+
+				if (monitoredElement.equals(suppliedMonitoringElement)) {
+					for (MetricInfo info : elementData.getMetrics()) {
+						Metric metric = new Metric();
+						metric.setName(info.getName());
+						metric.setMeasurementUnit(info.getUnits());
+						metrics.add(metric);
+					}
+				}
+			}
+		}
+		return metrics;
+	}
 }

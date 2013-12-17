@@ -53,22 +53,7 @@ import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
  *
  */
 public class DataAccess extends AbstractDataAccess {
-    // for supporting multiple data collection services
-    // currently supports only monitoring data pooling. push based monitoring
-    // support will be added in the future
-
-//    private List<AbstractDataSource> dataSources;
-//    private List<Timer> dataSourcesPoolingTimers;
-//    private Map<AbstractDataSource, MonitoringData> freshestMonitoredData = new HashMap<AbstractDataSource, MonitoringData>();
-//
-//    // such as timestamp || service ID
-//    // private String monSeqID;
-//    {
-//        freshestMonitoredData = Collections.synchronizedMap(new HashMap<AbstractDataSource, MonitoringData>());
-//        dataSourcesPoolingTimers = new ArrayList<Timer>();
-//        dataSources = new ArrayList<AbstractDataSource>();
-//    }
-
+     
     /**
      * Left as this in case we want to limit in the future the nr of DataAccess instances we create and maybe use a pool of instances 
      * @return
@@ -78,12 +63,9 @@ public class DataAccess extends AbstractDataAccess {
         return new DataAccess();
     }
 
-    // starts with a data collection source, as at least one is needed
     private DataAccess( ) {
          
     }
-
-    
 
     /**
      * @param MonitoredElement the root element of the Service Structure

@@ -140,7 +140,8 @@ public class DataCollectionService {
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
 
         requirements = configurationXMLRepresentation.getRequirements();
-         
+        monitoringTimer.cancel();
+        monitoringTimer.purge(); 
         startMonitoring();
     }
 
@@ -297,7 +298,7 @@ public class DataCollectionService {
 
         if (Configuration.automatedStructureDetection()) {
          
-            dataAccess = DataAccessWithAutoStructureDetection.createInstance(serviceConfiguration.getId());
+            dataAccess = DataAccessWithAutoStructureDetection.createInstance();
         } else {
             dataAccess = DataAccess.createInstance();
         }
