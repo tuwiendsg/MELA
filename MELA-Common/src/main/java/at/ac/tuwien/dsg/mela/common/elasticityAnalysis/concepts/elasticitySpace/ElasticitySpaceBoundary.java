@@ -15,9 +15,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
+import java.io.Serializable;
 
 
 /**
@@ -25,7 +26,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public class ElasticitySpaceBoundary {
+public class ElasticitySpaceBoundary implements Serializable{
     private ServiceMonitoringSnapshot upperBoundary;
     private ServiceMonitoringSnapshot lowerBoundary;
 

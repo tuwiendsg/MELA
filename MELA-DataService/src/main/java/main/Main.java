@@ -32,51 +32,51 @@ import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
- * 
+ *
  */
 public class Main {
 
-	public static void main(String[] args) throws InterruptedException {
-		// initiate logger
-		{
-			String date = new Date().toString();
-			date = date.replace(" ", "_");
-			date = date.replace(":", "_");
-			System.getProperties().put("recording_date", date);
+    public static void main(String[] args) throws InterruptedException {
+        // initiate logger
+        {
+            String date = new Date().toString();
+            date = date.replace(" ", "_");
+            date = date.replace(":", "_");
+            System.getProperties().put("recording_date", date);
 
-			try {
-				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-				// ClassLoader classLoader =
-				// Configuration.class.getClassLoader();
+            try {
+                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                // ClassLoader classLoader =
+                // Configuration.class.getClassLoader();
 
-				InputStream log4jStream = Configuration.class.getResourceAsStream("/dataServiceConfig/Log4j.properties");
+                InputStream log4jStream = Configuration.class.getResourceAsStream("/dataServiceConfig/Log4j.properties");
 
-				if (log4jStream != null) {
-					PropertyConfigurator.configure(log4jStream);
-				}  
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
+                if (log4jStream != null) {
+                    PropertyConfigurator.configure(log4jStream);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
 
-		final MELADataService service = new MELADataService();
-		service.startServer();
-		if (Configuration.continuousOperation()) {
-			service.createInitialStructureIfItDoesNotExist();
-		} else {
-			service.createInitialStructure();
-		}
+        final MELADataService service = new MELADataService();
+        service.startServer();
+        if (Configuration.continuousOperation()) {
+            service.createInitialStructureIfItDoesNotExist();
+        } else {
+            service.createInitialStructure();
+        }
 
-		DataCollectionService dataCollectionService = DataCollectionService.getInstance();
-		DataServiceActiveMQAPI activeMQAPI = new DataServiceActiveMQAPI(dataCollectionService);
+        DataCollectionService dataCollectionService = DataCollectionService.getInstance();
+        DataServiceActiveMQAPI activeMQAPI = new DataServiceActiveMQAPI(dataCollectionService);
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				service.stopServer();
-			}
-		});
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                service.stopServer();
+            }
+        });
 
-		activeMQAPI.run();
-	}
+        activeMQAPI.run();
+    }
 }

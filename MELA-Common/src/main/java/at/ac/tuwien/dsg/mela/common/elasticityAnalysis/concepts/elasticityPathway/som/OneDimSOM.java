@@ -1,4 +1,4 @@
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som;
 
 /**
  * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184

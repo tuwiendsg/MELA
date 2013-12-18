@@ -17,11 +17,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElPthwFunction;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway;
 
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.Neuron;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.SOM2;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.strategy.impl.SimpleSOMStrategy;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.SOM2;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.SimpleSOMStrategy;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 

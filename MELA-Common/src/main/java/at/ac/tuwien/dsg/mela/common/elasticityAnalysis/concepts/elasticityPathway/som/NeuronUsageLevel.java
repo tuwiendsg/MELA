@@ -15,22 +15,47 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.engines;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som;
 
-import at.ac.tuwien.dsg.mela.analysisservice.report.AnalysisReport;
-import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-
+import java.io.Serializable;
 
 /**
  * Author: Daniel Moldovan 
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public class InstantMonitoringDataAnalysisEngine {
+public enum NeuronUsageLevel  implements Serializable{
+//    CONTINUOUSLY,
+//    OFTEN,
+//    NEUTRAL,
+//    RARE,
+//    VERY_RARE,
+//    NEVER;
 
-    public AnalysisReport analyzeRequirements(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Requirements requirements){
-        return new AnalysisReport(serviceMonitoringSnapshot,requirements);
+    DOMINANT,
+    NEUTRAL ,
+    RARE;
+
+    private Double usagePercentage;
+    private Double usageCount;
+
+    public Double getUsagePercentage() {
+        return usagePercentage;
     }
 
+    public void setUsagePercentage(Double usagePercentage) {
+        this.usagePercentage = usagePercentage;
+    }
+
+    public Double getUsageCount() {
+        return usageCount;
+    }
+
+    public void setUsageCount(Double usageCount) {
+        this.usageCount = usageCount;
+    }
+
+    public void incrementUsage(){
+        this.usageCount ++;
+    }
 }

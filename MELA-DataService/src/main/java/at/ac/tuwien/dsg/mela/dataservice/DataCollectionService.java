@@ -33,12 +33,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.jcraft.jsch.ConfigRepository;
-
 import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
@@ -70,48 +72,45 @@ public class DataCollectionService {
     private Requirements requirements;
     private CompositionRulesConfiguration compositionRulesConfiguration;
     private MonitoredElement serviceConfiguration;
-    //used for data Aggregation over time
+    // used for data Aggregation over time
     private List<ServiceMonitoringSnapshot> historicalMonitoringData;
-    //used if someone wants freshest data
-//    private ServiceMonitoringSnapshot latestMonitoringData;
-    //interval at which RAW monitoring data is collected
+    // used if someone wants freshest data
+    // private ServiceMonitoringSnapshot latestMonitoringData;
+    // interval at which RAW monitoring data is collected
     private int monitoringIntervalInSeconds = Configuration.getDataPoolingInterval();
-    //interval over which raw monitoring data is aggregated.
-    //example: for monitoringIntervalInSeconds at 5 seconds, and aggregation at 30, 
-    //means 6 monitoring snapshots are aggregated into 1
+    // interval over which raw monitoring data is aggregated.
+    // example: for monitoringIntervalInSeconds at 5 seconds, and aggregation at
+    // 30,
+    // means 6 monitoring snapshots are aggregated into 1
     private int aggregationWindowsCount = Configuration.getDataAggregationWindows();
     private Timer monitoringTimer;
-    //holding MonitoredElement name, and Actions Name
+    // holding MonitoredElement name, and Actions Name
     private Map<MonitoredElement, List<String>> actionsInExecution;
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
     private PersistenceSQLAccess persistenceSQLAccess;
- 
-    
-    //used in monitoring 
+    // used in monitoring
     private TimerTask task = new TimerTask() {
         @Override
         public void run() {
         }
     };
-//    private SystemControl selfReference;
 
+    // private SystemControl selfReference;
     protected DataCollectionService() {
- 
+
         instantMonitoringDataEnrichmentEngine = new DataAggregationEngine();
 
-//        latestMonitoringData = new ServiceMonitoringSnapshot();
+        // latestMonitoringData = new ServiceMonitoringSnapshot();
         historicalMonitoringData = new ArrayList<ServiceMonitoringSnapshot>();
         monitoringTimer = new Timer();
-//        selfReference = this;
+        // selfReference = this;
         actionsInExecution = new ConcurrentHashMap<MonitoredElement, List<String>>();
-
 
         if ((int) (monitoringIntervalInSeconds / aggregationWindowsCount) == 0) {
             aggregationWindowsCount = 1 * monitoringIntervalInSeconds;
         }
 
-
-        //get latest config
+        // get latest config
         ConfigurationXMLRepresentation configurationXMLRepresentation = PersistenceSQLAccess.getLatestConfiguration("mela", "mela");
 
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
@@ -140,7 +139,7 @@ public class DataCollectionService {
 
         requirements = configurationXMLRepresentation.getRequirements();
         monitoringTimer.cancel();
-        monitoringTimer.purge(); 
+        monitoringTimer.purge();
         startMonitoring();
     }
 
@@ -168,60 +167,67 @@ public class DataCollectionService {
         this.requirements = requirements;
     }
 
-    //actually removes all VMs and Virtual Clusters from the ServiceUnit and adds new ones.
+    // actually removes all VMs and Virtual Clusters from the ServiceUnit and
+    // adds new ones.
     public synchronized void updateServiceConfiguration(MonitoredElement serviceConfiguration) {
-        //extract all ServiceUnit level monitored elements from both services, and replace their children  
+        // extract all ServiceUnit level monitored elements from both services,
+        // and replace their children
         Map<MonitoredElement, MonitoredElement> serviceUnits = new HashMap<MonitoredElement, MonitoredElement>();
         for (MonitoredElement element : this.serviceConfiguration) {
             if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
-                //remove element's children
+                // remove element's children
                 element.getContainedElements().clear();
                 serviceUnits.put(element, element);
             }
         }
 
-        //go trough the new service, and for each Service Unit, add its children (containing both Virtual Machines and Virtual Clusters) to the original service
+        // go trough the new service, and for each Service Unit, add its
+        // children (containing both Virtual Machines and Virtual Clusters) to
+        // the original service
         for (MonitoredElement element : serviceConfiguration) {
             if (serviceUnits.containsKey(element)) {
-                //bad practice. breaks encapsulation
+                // bad practice. breaks encapsulation
                 serviceUnits.get(element).getContainedElements().addAll(element.getContainedElements());
             }
         }
 
     }
 
-//    public List<Neuron> getElPathwayGroups(Map<Metric, List<MetricValue>> map) {
-//        if (elasticitySpaceFunction != null && map != null) {
-//            return elasticityPathway.getSituationGroups(map);
-//        } else {
-//            return new ArrayList<Neuron>();
-//        }
-//    }
-//    public synchronized Requirements getRequirements() {
-//        return requirements;
-//    }
-// 
-//    public synchronized CompositionRulesConfiguration getCompositionRulesConfiguration() {
-//        return compositionRulesConfiguration;
-//    }
+    // public List<Neuron> getElPathwayGroups(Map<Metric, List<MetricValue>>
+    // map) {
+    // if (elasticitySpaceFunction != null && map != null) {
+    // return elasticityPathway.getSituationGroups(map);
+    // } else {
+    // return new ArrayList<Neuron>();
+    // }
+    // }
+    // public synchronized Requirements getRequirements() {
+    // return requirements;
+    // }
+    //
+    // public synchronized CompositionRulesConfiguration
+    // getCompositionRulesConfiguration() {
+    // return compositionRulesConfiguration;
+    // }
     public synchronized void setCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
-        
-            this.compositionRulesConfiguration = compositionRulesConfiguration;
- 
+
+        this.compositionRulesConfiguration = compositionRulesConfiguration;
+
     }
 
-//    public synchronized AbstractDataAccess getDataAccess() {
-//        return dataAccess;
-//    }
-//    public synchronized void setDataAccess(AbstractDataAccess dataAccess) {
-//        this.dataAccess = dataAccess;
-//    }
+    // public synchronized AbstractDataAccess getDataAccess() {
+    // return dataAccess;
+    // }
+    // public synchronized void setDataAccess(AbstractDataAccess dataAccess) {
+    // this.dataAccess = dataAccess;
+    // }
     public synchronized ServiceMonitoringSnapshot getRawMonitoringData() {
         if (dataAccess != null) {
             Date before = new Date();
             ServiceMonitoringSnapshot monitoredData = dataAccess.getStructuredMonitoredData(serviceConfiguration);
             Date after = new Date();
-            Logger.getLogger(this.getClass()).log(Level.DEBUG, "Raw monitoring data access time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+            Logger.getLogger(this.getClass()).log(Level.DEBUG,
+                    "Raw monitoring data access time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
             return monitoredData;
         } else {
             Logger.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
@@ -286,45 +292,46 @@ public class DataCollectionService {
         this.aggregationWindowsCount = aggregationIntervalInSeconds;
     }
 
-//    public synchronized ServiceMonitoringSnapshot getLatestMonitoringData() {
-//        return latestMonitoringData;
-//    }
+    // public synchronized ServiceMonitoringSnapshot getLatestMonitoringData() {
+    // return latestMonitoringData;
+    // }
     public synchronized void startMonitoring() {
 
-        //open proper sql access
+        // open proper sql access
         persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", serviceConfiguration.getId());
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
         if (Configuration.automatedStructureDetection()) {
-         
+
             dataAccess = DataAccessWithAutoStructureDetection.createInstance();
         } else {
             dataAccess = DataAccess.createInstance();
         }
-        
-        //read data sources configuration file
-        DataSourceConfigs dataSources =   DataSourcesManager.readDataSourcesConfiguration();
+
+        // read data sources configuration file
+        DataSourceConfigs dataSources = DataSourcesManager.readDataSourcesConfiguration();
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "Using following data sources:");
-        for(DataSourceConfig config: dataSources.getConfigs() ){
-        	
-        	Logger.getLogger(this.getClass()).log(Level.DEBUG, config.toString());
-        	
-        	//transform configuration options in key-value pairs
-        	
-        	Map<String, String> configuration = new HashMap<String, String>();
-        	for(String configEntry : config.getProperties()){
-        	    String[] info = configEntry.split("=");
-        	    configuration.put(info[0], info[1]);
-        	}
-        	if(config.getType().equalsIgnoreCase("ganglia")){
-        		GangliaDataSource dataSource = new GangliaDataSource(configuration);
-        		dataAccess.addDataSource(dataSource);
-        	}
+        for (DataSourceConfig config : dataSources.getConfigs()) {
+
+            Logger.getLogger(this.getClass()).log(Level.DEBUG, config.toString());
+
+            // transform configuration options in key-value pairs
+
+            Map<String, String> configuration = new HashMap<String, String>();
+            for (String configEntry : config.getProperties()) {
+                String[] info = configEntry.split("=");
+                configuration.put(info[0], info[1]);
+            }
+            if (config.getType().equalsIgnoreCase("ganglia")) {
+                GangliaDataSource dataSource = new GangliaDataSource(configuration);
+                dataAccess.addDataSource(dataSource);
+            }
         }
-        
-        //set metric filters on data access
+
+        // set metric filters on data access
         for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
-            //go trough each CompositionOperation and extract the source metrics
+            // go trough each CompositionOperation and extract the source
+            // metrics
 
             List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
             queue.add(compositionRule.getOperation());
@@ -334,7 +341,8 @@ public class DataCollectionService {
                 queue.addAll(operation.getSubOperations());
 
                 Metric targetMetric = operation.getTargetMetric();
-                //metric can be null if a composition rule artificially creates a metric using SET_VALUE
+                // metric can be null if a composition rule artificially creates
+                // a metric using SET_VALUE
                 if (targetMetric != null) {
                     MetricFilter metricFilter = new MetricFilter();
                     metricFilter.setId(targetMetric.getName() + "_Filter");
@@ -358,30 +366,61 @@ public class DataCollectionService {
 
                     if (monitoringData != null) {
                         historicalMonitoringData.add(monitoringData);
-                        //remove the oldest and add the new value always
+                        // remove the oldest and add the new value always
                         if (historicalMonitoringData.size() > aggregationWindowsCount) {
                             historicalMonitoringData.remove(0);
                         }
 
                         if (compositionRulesConfiguration != null) {
-                        	ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
+                            ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
                             for (MonitoredElement element : actionsInExecution.keySet()) {
                                 latestMonitoringData.setExecutingActions(element, actionsInExecution.get(element));
                             }
-                         
-                            //write monitoring data in sql
+
+                            // write monitoring data in sql
                             Date before = new Date();
-                            
-                            persistenceSQLAccess.writeMonitoringData(latestMonitoringData);
-                            persistenceSQLAccess.writeRawMonitoringData(dataAccess.getFreshestMonitoredData());
-                            
+                            String timestamp = "" + new Date().getTime();
+
+                            // add new timestamp
+                            persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration.getId());
+
+                            // write structured monitoring data
+                            persistenceSQLAccess.writeMonitoringData(timestamp, latestMonitoringData);
+
+                            // write monitoring data directly collected
+                            persistenceSQLAccess.writeRawMonitoringData(timestamp, dataAccess.getFreshestMonitoredData());
+
+                            // update and store elasticity space
+                            ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
+                            ElasticitySpaceFunction fct = null;
+                            if (space == null) {
+                                fct = new ElSpaceDefaultFunction(serviceConfiguration);
+                                fct.setRequirements(requirements);
+                                fct.trainElasticitySpace(monitoringData);
+                                space = fct.getElasticitySpace();
+                            } else {
+                                fct = new ElSpaceDefaultFunction();
+                                fct.trainElasticitySpace(space, monitoringData, requirements);
+                            }
+
+                            persistenceSQLAccess.writeElasticitySpace(timestamp, space);
+
+                            // update and store elasticity pathway
+                            // LightweightEncounterRateElasticityPathway
+                            // elasticityPathway =
+                            // persistenceSQLAccess.extractLatestElasticityPathway();
+
+                            // in future just update pathway. now recompute
+                            // elasticityPathway.trainElasticityPathway(null)
+
                             Date after = new Date();
-                            Logger.getLogger(this.getClass()).log(Level.DEBUG, "DaaS data writing time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
-//                            elasticitySpaceFunction.trainElasticitySpace(latestMonitoringData);
+                            Logger.getLogger(this.getClass()).log(Level.DEBUG,
+                                    "DaaS data writing time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+                            // elasticitySpaceFunction.trainElasticitySpace(latestMonitoringData);
                         }
                     } else {
-                        //stop the monitoring if the data replay is done
-//                        this.cancel();
+                        // stop the monitoring if the data replay is done
+                        // this.cancel();
                         Logger.getLogger(this.getClass()).log(Level.ERROR, "Monitoring data is NULL");
                     }
                 } else {
@@ -390,7 +429,7 @@ public class DataCollectionService {
             }
         };
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "Scheduling data pool at " + monitoringIntervalInSeconds + " seconds");
-        //repeat the monitoring every monitoringIntervalInSeconds seconds 
+        // repeat the monitoring every monitoringIntervalInSeconds seconds
         monitoringTimer.schedule(task, 0, monitoringIntervalInSeconds * 1000);
 
     }
@@ -401,24 +440,29 @@ public class DataCollectionService {
         } catch (SQLException ex) {
             Logger.getLogger(DataCollectionService.class.getName()).log(Level.ERROR, null, ex);
         }
-//        task.cancel();
+        // task.cancel();
         monitoringTimer.cancel();
     }
-//    public synchronized String getLatestMonitoringDataINJSON() {
-//        Date before = new Date();
-//        String converted = ConvertToJSON.convertMonitoringSnapshot(latestMonitoringData, requirements, actionsInExecution);
-//        Date after = new Date();
-//        Logger.getLogger(this.getClass()).log(Level.WARN, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
-//        return converted;
-//    }
-//
-//    public synchronized String getMetricCompositionRules() {
-//        if (compositionRulesConfiguration != null) {
-//            return ConvertToJSON.convertToJSON(compositionRulesConfiguration.getMetricCompositionRules());
-//        } else {
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("name", "No composition rules yet");
-//            return jsonObject.toJSONString();
-//        }
-//    }
+    // public synchronized String getLatestMonitoringDataINJSON() {
+    // Date before = new Date();
+    // String converted =
+    // ConvertToJSON.convertMonitoringSnapshot(latestMonitoringData,
+    // requirements, actionsInExecution);
+    // Date after = new Date();
+    // Logger.getLogger(this.getClass()).log(Level.WARN,
+    // "Get Mon Data time in ms:  " + new Date(after.getTime() -
+    // before.getTime()).getTime());
+    // return converted;
+    // }
+    //
+    // public synchronized String getMetricCompositionRules() {
+    // if (compositionRulesConfiguration != null) {
+    // return
+    // ConvertToJSON.convertToJSON(compositionRulesConfiguration.getMetricCompositionRules());
+    // } else {
+    // JSONObject jsonObject = new JSONObject();
+    // jsonObject.put("name", "No composition rules yet");
+    // return jsonObject.toJSONString();
+    // }
+    // }
 }

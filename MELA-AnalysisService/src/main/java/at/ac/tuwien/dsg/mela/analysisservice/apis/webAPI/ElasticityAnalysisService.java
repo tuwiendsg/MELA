@@ -306,16 +306,32 @@ public class ElasticityAnalysisService {
             return new MonitoredElementMonitoringSnapshot();
         }
     }
+    
+    
+    @GET
+    @Path("/historicalmonitoringdataXML")
+    @Produces("application/xml")
+    public List<ServiceMonitoringSnapshot> getAllAggregatedMonitoringData() {
+       return systemControl.getAllAggregatedMonitoringData();
+    }
 
     @GET
     @Path("/metriccompositionrules")
     @Produces("application/json")
     public String getMetricCompositionRules() {
         return systemControl.getMetricCompositionRules();
-
-
     }
 
+    @GET
+    @Path("/metriccompositionrulesxml")
+    @Produces("application/xml")
+    public CompositionRulesConfiguration getMetricCompositionRulesXML() {
+        return systemControl.getCompositionRulesConfiguration();
+    }
+
+    
+    
+    
     @POST
     @Path("/addexecutingactions")
     public void addExecutingAction(Action action) {

@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.report;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
@@ -24,6 +24,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +40,7 @@ import org.apache.log4j.Logger;
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public class AnalysisReport {
+public class AnalysisReport implements Serializable{
     // stores requirement analysis information by LEVEL, then by MonitoredElement. Service Element also stores hierarchical info
     //list of  AnalysisReportEntry as there is 1 report for all conditions for each target METRIC
     private Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, List<AnalysisReportEntry>>> analysisReport;

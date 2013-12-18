@@ -21,8 +21,8 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpace;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.Neuron;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayGroupXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayGroupXML.ElasticityPathwayGroupEntryXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;

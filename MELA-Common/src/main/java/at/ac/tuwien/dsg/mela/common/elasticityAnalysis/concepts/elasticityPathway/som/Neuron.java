@@ -15,12 +15,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -30,7 +32,7 @@ import org.apache.log4j.Logger;
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public class Neuron { //implements Iterable<Neuron> {
+public class Neuron implements Serializable{ //implements Iterable<Neuron> {
     private List<Double> weights;
     //    private List<Neuron> neighbours;
 //    private List<List<Double>> mappedWeights;

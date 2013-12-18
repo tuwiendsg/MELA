@@ -15,16 +15,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace;
 
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpaceFunction;
-import at.ac.tuwien.dsg.mela.analysisservice.engines.InstantMonitoringDataAnalysisEngine;
-import at.ac.tuwien.dsg.mela.analysisservice.report.AnalysisReport;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,12 +40,18 @@ import java.util.List;
  */
 public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
+	
 
     public ElSpaceDefaultFunction(MonitoredElement service) {
         super(service);
     }
 
-
+    /** 
+     * Used if training an existing space
+     */
+    public ElSpaceDefaultFunction() {
+    	super();
+    }
 
     @Override
     public void trainElasticitySpace(Collection<ServiceMonitoringSnapshot> monitoringData) {
@@ -186,7 +192,138 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
 
     }
+    
+    public void trainElasticitySpace(ElasticitySpace elasticitySpace, ServiceMonitoringSnapshot monitoringData, Requirements requirements) {
+    	
+        ServiceMonitoringSnapshot upperBoundary = elasticitySpace.getElasticitySpaceBoundary().getUpperBoundary();
+        ServiceMonitoringSnapshot lowerBoundary = elasticitySpace.getElasticitySpaceBoundary().getLowerBoundary();
+
+        AnalysisReport report = new InstantMonitoringDataAnalysisEngine().analyzeRequirements(monitoringData, requirements);
+        
+        //TODO: adding data to keep history, but it can't be left like this, since we can't hold all monitoring data in memory
+        //currently it is used by the elasticity signature. All monitoring data in future must be retrieved from monitoring storage
+        elasticitySpace.addMonitoringEntry(report, monitoringData);
+
+        //only update boundaries if the analysis report does not contain ANY requirement violation, I.E. the service is in elastic behavior
+        if(!report.isClean()){
+            return;
+        }
+
+        List<MonitoredElement> processingList = new ArrayList<MonitoredElement>();
+        processingList.add(elasticitySpace.getService());
+
+        //DFS traversal
+        while (!processingList.isEmpty()) {
+            MonitoredElement element = processingList.remove(processingList.size() - 1);
+
+            {
+                //extract limits at service element level
+                MonitoredElementMonitoringSnapshot elementData = monitoringData.getMonitoredData(element);
+                MonitoredElementMonitoringSnapshot upperBoundaryForElement = upperBoundary.getMonitoredData(element);
+                MonitoredElementMonitoringSnapshot lowerBoundaryForElement = lowerBoundary.getMonitoredData(element);
+
+                for (Metric metric : elementData.getMetrics()) {
+                    MetricValue elementValue = elementData.getMetricValue(metric);
+
+                    //upperBoundary update
+                    {
+                        //if boundary has value
+                        if (upperBoundaryForElement.containsMetric(metric)) {
+                            MetricValue boundaryValue = upperBoundaryForElement.getMetricValue(metric);
+
+                            //if monitored element  > boundary, update boundary
+                            if (elementValue.compareTo(boundaryValue) > 0) {
+                                upperBoundaryForElement.putMetric(metric, elementValue.clone());
+                            }
+                        } else {
+                            //if the boundary is empty, insert first value
+                            upperBoundaryForElement.putMetric(metric, elementValue.clone());
+                        }
+                    }
+
+                    //lowerBoundary update
+                    {
+                        //if boundary has value
+                        if (lowerBoundaryForElement.containsMetric(metric)) {
+
+                            MetricValue boundaryValue = lowerBoundaryForElement.getMetricValue(metric);
+
+                            //if monitored element  > boundary, update boundary
+                            if (elementValue.compareTo(boundaryValue) < 0) {
+                                lowerBoundaryForElement.putMetric(metric, elementValue.clone());
+                            }
+                        } else {
+                            //if the boundary is empty, insert first value
+                            lowerBoundaryForElement.putMetric(metric, elementValue.clone());
+                        }
+                    }
+
+                }
+            }
+
+            //if SERVICE_UNIT level, get All monitored VMs for this unit, and extract a unique boundary from all
+            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
+
+                //each boundary has only one VM boundary per service element
+                MonitoredElement genericVM = element.getContainedElements().iterator().next();
+                MonitoredElementMonitoringSnapshot upperBoundaryForGenericVM = upperBoundary.getMonitoredData(genericVM);
+                MonitoredElementMonitoringSnapshot lowerBoundaryForGenericVM = lowerBoundary.getMonitoredData(genericVM);
+
+                //retrieve the service element from the monitoring data, because that is the one which knows which VM to which service unit belongs to
+                MonitoredElement monitoredServiceUnit = monitoringData.getMonitoredData(element).getMonitoredElement();
+
+                //go trough all monitored VMs for the monitoredServiceUnit and update same genericVM boundaries
+                for (MonitoredElement vm : monitoredServiceUnit.getContainedElements()) {
+                    MonitoredElementMonitoringSnapshot vmMonitoredData = monitoringData.getMonitoredData(vm);
+
+                    for (Metric metric : vmMonitoredData.getMetrics()) {
+                        MetricValue elementValue = vmMonitoredData.getMetricValue(metric);
+
+                        //upperBoundary update
+                        {
+                            //if boundary has value
+                            if (upperBoundaryForGenericVM.containsMetric(metric)) {
+                                MetricValue boundaryValue = upperBoundaryForGenericVM.getMetricValue(metric);
+
+                                //if monitored element  > boundary, update boundary
+                                if (elementValue.compareTo(boundaryValue) > 0) {
+                                    upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+                                }
+                            } else {
+                                //if the boundary is empty, insert first value
+                                upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+                            }
+                        }
+
+                        //lowerBoundary update
+                        {
+                            //if boundary has value
+                            if (lowerBoundaryForGenericVM.containsMetric(metric)) {
+
+                                MetricValue boundaryValue = lowerBoundaryForGenericVM.getMetricValue(metric);
+
+                                //if monitored element  > boundary, update boundary
+                                if (elementValue.compareTo(boundaryValue) < 0) {
+                                    lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+                                }
+                            } else {
+                                //if the boundary is empty, insert first value
+                                lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+                            }
+                        }
+
+                    }
+                }
 
 
+            }else{
+                //only also process children if ! SERVICE_UNIT
+                processingList.addAll(element.getContainedElements());
+            }
+        }
+
+
+    }
+    
 
 }

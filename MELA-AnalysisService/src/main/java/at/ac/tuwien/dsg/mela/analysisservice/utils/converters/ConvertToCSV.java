@@ -34,9 +34,9 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpace;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElPthwFunction.InMemoryEncounterRateElasticityPathway;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.Neuron;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.InMemoryEncounterRateElasticityPathway;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *

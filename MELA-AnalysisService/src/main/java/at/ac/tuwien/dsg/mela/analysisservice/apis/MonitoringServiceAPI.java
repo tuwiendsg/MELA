@@ -18,7 +18,7 @@
 
 package at.ac.tuwien.dsg.mela.analysisservice.apis;
 
-import at.ac.tuwien.dsg.mela.analysisservice.report.AnalysisReport;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 
 

@@ -16,11 +16,11 @@
  */
 package performance;
 
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpace;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpaceFunction;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.ElSpaceDefaultFunction;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElPthwFunction.LightweightEncounterRateElasticityPathway;
-import at.ac.tuwien.dsg.mela.analysisservice.engines.InstantMonitoringDataAnalysisEngine;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToCSV;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.evalaution.PerformanceReport;
 import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;

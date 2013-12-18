@@ -15,9 +15,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.strategy.impl;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som;
 
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.strategy.SOMStrategy;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.SOMStrategy;
 
 
 /**

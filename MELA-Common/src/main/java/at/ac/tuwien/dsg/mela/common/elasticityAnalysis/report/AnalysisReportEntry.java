@@ -15,12 +15,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.report;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report;
 
 import at.ac.tuwien.dsg.mela.common.requirements.Condition;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import java.io.Serializable;
 
 import java.util.*;
 
@@ -30,7 +31,7 @@ import java.util.*;
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public class AnalysisReportEntry {
+public class AnalysisReportEntry implements Serializable{
 
     private Metric metric;
     private MetricValue metricValue;

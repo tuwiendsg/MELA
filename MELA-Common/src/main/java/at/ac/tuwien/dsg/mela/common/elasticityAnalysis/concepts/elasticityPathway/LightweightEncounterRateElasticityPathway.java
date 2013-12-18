@@ -17,20 +17,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElPthwFunction;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway;
 
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.Neuron;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.SOM2;
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.strategy.impl.SimpleSOMStrategy;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.SOM2;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.SimpleSOMStrategy;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -43,7 +45,7 @@ import org.apache.log4j.Logger;
  * Accesses elasticity space from local data service, and is trained
  * sequentially instead of keeping everything in memory
  */
-public class LightweightEncounterRateElasticityPathway {
+public class LightweightEncounterRateElasticityPathway implements Serializable {
 
     private int cellsSize = 10;
     private int upperNormalizationValue = 100;
@@ -157,7 +159,7 @@ public class LightweightEncounterRateElasticityPathway {
 
     }
 
-    public class SignatureEntry {
+    public class SignatureEntry  implements Serializable{
 
         private Neuron mappedNeuron;
         private Map<Metric, MetricValue> classifiedSituation;

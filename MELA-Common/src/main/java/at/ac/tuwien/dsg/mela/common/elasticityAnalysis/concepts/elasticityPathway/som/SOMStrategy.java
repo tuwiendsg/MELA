@@ -15,7 +15,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.strategy;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som;
+
+import java.io.Serializable;
 
 
 /**
@@ -23,7 +25,7 @@ package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public abstract class SOMStrategy {
+public abstract class SOMStrategy implements Serializable {
     protected Double distanceRestraintFactor;
     protected Double learningFactor;
     private Double toleranceRange;

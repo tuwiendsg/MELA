@@ -15,10 +15,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som;
 
-import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.strategy.SOMStrategy;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.SOMStrategy;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public class SOM implements Iterable<Neuron> {
+public class SOM implements Iterable<Neuron>, Serializable {
     //    private Neuron root;
     //    private int initialSize;
     protected int maxNeighboursNo = 4;
@@ -40,17 +41,13 @@ public class SOM implements Iterable<Neuron> {
     protected int weightsNo;
     protected int minWeightValue;
     protected int maxWeightValue;
-    protected Random random;
+    protected transient Random random  = new Random();
     protected SOMStrategy strategy;
     protected Neuron[][] neurons;
     protected Double toleranceRange;
     protected final AtomicInteger numberOfMappedSituations = new AtomicInteger(0);
-    protected DecimalFormat decimalFormat = new DecimalFormat("#.###");
-
-    {
-        random = new Random();
-    }
-
+    protected transient DecimalFormat decimalFormat = new DecimalFormat("#.###");
+ 
 
     protected SOM() {
     }

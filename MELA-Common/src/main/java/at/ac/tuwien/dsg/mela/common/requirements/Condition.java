@@ -19,6 +19,7 @@ package at.ac.tuwien.dsg.mela.common.requirements;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
+import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Condition")
-public class Condition {
+public class Condition implements Serializable{
 
     @XmlAttribute(name = "ID", required = true)
     private String id;
@@ -40,7 +41,7 @@ public class Condition {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(name = "ConditionType")
     @XmlEnum
-    public enum Type {
+    public enum Type implements Serializable{
         @XmlEnumValue("LESS_THAN")LESS_THAN, @XmlEnumValue("LESS_EQUAL")LESS_EQUAL, @XmlEnumValue("GREATER_THAN")GREATER_THAN,
         @XmlEnumValue("GREATER_EQUAL")GREATER_EQUAL, @XmlEnumValue("EQUAL")EQUAL, @XmlEnumValue("RANGE")RANGE, @XmlEnumValue("ENUMERATION")ENUMERATION
     }

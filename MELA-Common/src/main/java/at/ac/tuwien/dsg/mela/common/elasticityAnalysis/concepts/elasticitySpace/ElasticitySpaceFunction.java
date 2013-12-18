@@ -17,7 +17,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
@@ -101,6 +101,10 @@ public abstract class ElasticitySpaceFunction {
 
     public final void removeRequirement(Requirement requirement) {
         this.requirements.getRequirements().add(requirement);
+    }
+    
+    public ElasticitySpaceFunction(){
+    	
     }
 
     public ElasticitySpaceFunction(MonitoredElement service) {
@@ -194,4 +198,13 @@ public abstract class ElasticitySpaceFunction {
      * @param monitoringData
      */
     public abstract void trainElasticitySpace(ServiceMonitoringSnapshot monitoringData);
+    
+    
+    /**
+     * Used to train an already existent space
+     * @param elasticitySpace
+     * @param monitoringData
+     * @param requirements
+     */
+    public abstract void trainElasticitySpace(ElasticitySpace elasticitySpace, ServiceMonitoringSnapshot monitoringData, Requirements requirements);
 }

@@ -21,6 +21,7 @@ package at.ac.tuwien.dsg.mela.common.requirements;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import java.io.Serializable;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.UUID;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Requirement")
 @XmlType(propOrder = {"metric", "conditions", "id", "targetMonitoredElementLevel", "targetMonitoredElementIDs"})
-public class Requirement {
+public class Requirement implements Serializable{
 
     @XmlElement(name = "TargetMetric", required = true)
     private Metric metric;

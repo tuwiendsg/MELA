@@ -15,45 +15,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities;
+package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines;
+
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
+
 
 /**
  * Author: Daniel Moldovan 
  * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
  **/
-public enum NeuronUsageLevel {
-//    CONTINUOUSLY,
-//    OFTEN,
-//    NEUTRAL,
-//    RARE,
-//    VERY_RARE,
-//    NEVER;
+public class InstantMonitoringDataAnalysisEngine {
 
-    DOMINANT,
-    NEUTRAL ,
-    RARE;
-
-    private Double usagePercentage;
-    private Double usageCount;
-
-    public Double getUsagePercentage() {
-        return usagePercentage;
+    public AnalysisReport analyzeRequirements(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Requirements requirements){
+        return new AnalysisReport(serviceMonitoringSnapshot,requirements);
     }
 
-    public void setUsagePercentage(Double usagePercentage) {
-        this.usagePercentage = usagePercentage;
-    }
-
-    public Double getUsageCount() {
-        return usageCount;
-    }
-
-    public void setUsageCount(Double usageCount) {
-        this.usageCount = usageCount;
-    }
-
-    public void incrementUsage(){
-        this.usageCount ++;
-    }
 }
