@@ -31,8 +31,8 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.dataservice.AggregatedMonitoringDataSQLAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
+import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -61,7 +61,7 @@ public class EvalCloudCom {
         AbstractDataAccess dataAccess;
         InstantMonitoringDataAnalysisEngine instantMonitoringDataAnalysisEngine;
         ElasticitySpaceFunction elasticitySpaceFunction;
-        AggregatedMonitoringDataSQLAccess aggregatedMonitoringDataSQLAccess;
+        PersistenceSQLAccess aggregatedMonitoringDataSQLAccess;
         
 //        ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
 //        

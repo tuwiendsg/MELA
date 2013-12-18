@@ -40,7 +40,7 @@
 //import java.util.List;
 //import java.util.Map;
 //import java.util.Timer;
-//import java.util.logging.Logger;
+//import org.apache.log4j.Logger;
 //import org.apache.log4j.Level;
 //
 ///**
@@ -61,7 +61,7 @@
 //        try {
 //            Class.forName("org.hsqldb.jdbc.JDBCDriver");
 //        } catch (Exception ex) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
 //        }
 //
 //        //if the SQL connection fails, try to reconnect, as the MELA_DataService might not be running.
@@ -70,13 +70,13 @@
 //            try {
 //                connection = DriverManager.getConnection("jdbc:hsqldb:hsql://"+Configuration.getDataServiceIP()+":"+Configuration.getDataServicePort()+"/melaDataServiceDB", username, password);
 //            } catch (SQLException ex) {
-//                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-//                Configuration.getLogger(this.getClass()).log(Level.WARN, "Could not connect to sql data end. Retrying in 1 second");
+//                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+//                Logger.getLogger(this.getClass()).log(Level.WARN, "Could not connect to sql data end. Retrying in 1 second");
 //            }
 //            try {
 //                Thread.sleep(1000);
 //            } catch (InterruptedException ex) {
-//                Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+//                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
 //            }
 //        }
 //
@@ -87,7 +87,7 @@
 //            ResultSet getMinTimestampID = statement.executeQuery("select MIN(id) from Timestamp where monseqid = (SELECT ID FROM MONITORINGSEQ where TIMESTAMP='" + monSeqID + "')");
 //
 //            if (!getMinTimestampID.next()) {
-//                Configuration.getLogger(this.getClass()).log(Level.ERROR, "Could not find monitored timestamps for monitoring sequence ID " + monSeqID);
+//                Logger.getLogger(this.getClass()).log(Level.ERROR, "Could not find monitored timestamps for monitoring sequence ID " + monSeqID);
 //                statement.close();
 //                return;
 //            }
@@ -95,8 +95,8 @@
 //            currentTimestampID = getMinTimestampID.getString(1);
 //            statement.close();
 //        } catch (SQLException ex) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
-//            Configuration.getLogger(this.getClass()).log(Level.WARN, "Could not get timestampID from the SQL Data End");
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+//            Logger.getLogger(this.getClass()).log(Level.WARN, "Could not get timestampID from the SQL Data End");
 //        }
 //        
 //    }
@@ -108,7 +108,7 @@
 //        try {
 //            statement = connection.createStatement();
 //        } catch (SQLException ex) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
 //            throw new DataAccessException(ex.getMessage(), ex.getCause());
 //        }
 //
@@ -118,14 +118,14 @@
 //            getMinTimestampID = statement.executeQuery("select MIN(ID) from Timestamp where monseqid = (SELECT ID FROM MONITORINGSEQ where TIMESTAMP='" + monSeqID + "') AND id > " + currentTimestampID);
 //
 //            if (!getMinTimestampID.next()) {
-//                Configuration.getLogger(this.getClass()).log(Level.ERROR, "Could not find monitored timestamps for monitoring sequence ID " + monSeqID);
+//                Logger.getLogger(this.getClass()).log(Level.ERROR, "Could not find monitored timestamps for monitoring sequence ID " + monSeqID);
 //                statement.close();
 //                return null;
 //            }
 //            //register next monitoring snapshot
 //            currentTimestampID = getMinTimestampID.getString(1);
 //        } catch (SQLException ex) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
 //            throw new DataAccessException(ex.getMessage(), ex.getCause());
 //        }
 //
@@ -169,7 +169,7 @@
 //
 //
 //        } catch (SQLException ex) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
 //            throw new DataAccessException(ex.getMessage(), ex.getCause());
 //        }
 //        return clusterInfo;

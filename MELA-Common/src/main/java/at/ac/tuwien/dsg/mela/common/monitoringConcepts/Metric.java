@@ -34,6 +34,7 @@ public class Metric implements Serializable {
     private String name;
     @XmlAttribute(name = "measurementUnit", required = true)
     private String measurementUnit;
+    
     @XmlAttribute(name = "type", required = true)
     private MetricType type = MetricType.RESOURCE;
 
@@ -78,7 +79,7 @@ public class Metric implements Serializable {
     public void setMeasurementUnit(String measurementUnit) {
         this.measurementUnit = measurementUnit;
     }
-
+   
     @Override
     public int hashCode() {
         int hash = 7;

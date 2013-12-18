@@ -52,6 +52,8 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         containedElements = new ArrayList<MonitoredElement>();
         this.id = id;
     }
+    
+    
 
     public String getName() {
         return name;

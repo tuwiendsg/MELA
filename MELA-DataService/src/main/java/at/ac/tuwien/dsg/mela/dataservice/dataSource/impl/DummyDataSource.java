@@ -22,7 +22,7 @@ import java.util.Map;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPoolingDataSource;
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
-import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+import org.apache.log4j.Logger;
 
 import org.apache.log4j.Priority;
 
@@ -41,7 +41,7 @@ public class DummyDataSource extends AbstractPoolingDataSource{
 
 	public MonitoringData getMonitoringData() throws DataAccessException {
     	MonitoringData clusterInfo = new MonitoringData();
-        Configuration.getLogger(this.getClass()).log(Priority.INFO, "Using DUMMY Data Source");
+        Logger.getLogger(this.getClass()).log(Priority.INFO, "Using DUMMY Data Source");
         return clusterInfo;
     }
 

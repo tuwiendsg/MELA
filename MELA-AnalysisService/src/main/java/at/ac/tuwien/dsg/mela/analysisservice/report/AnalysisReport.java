@@ -24,7 +24,6 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -77,7 +77,7 @@ public class AnalysisReport {
                 //get the value of the targeted metric
                 MetricValue targetMetricValue = entry.getValue().getValueForMetric(targetMetric);
                 if (targetMetricValue == null) {
-                    Configuration.getLogger(this.getClass()).log(Level.WARN, "Metric " + targetMetric + "not found on " + entry.getKey());
+                    Logger.getLogger(this.getClass()).log(Level.WARN, "Metric " + targetMetric + "not found on " + entry.getKey());
                 } else {
                     AnalysisReportEntry analysisReportEntry = new AnalysisReportEntry(targetMetric, targetMetricValue, requirement.getConditions(), entry.getKey());
                     if(!analysisReportEntry.isClean()){

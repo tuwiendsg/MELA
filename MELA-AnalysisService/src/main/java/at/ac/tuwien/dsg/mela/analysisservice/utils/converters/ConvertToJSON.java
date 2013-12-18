@@ -32,7 +32,6 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionO
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -44,6 +43,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -58,7 +58,7 @@ public class ConvertToJSON {
 
     public static String convertElasticityPathway(List<Metric> metrics, List<Neuron> elPathwayGroups) {
         if (elPathwayGroups == null || metrics == null) {
-            Configuration.getLogger(ConvertToJSON.class).log(Level.WARN, "Elasticity Pathway is null");
+            Logger.getLogger(ConvertToJSON.class).log(Level.WARN, "Elasticity Pathway is null");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElPathway");
             return elSpaceJSON.toJSONString();
@@ -103,7 +103,7 @@ public class ConvertToJSON {
     public static String convertElasticitySpace(ElasticitySpace space, MonitoredElement MonitoredElement) {
 
         if (space == null || MonitoredElement == null) {
-            Configuration.getLogger(ConvertToJSON.class).log(Level.WARN, "Elasticity Space or supplied Service Element are null");
+            Logger.getLogger(ConvertToJSON.class).log(Level.WARN, "Elasticity Space or supplied Service Element are null");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElSpace");
             return elSpaceJSON.toJSONString();

@@ -20,8 +20,7 @@
 package at.ac.tuwien.dsg.mela.dataservice.api;
 
 import java.io.StringReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import javax.jms.Connection;
 import javax.jms.Destination;
@@ -43,6 +42,7 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.dataservice.DataCollectionService;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+import org.apache.log4j.Level;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -124,9 +124,9 @@ public class DataServiceActiveMQAPI implements Runnable {
                     }
 
                 } catch (JAXBException ex) {
-                    Logger.getLogger(DataServiceActiveMQAPI.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(DataServiceActiveMQAPI.class.getName()).log(Level.ERROR, null, ex);
                 } catch (JMSException ex) {
-                    Logger.getLogger(CommandConsumer.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(CommandConsumer.class.getName()).log(Level.ERROR, null, ex);
                 }
             } else {
                 System.out.println("Unrecognized message: " + message);
@@ -144,7 +144,7 @@ public class DataServiceActiveMQAPI implements Runnable {
                         + Configuration.getDataServiceConfigurationPort());
                 broker.start();
             } catch (Exception e) {
-                Logger.getLogger(CommandConsumer.class.getName()).log(Level.SEVERE, null, e);
+                Logger.getLogger(CommandConsumer.class.getName()).log(Level.ERROR, null, e);
             }
 
             // Create a ConnectionFactory
@@ -166,7 +166,7 @@ public class DataServiceActiveMQAPI implements Runnable {
             MessageConsumer consumer = session.createConsumer(destination);
             consumer.setMessageListener(new CommandConsumer());
         } catch (JMSException ex) {
-            Logger.getLogger(DataServiceActiveMQAPI.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DataServiceActiveMQAPI.class.getName()).log(Level.ERROR, null, ex);
         }
 
     }

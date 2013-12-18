@@ -24,7 +24,6 @@ import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.strategy.impl.SimpleSOMStrategy;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -90,7 +90,7 @@ public class LightweightEncounterRateElasticityPathway {
         //classify all monitoring data
         //need to go trough all monitoring data, and push the classified items, such that I respect the monitored sequence.
         if (dataToClassify == null || dataToClassify.values().isEmpty()) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Empty data to classify as elasticity pathway");
+            Logger.getLogger(this.getClass()).log(Level.ERROR, "Empty data to classify as elasticity pathway");
             return;
         }
         int maxIndex = dataToClassify.values().iterator().next().size();
@@ -102,7 +102,7 @@ public class LightweightEncounterRateElasticityPathway {
 
                 //maybe we have diff value count for different metrics. Not sure when his might happen though.
                 if (values.size() <= i) {
-                    Configuration.getLogger(this.getClass()).log(Level.ERROR, "Less values for metric " + mapped);
+                    Logger.getLogger(this.getClass()).log(Level.ERROR, "Less values for metric " + mapped);
                     break;
                 }
 
@@ -124,10 +124,10 @@ public class LightweightEncounterRateElasticityPathway {
                     try {
                         values.add(Double.parseDouble(value.getValueRepresentation()));
                     } catch (Exception e) {
-                        Configuration.getLogger(this.getClass()).log(Level.ERROR, e);
+                        Logger.getLogger(this.getClass()).log(Level.ERROR, e);
                     }
                 } else {
-                    Configuration.getLogger(this.getClass()).log(Level.ERROR, "Elasticity Pathway can't be applied on non-numeric metric value " + value);
+                    Logger.getLogger(this.getClass()).log(Level.ERROR, "Elasticity Pathway can't be applied on non-numeric metric value " + value);
                 }
             }
             som.updateMap(new Neuron(values));
@@ -147,7 +147,7 @@ public class LightweightEncounterRateElasticityPathway {
                     Number nr = (Number) value.getValue();
                     values.add(nr.doubleValue());
                 } else {
-                    Configuration.getLogger(this.getClass()).log(Level.ERROR, "Elasticity Pathway can't be applied on non-numeric metric value " + value);
+                    Logger.getLogger(this.getClass()).log(Level.ERROR, "Elasticity Pathway can't be applied on non-numeric metric value " + value);
                 }
             }
             Neuron neuron = som.classifySituation(new Neuron(values));

@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
-import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
@@ -35,18 +34,16 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDa
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
-import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Priority;
+import org.apache.log4j.Logger;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -79,10 +76,10 @@ public class DataAccessWithAutoStructureDetection extends AbstractDataAccess {
 	 *         level to the element having the found ID
 	 */
 	@Override
-	public synchronized ServiceMonitoringSnapshot getMonitoredData(MonitoredElement m) {
+	public synchronized ServiceMonitoringSnapshot getStructuredMonitoredData(MonitoredElement m) {
 
 		if (m == null) {
-			Configuration.getLogger(DataAccess.class).log(Level.WARN, "No supplied service configuration");
+			Logger.getLogger(DataAccess.class).log(Level.WARN, "No supplied service configuration");
 			return new ServiceMonitoringSnapshot();
 		}
 		MonitoredElement structureRoot = m.clone();
@@ -208,29 +205,5 @@ public class DataAccessWithAutoStructureDetection extends AbstractDataAccess {
 	public synchronized MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement suppliedMonitoringElement) {
 		throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
 	}
-
-	@Override
-	public Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement suppliedMonitoringElement) {
-		Collection<Metric> metrics = new ArrayList<Metric>();
-		for (AbstractDataSource dataSource : freshestMonitoredData.keySet()) {
-			// maybe in the future we use data source information, but now we
-			// extract the monitored data directly
-
-			// maybe in the future we use information from MonitoringData, but
-			// now we extract the monitored data elements directly
-			for (MonitoredElementData elementData : freshestMonitoredData.get(dataSource).getMonitoredElementDatas()) {
-				MonitoredElement monitoredElement = elementData.getMonitoredElement();
-
-				if (monitoredElement.equals(suppliedMonitoringElement)) {
-					for (MetricInfo info : elementData.getMetrics()) {
-						Metric metric = new Metric();
-						metric.setName(info.getName());
-						metric.setMeasurementUnit(info.getUnits());
-						metrics.add(metric);
-					}
-				}
-			}
-		}
-		return metrics;
-	}
+ 
 }

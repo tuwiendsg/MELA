@@ -40,7 +40,7 @@ public class SimpleSOMStrategy extends SOMStrategy {
      */
     public Double getDistanceRestraintFactor(int distanceLevel, int neighboursCount){
 //        if(distanceLevel < 1){
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR,"Distance level < 1");
+//            Logger.getLogger(this.getClass()).log(Level.ERROR,"Distance level < 1");
 //            System.exit(1);
 //        }
         if(neighboursCount < 1){
@@ -59,7 +59,7 @@ public class SimpleSOMStrategy extends SOMStrategy {
     public Double geLearningRestraintFactor(int distanceLevel){
 //        //very simple implementation
 //        if(distanceLevel < 1){
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR,"Distance level < 1");
+//            Logger.getLogger(this.getClass()).log(Level.ERROR,"Distance level < 1");
 //            System.exit(1);
 //        }
 //        return (distanceLevel <= neighbourhoodSize)? 1d : 0d;

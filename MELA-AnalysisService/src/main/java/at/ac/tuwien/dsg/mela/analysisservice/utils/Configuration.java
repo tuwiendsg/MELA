@@ -37,24 +37,18 @@ import org.apache.log4j.PropertyConfigurator;
 public class Configuration {
 
     private static Properties configuration;
-    static Logger logger;
 
     static {
         configuration = new Properties();
         try {
             InputStream is = Configuration.class.getResourceAsStream("/config/Config.properties");
             configuration.load(is);
-            PropertyConfigurator.configure(Configuration.class.getResourceAsStream("/config/Log4j.properties"));
-            logger = Logger.getLogger("melaAnalysisServiceLogger");
         } catch (Exception ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.FATAL, null, ex);
         }
 
     }
-
-    public static Logger getLogger(Class loggerClass) {
-        return Logger.getLogger(loggerClass);
-    }
+ 
 
 //    public static int getDataPoolingInterval() {
 //        if (configuration.containsKey("DATA_COLLECTION_INTERVAL_IN_SECONDS")) {

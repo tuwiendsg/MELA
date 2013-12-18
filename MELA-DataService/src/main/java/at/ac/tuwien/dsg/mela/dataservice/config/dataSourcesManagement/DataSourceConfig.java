@@ -97,4 +97,12 @@ public class DataSourceConfig {
 		this.properties = properties;
 	}
 
+	@Override
+	public String toString() {
+		return "DataSourceConfig [name=" + name + ", dataCollectionMechanism=" + dataCollectionMechanism + ", type=" + type + ", className=" + className
+				+ ", properties=" + properties + "]";
+	}
+	
+	
+
 }

@@ -22,8 +22,8 @@ package at.ac.tuwien.dsg.mela.common.monitoringConcepts;
 import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 import java.text.DecimalFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -68,7 +68,7 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
                 valueType = ValueType.TEXT;
             }
         } else {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Unknown elements: " + value);
+            Logger.getLogger(this.getClass().getName()).log(Level.WARN, "Unknown elements: " + value);
 
         }
     }
@@ -113,7 +113,7 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         } else if (value instanceof String) {
             return value.toString();
         } else {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Unknown elements: " + value);
+            Logger.getLogger(this.getClass().getName()).log(Level.WARN, "Unknown elements: " + value);
             return "-1";
         }
     }
@@ -141,7 +141,7 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
                 valueType = ValueType.TEXT;
             }
         } else {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Unknown elements: " + value);
+            Logger.getLogger(this.getClass().getName()).log(Level.WARN, "Unknown elements: " + value);
         }
     }
 

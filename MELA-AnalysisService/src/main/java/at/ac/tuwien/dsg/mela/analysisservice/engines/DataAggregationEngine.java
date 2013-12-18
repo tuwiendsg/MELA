@@ -66,7 +66,7 @@
 //        if (serviceMonitoringSnapshot == null) {
 //            return null;
 //        } else if (compositionRulesConfiguration == null || compositionRulesConfiguration.getMetricCompositionRules() == null) {
-//            Configuration.getLogger(this.getClass()).log(Level.WARN, "CompositionRulesConfiguration either null, missing composition rules, or target service ID");
+//            Logger.getLogger(this.getClass()).log(Level.WARN, "CompositionRulesConfiguration either null, missing composition rules, or target service ID");
 //            return serviceMonitoringSnapshot;
 //        }
 //        CompositionRulesBlock compositionRulesBlock = compositionRulesConfiguration.getMetricCompositionRules();
@@ -168,7 +168,7 @@
 ////                                targetElements.get(targetElement).getMonitoredData().put(compositionRule.getResultingMetric(), composedValue.clone());
 ////
 ////                            } else {
-////                                //Configuration.getLogger(this.getClass()).log(Level.WARN, "Target metric " + targetMetric + " not found in level " + sourceLevel + " in components " + sourceMonitoredElementIDs + " for element" + targetElement.getId());
+////                                //Logger.getLogger(this.getClass()).log(Level.WARN, "Target metric " + targetMetric + " not found in level " + sourceLevel + " in components " + sourceMonitoredElementIDs + " for element" + targetElement.getId());
 ////                            }
 ////                        }
 ////                    }
@@ -226,14 +226,14 @@
 //        for (ServiceMonitoringSnapshot serviceMonitoringSnapshot : serviceMonitoringSnapshots) {
 //            Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> monitoredData = serviceMonitoringSnapshot.getMonitoredData();
 //            if (monitoredData == null || monitoredData.isEmpty()) {
-//                Configuration.getLogger(this.getClass()).log(Level.WARN, "No monitoring data in theserviceMonitoringSnapshot ");
+//                Logger.getLogger(this.getClass()).log(Level.WARN, "No monitoring data in theserviceMonitoringSnapshot ");
 //                continue;
 //            }
 //            //extract for each Level the monitored data
 //            for (MonitoredElement.MonitoredElementLevel level : monitoredData.keySet()) {
 //                Map<MonitoredElement, MonitoredElementMonitoringSnapshot> dataForLevel = monitoredData.get(level);
 //                if (dataForLevel == null || dataForLevel.isEmpty()) {
-//                    Configuration.getLogger(this.getClass()).log(Level.WARN, "No monitoring data in the serviceMonitoringSnapshot for Level:" + level);
+//                    Logger.getLogger(this.getClass()).log(Level.WARN, "No monitoring data in the serviceMonitoringSnapshot for Level:" + level);
 //                    continue;
 //                }
 //
@@ -270,7 +270,7 @@
 //        //create composite monitoring data after the last service we have
 //        Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>> serviceLevelDataToAggregate = dataToAggregate.get(MonitoredElement.MonitoredElementLevel.SERVICE);
 ////        if (serviceLevelDataToAggregate == null) {
-////            Configuration.getLogger(this.getClass()).log(Level.WARN, "No service level data found to compose historical data");
+////            Logger.getLogger(this.getClass()).log(Level.WARN, "No service level data found to compose historical data");
 ////            if (!serviceMonitoringSnapshots.isEmpty()) {
 ////                //return last monitored data
 ////                return serviceMonitoringSnapshots.get(serviceMonitoringSnapshots.size() - 1);
@@ -281,7 +281,7 @@
 //
 //        List<MonitoredElement> encounteredServices = new ArrayList<MonitoredElement>(serviceLevelDataToAggregate.keySet());
 //        if (encounteredServices.isEmpty()) {
-//            Configuration.getLogger(this.getClass()).log(Level.WARN, "No service level data found to compose historical data");
+//            Logger.getLogger(this.getClass()).log(Level.WARN, "No service level data found to compose historical data");
 //            if (!serviceMonitoringSnapshots.isEmpty()) {
 //                //return last monitored data
 //                return serviceMonitoringSnapshots.get(serviceMonitoringSnapshots.size() - 1);
@@ -333,7 +333,7 @@
 //
 //        //if no composition rules, return  only service structure (to display nice)
 //        if (compositionRulesConfiguration == null || compositionRulesConfiguration.getHistoricMetricCompositionRules() == null) {
-//            Configuration.getLogger(this.getClass()).log(Level.WARN, "CompositionRulesConfiguration either null, missing composition rules, or target service ID");
+//            Logger.getLogger(this.getClass()).log(Level.WARN, "CompositionRulesConfiguration either null, missing composition rules, or target service ID");
 //            return composedMonitoringSnapshot;
 //        }
 //
@@ -379,7 +379,7 @@
 //                                    if (value != null) {
 //                                        compositeData.put(targetMetric, value);
 //                                    } else {
-//                                        Configuration.getLogger(this.getClass()).log(Level.WARN, "Operation" + operation.getOperationType() + " for " + operation.getTargetMetric() + " returned null");
+//                                        Logger.getLogger(this.getClass()).log(Level.WARN, "Operation" + operation.getOperationType() + " for " + operation.getTargetMetric() + " returned null");
 //                                    }
 //                                }
 //                                //add aggregated data to the composed snapshot

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>eu.celar.multilevel-metrics-evaluation</groupId>
+		<groupId>at.ac.tuwien.mela</groupId>
 		<artifactId>MELA-Core-Pom</artifactId>
 		<version>0.1-SNAPSHOT</version>
 	</parent>
@@ -54,7 +54,7 @@
 			<artifactId>activemq-all</artifactId>
 			<version>5.5.0</version>
 		</dependency>
-		 
+
 		<!-- <dependency> <groupId>com.jcraft</groupId> <artifactId>jsch</artifactId> 
 			<version>0.1.50</version> </dependency> -->
 		<dependency>
@@ -154,13 +154,13 @@
 		<!--Dependency on the Data Access module -->
 
 		<dependency>
-			<groupId>eu.celar.multilevel-metrics-evaluation</groupId>
+			<groupId>at.ac.tuwien.mela</groupId>
 			<artifactId>MELA-DataService</artifactId>
 			<version>0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
-			<groupId>eu.celar.multilevel-metrics-evaluation</groupId>
+			<groupId>at.ac.tuwien.mela</groupId>
 			<artifactId>MELA-Common</artifactId>
 			<version>0.1-SNAPSHOT</version>
 			<type>jar</type>
@@ -172,6 +172,19 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.0.2</version>
 				<configuration>
@@ -179,9 +192,9 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
- 
-                        
-                        <plugin>
+
+
+			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
 				<version>2.1</version>
@@ -193,7 +206,7 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
-							<path>/MELA-AnalysisService-0.1-SNAPSHOT</path> 
+							<path>/MELA-AnalysisService-0.1-SNAPSHOT</path>
 							<finalName>${project.artifactId}-${project.version}.war.jar</finalName>
 							<!--<mainClass>at.ac.tuwien.dsg.daas.main.Main</mainClass> -->
 							<!-- optional, needed only if you want to use a preconfigured server.xml 
@@ -205,15 +218,15 @@
 								value is jar</attachArtifactClassifierType> -->
 						</configuration>
 					</execution>
-                                        
-                                        <execution>
+
+					<execution>
 						<id>tomcat-create-standalone-war</id>
 						<goals>
 							<goal>exec-war</goal>
 						</goals>
 						<phase>package</phase>
 						<configuration>
-							<path>/MELA-AnalysisService-0.1-SNAPSHOT</path> 
+							<path>/MELA-AnalysisService-0.1-SNAPSHOT</path>
 							<finalName>${project.artifactId}-${project.version}.war</finalName>
 							<!--<mainClass>at.ac.tuwien.dsg.daas.main.Main</mainClass> -->
 							<!-- optional, needed only if you want to use a preconfigured server.xml 

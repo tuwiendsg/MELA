@@ -17,12 +17,12 @@
  */
 package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities;
 
-import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -147,7 +147,7 @@ public class Neuron { //implements Iterable<Neuron> {
         List<Double> neuronWeights = neuron.weights;
 
         if (weights.size() != neuronWeights.size()) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Neurons to compute distance do not have the same weights cardinality");
+            Logger.getLogger(this.getClass()).log(Level.ERROR, "Neurons to compute distance do not have the same weights cardinality");
 //            System.exit(1);
             return Double.MAX_VALUE;
         }
@@ -182,7 +182,7 @@ public class Neuron { //implements Iterable<Neuron> {
 //
 //    private void updateNeuron(Neuron neuron, SOMStrategy strategy, int level) {
 //        if (level < 1) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Level < 1");
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, "Level < 1");
 //            System.exit(1);
 //        }
 //        ArrayList<Double> neuronWeights = neuron.weights;

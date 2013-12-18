@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.log4j.Level;
-import org.yaml.snakeyaml.Yaml;
 
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
@@ -45,8 +44,7 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredEle
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPoolingDataSource;
-import at.ac.tuwien.dsg.mela.dataservice.RawMonitoringDataSQLAccess;
-import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+import org.apache.log4j.Logger;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -76,7 +74,7 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
 
                 //if ganglia does not respond
                 if (line.contains("Unable to connect")) {
-                    Configuration.getLogger(this.getClass()).log(Level.WARN, "Unable to execute " + cmd);
+                    Logger.getLogger(this.getClass()).log(Level.WARN, "Unable to execute " + cmd);
                     return null;
                 }
                 if (line.contains("<") || line.endsWith("]>")) {
@@ -91,11 +89,11 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
 
             //if ganglia does not respond
             if (content == null || content.length() == 0) {
-                Configuration.getLogger(this.getClass()).log(Level.WARN, "" + "Unable to execute " + cmd);
+                Logger.getLogger(this.getClass()).log(Level.WARN, "" + "Unable to execute " + cmd);
                 return new MonitoringData();
             }
         } catch (Exception ex) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, ex);
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             return new MonitoringData();
         }
 
@@ -153,13 +151,13 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
 
             return monitoringData;
         } catch (Exception e) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, null,e);
+            Logger.getLogger(this.getClass()).log(Level.ERROR, null,e);
             return new MonitoringData();
         }
     }
 
 //    private void saveRawDataToFile(String file, GangliaClusterInfo gangliaClusterInfo) {
-////        Configuration.getLogger(this.getclass()).log(Level.INFO,"Collected monitoring data at " + new Date());
+////        Logger.getLogger(this.getclass()).log(Level.INFO,"Collected monitoring data at " + new Date());
 //        try {
 //            String elasticity = yaml.dump(gangliaClusterInfo);
 //            //better to open close buffers as there are less chances I get the file in unstable state if I terminate the
@@ -170,7 +168,7 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
 //            bufferedWriter.flush();
 //            bufferedWriter.close();
 //        } catch (Exception e) {
-//            Configuration.getLogger(this.getclass()).log(Level.WARN, e.getMessage(), e);
+//            Logger.getLogger(this.getclass()).log(Level.WARN, e.getMessage(), e);
 //            e.printStackTrace();
 //        }
 //    }

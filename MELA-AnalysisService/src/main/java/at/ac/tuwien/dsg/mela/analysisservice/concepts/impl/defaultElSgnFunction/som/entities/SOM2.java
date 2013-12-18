@@ -18,11 +18,11 @@
 package at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities;
 
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.strategy.SOMStrategy;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -406,7 +406,7 @@ public class SOM2 extends SOM {
             }
         }
         if (!identified) {
-            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Neuron not found");
+            Logger.getLogger(this.getClass()).log(Level.ERROR, "Neuron not found");
             System.exit(1);
         }
         Double distance = 0d;

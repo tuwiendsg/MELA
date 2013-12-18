@@ -52,6 +52,7 @@ import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSource
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.GangliaDataSource;
+import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 /**
@@ -71,7 +72,7 @@ public class DataCollectionService {
     private MonitoredElement serviceConfiguration;
     //used for data Aggregation over time
     private List<ServiceMonitoringSnapshot> historicalMonitoringData;
-    //used if somewone wants freshest data
+    //used if someone wants freshest data
 //    private ServiceMonitoringSnapshot latestMonitoringData;
     //interval at which RAW monitoring data is collected
     private int monitoringIntervalInSeconds = Configuration.getDataPoolingInterval();
@@ -83,7 +84,7 @@ public class DataCollectionService {
     //holding MonitoredElement name, and Actions Name
     private Map<MonitoredElement, List<String>> actionsInExecution;
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
-    private AggregatedMonitoringDataSQLAccess aggregatedMonitoringDataSQLAccess;
+    private PersistenceSQLAccess persistenceSQLAccess;
  
     
     //used in monitoring 
@@ -95,9 +96,7 @@ public class DataCollectionService {
 //    private SystemControl selfReference;
 
     protected DataCollectionService() {
-
-
-
+ 
         instantMonitoringDataEnrichmentEngine = new DataAggregationEngine();
 
 //        latestMonitoringData = new ServiceMonitoringSnapshot();
@@ -113,7 +112,7 @@ public class DataCollectionService {
 
 
         //get latest config
-        ConfigurationXMLRepresentation configurationXMLRepresentation = AggregatedMonitoringDataSQLAccess.getLatestConfiguration("mela", "mela");
+        ConfigurationXMLRepresentation configurationXMLRepresentation = PersistenceSQLAccess.getLatestConfiguration("mela", "mela");
 
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
@@ -157,11 +156,11 @@ public class DataCollectionService {
         monitoringTimer.cancel();
         monitoringTimer.purge();
         try {
-            aggregatedMonitoringDataSQLAccess.closeConnection();
+            persistenceSQLAccess.closeConnection();
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, null, e);
         }
-        aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela", serviceConfiguration.getId());
+        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", serviceConfiguration.getId());
         startMonitoring();
     }
 
@@ -220,12 +219,12 @@ public class DataCollectionService {
     public synchronized ServiceMonitoringSnapshot getRawMonitoringData() {
         if (dataAccess != null) {
             Date before = new Date();
-            ServiceMonitoringSnapshot monitoredData = dataAccess.getMonitoredData(serviceConfiguration);
+            ServiceMonitoringSnapshot monitoredData = dataAccess.getStructuredMonitoredData(serviceConfiguration);
             Date after = new Date();
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Raw monitoring data access time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+            Logger.getLogger(this.getClass()).log(Level.DEBUG, "Raw monitoring data access time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
             return monitoredData;
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
             return new ServiceMonitoringSnapshot();
         }
     }
@@ -242,7 +241,7 @@ public class DataCollectionService {
         if (dataAccess != null) {
             return dataAccess.getAvailableMetricsForMonitoredElement(MonitoredElement);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
             return new ArrayList<Metric>();
         }
     }
@@ -251,7 +250,7 @@ public class DataCollectionService {
         if (dataAccess != null) {
             dataAccess.addMetricFilter(metricFilter);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
         }
     }
 
@@ -259,7 +258,7 @@ public class DataCollectionService {
         if (dataAccess != null) {
             dataAccess.addMetricFilters(newFilters);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
         }
     }
 
@@ -267,7 +266,7 @@ public class DataCollectionService {
         if (dataAccess != null) {
             dataAccess.removeMetricFilter(metricFilter);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
         }
     }
 
@@ -275,7 +274,7 @@ public class DataCollectionService {
         if (dataAccess != null) {
             dataAccess.removeMetricFilters(filtersToRemove);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "Data Access source not set yet on SystemControl");
         }
     }
 
@@ -293,8 +292,8 @@ public class DataCollectionService {
     public synchronized void startMonitoring() {
 
         //open proper sql access
-        aggregatedMonitoringDataSQLAccess = new AggregatedMonitoringDataSQLAccess("mela", "mela", serviceConfiguration.getId());
-        aggregatedMonitoringDataSQLAccess.writeConfig(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
+        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", serviceConfiguration.getId());
+        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
         if (Configuration.automatedStructureDetection()) {
          
@@ -305,9 +304,12 @@ public class DataCollectionService {
         
         //read data sources configuration file
         DataSourceConfigs dataSources =   DataSourcesManager.readDataSourcesConfiguration();
+        Logger.getLogger(this.getClass()).log(Level.DEBUG, "Using following data sources:");
         for(DataSourceConfig config: dataSources.getConfigs() ){
         	
-        	//transform configuration options in kei-value pairs
+        	Logger.getLogger(this.getClass()).log(Level.DEBUG, config.toString());
+        	
+        	//transform configuration options in key-value pairs
         	
         	Map<String, String> configuration = new HashMap<String, String>();
         	for(String configEntry : config.getProperties()){
@@ -319,7 +321,6 @@ public class DataCollectionService {
         		dataAccess.addDataSource(dataSource);
         	}
         }
-        
         
         //set metric filters on data access
         for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
@@ -352,7 +353,7 @@ public class DataCollectionService {
             @Override
             public void run() {
                 if (serviceConfiguration != null) {
-                    Configuration.getLogger(this.getClass()).log(Level.WARN, "Refreshing data");
+                    Logger.getLogger(this.getClass()).log(Level.DEBUG, "Refreshing data");
                     ServiceMonitoringSnapshot monitoringData = getRawMonitoringData();
 
                     if (monitoringData != null) {
@@ -370,22 +371,25 @@ public class DataCollectionService {
                          
                             //write monitoring data in sql
                             Date before = new Date();
-                            aggregatedMonitoringDataSQLAccess.writeMonitoringData(latestMonitoringData);
+                            
+                            persistenceSQLAccess.writeMonitoringData(latestMonitoringData);
+                            persistenceSQLAccess.writeRawMonitoringData(dataAccess.getFreshestMonitoredData());
+                            
                             Date after = new Date();
-                            Configuration.getLogger(this.getClass()).log(Level.WARN, "DaaS data writing time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+                            Logger.getLogger(this.getClass()).log(Level.DEBUG, "DaaS data writing time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
 //                            elasticitySpaceFunction.trainElasticitySpace(latestMonitoringData);
                         }
                     } else {
                         //stop the monitoring if the data replay is done
 //                        this.cancel();
-                        Configuration.getLogger(this.getClass()).log(Level.ERROR, "Monitoring data is NULL");
+                        Logger.getLogger(this.getClass()).log(Level.ERROR, "Monitoring data is NULL");
                     }
                 } else {
-                    Configuration.getLogger(this.getClass()).log(Level.WARN, "No service configuration");
+                    Logger.getLogger(this.getClass()).log(Level.WARN, "No service configuration");
                 }
             }
         };
-        Configuration.getLogger(this.getClass()).log(Level.WARN, "Scheduling data pool at " + monitoringIntervalInSeconds + " seconds");
+        Logger.getLogger(this.getClass()).log(Level.DEBUG, "Scheduling data pool at " + monitoringIntervalInSeconds + " seconds");
         //repeat the monitoring every monitoringIntervalInSeconds seconds 
         monitoringTimer.schedule(task, 0, monitoringIntervalInSeconds * 1000);
 
@@ -393,9 +397,9 @@ public class DataCollectionService {
 
     public synchronized void stopMonitoring() {
         try {
-            aggregatedMonitoringDataSQLAccess.closeConnection();
+            persistenceSQLAccess.closeConnection();
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(DataCollectionService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            Logger.getLogger(DataCollectionService.class.getName()).log(Level.ERROR, null, ex);
         }
 //        task.cancel();
         monitoringTimer.cancel();
@@ -404,7 +408,7 @@ public class DataCollectionService {
 //        Date before = new Date();
 //        String converted = ConvertToJSON.convertMonitoringSnapshot(latestMonitoringData, requirements, actionsInExecution);
 //        Date after = new Date();
-//        Configuration.getLogger(this.getClass()).log(Level.WARN, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+//        Logger.getLogger(this.getClass()).log(Level.WARN, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
 //        return converted;
 //    }
 //

@@ -23,7 +23,6 @@ import org.apache.log4j.Level;
 
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.analysisservice.concepts.impl.defaultElSgnFunction.som.entities.Neuron;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayGroupXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayGroupXML.ElasticityPathwayGroupEntryXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
@@ -32,6 +31,7 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -120,7 +120,7 @@ public class ConvertToXML {
     	ElasticityPathwayXML elasticityPathwayXML = new ElasticityPathwayXML();
     	
     	if (elPathwayGroups == null || metrics == null) {
-            Configuration.getLogger(ConvertToJSON.class).log(Level.WARN, "Elasticity Pathway is null");
+            Logger.getLogger(ConvertToJSON.class).log(Level.WARN, "Elasticity Pathway is null");
             return elasticityPathwayXML;
         }
     	elasticityPathwayXML.setElement(monitoredElement);

@@ -167,7 +167,7 @@
 //			while ((line = reader.readLine()) != null) {
 //				// if ganglia does not respond
 //				if (line.contains("Unable to connect")) {
-//					Configuration.getLogger(this.getClass()).log(Level.WARN, "" + rootIPAddress + " does not respond to monitoring request");
+//					Logger.getLogger(this.getClass()).log(Level.WARN, "" + rootIPAddress + " does not respond to monitoring request");
 //					return null;
 //				}
 //				if (line.contains("<") || line.endsWith("]>")) {
@@ -221,7 +221,7 @@
 //		//
 //		// //if ganglia does not respond
 //		// if (line.contains("Unable to connect")) {
-//		// Configuration.getLogger(this.getClass()).log(Level.WARN,
+//		// Logger.getLogger(this.getClass()).log(Level.WARN,
 //		// "Unable to execute " + cmd);
 //		// return null;
 //		// }
@@ -237,7 +237,7 @@
 //		//
 //		// //if ganglia does not respond
 //		// if (content == null || content.length() == 0) {
-//		// Configuration.getLogger(this.getClass()).log(Level.WARN, "" +
+//		// Logger.getLogger(this.getClass()).log(Level.WARN, "" +
 //		// "Unable to execute " + cmd);
 //		// return null;
 //		// }
@@ -255,7 +255,7 @@
 //			return gangliaClusterInfo;
 //		} catch (Exception e) {
 //			session = null;
-//			Configuration.getLogger(this.getClass()).log(Level.WARN, e.getMessage());
+//			Logger.getLogger(this.getClass()).log(Level.WARN, e.getMessage());
 //			return new ClusterInfo();
 //
 //		}
@@ -264,7 +264,7 @@
 //	// private void saveRawDataToFile(String file, GangliaClusterInfo
 //	// gangliaClusterInfo) {
 //	// //
-//	// Configuration.getLogger(this.getClass()).log(Level.INFO,"Collected monitoring data at "
+//	// Logger.getLogger(this.getClass()).log(Level.INFO,"Collected monitoring data at "
 //	// + new Date());
 //	// try {
 //	// String elasticity = yaml.dump(gangliaClusterInfo);
@@ -278,7 +278,7 @@
 //	// bufferedWriter.flush();
 //	// bufferedWriter.close();
 //	// } catch (Exception e) {
-//	// Configuration.getLogger(this.getClass()).log(Level.WARN, e.getMessage(),
+//	// Logger.getLogger(this.getClass()).log(Level.WARN, e.getMessage(),
 //	// e);
 //	// e.printStackTrace();
 //	// }

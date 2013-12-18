@@ -3,7 +3,6 @@ package at.ac.tuwien.dsg.meladataservice;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

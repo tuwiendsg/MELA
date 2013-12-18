@@ -33,8 +33,11 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
@@ -53,8 +56,7 @@ public abstract class AbstractDataAccess {
 	// such as timestamp || service ID
 	// private String monSeqID;
 	{
-		freshestMonitoredData = Collections
-				.synchronizedMap(new HashMap<AbstractDataSource, MonitoringData>());
+		freshestMonitoredData = Collections.synchronizedMap(new HashMap<AbstractDataSource, MonitoringData>());
 		dataSourcesPoolingTimers = new HashMap<AbstractDataSource, Timer>();
 		dataSources = new ArrayList<AbstractDataSource>();
 	}
@@ -70,11 +72,17 @@ public abstract class AbstractDataAccess {
 		// metricFilter.setLevel(MonitoredElement.MonitoredElementLevel.VM);
 		// addMetricFilter(metricFilter);
 	}
+	
+	
+
+	public Collection<MonitoringData> getFreshestMonitoredData() {
+		return freshestMonitoredData.values();
+	}
+ 
 
 	public void addMetricFilter(MetricFilter metricFilter) {
 		if (metricFilters.containsKey(metricFilter.getLevel())) {
-			List<MetricFilter> list = metricFilters
-					.get(metricFilter.getLevel());
+			List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
 			if (!list.contains(metricFilter)) {
 				list.add(metricFilter);
 			}
@@ -88,8 +96,7 @@ public abstract class AbstractDataAccess {
 	public void addMetricFilters(Collection<MetricFilter> newFilters) {
 		for (MetricFilter metricFilter : newFilters) {
 			if (metricFilters.containsKey(metricFilter.getLevel())) {
-				List<MetricFilter> list = metricFilters.get(metricFilter
-						.getLevel());
+				List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
 				if (!list.contains(metricFilter)) {
 					list.add(metricFilter);
 				}
@@ -103,8 +110,7 @@ public abstract class AbstractDataAccess {
 
 	public void removeMetricFilter(MetricFilter metricFilter) {
 		if (metricFilters.containsKey(metricFilter.getLevel())) {
-			List<MetricFilter> list = metricFilters
-					.get(metricFilter.getLevel());
+			List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
 			if (list.contains(metricFilter)) {
 				list.remove(metricFilter);
 			}
@@ -114,8 +120,7 @@ public abstract class AbstractDataAccess {
 	public void removeMetricFilters(Collection<MetricFilter> filtersToRemove) {
 		for (MetricFilter metricFilter : filtersToRemove) {
 			if (metricFilters.containsKey(metricFilter.getLevel())) {
-				List<MetricFilter> list = metricFilters.get(metricFilter
-						.getLevel());
+				List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
 				if (list.contains(metricFilter)) {
 					list.remove(metricFilter);
 				}
@@ -129,16 +134,13 @@ public abstract class AbstractDataAccess {
 
 	public synchronized void addDataSource(AbstractDataSource dataSource) {
 		this.dataSources.add(dataSource);
-		this.dataSourcesPoolingTimers.put(dataSource,
-				createMonitoringTimer(dataSource));
+		this.dataSourcesPoolingTimers.put(dataSource, createMonitoringTimer(dataSource));
 	}
 
-	public synchronized void addDataSources(
-			Collection<AbstractDataSource> dataSources) {
+	public synchronized void addDataSources(Collection<AbstractDataSource> dataSources) {
 		this.dataSources.addAll(dataSources);
 		for (AbstractDataSource dataSource : dataSources) {
-			this.dataSourcesPoolingTimers.put(dataSource,
-					createMonitoringTimer(dataSource));
+			this.dataSourcesPoolingTimers.put(dataSource, createMonitoringTimer(dataSource));
 		}
 	}
 
@@ -162,24 +164,18 @@ public abstract class AbstractDataAccess {
 						MonitoringData data = dataSource.getMonitoringData();
 
 						// replace freshest monitoring data
-						freshestMonitoredData.put(abstractPoolingDataSource,
-								data);
+						freshestMonitoredData.put(abstractPoolingDataSource, data);
 					} catch (DataAccessException e) {
 						// TODO Auto-generated catch block
-						Logger.getLogger(AbstractDataAccess.class).log(
-								Level.ERROR, null, e);
+						Logger.getLogger(AbstractDataAccess.class).log(Level.ERROR, null, e);
 					}
 
 				}
 			};
-			timer.scheduleAtFixedRate(dataCollectionTask, 0,
-					abstractPoolingDataSource.getPoolingInterval());
+			timer.scheduleAtFixedRate(dataCollectionTask, 0, abstractPoolingDataSource.getPoolingInterval());
 		} else {
 			// TODO: needs to be implemented
-			Logger.getLogger(AbstractDataAccess.class).log(
-					Priority.ERROR,
-					"Not supporting yet data source of type "
-							+ dataSource.getClass().getName());
+			Logger.getLogger(AbstractDataAccess.class).log(Priority.ERROR, "Not supporting yet data source of type " + dataSource.getClass().getName());
 		}
 		return timer;
 	}
@@ -191,8 +187,8 @@ public abstract class AbstractDataAccess {
 	 *         supplied tree and returns data about the monitored element and
 	 *         their children.
 	 */
-	public abstract ServiceMonitoringSnapshot getMonitoredData(
-			MonitoredElement MonitoredElement);
+	public abstract ServiceMonitoringSnapshot getStructuredMonitoredData(MonitoredElement monitoredElement);
+
 
 	/**
 	 * @param MonitoredElement
@@ -201,8 +197,7 @@ public abstract class AbstractDataAccess {
 	 *         MonitoredElement Does not return data also about the element
 	 *         children
 	 */
-	public abstract MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(
-			MonitoredElement MonitoredElement);
+	public abstract MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement monitoredElement);
 
 	/**
 	 * @param MonitoredElement
@@ -210,7 +205,29 @@ public abstract class AbstractDataAccess {
 	 *            retrieved
 	 * @return
 	 */
-	public abstract Collection<Metric> getAvailableMetricsForMonitoredElement(
-			MonitoredElement MonitoredElement);
+	public Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement monitoredElement) {
+		Map<MetricInfo, Metric> metrics = new HashMap<MetricInfo, Metric>();
+ 
+        //get  monitored data from all data sources
+		for (MonitoringData data : freshestMonitoredData.values()) {
+			
+			for (MonitoredElementData elementData : data.getMonitoredElementDatas()) {
+				
+				//if monitored data entry targets desired monitored element
+				if (elementData.getMonitoredElement().equals(monitoredElement)) {
+					for (MetricInfo metricInfo : elementData.getMetrics()) {
+						// in case several data sources collect same metric for same element
+						if (!metrics.containsKey(metricInfo)) {
+							Metric metric = new Metric();
+		                    metric.setName(metricInfo.getName());
+		                    metric.setMeasurementUnit(metricInfo.getUnits());
+		                    metrics.put(metricInfo, metric);
+						}
+					}
+				}
+			}
+		}
 
+		return metrics.values();
+	}
 }

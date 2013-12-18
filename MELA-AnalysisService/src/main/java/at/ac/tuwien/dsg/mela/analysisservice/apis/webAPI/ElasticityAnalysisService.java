@@ -21,6 +21,7 @@ package at.ac.tuwien.dsg.mela.analysisservice.apis.webAPI;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.analysisservice.control.ElasticityAnalysisManager;
@@ -35,9 +36,12 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 
 import com.thoughtworks.xstream.XStream;
 
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -49,6 +53,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.annotation.XmlEnumValue;
 
 import org.apache.log4j.Level;
 
@@ -63,7 +69,7 @@ public class ElasticityAnalysisService {
     private ElasticityAnalysisManager systemControl;
 
     {
-//        Configuration.getLogger(ElasticityAnalysisService.class).log(Level.INFO, "MELA started");
+//        Logger.getLogger(ElasticityAnalysisService.class).log(Level.INFO, "MELA started");
         systemControl = SystemControlFactory.getSystemControlInstance();
     }
     @Context
@@ -85,7 +91,7 @@ public class ElasticityAnalysisService {
 //        Map<Metric, List<MetricValue>> map = systemControl.getElasticityPathway(element);
 //        
 //        if (map == null) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
 //            JSONObject elSpaceJSON = new JSONObject();
 //            elSpaceJSON.put("name", "Service not found");
 //            return elSpaceJSON.toJSONString();
@@ -109,7 +115,7 @@ public class ElasticityAnalysisService {
 //        Map<Metric, List<MetricValue>> map = systemControl.getElasticityPathway(element);
 //        
 //        if (map == null) {
-//            Configuration.getLogger(this.getClass()).log(Level.ERROR, "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
 //            JSONObject elSpaceJSON = new JSONObject();
 //            elSpaceJSON.put("name", "Service not found");
 //            return elSpaceJSON.toJSONString();
@@ -177,7 +183,7 @@ public class ElasticityAnalysisService {
         if (compositionRulesConfiguration != null) {
             systemControl.setCompositionRulesConfiguration(compositionRulesConfiguration);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "supplied compositionRulesConfiguration is null");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "supplied compositionRulesConfiguration is null");
         }
     }
 
@@ -192,7 +198,7 @@ public class ElasticityAnalysisService {
         if (element != null) {
             systemControl.setServiceConfiguration(element);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "supplied service description is null");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "supplied service description is null");
         }
     }
 
@@ -209,7 +215,7 @@ public class ElasticityAnalysisService {
         if (element != null) {
             systemControl.updateServiceConfiguration(element);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "supplied service description is null");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "supplied service description is null");
         }
     }
 
@@ -225,7 +231,7 @@ public class ElasticityAnalysisService {
         if (requirements != null) {
             systemControl.setRequirements(requirements);
         } else {
-            Configuration.getLogger(this.getClass()).log(Level.WARN, "supplied service requirements are null");
+            Logger.getLogger(this.getClass()).log(Level.WARN, "supplied service requirements are null");
         }
     }
 
@@ -242,20 +248,18 @@ public class ElasticityAnalysisService {
     @GET
     @Path("/metrics")
     @Produces("application/xml")
-    public String getAvailableMetrics(@QueryParam("serviceID") String serviceID) {
+    public Collection<Metric> getAvailableMetrics(@QueryParam("monitoredElementID") String monitoredElementID, @QueryParam("monitoredElementLevel") String monitoredElementLevel) {
         try {
             List<String> strings = new ArrayList<String>();
-            for (Metric metric : systemControl.getAvailableMetricsForMonitoredElement(new MonitoredElement(serviceID))) {
-                strings.add(metric.getName());
-            }
-            XStream xStream = new XStream();
-            xStream.alias("Metrics", List.class);
-            xStream.alias("Metric", String.class);
-            String result = xStream.toXML(strings);
-            return result;
-        } catch (ConfigurationException ex) {
-            Logger.getLogger(ElasticityAnalysisService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            return "<Metrics/>";
+            
+            JAXBContext context = JAXBContext.newInstance(MonitoredElement.class);
+            String monElementRepr = "<MonitoredElement id=\""+ monitoredElementID +"\"  level=\""+monitoredElementLevel+"\"/>";
+            MonitoredElement monitoredElement = (MonitoredElement) context.createUnmarshaller().unmarshal(new StringReader(monElementRepr));
+            
+            return systemControl.getAvailableMetricsForMonitoredElement(monitoredElement);
+        } catch (Exception ex) {
+            Logger.getLogger(ElasticityAnalysisService.class.getName()).log(Level.ERROR, null, ex);
+            return new ArrayList<Metric>();
         }
 
     }
