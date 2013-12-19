@@ -91,6 +91,72 @@
         </dependency>
 
     </dependencies>
+    
+    <profiles>
+
+        <profile>
+            <id>Development</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+  
+            <!--Used only during development, to enable jar run fron target folder-->
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <phase>process-resources</phase>
+                                <configuration>
+                                    <tasks>
+                                        <copy todir="${basedir}/target/config">
+                                            <fileset dir="${basedir}/config" includes="**/*" />
+                                        </copy>
+                                        <copy file="${basedir}/mela-analysis-service" tofile="${basedir}/target/mela-analysis-service"/>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            
+        </profile>
+        
+        <profile>
+            <id>Release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>bundle.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
@@ -116,8 +182,7 @@
                     <target>1.5</target>
                 </configuration>
             </plugin>
-
-
+ 
             <plugin>
                 <groupId>org.apache.tomcat.maven</groupId>
                 <artifactId>tomcat7-maven-plugin</artifactId>
@@ -132,40 +197,14 @@
                         <configuration>
                             <path>/MELA-AnalysisService-0.1-SNAPSHOT</path>
                             <finalName>${project.artifactId}-${project.version}.war.jar</finalName>
-                            <!--<mainClass>at.ac.tuwien.dsg.daas.main.Main</mainClass> -->
-                            <!-- optional, needed only if you want to use a preconfigured server.xml 
-                    								file -->
-                            <!-- <serverXml>src/main/tomcatconf/server.xml</serverXml> -->
-                            <!-- optional values which can be configurable -->
-                            <!-- <attachArtifactClassifier>default value is exec-war but you can 
-                    								customize</attachArtifactClassifier> <attachArtifactClassifierType>default 
-                    								value is jar</attachArtifactClassifierType> -->
                         </configuration>
                     </execution>
-
-                    <!--					<execution>
-                                      						<id>tomcat-create-standalone-war</id>
-                                      						<goals>
-                                                             							<goal>exec-war</goal>
-                                      						</goals>
-                                      						<phase>package</phase>
-                                      						<configuration>
-                                                             							<path>/MELA-AnalysisService-0.1-SNAPSHOT</path>
-                                                             							<finalName>${project.artifactId}-${project.version}.war</finalName>
-                                                             							<mainClass>at.ac.tuwien.dsg.daas.main.Main</mainClass> 
-                                                             							 optional, needed only if you want to use a preconfigured server.xml 
-                                                                                    								file 
-                                                             							 <serverXml>src/main/tomcatconf/server.xml</serverXml> 
-                                                             							 optional values which can be configurable 
-                                                             							 <attachArtifactClassifier>default value is exec-war but you can 
-                                                                                    								customize</attachArtifactClassifier> <attachArtifactClassifierType>default 
-                                                                                    								value is jar</attachArtifactClassifierType> 
-                                      						</configuration>
-               					</execution>-->
-
                 </executions>
             </plugin>
+            
+            
+      
         </plugins>
-
+        
     </build>
 </project>
