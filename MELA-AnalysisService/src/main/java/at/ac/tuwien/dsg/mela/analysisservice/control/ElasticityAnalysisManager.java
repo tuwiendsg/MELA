@@ -480,7 +480,6 @@ public class ElasticityAnalysisManager {
 //            return ConvertToJSON.convertElasticityPathway(metrics, neurons);
 //        }
 //    }
-
 //    // performs multiple database interrogations (avids using memory)
 //    public synchronized String getElasticitySpaceLazy(MonitoredElement element) {
 //
@@ -518,7 +517,6 @@ public class ElasticityAnalysisManager {
 //
 //        return jsonRepr;
 //    }
-
     // uses a lot of memory (all directly in memory)
     public synchronized String getElasticityPathway(MonitoredElement element) {
 
@@ -626,9 +624,6 @@ public class ElasticityAnalysisManager {
         }
 
     }
-    
-    
-    
 
     public synchronized String getElasticitySpaceJSON(MonitoredElement element) {
 
@@ -642,7 +637,7 @@ public class ElasticityAnalysisManager {
         }
 
         Date before = new Date();
- 
+
         ElasticitySpace space = extractAndUpdateElasticitySpace();
 
 
@@ -652,8 +647,6 @@ public class ElasticityAnalysisManager {
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return jsonRepr;
     }
-
-   
 
     /**
      *
@@ -681,7 +674,7 @@ public class ElasticityAnalysisManager {
     public synchronized ElasticitySpaceXML getElasticitySpaceXML(MonitoredElement element) {
 
         Date before = new Date();
- 
+
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
         ElasticitySpaceXML elasticitySpaceXML = ConvertToXML.convertElasticitySpaceToXML(space, element);
 
@@ -689,8 +682,6 @@ public class ElasticityAnalysisManager {
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return elasticitySpaceXML;
     }
-    
-    
 
     public synchronized String getLatestMonitoringDataINJSON() {
         Date before = new Date();
@@ -721,30 +712,34 @@ public class ElasticityAnalysisManager {
             return jsonObject.toJSONString();
         }
     }
-    
-     private ElasticitySpace extractAndUpdateElasticitySpace() {
+
+    private ElasticitySpace extractAndUpdateElasticitySpace() {
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
 
         //elasticity space is cached on a per-need basis
-        ElasticitySpaceFunction fct = null;
+
         if (space == null) {
             //if space is null, compute it from all aggregated monitored data recorded so far
             List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceSQLAccess.extractMonitoringData();
 
-
-            fct = new ElSpaceDefaultFunction(serviceConfiguration);
+            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
             fct.setRequirements(requirements);
             fct.trainElasticitySpace(dataFromTimestamp);
             space = fct.getElasticitySpace();
 
-            //set to the new space the timespaceID of the last snapshot monitored data sued to compute it
+            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
             space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
         } else {
 
             //if space is not null, update it with new data
             List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceSQLAccess.extractMonitoringData(space.getTimestampID());
-            fct = new ElSpaceDefaultFunction();
-            fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
+            //check if new data has been collected between elasticity space querries
+            if (!dataFromTimestamp.isEmpty()) {
+                ElasticitySpaceFunction fct = new ElSpaceDefaultFunction();
+                fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
+                //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+                space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+            }
         }
 
         persistenceSQLAccess.writeElasticitySpace(space);

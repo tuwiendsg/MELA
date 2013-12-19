@@ -170,7 +170,8 @@ public class CompositionOperation {
      */
     public MetricValue apply(MonitoredElementMonitoringSnapshot elementMonitoringSnapshot) {
 
-        MetricValue result = new MetricValue(-1);
+        //in case the composition goes bad, this way it will clearly show something wrong 
+       MetricValue result = new MetricValue(Double.NaN);
 
         // operations done on result
         // for example SUM will place the sum on result[0]

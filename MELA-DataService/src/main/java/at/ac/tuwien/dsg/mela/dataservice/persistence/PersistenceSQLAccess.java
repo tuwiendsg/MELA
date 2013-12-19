@@ -615,13 +615,11 @@ public class PersistenceSQLAccess {
             getAggregatedDataStatementFromTimestamp.setInt(2, timestamp);
             ResultSet resultSet = getAggregatedDataStatementFromTimestamp.executeQuery();
             if (resultSet != null) {
-
                 while (resultSet.next()) {
                     int sTimestamp = resultSet.getInt(1);
                     ServiceMonitoringSnapshot s = (ServiceMonitoringSnapshot) resultSet.getObject(2);
                     s.setTimestampID(sTimestamp);
                     monitoringSnapshots.add(s);
-                    break;
                 }
             }
 

@@ -162,8 +162,8 @@ public abstract class AbstractDataAccess {
 					try {
 						// pool data source
 						MonitoringData data = dataSource.getMonitoringData();
-
 						// replace freshest monitoring data
+						
 						freshestMonitoredData.put(abstractPoolingDataSource, data);
 					} catch (DataAccessException e) {
 						// TODO Auto-generated catch block
