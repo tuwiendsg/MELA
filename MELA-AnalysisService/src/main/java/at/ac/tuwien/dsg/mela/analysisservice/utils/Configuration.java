@@ -41,8 +41,9 @@ public class Configuration {
     static {
         configuration = new Properties();
         try {
-            InputStream is = Configuration.class.getResourceAsStream("/config/Config.properties");
+            InputStream is = ResourceLoader.getAnalysisServicePropertiesStream();
             configuration.load(is);
+            is.close();
         } catch (Exception ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.FATAL, null, ex);
         }

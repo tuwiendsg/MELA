@@ -23,7 +23,7 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathwa
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToCSV;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.evalaution.PerformanceReport;
-import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;

@@ -37,7 +37,7 @@ import javax.xml.bind.JAXBContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
@@ -46,8 +46,6 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringDa
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
-import org.hsqldb.types.Type;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -60,6 +58,8 @@ public class PersistenceSQLAccess {
     private String password;
     private Connection connection;
     private String monitoringSequenceID;
+    private String dataServiceIP;
+    private int dataServicePort;
     private PreparedStatement insertConfigurationPreparedStatement;
     private PreparedStatement getMonitoringEntryPreparedStatement;
     private PreparedStatement getEntriesCountPreparedStatement;
@@ -80,13 +80,15 @@ public class PersistenceSQLAccess {
     private PreparedStatement deleteElasticitySpacePreparedStatement;
     private PreparedStatement insertElasticityPathwayPreparedStatement;
     private PreparedStatement deleteElasticityPathwayPreparedStatement;
+    
 
-    public PersistenceSQLAccess(String username, String password, String monitoringSequenceID) {
+    public PersistenceSQLAccess(String username, String password, String dataServiceIP, int dataServicePort, String monitoringSequenceID) {
 
         this.monitoringSequenceID = monitoringSequenceID;
         this.username = username;
         this.password = password;
-
+        this.dataServiceIP = dataServiceIP;
+        this.dataServicePort= dataServicePort;
         try {
             Class.forName("org.hsqldb.jdbc.JDBCDriver");
         } catch (Exception ex) {
@@ -102,7 +104,7 @@ public class PersistenceSQLAccess {
             while (connection == null) {
                 try {
                     connection = DriverManager.getConnection(
-                            "jdbc:hsqldb:hsql://" + Configuration.getDataServiceIP() + ":" + Configuration.getDataServicePort() + "/melaDataServiceDB",
+                            "jdbc:hsqldb:hsql://" + dataServiceIP + ":" + dataServicePort + "/melaDataServiceDB",
                             username, password);
                 } catch (SQLException ex) {
                     Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
@@ -350,7 +352,7 @@ public class PersistenceSQLAccess {
             while (connection == null) {
                 try {
                     connection = DriverManager.getConnection(
-                            "jdbc:hsqldb:hsql://" + Configuration.getDataServiceIP() + ":" + Configuration.getDataServicePort() + "/melaDataServiceDB",
+                            "jdbc:hsqldb:hsql://" + dataServiceIP + ":" + dataServicePort + "/melaDataServiceDB",
                             username, password);
                 } catch (SQLException ex) {
                     Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
@@ -708,14 +710,14 @@ public class PersistenceSQLAccess {
      * @param password mela SQL password
      * @return the latest MELA configuration
      */
-    public static ConfigurationXMLRepresentation getLatestConfiguration(String username, String password) {
+    public static ConfigurationXMLRepresentation getLatestConfiguration(String username, String password, String dataServiceIP, int dataServicePort) {
         Connection c = null;
         // if the SQL connection fails, try to reconnect, as the
         // MELA_DataService might not be running.
         // BUSY wait used
         do {
             try {
-                c = DriverManager.getConnection("jdbc:hsqldb:hsql://" + Configuration.getDataServiceIP() + ":" + Configuration.getDataServicePort()
+                c = DriverManager.getConnection("jdbc:hsqldb:hsql://" + dataServiceIP + ":" + dataServicePort
                         + "/melaDataServiceDB", username, password);
             } catch (SQLException ex) {
                 Logger.getLogger(PersistenceSQLAccess.class).log(Level.ERROR, ex);

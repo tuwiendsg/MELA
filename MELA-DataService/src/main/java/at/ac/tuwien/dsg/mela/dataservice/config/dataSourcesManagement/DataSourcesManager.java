@@ -29,35 +29,34 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+import java.io.FileInputStream;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
- * 
+ *
  */
 public class DataSourcesManager {
 
-	public static DataSourceConfigs readDataSourcesConfiguration() {
-		DataSourceConfigs configs = new DataSourceConfigs();
+    public static DataSourceConfigs readDataSourcesConfiguration() {
+        DataSourceConfigs configs = new DataSourceConfigs();
 
-		try {
-			JAXBContext context = JAXBContext
-					.newInstance(DataSourceConfigs.class);
-			InputStream dataSourcesStream = DataSourcesManager.class
-					.getResourceAsStream("/dataServiceConfig/dataSources.conf");
+        try {
+            JAXBContext context = JAXBContext
+                    .newInstance(DataSourceConfigs.class);
+            InputStream dataSourcesStream = new FileInputStream("./dataServiceConfig/dataSources.conf");
 
-			Object unmarshalled = context.createUnmarshaller().unmarshal(
-					dataSourcesStream);
-			
-			configs = (DataSourceConfigs) unmarshalled;
-			dataSourcesStream.close();
-		} catch (Exception e) {
+            Object unmarshalled = context.createUnmarshaller().unmarshal(
+                    dataSourcesStream);
 
-			Logger.getLogger(DataSourcesManager.class)
-					.log(Level.ERROR, null, e);
-			return configs;
-		}
+            configs = (DataSourceConfigs) unmarshalled;
+            dataSourcesStream.close();
+        } catch (Exception e) {
 
-		return configs;
-	}
+            Logger.getLogger(DataSourcesManager.class)
+                    .log(Level.ERROR, null, e);
+            return configs;
+        }
 
+        return configs;
+    }
 }

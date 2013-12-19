@@ -31,10 +31,11 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathwa
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToJSON;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
-import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
+import at.ac.tuwien.dsg.mela.analysisservice.utils.ResourceLoader;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.connectors.MelaDataServiceConfigurationAPIConnector;
 import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToXML;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
@@ -88,11 +89,13 @@ public class ElasticityAnalysisManager {
                 // ClassLoader classLoader =
                 // Configuration.class.getClassLoader();
 
-                InputStream log4jStream = Configuration.class.getResourceAsStream("/config/Log4j.properties");
+                InputStream log4jStream = ResourceLoader.getLog4JConfigurationStream();
 
                 if (log4jStream != null) {
                     PropertyConfigurator.configure(log4jStream);
+                    log4jStream.close();
                 }
+
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -101,10 +104,10 @@ public class ElasticityAnalysisManager {
         instantMonitoringDataAnalysisEngine = new InstantMonitoringDataAnalysisEngine();
 
         // get latest config
-        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration("mela", "mela");
+        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort());
 
         // open proper sql access
-        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", configurationXMLRepresentation.getServiceConfiguration().getId());
+        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), configurationXMLRepresentation.getServiceConfiguration().getId());
         setInitialServiceConfiguration(configurationXMLRepresentation.getServiceConfiguration());
         setInitialCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
         setInitialRequirements(configurationXMLRepresentation.getRequirements());
@@ -135,7 +138,7 @@ public class ElasticityAnalysisManager {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", serviceConfiguration.getId());
+        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
 
         MelaDataServiceConfigurationAPIConnector.sendServiceStructure(serviceConfiguration);
     }

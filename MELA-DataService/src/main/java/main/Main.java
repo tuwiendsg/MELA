@@ -29,6 +29,8 @@ import at.ac.tuwien.dsg.mela.dataservice.DataCollectionService;
 import at.ac.tuwien.dsg.mela.dataservice.MELADataService;
 import at.ac.tuwien.dsg.mela.dataservice.api.DataServiceActiveMQAPI;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+import at.ac.tuwien.dsg.mela.dataservice.utils.ResourceLoader;
+import java.io.FileInputStream;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -49,11 +51,12 @@ public class Main {
                 // ClassLoader classLoader =
                 // Configuration.class.getClassLoader();
 
-                InputStream log4jStream = Configuration.class.getResourceAsStream("/dataServiceConfig/Log4j.properties");
+                InputStream log4jStream = ResourceLoader.getLog4JConfigurationStream();
 
                 if (log4jStream != null) {
                     PropertyConfigurator.configure(log4jStream);
                 }
+                log4jStream.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

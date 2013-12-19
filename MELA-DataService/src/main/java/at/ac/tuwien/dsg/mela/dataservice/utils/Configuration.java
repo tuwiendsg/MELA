@@ -49,8 +49,9 @@ public class Configuration {
 		try {
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 			// ClassLoader classLoader = Configuration.class.getClassLoader();
-			InputStream propertiesStream = Configuration.class.getResourceAsStream("/dataServiceConfig/Config.properties");
-			configuration.load(propertiesStream);
+			InputStream stream = ResourceLoader.getDataServicePropertiesStream();
+			configuration.load(stream);
+                        stream.close();
 
 		} catch (Exception ex) {
 			ex.printStackTrace();

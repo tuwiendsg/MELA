@@ -17,7 +17,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.common.configuration;
+package at.ac.tuwien.dsg.mela.dataservice.config;
 
 import java.io.Serializable;
 
@@ -29,6 +29,7 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionR
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import at.ac.tuwien.dsg.mela.dataservice.utils.ResourceLoader;
 import java.io.InputStream;
 import org.apache.log4j.Logger;
 import javax.xml.bind.JAXBContext;
@@ -120,27 +121,27 @@ public class ConfigurationXMLRepresentation implements Serializable {
         //retrieve the default config from files
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
-            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/dataServiceConfig/default/structure.xml");
+            InputStream fileStream = ResourceLoader.getDefaultServiceStructureStream();
             serviceConfiguration = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (JAXBException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.ERROR, null, ex);
         }
 
         //retrieve the default config from files
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
-            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/dataServiceConfig/default/compositionRules.xml");
+            InputStream fileStream = ResourceLoader.getDefaultMetricCompositionRulesStream();
             compositionRulesConfiguration = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (JAXBException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.ERROR, null, ex);
         }
 
         //retrieve the default config from files
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
-            InputStream fileStream = ConfigurationXMLRepresentation.class.getResourceAsStream("/dataServiceConfig/default/requirements.xml");
+            InputStream fileStream = ResourceLoader.getDefaultRequirementsStream();
             requirements = (Requirements) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (JAXBException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.ERROR, null, ex);
         }
 

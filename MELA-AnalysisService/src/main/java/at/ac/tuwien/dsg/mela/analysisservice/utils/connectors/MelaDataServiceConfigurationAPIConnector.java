@@ -12,7 +12,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;

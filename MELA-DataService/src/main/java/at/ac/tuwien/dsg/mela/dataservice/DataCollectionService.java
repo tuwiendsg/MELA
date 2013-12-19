@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
@@ -111,7 +111,7 @@ public class DataCollectionService {
         }
 
         // get latest config
-        ConfigurationXMLRepresentation configurationXMLRepresentation = PersistenceSQLAccess.getLatestConfiguration("mela", "mela");
+        ConfigurationXMLRepresentation configurationXMLRepresentation = PersistenceSQLAccess.getLatestConfiguration("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort());
 
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
@@ -159,7 +159,7 @@ public class DataCollectionService {
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, null, e);
         }
-        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", serviceConfiguration.getId());
+        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
         startMonitoring();
     }
 
@@ -298,7 +298,7 @@ public class DataCollectionService {
     public synchronized void startMonitoring() {
 
         // open proper sql access
-        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", serviceConfiguration.getId());
+        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
         if (Configuration.automatedStructureDetection()) {
@@ -389,7 +389,7 @@ public class DataCollectionService {
 
                             // write monitoring data directly collected
                             persistenceSQLAccess.writeRawMonitoringData(timestamp, dataAccess.getFreshestMonitoredData());
- 
+
                             // update and store elasticity pathway
                             // LightweightEncounterRateElasticityPathway
                             // elasticityPathway =
