@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -26,24 +28,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ *
+ */
+public class Neuron implements Serializable { //implements Iterable<Neuron> {
 
- **/
-public class Neuron implements Serializable{ //implements Iterable<Neuron> {
     private List<Double> weights;
     //    private List<Neuron> neighbours;
 //    private List<List<Double>> mappedWeights;
     private AtomicInteger mappedWeights;
-    
     private NeuronUsageLevel usageLevel;
     private DecimalFormat df = new DecimalFormat("#.###");
-
     //percentage of mapped values from the total mapped in the map used by the neuron
     private Double usagePercentage = 0d;
-
 
     {
         weights = new ArrayList<Double>();
@@ -53,15 +51,12 @@ public class Neuron implements Serializable{ //implements Iterable<Neuron> {
         usageLevel = NeuronUsageLevel.RARE;
     }
 
-
     public Neuron() {
-
     }
 
     public NeuronUsageLevel getUsageLevel() {
         return usageLevel;
     }
-
 
     public void setUsageLevel(NeuronUsageLevel usageLevel) {
         this.usageLevel = usageLevel;
@@ -84,7 +79,6 @@ public class Neuron implements Serializable{ //implements Iterable<Neuron> {
 //            neuron.neighbours.add(this);
 //        }
 //    }
-
     public synchronized List<Double> getWeights() {
         return weights;
     }
@@ -93,8 +87,6 @@ public class Neuron implements Serializable{ //implements Iterable<Neuron> {
 //
 //        return weights;
 //    }
-
-
 //    public synchronized List<List<Double>> getMappedWeights() {
 //        return mappedWeights;
 //    }
@@ -139,7 +131,6 @@ public class Neuron implements Serializable{ //implements Iterable<Neuron> {
         this.usagePercentage = usagePercentage;
     }
 
-
     /**
      * @param neuron the neuron between from which the distance is computed
      * @return
@@ -157,9 +148,11 @@ public class Neuron implements Serializable{ //implements Iterable<Neuron> {
         for (int i = 0; i < weights.size(); i++) {
             distance += Math.abs(weights.get(i) - neuronWeights.get(i));
         }
-
-
-        return Double.parseDouble(df.format(distance));
+        try {
+            return Double.parseDouble(df.format(distance));
+        } catch (Exception e) {
+            return distance;
+        }
     }
 
     public void setWeights(ArrayList<Double> weights) {
@@ -170,7 +163,6 @@ public class Neuron implements Serializable{ //implements Iterable<Neuron> {
 //    public List<Neuron> getNeighbours() {
 //        return neighbours;
 //    }
-
     //    /**
 //     * moves the current weights and the neighbours weights closer to the supplied neuron values
 //     *
@@ -206,7 +198,8 @@ public class Neuron implements Serializable{ //implements Iterable<Neuron> {
 //    }
 
     /**
-     * @return an iterator which iterates the neurons in a Breadth First approach
+     * @return an iterator which iterates the neurons in a Breadth First
+     * approach
      */
 //    @Override
 //    public Iterator<Neuron> iterator() {
