@@ -156,7 +156,15 @@
                                 .style("font-size", "140%")
                 .attr("transform", "translate(0," + (+yLocation + +height) + ")")
                 //                .transition().duration(1000)
-                .call(xAxis);
+                .call(xAxis)
+                .selectAll("text")  
+	            .style("text-anchor", "end")
+	            .attr("dx", "-.8em")
+	            .attr("dy", ".15em")
+	            .attr("transform", function(d) {
+	                return "rotate(-65)" 
+	                });
+
                 //
                 //                path.transition()
                 //                .duration(1000)
@@ -182,7 +190,7 @@
                 rootNode.append("g")
                 .attr("class", "y axis")
                 .append("text")
-                .attr("y", +yLocation + +height + 25)
+                .attr("y", +yLocation + +height + 60)
                 .attr("x", +xLocation + +width / 2 - xAxisLabel.length*6/2)
                 .attr("dy", ".71em")
                 .style("text-anchor", "start")
@@ -359,12 +367,20 @@
             rootNode.append("g")
             .attr("class", "y axis")
             .attr("transform", "translate(0," + (yLocation +  height) + ")")
-            //            .style("font-size", "200%")
-            .call(xAxis);
+             .style("font-size", "140%")
+            .call(xAxis) 
+            .selectAll("text")  
+	            .style("text-anchor", "end")
+	            .attr("dx", "-.8em")
+	            .attr("dy", ".15em")
+	            .attr("transform", function(d) {
+	                return "rotate(-65)" 
+	                });
+
             
             rootNode.append("g")
             .attr("class", "y axis")
-            //            .style("font-size", "200%")
+            .style("font-size", "140%")
             .call(yAxis)
             .append("text")
             .attr("transform", "rotate(-90)")
@@ -379,7 +395,7 @@
             rootNode.append("g")
             .attr("class", "y axis")
             .append("text")
-            .attr("y",+yLocation+ height  + 20)
+            .attr("y",+yLocation+ height  + 60)
             .attr("x", +xLocation + width/2 - xAxisLabel.length*6/2)
             .attr("dy", ".71em")
             .style("text-anchor", "start")
