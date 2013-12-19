@@ -90,31 +90,7 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
-                        <executions>
-                            <execution>
-                                <phase>process-resources</phase>
-                                <configuration>
-                                    <tasks>
-                                        <copy todir="${basedir}/target/dataServiceConfig">
-                                            <fileset dir="${basedir}/dataServiceConfig" includes="**/*" />
-                                        </copy>
-                                        <copy file="${basedir}/mela-data-service" tofile="${basedir}/target/mela-data-service"/>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-
+            
         </profile>
         
         <profile>
@@ -214,8 +190,28 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
         
-            
+        
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <tasks>
+                                <copy todir="${basedir}/target/dataServiceConfig">
+                                    <fileset dir="${basedir}/dataServiceConfig" includes="**/*" />
+                                </copy>
+                                <copy file="${basedir}/mela-data-service" tofile="${basedir}/target/mela-data-service"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
