@@ -43,11 +43,17 @@ public class ElasticitySpace implements Serializable{
      * Currently we see the space recorded in time as a list of entries saying
      * AnalysisReport (violated, not) and monitored snapshot
      */
+    
+    
     private List<ElasticitySpaceEntry> spaceEntries;
     private ElasticitySpaceBoundary elasticitySpaceBoundary;
     private MonitoredElement service;
     //stored monitoring data for easy access -> for a service element, the recorded data for the space dimensions
     private Map<MonitoredElement, Map<Metric, List<MetricValue>>> monitoringData;
+    
+    //used to referenciate the timestamp at which this space was computed
+    //used in space caching
+    private int timestampID;
 
     {
         spaceEntries = new ArrayList<ElasticitySpaceEntry>();
@@ -100,6 +106,16 @@ public class ElasticitySpace implements Serializable{
 
         spaceEntries.add(new ElasticitySpaceEntry(analysisReport, serviceMonitoringSnapshot));
     }
+
+    public int getTimestampID() {
+        return timestampID;
+    }
+
+    public void setTimestampID(int timestampID) {
+        this.timestampID = timestampID;
+    }
+    
+    
 
     public List<ElasticitySpaceEntry> getSpaceEntries() {
         return spaceEntries;

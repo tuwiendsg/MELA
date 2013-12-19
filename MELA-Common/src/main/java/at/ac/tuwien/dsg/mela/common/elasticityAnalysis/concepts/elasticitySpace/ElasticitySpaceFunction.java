@@ -207,4 +207,8 @@ public abstract class ElasticitySpaceFunction {
      * @param requirements
      */
     public abstract void trainElasticitySpace(ElasticitySpace elasticitySpace, ServiceMonitoringSnapshot monitoringData, Requirements requirements);
+    
+    
+    
+    public abstract void trainElasticitySpace(ElasticitySpace elasticitySpace, Collection<ServiceMonitoringSnapshot> monitoringData, Requirements requirements);
 }

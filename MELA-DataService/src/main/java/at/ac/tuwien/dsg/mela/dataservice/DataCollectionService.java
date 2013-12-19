@@ -389,22 +389,7 @@ public class DataCollectionService {
 
                             // write monitoring data directly collected
                             persistenceSQLAccess.writeRawMonitoringData(timestamp, dataAccess.getFreshestMonitoredData());
-
-                            // update and store elasticity space
-                            ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
-                            ElasticitySpaceFunction fct = null;
-                            if (space == null) {
-                                fct = new ElSpaceDefaultFunction(serviceConfiguration);
-                                fct.setRequirements(requirements);
-                                fct.trainElasticitySpace(monitoringData);
-                                space = fct.getElasticitySpace();
-                            } else {
-                                fct = new ElSpaceDefaultFunction();
-                                fct.trainElasticitySpace(space, monitoringData, requirements);
-                            }
-
-                            persistenceSQLAccess.writeElasticitySpace(timestamp, space);
-
+ 
                             // update and store elasticity pathway
                             // LightweightEncounterRateElasticityPathway
                             // elasticityPathway =

@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -29,28 +31,25 @@ import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
- 
-/**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
 
+/**
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
  *
- * Returns the maximum and minimum values for all monitored metrics, given a set of user requirements
- * Somewhat follows a decorator pattern, I.E. decorates an elasticity space with boundary
+ * Returns the maximum and minimum values for all monitored metrics, given a set
+ * of user requirements Somewhat follows a decorator pattern, I.E. decorates an
+ * elasticity space with boundary
  */
 public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
-
-	
 
     public ElSpaceDefaultFunction(MonitoredElement service) {
         super(service);
     }
 
-    /** 
+    /**
      * Used if training an existing space
      */
     public ElSpaceDefaultFunction() {
-    	super();
+        super();
     }
 
     @Override
@@ -67,13 +66,13 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
         ServiceMonitoringSnapshot lowerBoundary = elasticitySpace.getElasticitySpaceBoundary().getLowerBoundary();
 
         AnalysisReport report = new InstantMonitoringDataAnalysisEngine().analyzeRequirements(monitoringData, requirements);
-        
+
         //TODO: adding data to keep history, but it can't be left like this, since we can't hold all monitoring data in memory
         //currently it is used by the elasticity signature. All monitoring data in future must be retrieved from monitoring storage
         elasticitySpace.addMonitoringEntry(report, monitoringData);
 
         //only update boundaries if the analysis report does not contain ANY requirement violation, I.E. the service is in elastic behavior
-        if(!report.isClean()){
+        if (!report.isClean()) {
             return;
         }
 
@@ -184,7 +183,7 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
                 }
 
 
-            }else{
+            } else {
                 //only also process children if ! SERVICE_UNIT
                 processingList.addAll(element.getContainedElements());
             }
@@ -192,20 +191,20 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
 
     }
-    
+
     public void trainElasticitySpace(ElasticitySpace elasticitySpace, ServiceMonitoringSnapshot monitoringData, Requirements requirements) {
-    	
+
         ServiceMonitoringSnapshot upperBoundary = elasticitySpace.getElasticitySpaceBoundary().getUpperBoundary();
         ServiceMonitoringSnapshot lowerBoundary = elasticitySpace.getElasticitySpaceBoundary().getLowerBoundary();
 
         AnalysisReport report = new InstantMonitoringDataAnalysisEngine().analyzeRequirements(monitoringData, requirements);
-        
+
         //TODO: adding data to keep history, but it can't be left like this, since we can't hold all monitoring data in memory
         //currently it is used by the elasticity signature. All monitoring data in future must be retrieved from monitoring storage
         elasticitySpace.addMonitoringEntry(report, monitoringData);
 
         //only update boundaries if the analysis report does not contain ANY requirement violation, I.E. the service is in elastic behavior
-        if(!report.isClean()){
+        if (!report.isClean()) {
             return;
         }
 
@@ -316,7 +315,7 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
                 }
 
 
-            }else{
+            } else {
                 //only also process children if ! SERVICE_UNIT
                 processingList.addAll(element.getContainedElements());
             }
@@ -324,6 +323,12 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
 
     }
-    
 
+    public void trainElasticitySpace(ElasticitySpace elasticitySpace, Collection<ServiceMonitoringSnapshot> monitoringData, Requirements requirements) {
+
+        for (ServiceMonitoringSnapshot serviceMonitoringSnapshot : monitoringData) {
+            trainElasticitySpace(elasticitySpace, serviceMonitoringSnapshot, requirements);
+        }
+
+    }
 }
