@@ -14,7 +14,7 @@ JAVA=`which java`
 NAME=mela-data-service
 DAEMONDIR=./
 DAEMON=MELA-AnalysisService-0.1-SNAPSHOT.war.jar
-PIDDIR=./
+PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-data-service.pid
 
 

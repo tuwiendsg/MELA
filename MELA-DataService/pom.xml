@@ -199,12 +199,12 @@
                     <execution>
                         <phase>process-resources</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <copy todir="${basedir}/target/dataServiceConfig">
                                     <fileset dir="${basedir}/dataServiceConfig" includes="**/*" />
                                 </copy>
                                 <copy file="${basedir}/mela-data-service" tofile="${basedir}/target/mela-data-service"/>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>

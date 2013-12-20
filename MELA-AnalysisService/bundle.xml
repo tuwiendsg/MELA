@@ -23,7 +23,6 @@
                         <lineEnding>unix</lineEnding>
                 </fileSet>
 
- 
                 <fileSet>
                         <directory>${project.build.directory}</directory>
                         <outputDirectory>/</outputDirectory>

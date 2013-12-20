@@ -947,23 +947,13 @@
                 });
             }
 
-            //open el Space.
+            //open el Space only for VMs
             function click(d) {
-                var win=window.open("elasticitySpaceAndPathway.html?" + d.name + "&" + d.type, '_blank');
-                //                  var win=window.open("http://localhost:8080/MELA/mela_vis/multi_bar.html?" + d.name + "&" + d.type, '_blank');
-                //                if (d.children) {
-                //                    d._children = d.children;
-                //                    d.children = null;
-                //                } else {
-                //                    d.children = d._children;
-                //                    d._children = null;
-                //                }
-                //                update(d);
+                if(d.type!="VM"){
+                   var win=window.open("elasticitySpaceAndPathway.html?" + d.name + "&" + d.type, '_blank');
+                }
             }
-            
-            
-            //tmp hack
-            
+ 
             var fullPath = false;
             function setSelectedMetric(s){
                 
