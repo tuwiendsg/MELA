@@ -45,6 +45,7 @@ public class DataSourceConfig {
 	@XmlElement(name = "Type")
 	private String type;
 
+	//currently not used
 	@XmlElement(name = "ClassName")
 	private String className;
 

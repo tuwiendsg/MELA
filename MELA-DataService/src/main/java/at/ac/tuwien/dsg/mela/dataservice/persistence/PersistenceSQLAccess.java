@@ -731,7 +731,7 @@ public class PersistenceSQLAccess {
         } while (c == null);
 
         String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration);";
-        ConfigurationXMLRepresentation LoggerXMLRepresentation = new ConfigurationXMLRepresentation();
+        ConfigurationXMLRepresentation configurationXMLRepresentation = null;
 
         try {
             ResultSet resultSet = c.createStatement().executeQuery(sql);
@@ -739,14 +739,18 @@ public class PersistenceSQLAccess {
                 while (resultSet.next()) {
                     Reader repr = resultSet.getClob(1).getCharacterStream();
                     JAXBContext context = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
-                    LoggerXMLRepresentation = (ConfigurationXMLRepresentation) context.createUnmarshaller().unmarshal(repr);
+                    configurationXMLRepresentation = (ConfigurationXMLRepresentation) context.createUnmarshaller().unmarshal(repr);
                 }
             }
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(PersistenceSQLAccess.class).log(Level.ERROR, ex);
-        } finally {
-            return LoggerXMLRepresentation;
+        }  
+        
+        if(configurationXMLRepresentation == null){
+           return ConfigurationXMLRepresentation.createDefaultConfiguration();
+        }else{
+            return configurationXMLRepresentation;
         }
     }
 

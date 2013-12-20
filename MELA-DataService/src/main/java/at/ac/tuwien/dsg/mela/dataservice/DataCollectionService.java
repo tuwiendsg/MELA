@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice;
 
+import java.lang.reflect.Constructor;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,14 +38,11 @@ import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
@@ -53,9 +51,10 @@ import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSource
 import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSourcesManager;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccess;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.GangliaDataSource;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+import java.lang.String;
+import java.util.Map;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -111,7 +110,8 @@ public class DataCollectionService {
         }
 
         // get latest config
-        ConfigurationXMLRepresentation configurationXMLRepresentation = PersistenceSQLAccess.getLatestConfiguration("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort());
+        ConfigurationXMLRepresentation configurationXMLRepresentation = PersistenceSQLAccess.getLatestConfiguration("mela", "mela",
+                Configuration.getDataServiceIP(), Configuration.getDataServicePort());
 
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
@@ -159,7 +159,8 @@ public class DataCollectionService {
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, null, e);
         }
-        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
+        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(),
+                serviceConfiguration.getId());
         startMonitoring();
     }
 
@@ -298,7 +299,8 @@ public class DataCollectionService {
     public synchronized void startMonitoring() {
 
         // open proper sql access
-        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
+        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(),
+                serviceConfiguration.getId());
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
         if (Configuration.automatedStructureDetection()) {
@@ -322,10 +324,24 @@ public class DataCollectionService {
                 String[] info = configEntry.split("=");
                 configuration.put(info[0], info[1]);
             }
-            if (config.getType().equalsIgnoreCase("ganglia")) {
-                GangliaDataSource dataSource = new GangliaDataSource(configuration);
-                dataAccess.addDataSource(dataSource);
+            String pathToDataSource = config.getType();
+
+            //dinamically load data source class
+            try {
+                //use data source Type to loade it
+                Class dataSourceImplementationClass = Class.forName(pathToDataSource);
+
+                //get constructor which takes a Map<String,String> as configuration parameter
+                Constructor<AbstractDataSource> constructor = dataSourceImplementationClass.getConstructor(Map.class);
+
+                AbstractDataSource dataSourceInstance = constructor.newInstance(configuration);
+
+                //add newly created data source
+                dataAccess.addDataSource(dataSourceInstance);
+            } catch (Exception e) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, e.getMessage(), e);
             }
+
         }
 
         // set metric filters on data access
