@@ -11,11 +11,11 @@
 RUN_MODE="daemons"
 
 JAVA=`which java`
-NAME=mela-data-service
+NAME=mela-analysis-service
 DAEMONDIR=./
 DAEMON=MELA-AnalysisService-0.1-SNAPSHOT.war.jar
 PIDDIR=/tmp/
-PIDFILE=$PIDDIR/mela-data-service.pid
+PIDFILE=$PIDDIR/mela-analysis-service.pid
 
 
 test -x $JAVA -a -f $DAEMONDIR/$DAEMON || exit 0
