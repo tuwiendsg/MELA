@@ -56,6 +56,12 @@ public class PersistenceSQLAccess {
     private static final String AGGREGATED_DATA_TABLE_NAME = "AggregatedData";
     private String username;
     private String password;
+    //this is meant as a fisrst step towards implementing a separation process
+    //for ensuring a query does not fail because another large query destroyed the connection
+    //used only for retrieving large amounts of data, and thus si prone to failure
+    //use in retrieving data for computing the elasticity space and pathway
+    private Connection largeDataManagementConnection;
+    //used for everything else
     private Connection connection;
     private String monitoringSequenceID;
     private String dataServiceIP;
@@ -80,7 +86,6 @@ public class PersistenceSQLAccess {
     private PreparedStatement deleteElasticitySpacePreparedStatement;
     private PreparedStatement insertElasticityPathwayPreparedStatement;
     private PreparedStatement deleteElasticityPathwayPreparedStatement;
-    
 
     public PersistenceSQLAccess(String username, String password, String dataServiceIP, int dataServicePort, String monitoringSequenceID) {
 
@@ -88,7 +93,7 @@ public class PersistenceSQLAccess {
         this.username = username;
         this.password = password;
         this.dataServiceIP = dataServiceIP;
-        this.dataServicePort= dataServicePort;
+        this.dataServicePort = dataServicePort;
         try {
             Class.forName("org.hsqldb.jdbc.JDBCDriver");
         } catch (Exception ex) {
@@ -106,6 +111,9 @@ public class PersistenceSQLAccess {
                     connection = DriverManager.getConnection(
                             "jdbc:hsqldb:hsql://" + dataServiceIP + ":" + dataServicePort + "/melaDataServiceDB",
                             username, password);
+                    largeDataManagementConnection = DriverManager.getConnection(
+                            "jdbc:hsqldb:hsql://" + dataServiceIP + ":" + dataServicePort + "/melaDataServiceDB",
+                            username, password);
                 } catch (SQLException ex) {
                     Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
                     Logger.getLogger(this.getClass()).log(Level.WARN, "Could not connect to sql data end. Retrying in 1 second");
@@ -116,6 +124,7 @@ public class PersistenceSQLAccess {
                     Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
                 }
             }
+
         }
 
         // prepare statements
@@ -142,7 +151,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID > (?) AND ID < (?) AND monSeqID=(?);";
-                getMonitoringEntryPreparedStatement = connection.prepareStatement(sql);
+                getMonitoringEntryPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -151,7 +160,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + " WHERE monSeqID=?;";
-                getEntriesCountPreparedStatement = connection.prepareStatement(sql);
+                getEntriesCountPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -182,7 +191,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "SELECT timestampID, elasticitySpace from ElasticitySpace where monSeqID=?;";
-                getLastElasticitySpaceStatement = connection.prepareStatement(sql);
+                getLastElasticitySpaceStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -190,7 +199,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "SELECT elasticityPathway from ElasticityPathway where monSeqID=?;";
-                getLastElasticityPathwayStatement = connection.prepareStatement(sql);
+                getLastElasticityPathwayStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -200,7 +209,7 @@ public class PersistenceSQLAccess {
             try {
 
                 String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=?;";
-                getAllAggregatedDataStatement = connection.prepareStatement(sql);
+                getAllAggregatedDataStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -210,7 +219,7 @@ public class PersistenceSQLAccess {
             try {
 
                 String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=? and timestampID > ?;";
-                getAggregatedDataStatementFromTimestamp = connection.prepareStatement(sql);
+                getAggregatedDataStatementFromTimestamp = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -219,7 +228,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "insert into Timestamp (monSeqID, timestamp) VALUES ( (SELECT ID from MonitoringSeq where id='" + monitoringSequenceID + "'), ?)";
-                insertIntoTimestamp = connection.prepareStatement(sql);
+                insertIntoTimestamp = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -236,7 +245,7 @@ public class PersistenceSQLAccess {
                         + monitoringSequenceID
                         + "')"
                         + " AND timestamp=? )" + ",?,?,?,?,?,?)";
-                insertRawMonitoringData = connection.prepareStatement(sql);
+                insertRawMonitoringData = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -247,7 +256,7 @@ public class PersistenceSQLAccess {
                 String sql = "insert into ElasticitySpace (monSeqID, timestampID, elasticitySpace) " + "VALUES " + "( (select ID from MonitoringSeq where id='"
                         + monitoringSequenceID + "')" + ", ? " + ", ? )";
 
-                insertElasticitySpacePreparedStatement = connection.prepareStatement(sql);
+                insertElasticitySpacePreparedStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -259,7 +268,7 @@ public class PersistenceSQLAccess {
                         + "( (select ID from MonitoringSeq where id='" + monitoringSequenceID + "')"
                         + ", (select ID from Timestamp where monseqid=(select ID from MonitoringSeq where ID='" + monitoringSequenceID + "')"
                         + " AND timestamp= ? )" + ", ?)";
-                insertElasticityPathwayPreparedStatement = connection.prepareStatement(sql);
+                insertElasticityPathwayPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -268,7 +277,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "delete from ElasticitySpace where monseqid= ?;";
-                deleteElasticitySpacePreparedStatement = connection.prepareStatement(sql);
+                deleteElasticitySpacePreparedStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -277,7 +286,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "delete from ElasticityPathway where monseqid= ?;";
-                deleteElasticityPathwayPreparedStatement = connection.prepareStatement(sql);
+                deleteElasticityPathwayPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -339,10 +348,42 @@ public class PersistenceSQLAccess {
         }
     }
 
-    private Connection getConnection() {
+    /**
+     * Tests if the connection is still open, otherwise creates a new one
+     *
+     * @return
+     */
+    private Connection refreshConnection(Connection connection) {
+
+        //check if it can respond in 1 second
         try {
-            // check if connection is open. if not, it gives exception
-            String catalog = connection.getCatalog();
+
+            boolean isValid = connection.isValid(1000);
+
+            if (!isValid) {
+                connection = null;
+
+                // if the SQL connection fails, try to reconnect, as the
+                // MELA_DataService might not be running.
+                // BUSY wait used
+                while (connection == null) {
+                    try {
+                        connection = DriverManager.getConnection(
+                                "jdbc:hsqldb:hsql://" + dataServiceIP + ":" + dataServicePort + "/melaDataServiceDB",
+                                username, password);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+                        Logger.getLogger(this.getClass()).log(Level.WARN, "Could not connect to sql data end. Retrying in 1 second");
+                        connection = null;
+                    }
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
+                    }
+                }
+            }
+
         } catch (SQLException e) {
             connection = null;
 
@@ -371,7 +412,7 @@ public class PersistenceSQLAccess {
     }
 
     public void writeMonitoringData(String timestamp, ServiceMonitoringSnapshot monitoringSnapshot) {
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
 
         // if the firstMonitoringSequenceTimestamp is null, insert new
         // monitoring sequence
@@ -386,7 +427,7 @@ public class PersistenceSQLAccess {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
         } finally {
             try {
-                connection.commit();
+                largeDataManagementConnection.commit();
                 // / connection.close();
             } catch (SQLException ex) {
                 Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
@@ -410,7 +451,7 @@ public class PersistenceSQLAccess {
     // }
     // }
     public void writeElasticitySpace(ElasticitySpace elasticitySpace) {
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
 
         // if the firstMonitoringSequenceTimestamp is null, insert new
         // monitoring sequence
@@ -427,7 +468,7 @@ public class PersistenceSQLAccess {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
         } finally {
             try {
-                connection.commit();
+                largeDataManagementConnection.commit();
                 // / connection.close();
             } catch (SQLException ex) {
                 Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
@@ -436,7 +477,7 @@ public class PersistenceSQLAccess {
     }
 
     public void writeElasticityPathway(String timestamp, LightweightEncounterRateElasticityPathway elasticityPathway) {
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
 
         // if the firstMonitoringSequenceTimestamp is null, insert new
         // monitoring sequence
@@ -452,7 +493,7 @@ public class PersistenceSQLAccess {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
         } finally {
             try {
-                connection.commit();
+                largeDataManagementConnection.commit();
                 // / connection.close();
             } catch (SQLException ex) {
                 Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
@@ -464,7 +505,7 @@ public class PersistenceSQLAccess {
 
         ElasticitySpace space = null;
 
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
         try {
             getLastElasticitySpaceStatement.setString(1, monitoringSequenceID);
 
@@ -490,7 +531,7 @@ public class PersistenceSQLAccess {
 
         LightweightEncounterRateElasticityPathway pathway = new LightweightEncounterRateElasticityPathway(1);
 
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
         try {
             getLastElasticityPathwayStatement.setString(1, monitoringSequenceID);
 
@@ -512,7 +553,7 @@ public class PersistenceSQLAccess {
 
     // gets the maximum ID encountered
     public int getRecordsCount() {
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
 
         try {
             getEntriesCountPreparedStatement.setString(1, monitoringSequenceID);
@@ -545,7 +586,7 @@ public class PersistenceSQLAccess {
      * @return returns maximum count elements
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int startIndex, int count) {
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
 
         List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
         try {
@@ -585,7 +626,7 @@ public class PersistenceSQLAccess {
 
         ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot();
 
-        connection = getConnection();
+        connection = refreshConnection(connection);
         try {
             getLastAggregatedDataStatement.setString(1, monitoringSequenceID);
 
@@ -611,7 +652,7 @@ public class PersistenceSQLAccess {
 
         List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
 
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
         try {
             getAggregatedDataStatementFromTimestamp.setString(1, monitoringSequenceID);
             getAggregatedDataStatementFromTimestamp.setInt(2, timestamp);
@@ -639,7 +680,7 @@ public class PersistenceSQLAccess {
      * @return returns maximum count elements
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData() {
-        connection = getConnection();
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
 
         List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
         try {
@@ -669,6 +710,8 @@ public class PersistenceSQLAccess {
     }
 
     public List<Metric> getAvailableMetrics(MonitoredElement monitoredElement) {
+
+        connection = refreshConnection(connection);
 
         List<Metric> metrics = new ArrayList<Metric>();
         try {
@@ -745,11 +788,11 @@ public class PersistenceSQLAccess {
 
         } catch (Exception ex) {
             Logger.getLogger(PersistenceSQLAccess.class).log(Level.ERROR, ex);
-        }  
-        
-        if(configurationXMLRepresentation == null){
-           return ConfigurationXMLRepresentation.createDefaultConfiguration();
-        }else{
+        }
+
+        if (configurationXMLRepresentation == null) {
+            return ConfigurationXMLRepresentation.createDefaultConfiguration();
+        } else {
             return configurationXMLRepresentation;
         }
     }
@@ -760,7 +803,7 @@ public class PersistenceSQLAccess {
      * persisted in XML and reused
      */
     public void writeConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
-        connection = getConnection();
+        connection = refreshConnection(connection);
 
         // if the firstMonitoringSequenceTimestamp is null, insert new
         // monitoring sequence
@@ -812,6 +855,15 @@ public class PersistenceSQLAccess {
     //
     // }
     public void closeConnection() throws SQLException {
-        connection.close();
+        try {
+            connection.close();
+        } catch (SQLException ex) {
+             Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
+        }
+        try {
+            largeDataManagementConnection.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
+        }
     }
 }

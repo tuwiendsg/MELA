@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -25,15 +27,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
-
- * 
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ *
  * Used to define restrictions for serviceStructure selection criteria
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Condition")
-public class Condition implements Serializable{
+public class Condition implements Serializable {
 
     @XmlAttribute(name = "ID", required = true)
     private String id;
@@ -41,15 +41,20 @@ public class Condition implements Serializable{
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(name = "ConditionType")
     @XmlEnum
-    public enum Type implements Serializable{
-        @XmlEnumValue("LESS_THAN")LESS_THAN, @XmlEnumValue("LESS_EQUAL")LESS_EQUAL, @XmlEnumValue("GREATER_THAN")GREATER_THAN,
-        @XmlEnumValue("GREATER_EQUAL")GREATER_EQUAL, @XmlEnumValue("EQUAL")EQUAL, @XmlEnumValue("RANGE")RANGE, @XmlEnumValue("ENUMERATION")ENUMERATION
-    }
+    public enum Type implements Serializable {
 
+        @XmlEnumValue("LESS_THAN")
+        LESS_THAN, @XmlEnumValue("LESS_EQUAL")
+        LESS_EQUAL, @XmlEnumValue("GREATER_THAN")
+        GREATER_THAN,
+        @XmlEnumValue("GREATER_EQUAL")
+        GREATER_EQUAL, @XmlEnumValue("EQUAL")
+        EQUAL, @XmlEnumValue("RANGE")
+        RANGE, @XmlEnumValue("ENUMERATION")
+        ENUMERATION
+    }
     @XmlAttribute(name = "Type", required = true)
     private Type type;
-
-
 
     public String getId() {
         return id;
@@ -58,15 +63,12 @@ public class Condition implements Serializable{
     public void setId(String id) {
         this.id = id;
     }
-
-
     /**
-     * Restriction values: for Numeric Restrictions  such as LESS_THAN, the "value" list has only one element.
-     * For RANGE restriction, only first and last elements of "value" are considered to be the range margins
-     * FOR ENUMERATION, value contains an enumeration of possible values.
+     * Restriction values: for Numeric Restrictions such as LESS_THAN, the
+     * "value" list has only one element. For RANGE restriction, only first and
+     * last elements of "value" are considered to be the range margins FOR
+     * ENUMERATION, value contains an enumeration of possible values.
      */
-
-
     @XmlElement(name = "MetricValue", required = false)
     private List<MetricValue> value;
 
@@ -77,16 +79,13 @@ public class Condition implements Serializable{
     public Condition() {
     }
 
-
     public void setType(Type type) {
         this.type = type;
     }
 
-
     public void setValue(List<MetricValue> value) {
         this.value = value;
     }
-
 
     public void addValue(MetricValue v) {
         this.value.add(v);
@@ -109,8 +108,9 @@ public class Condition implements Serializable{
 
     /**
      * @param testedValue
-     * @return Checks if the MetricValue respects the restriction.
-     *         Used in SELECTING services (deciding if a serviceStructure respects all restriction criteria).
+     * @return Checks if the MetricValue respects the restriction. Used in
+     * SELECTING services (deciding if a serviceStructure respects all
+     * restriction criteria).
      */
     public boolean isRespectedByValue(MetricValue testedValue) {
         boolean respected = false;
@@ -144,21 +144,27 @@ public class Condition implements Serializable{
         return respected;
     }
 
-
-
     public List<MetricValue> getValue() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Condition condition = (Condition) o;
 
-        if (id != null ? !id.equals(condition.id) : condition.id != null) return false;
-        if (type != condition.type) return false;
+        if (id != null ? !id.equals(condition.id) : condition.id != null) {
+            return false;
+        }
+        if (type != condition.type) {
+            return false;
+        }
 
         return true;
     }
@@ -172,9 +178,8 @@ public class Condition implements Serializable{
 
     @Override
     public String toString() {
-        return "" +
-                " " + type +
-                " " + value
-                ;
+        return ""
+                + " " + type
+                + " " + value;
     }
 }

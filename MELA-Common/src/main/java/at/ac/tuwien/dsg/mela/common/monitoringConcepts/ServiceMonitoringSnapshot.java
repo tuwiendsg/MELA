@@ -37,10 +37,8 @@ import org.apache.log4j.Logger;
  * to process.
  */
 public class ServiceMonitoringSnapshot implements Serializable {
-	
-	
-    private int timestampID;
 
+    private int timestampID;
     // stores monitoring information by LEVEL, then by MonitoredElement. Service Element also stores hierarchical info
     private Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> monitoredData;
 

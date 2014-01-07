@@ -35,7 +35,7 @@ import java.util.UUID;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Requirement")
 @XmlType(propOrder = {"metric", "conditions", "id", "targetMonitoredElementLevel", "targetMonitoredElementIDs"})
-public class Requirement implements Serializable{
+public class Requirement implements Serializable {
 
     @XmlElement(name = "TargetMetric", required = true)
     private Metric metric;
@@ -47,11 +47,9 @@ public class Requirement implements Serializable{
     private MonitoredElement.MonitoredElementLevel targetMonitoredElementLevel;
     @XmlElement(name = "TargetMonitoredElementID")
     private List<String> targetMonitoredElementIDs;
-    
     @XmlAttribute(name = "name", required = true)
     private String name;
-    
-    
+
     {
         conditions = new ArrayList<Condition>();
         targetMonitoredElementIDs = new ArrayList<String>();
@@ -64,8 +62,6 @@ public class Requirement implements Serializable{
         this.name = name;
     }
 
-    
-    
     public String getId() {
         return id;
     }
@@ -81,8 +77,6 @@ public class Requirement implements Serializable{
     public void setName(String name) {
         this.name = name;
     }
-    
-    
 
     public MonitoredElement.MonitoredElementLevel getTargetMonitoredElementLevel() {
         return targetMonitoredElementLevel;
@@ -158,8 +152,8 @@ public class Requirement implements Serializable{
         }
         return true;
     }
-    
-    public Requirement clone(){
+
+    public Requirement clone() {
         Requirement r = new Requirement(name);
         r.metric = metric;
         r.conditions = conditions;
@@ -168,6 +162,4 @@ public class Requirement implements Serializable{
         r.targetMonitoredElementIDs = targetMonitoredElementIDs;
         return r;
     }
-    
-    
 }

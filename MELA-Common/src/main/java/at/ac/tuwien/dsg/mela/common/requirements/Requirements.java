@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -106,12 +106,12 @@ public class Requirements implements Serializable {
     public String toString() {
         return "Requirements{" + "name=" + name + '}';
     }
-    
-    public Requirements clone(){
+
+    public Requirements clone() {
         Requirements r = new Requirements();
         r.targetServiceID = targetServiceID;
         r.name = name;
-        for(Requirement req: requirements){
+        for (Requirement req : requirements) {
             r.addRequirement(req.clone());
         }
         return r;

@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -25,10 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
-
- **/
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ *
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MonitoredElement")
 public class MonitoredElement implements Iterable<MonitoredElement>, Serializable {
@@ -52,8 +53,6 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         containedElements = new ArrayList<MonitoredElement>();
         this.id = id;
     }
-    
-    
 
     public String getName() {
         return name;
@@ -105,7 +104,8 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(name = "MonitoredElementLevel")
     @XmlEnum
-    public enum MonitoredElementLevel implements Serializable{
+    public enum MonitoredElementLevel implements Serializable {
+
         @XmlEnumValue("SERVICE")
         SERVICE,
         @XmlEnumValue("SERVICE_TOPOLOGY")
@@ -216,7 +216,7 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         //do not clone VM level. That is retrieved and updated from monitoring system
         for (MonitoredElement el : containedElements) {
 //            if (el.getLevel() != MonitoredElementLevel.VM) {
-                elements.add(el.clone());
+            elements.add(el.clone());
 //            }
         }
         newMonitoredElement.containedElements = elements;
@@ -233,6 +233,4 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
                 + "containedElements=" + containedElements
                 + '}';
     }
-    
-     
 }
