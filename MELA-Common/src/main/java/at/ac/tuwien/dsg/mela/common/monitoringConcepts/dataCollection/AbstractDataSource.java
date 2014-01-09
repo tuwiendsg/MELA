@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -15,7 +17,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
 import java.util.Map;
@@ -25,17 +26,17 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringDa
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
-
- **/
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ *
+ */
 public abstract class AbstractDataSource {
-	protected Map<String, String> configuration;
-	 
-    protected AbstractDataSource(Map<String, String> configuration) {
-    	this.configuration = configuration;
-    }
-    
-    public abstract MonitoringData getMonitoringData() throws DataAccessException;
 
+    //configuration parameters sent as key-value pairs and specified in the DataSources configuration file are injected here
+    protected Map<String, String> configuration;
+
+    protected AbstractDataSource(Map<String, String> configuration) {
+        this.configuration = configuration;
+    }
+
+    public abstract MonitoringData getMonitoringData() throws DataAccessException;
 }

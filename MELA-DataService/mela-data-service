@@ -13,7 +13,7 @@ RUN_MODE="daemons"
 JAVA=`which java`
 NAME=mela-data-service
 DAEMONDIR=./
-DAEMON=MELA-DataService-0.1-SNAPSHOT.jar
+DAEMON=MELA-DataService-1.0-SNAPSHOT.jar
 PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-data-service.pid
 
