@@ -11,7 +11,7 @@
     <artifactId>MELA-DataCollector</artifactId>
     <packaging>pom</packaging>
 
-    <name>MELA-DataCollector</name>
+    <name>MELA-Ganglia-AutoStructureDetection-Bootstrap</name>
     <url>http://maven.apache.org</url>
 
     <repositories>
