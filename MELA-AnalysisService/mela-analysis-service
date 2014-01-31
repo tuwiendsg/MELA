@@ -16,7 +16,7 @@ DAEMONDIR=./
 DAEMON=MELA-AnalysisService-1.0-SNAPSHOT-war-exec.jar
 PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-analysis-service.pid
-MELA_HTTP_PORT=8088
+MELA_HTTP_PORT=8080
 
 test -x $JAVA -a -f $DAEMONDIR/$DAEMON || exit 0
 #test -x $DAEMONDIR/$DAEMON || exit 0
