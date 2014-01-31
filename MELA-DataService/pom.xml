@@ -203,6 +203,7 @@
                                 <copy todir="${basedir}/target/dataServiceConfig">
                                     <fileset dir="${basedir}/dataServiceConfig" includes="**/*" />
                                 </copy>
+                                <copy file="${basedir}/mela-data-service" tofile="${basedir}/target/mela-data-service"/>
                             </target>
                         </configuration>
                         <goals>

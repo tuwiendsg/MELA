@@ -176,7 +176,7 @@
                         </goals>
                         <phase>package</phase>
                         <configuration>
-                            <path>/MELA-AnalysisService-0.1-SNAPSHOT</path>
+                            <path>/MELA</path>
                         </configuration>
                     </execution>
                 </executions>

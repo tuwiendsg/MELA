@@ -13,10 +13,10 @@ RUN_MODE="daemons"
 JAVA=`which java`
 NAME=mela-analysis-service
 DAEMONDIR=./
-DAEMON=MELA-AnalysisService-0.1-SNAPSHOT.war.jar
+DAEMON=MELA-AnalysisService-1.0-SNAPSHOT-war-exec.jar
 PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-analysis-service.pid
-
+MELA_HTTP_PORT=8088
 
 test -x $JAVA -a -f $DAEMONDIR/$DAEMON || exit 0
 #test -x $DAEMONDIR/$DAEMON || exit 0
@@ -29,7 +29,7 @@ case "$1" in
 		log_progress_msg "mela"
 		# Make sure we have our PIDDIR, even if it's on a tmpfs
 		# install -o root -g root -m 755 -d $PIDDIR
-        if ! start-stop-daemon --start --chdir $DAEMONDIR --quiet --pidfile $PIDFILE --make-pidfile --background --exec $JAVA -- -jar $DAEMON; then
+        if ! start-stop-daemon --start --chdir $DAEMONDIR --quiet --pidfile $PIDFILE --make-pidfile --background --exec $JAVA -- -jar $DAEMON -httpPort $MELA_HTTP_PORT; then
 		    log_end_msg 1
 		    exit 1
 		fi
