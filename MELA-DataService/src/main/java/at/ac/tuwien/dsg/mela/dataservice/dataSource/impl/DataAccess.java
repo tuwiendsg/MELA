@@ -43,18 +43,22 @@ import org.apache.log4j.Logger;
  *
  */
 public class DataAccess extends AbstractDataAccess {
-     
+
+    private static final MonitoredElement ALL_VMS = new MonitoredElement("-");
+
     /**
-     * Left as this in case we want to limit in the future the nr of DataAccess instances we create and maybe use a pool of instances 
+     * Left as this in case we want to limit in the future the nr of DataAccess
+     * instances we create and maybe use a pool of instances
+     *
      * @return
      */
     public static DataAccess createInstance() {
-    	
+
         return new DataAccess();
     }
 
-    private DataAccess( ) {
-         
+    private DataAccess() {
+
     }
 
     /**
@@ -79,7 +83,6 @@ public class DataAccess extends AbstractDataAccess {
         // extract all VMs from the service structure
         // Map<MonitoredElement, MonitoredElement> vms = new
         // LinkedHashMap<MonitoredElement, MonitoredElement>();
-
         /**
          * Linear representation of MonitoredElement hierarchical tree. also
          * maintains the three structure using the .children relationship
@@ -105,25 +108,26 @@ public class DataAccess extends AbstractDataAccess {
             MonitoredElementMonitoringSnapshot element = bfsTraversalQueue.remove(0);
             MonitoredElement processedElement = element.getMonitoredElement();
             elements.put(processedElement, processedElement);
-            lowestLevelFoundMonitoredElement = processedElement;
-            lowestLevelFoundMonitoredSnapshot = element;
+            
+            if (!processedElement.getLevel().equals(MonitoredElementLevel.VM)) {
+                lowestLevelFoundMonitoredElement = processedElement;
+                lowestLevelFoundMonitoredSnapshot = element;
+            }
 
 //            if(processedElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
 //                vms.put(processedElement, processedElement);
 //            }
-
-                for (MonitoredElement child : processedElement.getContainedElements()) // add empty monitoring data
-                // for each serviceStructure element, to serve as a place where
-                // in the future composite metrics can be added
-                {
+            for (MonitoredElement child : processedElement.getContainedElements()) // add empty monitoring data
+            // for each serviceStructure element, to serve as a place where
+            // in the future composite metrics can be added
+            {        
                     MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(child, new LinkedHashMap<Metric, MetricValue>());
                     element.addChild(monitoredElementMonitoringSnapshot);
                     serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
                     bfsTraversalQueue.add(monitoredElementMonitoringSnapshot);
-
-                }
-
             }
+
+        }
 
         // go through each monitored element and update the service monitoring
         // snapshot
@@ -145,7 +149,7 @@ public class DataAccess extends AbstractDataAccess {
                     monitoredMetricValues.put(metric, metricValue);
                 }
                 MonitoredElement monitoredElement = elementData.getMonitoredElement();
-                
+
                 if (elements.containsKey(monitoredElement)) {
                     // get the monitored element from the supplied service
                     // structure, where is connected with service units
@@ -154,18 +158,19 @@ public class DataAccess extends AbstractDataAccess {
 
                     // if data exists, it updates it, otherwise creates entry
                     serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
-                } else {
-                    // else we add all VMs to the found service unit
-                    if (monitoredElement.getLevel().equals(MonitoredElementLevel.VM)) {
-
-                        MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, monitoredMetricValues);
-                        // add to monitoring data tree structure
-                        lowestLevelFoundMonitoredSnapshot.addChild(monitoredElementMonitoringSnapshot);
-
-                        serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
-                        // add to structure
-                        lowestLevelFoundMonitoredElement.addElement(monitoredElement);
-                    }
+                } else if (elements.containsKey(ALL_VMS)) {
+//                    // else we add all VMs to the found service unit
+                    // TODO: auto VM allocation disabled until further notice
+//                    if (monitoredElement.getLevel().equals(MonitoredElementLevel.VM)) {
+//
+//                        MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, monitoredMetricValues);
+//                        // add to monitoring data tree structure
+//                        lowestLevelFoundMonitoredSnapshot.addChild(monitoredElementMonitoringSnapshot);
+//
+//                        serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
+//                        // add to structure
+//                        lowestLevelFoundMonitoredElement.addElement(monitoredElement);
+//                    }
                 }
             }
         }
