@@ -18,7 +18,7 @@ PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-analysis-service.pid
 MELA_HTTP_PORT=8080
 
-test -x $JAVA -a -f $DAEMONDIR/$DAEMON || exit 0
+test -x $JAVA -a -f $DAEMONDIR/$DAEMON || echo "test -x $JAVA -a -f $DAEMONDIR/$DAEMON failed" exit 0
 #test -x $DAEMONDIR/$DAEMON || exit 0
 
 . /lib/lsb/init-functions
