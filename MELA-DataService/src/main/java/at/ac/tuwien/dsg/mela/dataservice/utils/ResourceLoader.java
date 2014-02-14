@@ -16,12 +16,9 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.utils;
 
-import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *

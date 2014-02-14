@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -230,7 +230,7 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
                 + ", id='" + id + '\''
                 + ", level=" + level
                 + ", name='" + name + '\''
-                + "containedElements=" + containedElements
+//                + "containedElements=" + containedElements
                 + '}';
     }
 }

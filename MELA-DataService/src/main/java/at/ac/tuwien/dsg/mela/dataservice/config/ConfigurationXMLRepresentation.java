@@ -87,13 +87,13 @@ public class ConfigurationXMLRepresentation implements Serializable {
     }
 
     public ConfigurationXMLRepresentation() {
-        
+
     }
-    
-    public static ConfigurationXMLRepresentation createDefaultConfiguration(){
-    	ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
-    	CompositionRulesConfiguration compositionRulesConfiguration = new CompositionRulesConfiguration();
-    	Requirements requirements = new Requirements();
+
+    public static ConfigurationXMLRepresentation createDefaultConfiguration() {
+        ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
+        CompositionRulesConfiguration compositionRulesConfiguration = new CompositionRulesConfiguration();
+        Requirements requirements = new Requirements();
         // create service with 1 topology and 1 service unit having * (all) VMs
 
         MonitoredElement service = new MonitoredElement();
@@ -120,7 +120,6 @@ public class ConfigurationXMLRepresentation implements Serializable {
                 }
             }
         }
-     
 
         //retrieve the default config from files
         try {
@@ -148,7 +147,7 @@ public class ConfigurationXMLRepresentation implements Serializable {
         } catch (Exception ex) {
             Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.ERROR, null, ex);
         }
-        
+
         configurationXMLRepresentation.setServiceConfiguration(service);
         configurationXMLRepresentation.setCompositionRulesConfiguration(compositionRulesConfiguration);
         configurationXMLRepresentation.setRequirements(requirements);

@@ -37,6 +37,9 @@ public class Metric implements Serializable {
     @XmlAttribute(name = "type", required = true)
     private MetricType type = MetricType.RESOURCE;
 
+//    @XmlElement(name = "MonitoredElement", required = false)
+//    private MonitoredElement monitoredElement;
+
     public Metric(String name, String measurementUnit) {
         this.name = name;
         this.measurementUnit = measurementUnit;
@@ -85,6 +88,16 @@ public class Metric implements Serializable {
         hash = 89 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
+
+//    public MonitoredElement getMonitoredElement() {
+//        return monitoredElement;
+//    }
+//
+//    public void setMonitoredElement(MonitoredElement monitoredElement) {
+//        this.monitoredElement = monitoredElement;
+//    }
+//    
+//    
 
     @Override
     public boolean equals(Object obj) {

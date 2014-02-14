@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.persistence;
 
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.MonitoredElementElasticityDependencies;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.sql.Clob;
@@ -27,7 +28,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,20 +39,30 @@ import org.apache.log4j.Logger;
 
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredEntry;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import javax.xml.bind.JAXBException;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
 public class PersistenceSQLAccess {
-
+    
     private static final String AGGREGATED_DATA_TABLE_NAME = "AggregatedData";
     private String username;
     private String password;
@@ -75,20 +85,28 @@ public class PersistenceSQLAccess {
     private PreparedStatement insertIntoTimestamp;
     private PreparedStatement getLastAggregatedDataStatement;
     private PreparedStatement getLastElasticitySpaceStatement;
+    
     private PreparedStatement getLastElasticityPathwayStatement;
     // used to insert in SQL data collected directly from data sources, WITHOUT
     // any structuring applied over it
     private PreparedStatement insertRawMonitoringData;
+    private PreparedStatement getLastRawMonitoringData;
     // used to insert in SQL data WITH structuring and aggregation applied over
     // it
     private PreparedStatement insertAggregatedDataPreparedStatement;
+    
     private PreparedStatement insertElasticitySpacePreparedStatement;
     private PreparedStatement deleteElasticitySpacePreparedStatement;
+    
     private PreparedStatement insertElasticityPathwayPreparedStatement;
     private PreparedStatement deleteElasticityPathwayPreparedStatement;
-
+    
+    private PreparedStatement insertElasticityDependenciesPreparedStatement;
+    private PreparedStatement deleteElasticityDependenciesPreparedStatement;
+    private PreparedStatement getLastElasticityDependenciesPreparedStatement;
+    
     public PersistenceSQLAccess(String username, String password, String dataServiceIP, int dataServicePort, String monitoringSequenceID) {
-
+        
         this.monitoringSequenceID = monitoringSequenceID;
         this.username = username;
         this.password = password;
@@ -124,7 +142,7 @@ public class PersistenceSQLAccess {
                     Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
                 }
             }
-
+            
         }
 
         // prepare statements
@@ -137,7 +155,7 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
                 String sql = "INSERT INTO Configuration (configuration) " + "VALUES (?)";
@@ -147,7 +165,7 @@ public class PersistenceSQLAccess {
                 return;
             }
         }
-
+        
         {
             try {
                 String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID > (?) AND ID < (?) AND monSeqID=(?);";
@@ -156,7 +174,7 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
                 String sql = "SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME + " WHERE monSeqID=?;";
@@ -165,10 +183,10 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
-
+                
                 String sql = "SELECT metricName, metricUnit, metrictype  from RawCollectedData where "
                         + "timestampID = (SELECT MAX(ID) from Timestamp where monSeqID=?)" + " AND monitoredElementID=? AND monitoredElementLevel=?;";
                 getMetricsForElement = connection.prepareStatement(sql);
@@ -176,18 +194,28 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
-
+                
                 String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID = (SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME
-                        + " where monSeqID=?);";
+                        + " where monSeqID=?) LIMIT 1000;";
                 getLastAggregatedDataStatement = connection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
+        {
+            try {
+                
+                String sql = "SELECT metricName, metricUnit, metrictype, value, monitoredElementID, monitoredElementLevel from RawCollectedData where timestampID = (SELECT MAX(ID) from timestamp where monSeqID=?);";
+                getLastRawMonitoringData = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+        
         {
             try {
                 String sql = "SELECT timestampID, elasticitySpace from ElasticitySpace where monSeqID=?;";
@@ -196,6 +224,7 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
+        
         {
             try {
                 String sql = "SELECT elasticityPathway from ElasticityPathway where monSeqID=?;";
@@ -204,27 +233,27 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
-
+                
                 String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=?;";
                 getAllAggregatedDataStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
-
-                String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=? and timestampID > ?;";
+                
+                String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=? and timestampID > ?; ";
                 getAggregatedDataStatementFromTimestamp = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
                 String sql = "insert into Timestamp (monSeqID, timestamp) VALUES ( (SELECT ID from MonitoringSeq where id='" + monitoringSequenceID + "'), ?)";
@@ -233,7 +262,7 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
                 String sql = "insert into RawCollectedData (monSeqID, timestampID, metricName, metricUnit, metrictype, value, monitoredElementID, monitoredElementLevel) "
@@ -250,18 +279,18 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
                 String sql = "insert into ElasticitySpace (monSeqID, timestampID, elasticitySpace) " + "VALUES " + "( (select ID from MonitoringSeq where id='"
                         + monitoringSequenceID + "')" + ", ? " + ", ? )";
-
+                
                 insertElasticitySpacePreparedStatement = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
                 String sql = "insert into ElasticityPathway (monSeqID, timestampID, elasticityPathway) " + "VALUES "
@@ -273,7 +302,7 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
                 String sql = "delete from ElasticitySpace where monseqid= ?;";
@@ -282,7 +311,7 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
+        
         {
             try {
                 String sql = "delete from ElasticityPathway where monseqid= ?;";
@@ -291,17 +320,54 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
         }
-
-        // ServiceID is used in retrieving historical monitoring data (if
-        // needed)
-        try {
-            Statement addSeqStmt = connection.createStatement();
-            addSeqStmt.executeUpdate("insert into MonitoringSeq (ID) VALUES ('" + monitoringSequenceID + "')");
-            addSeqStmt.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+        
+        {
+            try {
+                String sql = "delete from ElasticityDependency where monseqid= ?;";
+                deleteElasticityDependenciesPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+        
+        {
+            try {
+                String sql = "insert into ElasticityDependency (monSeqID, timestampID, elasticityDependency) " + "VALUES "
+                        + "( (select ID from MonitoringSeq where id='" + monitoringSequenceID + "')"
+                        + ", ? , ?)";
+                insertElasticityDependenciesPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+        
+        {
+            try {
+                String sql = "delete from ElasticityDependency where monseqid= ?;";
+                deleteElasticityDependenciesPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+        
+        {
+            try {
+                String sql = "SELECT elasticityDependency from ElasticityDependency where monSeqID=?;";
+                getLastElasticityDependenciesPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
         }
 
+//        // ServiceID is used in retrieving historical monitoring data (if
+//        // needed)
+//        try {
+//            Statement addSeqStmt = connection.createStatement();
+//            addSeqStmt.executeUpdate("insert into MonitoringSeq (ID) VALUES ('" + monitoringSequenceID + "')");
+//            addSeqStmt.close();
+//        } catch (SQLException ex) {
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+//        }
     }
 
     /**
@@ -310,12 +376,12 @@ public class PersistenceSQLAccess {
      * data sources
      */
     public void writeRawMonitoringData(String timestamp, Collection<MonitoringData> monitoringData) {
-
+        
         for (MonitoringData data : monitoringData) {
             // for all monitored metrics insert in the metric values
             for (MonitoredElementData elementData : data.getMonitoredElementDatas()) {
                 MonitoredElement element = elementData.getMonitoredElement();
-
+                
                 for (MetricInfo metricInfo : elementData.getMetrics()) {
                     try {
                         insertRawMonitoringData.setString(1, timestamp);
@@ -332,7 +398,7 @@ public class PersistenceSQLAccess {
                 }
             }
         }
-
+        
     }
 
     /**
@@ -357,9 +423,9 @@ public class PersistenceSQLAccess {
 
         //check if it can respond in 1 second
         try {
-
+            
             boolean isValid = connection.isValid(1000);
-
+            
             if (!isValid) {
                 connection = null;
 
@@ -383,7 +449,7 @@ public class PersistenceSQLAccess {
                     }
                 }
             }
-
+            
         } catch (SQLException e) {
             connection = null;
 
@@ -406,17 +472,16 @@ public class PersistenceSQLAccess {
                     Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
                 }
             }
-
+            
         }
         return connection;
     }
-
+    
     public void writeMonitoringData(String timestamp, ServiceMonitoringSnapshot monitoringSnapshot) {
         largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
 
         // if the firstMonitoringSequenceTimestamp is null, insert new
         // monitoring sequence
-
         try {
             insertAggregatedDataPreparedStatement.setObject(1, monitoringSnapshot);
             insertAggregatedDataPreparedStatement.setString(2, monitoringSequenceID);
@@ -425,12 +490,12 @@ public class PersistenceSQLAccess {
             insertAggregatedDataPreparedStatement.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
+            
             try {
                 largeDataManagementConnection.commit();
                 // / connection.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
+            } catch (SQLException e) {
+                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, e);
             }
         }
     }
@@ -455,7 +520,6 @@ public class PersistenceSQLAccess {
 
         // if the firstMonitoringSequenceTimestamp is null, insert new
         // monitoring sequence
-
         try {
             //delete previous entry
             deleteElasticitySpacePreparedStatement.setString(1, elasticitySpace.getService().getId());
@@ -466,16 +530,16 @@ public class PersistenceSQLAccess {
             insertElasticitySpacePreparedStatement.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
+            
             try {
                 largeDataManagementConnection.commit();
                 // / connection.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
+            } catch (SQLException e) {
+                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, e);
             }
         }
     }
-
+    
     public void writeElasticityPathway(String timestamp, LightweightEncounterRateElasticityPathway elasticityPathway) {
         largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
 
@@ -491,27 +555,80 @@ public class PersistenceSQLAccess {
             insertElasticitySpacePreparedStatement.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
+            
             try {
                 largeDataManagementConnection.commit();
                 // / connection.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
+            } catch (SQLException e) {
+                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, e);
             }
         }
     }
-
-    public ElasticitySpace extractLatestElasticitySpace() {
-
-        ElasticitySpace space = null;
-
+    
+    public void writeElasticityDependencies(String timestamp, MonitoredElementElasticityDependencies dependencies) {
         largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
+
+        // if the firstMonitoringSequenceTimestamp is null, insert new
+        // monitoring sequence
+        try {
+            //delete previous entry
+            deleteElasticityDependenciesPreparedStatement.setString(1, monitoringSequenceID);
+            deleteElasticityDependenciesPreparedStatement.executeUpdate();
+            //add new entry
+            //insert elasticity dependencies as XML
+            JAXBContext context = JAXBContext.newInstance(MonitoredElementElasticityDependencies.class);
+            StringWriter stringWriter = new StringWriter();
+            context.createMarshaller().marshal(dependencies, stringWriter);
+            Clob clob = connection.createClob();
+            clob.setString(1, stringWriter.getBuffer().toString());
+            
+            insertElasticityDependenciesPreparedStatement.setString(1, timestamp);
+            insertElasticityDependenciesPreparedStatement.setClob(2, clob);
+            insertElasticityDependenciesPreparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            
+            try {
+                largeDataManagementConnection.commit();
+                // / connection.close();
+            } catch (SQLException e) {
+                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, e);
+            }
+        } catch (JAXBException ex) {
+            java.util.logging.Logger.getLogger(PersistenceSQLAccess.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Computes space on demand first. Then returns
+     *
+     * @return
+     */
+    public ElasticitySpace extractLatestElasticitySpace() {
+        
+        ElasticitySpace space = null;
+        
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
+        ConfigurationXMLRepresentation cfg = PersistenceSQLAccess.getLatestConfiguration(username, password, dataServiceIP, dataServicePort);
+        
+        if (cfg == null) {
+            Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, "Retrieved empty configuration.");
+            return null;
+        } else if (cfg.getRequirements() == null) {
+            Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, "Retrieved configuration does not contain Requirements.");
+            return null;
+        } else if (cfg.getServiceConfiguration() == null) {
+            Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, "Retrieved configuration does not contain Service Configuration.");
+            return null;
+        }
+        Requirements requirements = cfg.getRequirements();
+        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
         try {
             getLastElasticitySpaceStatement.setString(1, monitoringSequenceID);
-
+            
             ResultSet resultSet = getLastElasticitySpaceStatement.executeQuery();
             if (resultSet != null) {
-
+                
                 while (resultSet.next()) {
                     int timestamp = resultSet.getInt(1);
                     space = (ElasticitySpace) resultSet.getObject(2);
@@ -519,42 +636,107 @@ public class PersistenceSQLAccess {
                     break;
                 }
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
-            return space;
         }
+
+        //if space == null, compute it 
+        if (space == null) {
+            //if space is null, compute it from all aggregated monitored data recorded so far
+            List<ServiceMonitoringSnapshot> dataFromTimestamp = this.extractMonitoringData();
+            
+            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+            fct.setRequirements(requirements);
+            fct.trainElasticitySpace(dataFromTimestamp);
+            space = fct.getElasticitySpace();
+
+            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+            space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+
+            //persist cached space
+            this.writeElasticitySpace(space);
+        } else {
+            //else read max 1000 monitoring data records at a time, train space, and repeat as needed
+
+            //if space is not null, update it with new data
+            List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
+
+            //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
+            do {
+                dataFromTimestamp = this.extractMonitoringData(space.getTimestampID());
+                //check if new data has been collected between elasticity space querries
+                if (!dataFromTimestamp.isEmpty()) {
+                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction();
+                    fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
+                    //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+                    space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+
+                    //persist cached space
+                    this.writeElasticitySpace(space);
+                }
+                
+            } while (!dataFromTimestamp.isEmpty());
+            
+        }
+        //nothind cached, so just extract
+        return space;
     }
-
+    
     public LightweightEncounterRateElasticityPathway extractLatestElasticityPathway() {
-
+        
         LightweightEncounterRateElasticityPathway pathway = new LightweightEncounterRateElasticityPathway(1);
-
+        
         largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
         try {
             getLastElasticityPathwayStatement.setString(1, monitoringSequenceID);
-
+            
             ResultSet resultSet = getLastElasticityPathwayStatement.executeQuery();
             if (resultSet != null) {
-
+                
                 while (resultSet.next()) {
                     pathway = (LightweightEncounterRateElasticityPathway) resultSet.getObject(1);
                     break;
                 }
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
-            return pathway;
         }
+        return pathway;
+    }
+    
+    public MonitoredElementElasticityDependencies extractLatestElasticityDependencies() {
+        
+        MonitoredElementElasticityDependencies dependencies = null;
+        
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
+        try {
+            getLastElasticityDependenciesPreparedStatement.setString(1, monitoringSequenceID);
+            
+            ResultSet resultSet = getLastElasticityDependenciesPreparedStatement.executeQuery();
+            if (resultSet != null) {
+                
+                while (resultSet.next()) {
+                    Reader repr = resultSet.getClob(1).getCharacterStream();
+                    JAXBContext context = JAXBContext.newInstance(MonitoredElementElasticityDependencies.class);
+                    dependencies = (MonitoredElementElasticityDependencies) context.createUnmarshaller().unmarshal(repr);
+                    break;
+                }
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+        } catch (JAXBException ex) {
+            java.util.logging.Logger.getLogger(PersistenceSQLAccess.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        return dependencies;
     }
 
     // gets the maximum ID encountered
     public int getRecordsCount() {
         largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
-
+        
         try {
             getEntriesCountPreparedStatement.setString(1, monitoringSequenceID);
             ResultSet resultSet = getEntriesCountPreparedStatement.executeQuery();
@@ -564,12 +746,12 @@ public class PersistenceSQLAccess {
             } else {
                 return 0;
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-
+            
             return 0;
-        } finally {
+
             // try {
             // / connection.close();
             // } catch (SQLException ex) {
@@ -587,52 +769,43 @@ public class PersistenceSQLAccess {
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int startIndex, int count) {
         largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
-
+        
         List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
         try {
             getMonitoringEntryPreparedStatement.setInt(1, startIndex);
             getMonitoringEntryPreparedStatement.setInt(2, startIndex + count);
             getMonitoringEntryPreparedStatement.setString(3, monitoringSequenceID);
-
+            
             ResultSet resultSet = getMonitoringEntryPreparedStatement.executeQuery();
             if (resultSet != null) {
-
+                
                 while (resultSet.next()) {
                     ServiceMonitoringSnapshot monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(1);
                     monitoringSnapshots.add(monitoringSnapshot);
                 }
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
-            // try {
-            // /// connection.close();
-            // } catch (SQLException ex) {
-            // Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(Level.ERROR,
-            // null, ex);
-            // }
-            return monitoringSnapshots;
         }
+        return monitoringSnapshots;
     }
 
     /**
      *
-     * @param startIndex from which monitored entry ID to start extracting
-     * @param count max number of elements to return
      * @return returns maximum count elements
      */
     public ServiceMonitoringSnapshot extractLatestMonitoringData() {
-
+        
         ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot();
-
+        
         connection = refreshConnection(connection);
         try {
             getLastAggregatedDataStatement.setString(1, monitoringSequenceID);
-
+            
             ResultSet resultSet = getLastAggregatedDataStatement.executeQuery();
             if (resultSet != null) {
-
+                
                 while (resultSet.next()) {
                     int sTimestamp = resultSet.getInt(1);
                     monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(2);
@@ -640,18 +813,57 @@ public class PersistenceSQLAccess {
                     break;
                 }
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
-            return monitoringSnapshot;
         }
+        return monitoringSnapshot;
     }
 
+    /**
+     *
+     * @return returns maximum count elements
+     */
+    public Map<MonitoredElement, List<MonitoredEntry>> extractLatestRawMonitoringData() {
+        
+        Map<MonitoredElement, List<MonitoredEntry>> rawData = new HashMap<MonitoredElement, List<MonitoredEntry>>();
+        
+        connection = refreshConnection(connection);
+        try {
+            getLastRawMonitoringData.setString(1, monitoringSequenceID);
+            
+            ResultSet resultSet = getLastRawMonitoringData.executeQuery();
+            if (resultSet != null) {
+
+//  metricName, metricUnit, metrictype, value, monitoredElementID, monitoredElementLevel
+                while (resultSet.next()) {
+                    String metricName = resultSet.getString("metricName");
+                    String value = resultSet.getString("value");
+                    String monitoredElementID = resultSet.getString("monitoredElementID");
+                    MonitoredElement monitoredElement = new MonitoredElement(monitoredElementID);
+                    MonitoredEntry entry = new MonitoredEntry(new Metric(metricName), new MetricValue(value));
+                    
+                    if (rawData.containsKey(monitoredElement)) {
+                        rawData.get(monitoredElement).add(entry);
+                    } else {
+                        List<MonitoredEntry> entrys = new ArrayList<MonitoredEntry>();
+                       
+                        entrys.add(entry);
+                        rawData.put(monitoredElement, entrys);
+                    }
+                }
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+        return rawData;
+    }
+    
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int timestamp) {
-
+        
         List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
-
+        
         largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
         try {
             getAggregatedDataStatementFromTimestamp.setString(1, monitoringSequenceID);
@@ -665,29 +877,26 @@ public class PersistenceSQLAccess {
                     monitoringSnapshots.add(s);
                 }
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
-            return monitoringSnapshots;
         }
+        return monitoringSnapshots;
     }
 
     /**
      *
-     * @param startIndex from which monitored entry ID to start extracting
-     * @param count max number of elements to return
      * @return returns maximum count elements
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData() {
         largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
-
+        
         List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
         try {
             getAllAggregatedDataStatement.setString(1, monitoringSequenceID);
             ResultSet resultSet = getAllAggregatedDataStatement.executeQuery();
             if (resultSet != null) {
-
+                
                 while (resultSet.next()) {
                     int sTimestamp = resultSet.getInt(1);
                     ServiceMonitoringSnapshot s = (ServiceMonitoringSnapshot) resultSet.getObject(2);
@@ -695,56 +904,54 @@ public class PersistenceSQLAccess {
                     monitoringSnapshots.add(s);
                 }
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
-            // try {
-            // /// connection.close();
-            // } catch (SQLException ex) {
-            // Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(Level.ERROR,
-            // null, ex);
-            // }
-            return monitoringSnapshots;
         }
+        // try {
+        // /// connection.close();
+        // } catch (SQLException ex) {
+        // Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(Level.ERROR,
+        // null, ex);
+        // }
+        return monitoringSnapshots;
     }
-
+    
     public List<Metric> getAvailableMetrics(MonitoredElement monitoredElement) {
-
+        
         connection = refreshConnection(connection);
-
+        
         List<Metric> metrics = new ArrayList<Metric>();
         try {
             getMetricsForElement.setString(1, monitoringSequenceID);
             getMetricsForElement.setString(2, monitoredElement.getId());
             getMetricsForElement.setString(3, monitoredElement.getLevel().toString());
-
+            
             ResultSet resultSet = getMetricsForElement.executeQuery();
             if (resultSet != null) {
-
+                
                 while (resultSet.next()) {
                     String metricName = resultSet.getString("metricName");
                     String metricUnit = resultSet.getString("metricUnit");
                     // currently NOT used
                     String metricType = resultSet.getString("metrictype");
-
+                    
                     Metric metric = new Metric(metricName, metricUnit);
                     metrics.add(metric);
                 }
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
-            // try {
-            // /// connection.close();
-            // } catch (SQLException ex) {
-            // Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(Level.ERROR,
-            // null, ex);
-            // }
-            return metrics;
         }
-
+        // try {
+        // /// connection.close();
+        // } catch (SQLException ex) {
+        // Logger.getLogger(AggregatedMonitoringDataSQLAccess.class.getName()).log(Level.ERROR,
+        // null, ex);
+        // }
+        return metrics;
+        
     }
 
     /**
@@ -772,10 +979,10 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
             }
         } while (c == null);
-
+        
         String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration);";
         ConfigurationXMLRepresentation configurationXMLRepresentation = null;
-
+        
         try {
             ResultSet resultSet = c.createStatement().executeQuery(sql);
             if (resultSet != null) {
@@ -785,11 +992,11 @@ public class PersistenceSQLAccess {
                     configurationXMLRepresentation = (ConfigurationXMLRepresentation) context.createUnmarshaller().unmarshal(repr);
                 }
             }
-
+            
         } catch (Exception ex) {
             Logger.getLogger(PersistenceSQLAccess.class).log(Level.ERROR, ex);
         }
-
+        
         if (configurationXMLRepresentation == null) {
             return ConfigurationXMLRepresentation.createDefaultConfiguration();
         } else {
@@ -813,17 +1020,17 @@ public class PersistenceSQLAccess {
             context.createMarshaller().marshal(configurationXMLRepresentation, stringWriter);
             Clob clob = connection.createClob();
             clob.setString(1, stringWriter.getBuffer().toString());
-
+            
             insertConfigurationPreparedStatement.setClob(1, clob);
             insertConfigurationPreparedStatement.executeUpdate();
         } catch (Exception ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-        } finally {
+            
             try {
                 connection.commit();
                 // / connection.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
+            } catch (SQLException e) {
+                Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, e);
             }
         }
     }
@@ -858,7 +1065,7 @@ public class PersistenceSQLAccess {
         try {
             connection.close();
         } catch (SQLException ex) {
-             Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
+            Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, ex);
         }
         try {
             largeDataManagementConnection.close();

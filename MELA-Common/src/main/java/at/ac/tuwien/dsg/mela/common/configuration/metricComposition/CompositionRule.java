@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -32,13 +34,13 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "CompositionRule")
 @XmlType(propOrder = {"targetMonitoredElementLevel", "targetMonitoredElementIDs", "resultingMetric", "operation"})
-public class CompositionRule implements Serializable{
+public class CompositionRule implements Serializable {
 
     @XmlAttribute(name = "TargetMonitoredElementLevel", required = true)
     private MonitoredElement.MonitoredElementLevel targetMonitoredElementLevel;
@@ -140,11 +142,11 @@ public class CompositionRule implements Serializable{
         //1'step extract the monitoring data for the target service elements
         Map<MonitoredElement, MonitoredElementMonitoringSnapshot> levelMonitoringData = serviceMonitoringSnapshot.getMonitoredData(targetMonitoredElementLevel);
 
-        if(levelMonitoringData == null){
+        if (levelMonitoringData == null) {
             Logger.getRootLogger().log(Level.WARN, "Level " + targetMonitoredElementLevel + " not found in monitoring data");
             return;
         }
-        
+
         Collection<MonitoredElementMonitoringSnapshot> toBeProcessed = new ArrayList<MonitoredElementMonitoringSnapshot>();
 
         //step 2
@@ -154,15 +156,6 @@ public class CompositionRule implements Serializable{
             Collection<MonitoredElementMonitoringSnapshot> levelData = levelMonitoringData.values();
             for (MonitoredElementMonitoringSnapshot levelElementData : levelData) {
 
-//                MonitoredElement element = levelElementData.getMonitoredElement();
-//                //for each service element children, add the child to the elementData MonitoredElementMonitoringSnapshot
-//                //only add the data of the direct children
-//                for (MonitoredElement child : element.getContainedElements()) {
-//                    MonitoredElementMonitoringSnapshot childData = serviceMonitoringSnapshot.getMonitoredData(child);
-//                    if (childData != null) {
-//                        levelElementData.addChild(childData);
-//                    }
-//                }
                 toBeProcessed.add(levelElementData);
             }
         } else {
@@ -170,18 +163,9 @@ public class CompositionRule implements Serializable{
 
                 //TODO: an issue is that in the MonitoredElementMonitoringSnapshot I do NOT hold the children snapshots.
                 //So now I follow the MonitoredElement children, get their MonitoredElementMonitoringSnapshot, and enrich the MonitoredElementMonitoringSnapshot supplied to the operations
-
                 MonitoredElement element = new MonitoredElement(id);
                 if (levelMonitoringData.containsKey(element)) {
                     MonitoredElementMonitoringSnapshot elementData = levelMonitoringData.get(element);
-//                    //for each service element children, add the child to the elementData MonitoredElementMonitoringSnapshot
-//                    //only add the data of the direct children
-//                    for (MonitoredElement child : elementData.getMonitoredElement().getContainedElements()) {
-//                        MonitoredElementMonitoringSnapshot childData = serviceMonitoringSnapshot.getMonitoredData(child);
-//                        if (childData != null) {
-//                            elementData.addChild(childData);
-//                        }
-//                    }
                     toBeProcessed.add(elementData);
                 } else {
                     Logger.getRootLogger().log(Level.WARN, "Element with ID " + id + " not found in monitoring data");
@@ -193,6 +177,7 @@ public class CompositionRule implements Serializable{
         for (MonitoredElementMonitoringSnapshot snapshot : toBeProcessed) {
 
             MetricValue result = operation.apply(snapshot);
+//            resultingMetric.setMonitoredElement(snapshot.getMonitoredElement());
             if (result != null) {
                 //put new composite metric
                 snapshot.putMetric(resultingMetric, result);

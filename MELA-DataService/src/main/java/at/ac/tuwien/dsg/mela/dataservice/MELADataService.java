@@ -142,6 +142,12 @@ public class MELADataService {
                     .execute(
                     "create CACHED table ElasticityPathway (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticityPathway OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );");
 
+             connection
+                    .createStatement()
+                    .execute(
+                    "create CACHED table ELASTICITYDEPENDENCY (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticityDependency LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );");
+
+            
             connection.commit();
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
@@ -208,6 +214,12 @@ public class MELADataService {
                     .execute(
                     "create CACHED table IF NOT EXISTS ElasticityPathway (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int,elasticityPathway OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID));");
 
+            connection
+                    .createStatement()
+                    .execute(
+                    "create CACHED table IF NOT EXISTS ELASTICITYDEPENDENCY (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticityDependency LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );");
+
+            
             connection.commit();
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);

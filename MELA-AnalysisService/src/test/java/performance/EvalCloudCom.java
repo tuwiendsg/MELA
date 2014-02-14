@@ -31,7 +31,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
+//import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 
 import java.io.FileInputStream;

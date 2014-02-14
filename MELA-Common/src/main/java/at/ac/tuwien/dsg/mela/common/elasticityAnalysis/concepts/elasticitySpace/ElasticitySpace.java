@@ -196,9 +196,7 @@ public class ElasticitySpace implements Serializable{
 
     @Override
     public String toString() {
-        return "ElasticitySpace{"
-                + "\n\telasticitySpaceBoundary=" + elasticitySpaceBoundary
-                + '}';
+        return "ElasticitySpace for " + service.getId();
     }
 
     /**

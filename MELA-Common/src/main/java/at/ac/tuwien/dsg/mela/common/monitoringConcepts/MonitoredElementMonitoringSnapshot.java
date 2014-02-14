@@ -51,8 +51,10 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     @XmlElement(name = "MonitoredElement", required = false)
     private MonitoredElement monitoredElement;
     @XmlElement(name = "Metrics", required = false)
+    
     @XmlJavaTypeAdapter(MonitoringEntriesAdapter.class)
     private HashMap<Metric, MetricValue> monitoredData;
+    
     @XmlElement(name = "Action", required = false)
     private List<String> executingActions;
     @XmlElement(name = "MonitoredElementSnapshot")

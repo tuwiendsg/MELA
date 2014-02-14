@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,8 +48,9 @@ import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSourceConfig;
 import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSourceConfigs;
 import at.ac.tuwien.dsg.mela.dataservice.config.dataSourcesManagement.DataSourcesManager;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccess;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithAutoStructureDetection;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithGuidedAutoStructureDetection;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithUnguidedAutoStructureDetection;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 import java.lang.String;
@@ -117,6 +117,16 @@ public class DataCollectionService {
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
         requirements = configurationXMLRepresentation.getRequirements();
 
+        String dataAccessType = Configuration.getServiceStructureDetectionMechanism().trim().toLowerCase();
+
+        if (dataAccessType.contains("auto")) {
+            dataAccess = DataAccessWithUnguidedAutoStructureDetection.createInstance();
+        } else if (dataAccessType.contains("guided")) {
+            dataAccess = DataAccessWithGuidedAutoStructureDetection.createInstance();
+        } else {
+            dataAccess = DataAccessWithManualStructureManagement.createInstance();
+        }
+
         startMonitoring();
     }
 
@@ -140,6 +150,16 @@ public class DataCollectionService {
         requirements = configurationXMLRepresentation.getRequirements();
         monitoringTimer.cancel();
         monitoringTimer.purge();
+
+        String dataAccessType = Configuration.getServiceStructureDetectionMechanism().trim().toLowerCase();
+
+        if (dataAccessType.contains("auto")) {
+            dataAccess = DataAccessWithUnguidedAutoStructureDetection.createInstance();
+        } else if (dataAccessType.contains("guided")) {
+            dataAccess = DataAccessWithGuidedAutoStructureDetection.createInstance();
+        } else {
+            dataAccess = DataAccessWithManualStructureManagement.createInstance();
+        }
         startMonitoring();
     }
 
@@ -161,6 +181,9 @@ public class DataCollectionService {
         }
         persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(),
                 serviceConfiguration.getId());
+
+        //when a service structure is set, switch to manual service structure management
+        dataAccess = DataAccessWithManualStructureManagement.createInstance();
         startMonitoring();
     }
 
@@ -301,24 +324,23 @@ public class DataCollectionService {
         // open proper sql access
         persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(),
                 serviceConfiguration.getId());
-        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
-        if (Configuration.automatedStructureDetection()) {
-
-            dataAccess = DataAccessWithAutoStructureDetection.createInstance();
-        } else {
-            dataAccess = DataAccess.createInstance();
+        //if operation mode is replay, then do not activate data collection service
+        if (Configuration.getOperationMode().equals("replay")) {
+            return;
         }
+
+        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
         // read data sources configuration file
         DataSourceConfigs dataSources = DataSourcesManager.readDataSourcesConfiguration();
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "Using following data sources:");
+
         for (DataSourceConfig config : dataSources.getConfigs()) {
 
             Logger.getLogger(this.getClass()).log(Level.DEBUG, config.toString());
 
             // transform configuration options in key-value pairs
-
             Map<String, String> configuration = new HashMap<String, String>();
             for (String configEntry : config.getProperties()) {
                 String[] info = configEntry.split("=");
@@ -410,10 +432,8 @@ public class DataCollectionService {
                             // LightweightEncounterRateElasticityPathway
                             // elasticityPathway =
                             // persistenceSQLAccess.extractLatestElasticityPathway();
-
                             // in future just update pathway. now recompute
                             // elasticityPathway.trainElasticityPathway(null)
-
                             Date after = new Date();
                             Logger.getLogger(this.getClass()).log(Level.DEBUG,
                                     "DaaS data writing time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());

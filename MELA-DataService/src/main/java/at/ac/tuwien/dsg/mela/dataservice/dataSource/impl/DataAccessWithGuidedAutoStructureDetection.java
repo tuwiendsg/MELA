@@ -1,3 +1,7 @@
+///**
+// * Contains the old version in which we figured out the structure of the application from a metric deployed in each VM
+// * Good when replaying monitoring data, as it shows new VMs being added/removed.
+// */
 /**
  * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
  * E184
@@ -19,6 +23,17 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
+import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -26,25 +41,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Level;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import org.apache.log4j.Logger;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
-public class DataAccess extends AbstractDataAccess {
-
-    private static final MonitoredElement ALL_VMS = new MonitoredElement("-");
+public class DataAccessWithGuidedAutoStructureDetection extends AbstractDataAccess {
 
     /**
      * Left as this in case we want to limit in the future the nr of DataAccess
@@ -52,12 +55,12 @@ public class DataAccess extends AbstractDataAccess {
      *
      * @return
      */
-    public static DataAccess createInstance() {
+    public static DataAccessWithGuidedAutoStructureDetection createInstance() {
 
-        return new DataAccess();
+        return new DataAccessWithGuidedAutoStructureDetection();
     }
 
-    private DataAccess() {
+    private DataAccessWithGuidedAutoStructureDetection() {
 
     }
 
@@ -75,12 +78,12 @@ public class DataAccess extends AbstractDataAccess {
     public synchronized ServiceMonitoringSnapshot getStructuredMonitoredData(MonitoredElement m) {
 
         if (m == null) {
-            Logger.getLogger(DataAccess.class).log(Level.WARN, "No supplied service configuration");
+            Logger.getLogger(DataAccessWithManualStructureManagement.class).log(Level.WARN, "No supplied service configuration");
             return new ServiceMonitoringSnapshot();
         }
         MonitoredElement structureRoot = m.clone();
 
-        // extract all VMs from the service structure
+		// extract all VMs from the service structure
         // Map<MonitoredElement, MonitoredElement> vms = new
         // LinkedHashMap<MonitoredElement, MonitoredElement>();
         /**
@@ -92,10 +95,11 @@ public class DataAccess extends AbstractDataAccess {
 
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = new ServiceMonitoringSnapshot();
 
-        // traverse the MonitoredElement hierarchical tree in BFS and extract
+		// traverse the MonitoredElement hierarchical tree in BFS and extract
         // the serviceStructure elements
         List<MonitoredElementMonitoringSnapshot> bfsTraversalQueue = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        MonitoredElementMonitoringSnapshot rootMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureRoot, new LinkedHashMap<Metric, MetricValue>());
+        MonitoredElementMonitoringSnapshot rootMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureRoot,
+                new LinkedHashMap<Metric, MetricValue>());
 
         bfsTraversalQueue.add(rootMonitoringSnapshot);
         serviceMonitoringSnapshot.addMonitoredData(rootMonitoringSnapshot);
@@ -108,74 +112,90 @@ public class DataAccess extends AbstractDataAccess {
             MonitoredElementMonitoringSnapshot element = bfsTraversalQueue.remove(0);
             MonitoredElement processedElement = element.getMonitoredElement();
             elements.put(processedElement, processedElement);
-            
-            if (!processedElement.getLevel().equals(MonitoredElementLevel.VM)) {
-                lowestLevelFoundMonitoredElement = processedElement;
-                lowestLevelFoundMonitoredSnapshot = element;
-            }
+            lowestLevelFoundMonitoredElement = processedElement;
+            lowestLevelFoundMonitoredSnapshot = element;
 
-//            if(processedElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
-//                vms.put(processedElement, processedElement);
-//            }
-            for (MonitoredElement child : processedElement.getContainedElements()) // add empty monitoring data
+			// if(processedElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
+            // vms.put(processedElement, processedElement);
+            // }
+            for (MonitoredElement child : processedElement.getContainedElements()) // add
+            // empty
+            // monitoring
+            // data
             // for each serviceStructure element, to serve as a place where
             // in the future composite metrics can be added
-            {        
-                    MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(child, new LinkedHashMap<Metric, MetricValue>());
-                    element.addChild(monitoredElementMonitoringSnapshot);
-                    serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
-                    bfsTraversalQueue.add(monitoredElementMonitoringSnapshot);
+            {
+                MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(child,
+                        new LinkedHashMap<Metric, MetricValue>());
+                element.addChild(monitoredElementMonitoringSnapshot);
+                serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
+                bfsTraversalQueue.add(monitoredElementMonitoringSnapshot);
+
             }
 
         }
 
-        // go through each monitored element and update the service monitoring
+		// go through each monitored element and update the service monitoring
         // snapshot
         for (AbstractDataSource dataSource : freshestMonitoredData.keySet()) {
-            // maybe in the future we use data source information, but now we
+			// maybe in the future we use data source information, but now we
             // extract the monitored data directly
 
-            // maybe in the future we use information from MonitoringData, but
+			// maybe in the future we use information from MonitoringData, but
             // now we extract the monitored data elements directly
             for (MonitoredElementData elementData : freshestMonitoredData.get(dataSource).getMonitoredElementDatas()) {
 
                 // create MonitoredElementMonitoringSnapshot for each element
                 HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
-                for (MetricInfo metricInfo : elementData.getMetrics()) {
+
+                MonitoredElement monitoredElement = null;
+                // represent all monitored metrics in mapToElasticitySpace
+                for (MetricInfo gangliaMetricInfo : elementData.getMetrics()) {
                     Metric metric = new Metric();
-                    metric.setName(metricInfo.getName());
-                    metric.setMeasurementUnit(metricInfo.getUnits());
-                    MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                    metric.setName(gangliaMetricInfo.getName());
+                    metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
+                    MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
                     monitoredMetricValues.put(metric, metricValue);
+                    if (metric.getName().equals(Configuration.getMonitoredElementIDMetricName())) {
+                        monitoredElement = new MonitoredElement();
+                        monitoredElement.setId(gangliaMetricInfo.getValue());
+                        monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+                    }
                 }
-                MonitoredElement monitoredElement = elementData.getMonitoredElement();
-
-                if (elements.containsKey(monitoredElement)) {
-                    // get the monitored element from the supplied service
-                    // structure, where is connected with service units
+				// if we have found a metric containing a MonitoredElementID,
+                // and if that ID is present in our structure
+                // add it as VM level child to the found Service ID (this is the
+                // logic under our ganglia deployment so far)
+                if (monitoredElement != null && elements.containsKey(monitoredElement)) {
                     MonitoredElement structureElement = elements.get(monitoredElement);
-                    MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureElement, monitoredMetricValues);
+                    MonitoredElement vmLevelElement = new MonitoredElement();
 
-                    // if data exists, it updates it, otherwise creates entry
-                    serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
-                } else if (elements.containsKey(ALL_VMS)) {
-//                    // else we add all VMs to the found service unit
-                    // TODO: auto VM allocation disabled until further notice
-//                    if (monitoredElement.getLevel().equals(MonitoredElementLevel.VM)) {
-//
-//                        MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, monitoredMetricValues);
-//                        // add to monitoring data tree structure
-//                        lowestLevelFoundMonitoredSnapshot.addChild(monitoredElementMonitoringSnapshot);
-//
-//                        serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
-//                        // add to structure
-//                        lowestLevelFoundMonitoredElement.addElement(monitoredElement);
+                    vmLevelElement.setId(elementData.getMonitoredElement().getId());
+                    vmLevelElement.setName(elementData.getMonitoredElement().getId());
+                    vmLevelElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
+                    structureElement.addElement(vmLevelElement);
+
+//                    //set monitoring source on the metric
+//                    for (Metric metric : monitoredMetricValues.keySet()) {
+//                        metric.setMonitoredElement(vmLevelElement);
 //                    }
+                    
+                    MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vmLevelElement,
+                            monitoredMetricValues);
+
+					// also add VM monitoring info to children tree
+                    // TODO: CHECK THIS: not sure if this does not introduce
+                    // errors with SUM. In the case of not automatic structure
+                    // detection, it DOES
+                    serviceMonitoringSnapshot.getMonitoredData(monitoredElement).addChild(MonitoredElementMonitoringSnapshot);
+
+                    serviceMonitoringSnapshot.addMonitoredData(MonitoredElementMonitoringSnapshot);
                 }
+
             }
         }
 
-        // filter the monitoredMetricValues according to the metric filters if
+		// filter the monitoredMetricValues according to the metric filters if
         // such exist
         serviceMonitoringSnapshot.applyMetricFilters(metricFilters);
 

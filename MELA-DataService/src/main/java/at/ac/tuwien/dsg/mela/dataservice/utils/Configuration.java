@@ -31,164 +31,180 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
- * 
+ *
  * Class which acts as entry point towards all configuration options that need
  * to be added to the MELA-DataService
  */
 public class Configuration {
 
-	private static final Properties configuration = new Properties();
+    private static final Properties configuration = new Properties();
 
-	static {
+    static {
 
-		String date = new Date().toString();
-		date = date.replace(" ", "_");
-		date = date.replace(":", "_");
-		System.getProperties().put("recording_date", date);
+        String date = new Date().toString();
+        date = date.replace(" ", "_");
+        date = date.replace(":", "_");
+        System.getProperties().put("recording_date", date);
 
-		try {
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			// ClassLoader classLoader = Configuration.class.getClassLoader();
-			InputStream stream = ResourceLoader.getDataServicePropertiesStream();
-			configuration.load(stream);
-                        stream.close();
+        try {
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            // ClassLoader classLoader = Configuration.class.getClassLoader();
+            InputStream stream = ResourceLoader.getDataServicePropertiesStream();
+            configuration.load(stream);
+            stream.close();
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
-	}
+    }
 
-	//
-	// private static PrintStream createOutLoggingProxy(final PrintStream
-	// realPrintStream, final Logger l) {
-	// return new PrintStream(realPrintStream) {
-	// public void print(final String string) {
-	// l.info(string);
-	// }
-	// };
-	// }
-	//
-	// private static PrintStream createErrLoggingProxy(final PrintStream
-	// realPrintStream, final Logger l) {
-	// return new PrintStream(realPrintStream) {
-	// public void print(final String string) {
-	// l.info(string);
-	// }
-	// };
-	// }
+    //
+    // private static PrintStream createOutLoggingProxy(final PrintStream
+    // realPrintStream, final Logger l) {
+    // return new PrintStream(realPrintStream) {
+    // public void print(final String string) {
+    // l.info(string);
+    // }
+    // };
+    // }
+    //
+    // private static PrintStream createErrLoggingProxy(final PrintStream
+    // realPrintStream, final Logger l) {
+    // return new PrintStream(realPrintStream) {
+    // public void print(final String string) {
+    // l.info(string);
+    // }
+    // };
+    // }
+    public static int getDataPoolingInterval() {
+        if (configuration.containsKey("DATA_COLLECTION_INTERVAL_IN_SECONDS")) {
+            return Integer.parseInt(configuration.getProperty("DATA_COLLECTION_INTERVAL_IN_SECONDS"));
+        } else {
+            return 5; // default 5 seconds
+        }
+    }
 
-	public static int getDataPoolingInterval() {
-		if (configuration.containsKey("DATA_COLLECTION_INTERVAL_IN_SECONDS")) {
-			return Integer.parseInt(configuration.getProperty("DATA_COLLECTION_INTERVAL_IN_SECONDS"));
-		} else {
-			return 5; // default 5 seconds
-		}
-	}
+    public static int getDataAggregationWindows() {
+        if (configuration.containsKey("DATA_AGGREGATION_WINDOWS")) {
+            return Integer.parseInt(configuration.getProperty("DATA_AGGREGATION_WINDOWS"));
+        } else {
+            return 2; // default 2 frames
+        }
+    }
 
-	public static int getDataAggregationWindows() {
-		if (configuration.containsKey("DATA_AGGREGATION_WINDOWS")) {
-			return Integer.parseInt(configuration.getProperty("DATA_AGGREGATION_WINDOWS"));
-		} else {
-			return 2; // default 2 frames
-		}
-	}
+    public static void setProperty(String property, Object value) {
+        configuration.put(property, value);
+    }
 
-	public static void setProperty(String property, Object value) {
-		configuration.put(property, value);
-	}
+    public static String getSecurityCertificatePath() {
+        return configuration.getProperty("PEM_CERT_PATH");
+    }
 
-	public static String getSecurityCertificatePath() {
-		return configuration.getProperty("PEM_CERT_PATH");
-	}
+    // public static String getGangliaPort() {
+    // return configuration.getProperty("DATA_SOURCE.PORT");
+    // }
+    //
+    // public static String getAccessMachineIP() {
+    // return configuration.getProperty("DATA_SOURCE.IP");
+    // }
+    public static String getMonitoredElementIDMetricName() {
+        return "serviceUnitID";
+    }
 
-	// public static String getGangliaPort() {
-	// return configuration.getProperty("DATA_SOURCE.PORT");
-	// }
-	//
-	// public static String getAccessMachineIP() {
-	// return configuration.getProperty("DATA_SOURCE.IP");
-	// }
+    public static String getAccessUserName() {
+        return configuration.getProperty("ACCESS_MACHINE_USER_NAME");
+    }
 
-	public static String getMonitoredElementIDMetricName() {
-		return "serviceUnitID";
-	}
+    public static String getDefaultMonitoringDataAccessMethod() {
+        return configuration.getProperty("DATA_SOURCE.TYPE");
+    }
 
-	public static String getAccessUserName() {
-		return configuration.getProperty("ACCESS_MACHINE_USER_NAME");
-	}
+    public static String getStoredMonitoringSequenceID() {
+        return configuration.getProperty("MONITORING_SEQ_ID");
+    }
 
-	public static String getDefaultMonitoringDataAccessMethod() {
-		return configuration.getProperty("DATA_SOURCE.TYPE");
-	}
+    //
+    // public static int getDataServicePort() {
+    // if (configuration.containsKey("MELA_DATA_SERVICE.PORT")) {
+    // return
+    // Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.PORT"));
+    // } else {
+    // return 9123; //default 2 frames
+    // }
+    // }
+    public static String getDataServiceIP() {
+        if (configuration.containsKey("MELA_DATA_SERVICE.IP")) {
+            return configuration.getProperty("MELA_DATA_SERVICE.IP");
+        } else {
+            return "localhost";
+        }
+    }
 
-	public static String getStoredMonitoringSequenceID() {
-		return configuration.getProperty("MONITORING_SEQ_ID");
-	}
+    public static String getOperationMode() {
+        if (configuration.containsKey("OPEATION_MODE")) {
+            return configuration.getProperty("OPEATION_MODE");
+        } else {
+            return "monitoring";
+        }
+    }
 
-	//
-	// public static int getDataServicePort() {
-	// if (configuration.containsKey("MELA_DATA_SERVICE.PORT")) {
-	// return
-	// Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.PORT"));
-	// } else {
-	// return 9123; //default 2 frames
-	// }
-	// }
+    public static int getDataServicePort() {
+        if (configuration.containsKey("MELA_DATA_SERVICE.DATA_PORT")) {
+            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.DATA_PORT"));
+        } else {
+            return 9123;
+        }
+    }
 
-	public static String getDataServiceIP() {
-		if (configuration.containsKey("MELA_DATA_SERVICE.IP")) {
-			return configuration.getProperty("MELA_DATA_SERVICE.IP");
-		} else {
-			return "localhost";
-		}
-	}
+    public static int getDataServiceConfigurationPort() {
+        if (configuration.containsKey("MELA_DATA_SERVICE.CONFIGURATION_PORT")) {
+            return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.CONFIGURATION_PORT"));
+        } else {
+            return 9124;
+        }
+    }
 
-	public static int getDataServicePort() {
-		if (configuration.containsKey("MELA_DATA_SERVICE.DATA_PORT")) {
-			return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.DATA_PORT"));
-		} else {
-			return 9123;
-		}
-	}
+    public static Object getValue(String key) {
+        if (configuration.containsKey(key)) {
+            return configuration.getProperty(key);
+        } else {
+            return null;
+        }
+    }
 
-	public static int getDataServiceConfigurationPort() {
-		if (configuration.containsKey("MELA_DATA_SERVICE.CONFIGURATION_PORT")) {
-			return Integer.parseInt(configuration.getProperty("MELA_DATA_SERVICE.CONFIGURATION_PORT"));
-		} else {
-			return 9124;
-		}
-	}
+    public static String getDatabaseFileLocation() {
+        if (configuration.containsKey("DATA_BASE_LOCATION_PATH")) {
+            return configuration.getProperty("DATA_BASE_LOCATION_PATH");
+        } else {
+            return ".";
+        }
+    }
 
-	public static Object getValue(String key) {
-		if (configuration.containsKey(key)) {
-			return configuration.getProperty(key);
-		} else {
-			return null;
-		}
-	}
+    /**
+     * Assumes it returns " manual | auto | guided" Manual means no structure
+     * detection. Auto means auto-structure detection in 1 Service Unit 1
+     * Service Topology Guided means that a metric indicating Service Unit is
+     * present in monitored data
+     *
+     * If starting with Auto/Guided but someone invokes "setServiceStructure" on
+     * mela AnalysysService, the data access mechanism will be changed to manual
+     *
+     * @return
+     */
+    public static String getServiceStructureDetectionMechanism() {
+        if (configuration.containsKey("SERVICE_STRUCTURE_DETECTION")) {
+            return configuration.getProperty("SERVICE_STRUCTURE_DETECTION");
+        } else {
+            return "auto";
+        }
+    }
 
-	public static String getDatabaseFileLocation() {
-		if (configuration.containsKey("DATA_BASE_LOCATION_PATH")) {
-			return configuration.getProperty("DATA_BASE_LOCATION_PATH");
-		} else {
-			return ".";
-		}
-	}
-
-	public static boolean automatedStructureDetection() {
-		if (configuration.containsKey("SERVICE_STRUCTURE_DETECTION")) {
-			return configuration.getProperty("SERVICE_STRUCTURE_DETECTION").equalsIgnoreCase("AUTOMATIC");
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean continuousOperation() {
-		if (configuration.containsKey("OPERATION_MODE")) {
-			return configuration.getProperty("OPERATION_MODE").equalsIgnoreCase("continuous");
-		} else {
-			return false;
-		}
-	}
+    public static boolean continuousOperation() {
+        if (configuration.containsKey("OPERATION_MODE")) {
+            return configuration.getProperty("OPERATION_MODE").equalsIgnoreCase("continuous");
+        } else {
+            return false;
+        }
+    }
 }

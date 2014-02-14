@@ -246,7 +246,6 @@ public class ElasticityAnalysisManager {
         // "Metric filters to get metrics targeted by composition rules will not be added");
         // this.compositionRulesConfiguration = compositionRulesConfiguration;
         // }
-
     }
 
     private synchronized void setInitialCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
@@ -291,7 +290,6 @@ public class ElasticityAnalysisManager {
         // "Metric filters to get metrics targeted by composition rules will not be added");
         // this.compositionRulesConfiguration = compositionRulesConfiguration;
         // }
-
     }
 
     // public synchronized AbstractDataAccess getDataAccess() {
@@ -535,7 +533,6 @@ public class ElasticityAnalysisManager {
         Date before = new Date();
 
         // int recordsCount = persistenceSQLAccess.getRecordsCount();
-
         // first, read from the sql of monitoring data, in increments of 10, and
         // train the elasticity space function
         LightweightEncounterRateElasticityPathway elasticityPathway = null;
@@ -595,7 +592,6 @@ public class ElasticityAnalysisManager {
         Date before = new Date();
 
         // int recordsCount = persistenceSQLAccess.getRecordsCount();
-
         // first, read from the sql of monitoring data, in increments of 10, and
         // train the elasticity space function
         LightweightEncounterRateElasticityPathway elasticityPathway = null;
@@ -642,7 +638,6 @@ public class ElasticityAnalysisManager {
         Date before = new Date();
 
         ElasticitySpace space = extractAndUpdateElasticitySpace();
-
 
         String jsonRepr = ConvertToJSON.convertElasticitySpace(space, element);
 
@@ -719,33 +714,7 @@ public class ElasticityAnalysisManager {
     private ElasticitySpace extractAndUpdateElasticitySpace() {
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
 
-        //elasticity space is cached on a per-need basis
-
-        if (space == null) {
-            //if space is null, compute it from all aggregated monitored data recorded so far
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceSQLAccess.extractMonitoringData();
-
-            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-            fct.setRequirements(requirements);
-            fct.trainElasticitySpace(dataFromTimestamp);
-            space = fct.getElasticitySpace();
-
-            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-            space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-        } else {
-
-            //if space is not null, update it with new data
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceSQLAccess.extractMonitoringData(space.getTimestampID());
-            //check if new data has been collected between elasticity space querries
-            if (!dataFromTimestamp.isEmpty()) {
-                ElasticitySpaceFunction fct = new ElSpaceDefaultFunction();
-                fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
-                //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-                space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-            }
-        }
-
-        persistenceSQLAccess.writeElasticitySpace(space);
+//       
         return space;
     }
 }

@@ -16,7 +16,7 @@ fi
 
 #check if ganglia dir where the configuration files for new ganglia plug-ins exists, and if not, create it and copy the modpython.conf
 if [ ! -d "$GANGLIA_CONFIG_DIR" ]; then
-     su -S mkdir 
+     su -S mkdir $GANGLIA_CONFIG_DIR
 fi
    
 if [! -f "$GANGLIA_MODULES_CONFIG_FILE" ]
