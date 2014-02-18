@@ -51,8 +51,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredEntry;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import java.util.Collections;
-import java.util.Comparator;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.bind.JAXBException;
@@ -371,15 +370,15 @@ public class PersistenceSQLAccess {
             }
         }
 
-//        // ServiceID is used in retrieving historical monitoring data (if
-//        // needed)
-//        try {
-//            Statement addSeqStmt = connection.createStatement();
-//            addSeqStmt.executeUpdate("insert into MonitoringSeq (ID) VALUES ('" + monitoringSequenceID + "')");
-//            addSeqStmt.close();
-//        } catch (SQLException ex) {
-//            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
-//        }
+        // ServiceID is used in retrieving historical monitoring data (if
+        // needed)
+        try {
+            Statement addSeqStmt = connection.createStatement();
+            addSeqStmt.executeUpdate("insert into MonitoringSeq (ID) VALUES ('" + monitoringSequenceID + "')");
+            addSeqStmt.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
     }
 
     /**
@@ -510,11 +509,8 @@ public class PersistenceSQLAccess {
                 Logger.getLogger(PersistenceSQLAccess.class.getName()).log(Level.ERROR, null, e);
             }
         }
-        
-        
-        
+
         //write last configuration
-        
     }
 
     // {
