@@ -142,8 +142,8 @@ public class Configuration {
     }
 
     public static String getOperationMode() {
-        if (configuration.containsKey("OPEATION_MODE")) {
-            return configuration.getProperty("OPEATION_MODE");
+        if (configuration.containsKey("BEHAVIOR")) {
+            return configuration.getProperty("BEHAVIOR");
         } else {
             return "monitoring";
         }
