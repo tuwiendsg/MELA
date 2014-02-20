@@ -114,7 +114,7 @@ public class DataCollectionService {
                 Configuration.getDataServiceIP(), Configuration.getDataServicePort());
 
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
-        setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
+        compositionRulesConfiguration = configurationXMLRepresentation.getCompositionRulesConfiguration();
         requirements = configurationXMLRepresentation.getRequirements();
 
         String dataAccessType = Configuration.getServiceStructureDetectionMechanism().trim().toLowerCase();
@@ -189,6 +189,7 @@ public class DataCollectionService {
 
     public synchronized void setRequirements(Requirements requirements) {
         this.requirements = requirements;
+        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
     }
 
     // actually removes all VMs and Virtual Clusters from the ServiceUnit and
@@ -214,6 +215,7 @@ public class DataCollectionService {
                 serviceUnits.get(element).getContainedElements().addAll(element.getContainedElements());
             }
         }
+        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
     }
 
@@ -236,6 +238,7 @@ public class DataCollectionService {
     public synchronized void setCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
 
         this.compositionRulesConfiguration = compositionRulesConfiguration;
+        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
     }
 
@@ -419,8 +422,10 @@ public class DataCollectionService {
                             Date before = new Date();
                             String timestamp = "" + new Date().getTime();
 
+                            //persist updated configuration
+                            persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
                             // add new timestamp
-                            persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration.getId());
+                            persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration.getId(), serviceConfiguration);
 
                             // write structured monitoring data
                             persistenceSQLAccess.writeMonitoringData(timestamp, latestMonitoringData);

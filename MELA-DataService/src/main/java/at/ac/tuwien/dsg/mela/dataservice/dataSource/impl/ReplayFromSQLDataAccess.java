@@ -19,13 +19,13 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
+import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPoolingDataSource;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
-import java.util.Collection;
+import java.util.Map;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -34,35 +34,46 @@ import java.util.Collection;
  *
  */
 //TODO: refine the class. now is for tests and methods do not use supplied params, is a mess
-public class ReplayFromSQLDataAccess extends AbstractDataAccess {
+public class ReplayFromSQLDataAccess extends AbstractDataSource {
+
+    private int timestamp = 0;
+
+    public ReplayFromSQLDataAccess(Map<String, String> configuration) {
+        super(configuration);
+        sqlAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), configuration.get("serviceID"));
+    }
+
+    public MonitoringData getMonitoringData() throws DataAccessException {
+        return sqlAccess.getRawMonitoringData(configuration.get("serviceID"), "" + timestamp++);
+    }
 
     private PersistenceSQLAccess sqlAccess;
-
-    public static ReplayFromSQLDataAccess createInstance(String monitoredElementID) {
-        return new ReplayFromSQLDataAccess(monitoredElementID);
-    }
-
-    private ReplayFromSQLDataAccess(String monitoredElementID) {
-        sqlAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), monitoredElementID);
-    }
-
-    @Override
-    public ServiceMonitoringSnapshot getStructuredMonitoredData(MonitoredElement monitoredElement) {
-        return sqlAccess.extractLatestMonitoringData();
-    }
-
-    public Collection<ServiceMonitoringSnapshot> getAllStructuredMonitoredData(MonitoredElement monitoredElement) {
-        return sqlAccess.extractMonitoringData();
-    }
-
-    public Collection<ServiceMonitoringSnapshot> getAllStructuredMonitoredData(MonitoredElement monitoredElement, int startindex, int endIndex) {
-        return sqlAccess.extractMonitoringData(startindex, endIndex);
-    }
-
-    @Override
-    public MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement monitoredElement) {
-        ServiceMonitoringSnapshot sms = sqlAccess.extractLatestMonitoringData();
-        return sms.getMonitoredData(monitoredElement);
-    }
+//
+//    public static ReplayFromSQLDataAccess createInstance(String monitoredElementID) {
+//        return new ReplayFromSQLDataAccess(monitoredElementID);
+//    }
+//
+//    private ReplayFromSQLDataAccess(String monitoredElementID) {
+//        sqlAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), monitoredElementID);
+//    }
+//
+//    @Override
+//    public ServiceMonitoringSnapshot getStructuredMonitoredData(MonitoredElement monitoredElement) {
+//        return sqlAccess.extractLatestMonitoringData();
+//    }
+//
+//    public Collection<ServiceMonitoringSnapshot> getAllStructuredMonitoredData(MonitoredElement monitoredElement) {
+//        return sqlAccess.extractMonitoringData();
+//    }
+//
+//    public Collection<ServiceMonitoringSnapshot> getAllStructuredMonitoredData(MonitoredElement monitoredElement, int startindex, int endIndex) {
+//        return sqlAccess.extractMonitoringData(startindex, endIndex);
+//    }
+//
+//    @Override
+//    public MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement monitoredElement) {
+//        ServiceMonitoringSnapshot sms = sqlAccess.extractLatestMonitoringData();
+//        return sms.getMonitoredData(monitoredElement);
+//    }
 
 }

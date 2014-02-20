@@ -85,6 +85,10 @@ public class PersistenceSQLAccess {
 
     private PreparedStatement getAggregatedDataStatementFromTimestamp;
     private PreparedStatement insertIntoTimestamp;
+    private PreparedStatement getFromTimestamp;
+    private PreparedStatement getMinTimestamp;
+    private PreparedStatement getMaxTimestamp;
+
     private PreparedStatement getLastAggregatedDataStatement;
     private PreparedStatement getLastElasticitySpaceStatement;
 
@@ -172,6 +176,33 @@ public class PersistenceSQLAccess {
             try {
                 String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID > (?) AND ID < (?) AND monSeqID=(?);";
                 getMonitoringEntryPreparedStatement = largeDataManagementConnection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+        {
+            try {
+                String sql = "SELECT serviceStructure from timestamp where " + "ID =? AND monSeqID=?;";
+                getFromTimestamp = largeDataManagementConnection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+        {
+            try {
+                String sql = "SELECT MIN(id) from timestamp where monSeqID=?;";
+                getMinTimestamp = largeDataManagementConnection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+        {
+            try {
+                String sql = "SELECT MAX(id) from timestamp where monSeqID=?;";
+                getMaxTimestamp = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -267,7 +298,7 @@ public class PersistenceSQLAccess {
 
         {
             try {
-                String sql = "insert into Timestamp (monSeqID, timestamp) VALUES ( (SELECT ID from MonitoringSeq where id='" + monitoringSequenceID + "'), ?)";
+                String sql = "insert into Timestamp (monSeqID, timestamp, serviceStructure) VALUES ( (SELECT ID from MonitoringSeq where id='" + monitoringSequenceID + "'), ?,?)";
                 insertIntoTimestamp = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
@@ -416,13 +447,55 @@ public class PersistenceSQLAccess {
      *
      * @param monSeqID currently ignored. Left for future extention
      */
-    public void writeInTimestamp(String timestamp, String monSeqID) {
+    public void writeInTimestamp(String timestamp, String monSeqID, MonitoredElement serviceStructure) {
+
+        StringWriter stringWriter = new StringWriter();
+        JAXBContext jAXBContext;
+        try {
+            jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
+            jAXBContext.createMarshaller().marshal(serviceStructure, stringWriter);
+        } catch (JAXBException ex) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+
+        String description = stringWriter.toString();
+
         try {
             insertIntoTimestamp.setString(1, timestamp);
+            insertIntoTimestamp.setString(2, description);
             insertIntoTimestamp.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
         }
+    }
+
+    public MonitoredElement getServiceStructure(String timestampID, String monSeqID) {
+        MonitoredElement element = null;
+        try {
+            getFromTimestamp.setString(1, timestampID);
+            getFromTimestamp.setString(2, monSeqID);
+
+            ResultSet resultSet = getFromTimestamp.executeQuery();
+            if (resultSet != null) {
+
+                while (resultSet.next()) {
+                    try {
+
+                        JAXBContext context = JAXBContext.newInstance(MonitoredElement.class);
+                        Reader repr = resultSet.getClob(1).getCharacterStream();
+                        element = (MonitoredElement) context.createUnmarshaller().unmarshal(repr);
+                        break;
+
+                    } catch (JAXBException ex) {
+                        Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+                    }
+
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+        return element;
     }
 
     /**
@@ -635,6 +708,9 @@ public class PersistenceSQLAccess {
             return null;
         }
         Requirements requirements = cfg.getRequirements();
+        
+         Logger.getLogger(this.getClass()).log(Level.INFO, " reqs  " + requirements);
+        
         MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
         try {
             getLastElasticitySpaceStatement.setString(1, monitoringSequenceID);
@@ -681,6 +757,7 @@ public class PersistenceSQLAccess {
                 //check if new data has been collected between elasticity space querries
                 if (!dataFromTimestamp.isEmpty()) {
                     ElasticitySpaceFunction fct = new ElSpaceDefaultFunction();
+                    fct.setRequirements(requirements);
                     fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
                     //set to the new space the timespaceID of the last snapshot monitored data used to compute it
                     space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
@@ -696,6 +773,28 @@ public class PersistenceSQLAccess {
         return space;
     }
 
+//    public int getMinTimestampID(String monSeqID) {
+//
+//        String id = 
+//
+//        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
+//        try {
+//            getLastElasticityPathwayStatement.setString(1, monitoringSequenceID);
+//
+//            ResultSet resultSet = getLastElasticityPathwayStatement.executeQuery();
+//            if (resultSet != null) {
+//
+//                while (resultSet.next()) {
+//                    pathway = (LightweightEncounterRateElasticityPathway) resultSet.getObject(1);
+//                    break;
+//                }
+//            }
+//
+//        } catch (SQLException ex) {
+//            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+//        }
+//        return pathway;
+//    }
     public LightweightEncounterRateElasticityPathway extractLatestElasticityPathway() {
 
         LightweightEncounterRateElasticityPathway pathway = new LightweightEncounterRateElasticityPathway(1);

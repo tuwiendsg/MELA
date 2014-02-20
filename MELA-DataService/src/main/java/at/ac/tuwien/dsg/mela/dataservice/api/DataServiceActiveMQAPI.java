@@ -40,6 +40,7 @@ import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.DataCollectionService;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 import org.apache.log4j.Level;
@@ -58,7 +59,7 @@ public class DataServiceActiveMQAPI implements Runnable {
     }
     public static final String SUBMIT_CONFIGURATION_COMMAND = "SubmitConfig";
     public static final String SUBMIT_COMPOSITION_RULES = "SubmitCompositionRules";
-    public static final String SUBMIT_REQUIREMENTS = "SubmitServiceStructure";
+    public static final String SUBMIT_REQUIREMENTS = "SubmitRequirements";
     public static final String UPDATE_SERVICE_STRUCTURE = "UpdateServiceStructure";
     public static final String SET_SERVICE_STRUCTURE = "SetServiceStructure";
     public static final String ADD_EXECUTING_ACTION = "AddExecutingAction";
@@ -121,6 +122,13 @@ public class DataServiceActiveMQAPI implements Runnable {
                         ActionXML action = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
                         collectionService.removeExecutingAction(action.getElement().getId(), action.getActions());
+                    } else if (mapMessage.itemExists(SUBMIT_REQUIREMENTS)) {
+                        String cfg = (String) mapMessage.getObject(SUBMIT_REQUIREMENTS);
+
+                        JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
+                        Requirements requirements = (Requirements) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+
+                        collectionService.setRequirements(requirements);
                     }
 
                 } catch (JAXBException ex) {

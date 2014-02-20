@@ -431,6 +431,8 @@ public class ConvertToJSON {
             return "{\"name\":\"No Data\",\"type\":\"METRIC\"}";
         }
     }
+    
+    
 
     public static String convertMonitoringSnapshot(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysysResult, Map<MonitoredElement, String> actionsInExecution) {
 
