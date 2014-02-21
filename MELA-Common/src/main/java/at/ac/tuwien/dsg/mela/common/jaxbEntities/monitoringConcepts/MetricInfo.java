@@ -41,9 +41,9 @@ public class MetricInfo {
     private String type;
     @XmlAttribute(name = "Units")
     private String units;
-     
+
     private Object convertedValue;
-     
+
     public String getName() {
         return name;
     }
@@ -57,7 +57,6 @@ public class MetricInfo {
      * String by Ganglia
      */
     public Object getConvertedValue() {
-
 
         if (type.toLowerCase().contains("float") || type.toLowerCase().contains("double")) {
             try {
@@ -75,6 +74,16 @@ public class MetricInfo {
                     return new Integer(0);
                 } else {
                     return Integer.parseInt(value);
+                }
+            } catch (NumberFormatException e) {
+                return new Float(Float.NaN);
+            }
+        } else if (type.toLowerCase().contains("long")) {
+            try {
+                if (value == null) {
+                    return new Long(0);
+                } else {
+                    return Long.parseLong(value);
                 }
             } catch (NumberFormatException e) {
                 return new Float(Float.NaN);
@@ -116,7 +125,6 @@ public class MetricInfo {
     public void setUnits(String units) {
         this.units = units;
     }
-
 
     @Override
     public String toString() {
