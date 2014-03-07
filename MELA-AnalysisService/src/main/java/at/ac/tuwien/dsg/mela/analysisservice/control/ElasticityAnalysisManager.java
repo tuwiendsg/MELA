@@ -686,7 +686,7 @@ public class ElasticityAnalysisManager {
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData();
         Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysisResult = instantMonitoringDataAnalysisEngine.analyzeRequirements(serviceMonitoringSnapshot,
                 requirements).getRequirementsAnalysisResult();
-        String converted = ConvertToJSON.convertMonitoringSnapshot(serviceMonitoringSnapshot, requirements);
+        String converted = ConvertToJSON.convertMonitoringSnapshot(serviceMonitoringSnapshot, requirements, reqAnalysisResult);
         Date after = new Date();
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return converted;

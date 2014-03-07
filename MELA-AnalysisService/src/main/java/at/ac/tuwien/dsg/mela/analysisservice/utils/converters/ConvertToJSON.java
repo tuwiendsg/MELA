@@ -262,7 +262,7 @@ public class ConvertToJSON {
 //
 //        return string;
 //    }
-    public static String convertMonitoringSnapshot(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Requirements requirements) {
+    public static String convertMonitoringSnapshot(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Requirements requirements, Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysisResult) {
 
         if (serviceMonitoringSnapshot == null) {
             return "";
@@ -363,7 +363,7 @@ public class ConvertToJSON {
                         //if we have requirements for this service element ID
                         if (requirementsMap.containsKey(element.getId())) {
                             Map<Metric, List<Requirement>> reqMap = requirementsMap.get(element.getId());
-
+                             
                             //if we have requirement for this metric
                             if (reqMap.containsKey(entry.getKey())) {
                                 List<Requirement> list = reqMap.get(entry.getKey());
@@ -371,10 +371,16 @@ public class ConvertToJSON {
                                 JSONArray conditions = new JSONArray();
 
                                 for (Requirement requirement : list) {
+                                    Map<MonitoredElement, Boolean> fulfillment = reqAnalysisResult.get(requirement);
+                                    boolean isReqFulfilled  = true;
+                                    if(fulfillment != null && fulfillment.containsKey(element)){
+                                        isReqFulfilled = fulfillment.get(element);
+                                    }
                                     for (Condition condition : requirement.getConditions()) {
                                         JSONObject conditionJSON = new JSONObject();
                                         conditionJSON.put("name", "MUST BE " + condition.toString());
                                         conditionJSON.put("type", "requirement");
+                                        conditionJSON.put("fulfilled", "isReqFulfilled");
                                         conditions.add(conditionJSON);
                                     }
                                 }
