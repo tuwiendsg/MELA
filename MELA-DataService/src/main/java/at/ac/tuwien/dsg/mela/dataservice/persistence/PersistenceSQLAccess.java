@@ -756,7 +756,7 @@ public class PersistenceSQLAccess {
                 dataFromTimestamp = this.extractMonitoringData(space.getTimestampID());
                 //check if new data has been collected between elasticity space querries
                 if (!dataFromTimestamp.isEmpty()) {
-                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction();
+                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
                     fct.setRequirements(requirements);
                     fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
                     //set to the new space the timespaceID of the last snapshot monitored data used to compute it

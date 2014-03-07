@@ -45,12 +45,12 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
         super(service);
     }
 
-    /**
-     * Used if training an existing space
-     */
-    public ElSpaceDefaultFunction() {
-        super();
-    }
+//    /**
+//     * Used if training an existing space
+//     */
+//    public ElSpaceDefaultFunction() {
+//        super();
+//    }
 
     @Override
     public void trainElasticitySpace(Collection<ServiceMonitoringSnapshot> monitoringData) {
