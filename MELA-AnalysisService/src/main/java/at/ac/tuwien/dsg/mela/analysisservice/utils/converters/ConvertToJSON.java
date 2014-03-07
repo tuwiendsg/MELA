@@ -380,7 +380,7 @@ public class ConvertToJSON {
                                         JSONObject conditionJSON = new JSONObject();
                                         conditionJSON.put("name", "MUST BE " + condition.toString());
                                         conditionJSON.put("type", "requirement");
-                                        conditionJSON.put("fulfilled", "isReqFulfilled");
+                                        conditionJSON.put("fulfilled", isReqFulfilled);
                                         conditions.add(conditionJSON);
                                     }
                                 }
