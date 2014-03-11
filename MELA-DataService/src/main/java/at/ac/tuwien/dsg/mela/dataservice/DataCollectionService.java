@@ -240,6 +240,35 @@ public class DataCollectionService {
         this.compositionRulesConfiguration = compositionRulesConfiguration;
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
+        dataAccess.getMetricFilters().clear();
+        
+        // set metric filters on data access
+        for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
+            // go trough each CompositionOperation and extract the source
+            // metrics
+
+            List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+            queue.add(compositionRule.getOperation());
+
+            while (!queue.isEmpty()) {
+                CompositionOperation operation = queue.remove(0);
+                queue.addAll(operation.getSubOperations());
+
+                Metric targetMetric = operation.getTargetMetric();
+                // metric can be null if a composition rule artificially creates
+                // a metric using SET_VALUE
+                if (targetMetric != null) {
+                    MetricFilter metricFilter = new MetricFilter();
+                    metricFilter.setId(targetMetric.getName() + "_Filter");
+                    metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+                    Collection<Metric> metrics = new ArrayList<Metric>();
+                    metrics.add(new Metric(targetMetric.getName()));
+                    metricFilter.setMetrics(metrics);
+                    dataAccess.addMetricFilter(metricFilter);
+                }
+            }
+        }
+
     }
 
     // public synchronized AbstractDataAccess getDataAccess() {
@@ -369,33 +398,32 @@ public class DataCollectionService {
 
         }
 
-        // set metric filters on data access
-        for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
-            // go trough each CompositionOperation and extract the source
-            // metrics
-
-            List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
-            queue.add(compositionRule.getOperation());
-
-            while (!queue.isEmpty()) {
-                CompositionOperation operation = queue.remove(0);
-                queue.addAll(operation.getSubOperations());
-
-                Metric targetMetric = operation.getTargetMetric();
-                // metric can be null if a composition rule artificially creates
-                // a metric using SET_VALUE
-                if (targetMetric != null) {
-                    MetricFilter metricFilter = new MetricFilter();
-                    metricFilter.setId(targetMetric.getName() + "_Filter");
-                    metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
-                    Collection<Metric> metrics = new ArrayList<Metric>();
-                    metrics.add(new Metric(targetMetric.getName()));
-                    metricFilter.setMetrics(metrics);
-                    dataAccess.addMetricFilter(metricFilter);
-                }
-            }
-        }
-
+//        // set metric filters on data access
+//        for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
+//            // go trough each CompositionOperation and extract the source
+//            // metrics
+//
+//            List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+//            queue.add(compositionRule.getOperation());
+//
+//            while (!queue.isEmpty()) {
+//                CompositionOperation operation = queue.remove(0);
+//                queue.addAll(operation.getSubOperations());
+//
+//                Metric targetMetric = operation.getTargetMetric();
+//                // metric can be null if a composition rule artificially creates
+//                // a metric using SET_VALUE
+//                if (targetMetric != null) {
+//                    MetricFilter metricFilter = new MetricFilter();
+//                    metricFilter.setId(targetMetric.getName() + "_Filter");
+//                    metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+//                    Collection<Metric> metrics = new ArrayList<Metric>();
+//                    metrics.add(new Metric(targetMetric.getName()));
+//                    metricFilter.setMetrics(metrics);
+//                    dataAccess.addMetricFilter(metricFilter);
+//                }
+//            }
+//        }
         monitoringTimer = new Timer();
 
         task = new TimerTask() {
