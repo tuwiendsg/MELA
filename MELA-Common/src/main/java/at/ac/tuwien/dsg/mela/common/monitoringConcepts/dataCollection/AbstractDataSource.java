@@ -19,24 +19,14 @@
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
-import java.util.Map;
-
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
  *
  */
-public abstract class AbstractDataSource {
+public interface AbstractDataSource {
 
-    //configuration parameters sent as key-value pairs and specified in the DataSources configuration file are injected here
-    protected Map<String, String> configuration;
-
-    protected AbstractDataSource(Map<String, String> configuration) {
-        this.configuration = configuration;
-    }
-
-    public abstract MonitoringData getMonitoringData() throws DataAccessException;
+    public MonitoringData getMonitoringData() throws DataAccessException;
 }

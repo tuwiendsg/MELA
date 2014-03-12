@@ -16,10 +16,8 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
-import java.util.Map;
-
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPoolingDataSource;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPollingDataSource;
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import org.apache.log4j.Logger;
 
@@ -31,12 +29,12 @@ import org.apache.log4j.Priority;
  * @E-mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
-public class DummyDataSource extends AbstractPoolingDataSource {
+public class DummyDataSource extends AbstractPollingDataSource {
 
-    public DummyDataSource(Map<String, String> configuration) {
+    /*public DummyDataSource(Map<String, String> configuration) {
         super(configuration);
         // TODO Auto-generated constructor stub
-    }
+    }*/
 
     public MonitoringData getMonitoringData() throws DataAccessException {
         MonitoringData clusterInfo = new MonitoringData();

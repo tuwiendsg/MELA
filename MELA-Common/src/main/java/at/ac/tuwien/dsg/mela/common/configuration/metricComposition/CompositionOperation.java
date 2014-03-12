@@ -26,7 +26,6 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.Monitore
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import java.util.ArrayList;
 import java.util.List;
-import javax.security.auth.login.Configuration;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -382,15 +381,13 @@ public class CompositionOperation {
                 break;
             case KEEP_LAST: {
                 if (!valuesToBeProcessed.isEmpty()) {
-                    MetricValue metricValue = valuesToBeProcessed.get(valuesToBeProcessed.size() - 1);
-                    result = metricValue;
+                    result = valuesToBeProcessed.get(valuesToBeProcessed.size() - 1);
                 }
             }
             break;
             case KEEP_FIRST: {
                 if (!valuesToBeProcessed.isEmpty()) {
-                    MetricValue metricValue = valuesToBeProcessed.get(0);
-                    result = metricValue;
+                    result = valuesToBeProcessed.get(0);
                 }
             }
             break;
@@ -545,13 +542,11 @@ public class CompositionOperation {
             case UNION:
                 break;
             case KEEP_LAST: {
-                MetricValue metricValue = valuesToBeProcessed.get(valuesToBeProcessed.size() - 1);
-                result = metricValue;
+                result = valuesToBeProcessed.get(valuesToBeProcessed.size() - 1);
             }
             break;
             case KEEP_FIRST: {
-                MetricValue metricValue = valuesToBeProcessed.get(0);
-                result = metricValue;
+                result = valuesToBeProcessed.get(0);
             }
             break;
             case SET_VALUE: {

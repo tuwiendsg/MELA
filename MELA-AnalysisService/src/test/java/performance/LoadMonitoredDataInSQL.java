@@ -16,15 +16,6 @@
  */
 package performance;
 
- 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.xml.bind.JAXBException;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  *

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -36,6 +35,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPollingDataSource;
 import org.apache.log4j.Level;
 
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
@@ -43,26 +43,26 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPoolingDataSource;
 import org.apache.log4j.Logger;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
-public class GangliaDataSource extends AbstractPoolingDataSource {
-	
-	 
-    public GangliaDataSource(Map<String, String> configuration) {
-		super(configuration);
-		// TODO Auto-generated constructor stub
-	}
+public class GangliaDataSource extends AbstractPollingDataSource {
 
+    public static final String DEFAULT_HOST = "localhost";
+
+    public static final int DEFAULT_PORT = 8649;
+
+    private String hostname = DEFAULT_HOST;
+
+    private int port = DEFAULT_PORT;
+	
 	public MonitoringData getMonitoringData() throws DataAccessException {
 
-        //todo: configure dinamically port and IP
-        String cmd = "telnet " 
-        + (configuration.containsKey("ganglia.ip")? configuration.get("ganglia.ip") : "localhost")
-        		+ " " + (configuration.containsKey("ganglia.port")? configuration.get("ganglia.port") : "8649");
+        // todo: configure dinamically port and IP
+        // todo DO NOT RELY ON TELNET being present on the machine, instead use a socket connection
+        String cmd = "telnet " + hostname + " " + port;
         String content = "";
 
         try {
@@ -88,7 +88,7 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
             p.destroy();
 
             //if ganglia does not respond
-            if (content == null || content.length() == 0) {
+            if (content.length() == 0) {
                 Logger.getLogger(this.getClass()).log(Level.WARN, "" + "Unable to execute " + cmd);
                 return new MonitoringData();
             }
@@ -156,26 +156,49 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
         }
     }
 
-//    private void saveRawDataToFile(String file, GangliaClusterInfo gangliaClusterInfo) {
-////        Logger.getLogger(this.getclass()).log(Level.INFO,"Collected monitoring data at " + new Date());
-//        try {
-//            String elasticity = yaml.dump(gangliaClusterInfo);
-//            //better to open close buffers as there are less chances I get the file in unstable state if I terminate the
-//            //program execution abruptly
-//            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, true));
-//            bufferedWriter.newLine();
-//            bufferedWriter.write("--- " + elasticity);
-//            bufferedWriter.flush();
-//            bufferedWriter.close();
-//        } catch (Exception e) {
-//            Logger.getLogger(this.getclass()).log(Level.WARN, e.getMessage(), e);
-//            e.printStackTrace();
-//        }
-//    }
+    public String getHostname() {
+        return hostname;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     @Override
-    protected void finalize() throws Throwable {
-//        dataSQLWriteAccess.closeConnection();
-        super.finalize();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GangliaDataSource)) return false;
+
+        GangliaDataSource that = (GangliaDataSource) o;
+
+        if (port != that.port) return false;
+        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = hostname != null ? hostname.hashCode() : 0;
+        result = 31 * result + port;
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "GangliaDataSource{" +
+                "hostname='" + hostname + '\'' +
+                ", port=" + port +
+                ", pollingInterval=" + getPollingIntervalMs() +
+                "}";
     }
 
     /**
@@ -193,8 +216,10 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
 
         @XmlElement(name = "CLUSTER")
         private Collection<GangliaClusterInfo> clusters;
+
         @XmlAttribute(name = "VERSION")
         private String version;
+
         @XmlAttribute(name = "SOURCE")
         private String source;
 
@@ -234,14 +259,19 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
 
         @XmlAttribute(name = "NAME")
         private String name;
+
         @XmlAttribute(name = "OWNER")
         private String owner;
+
         @XmlAttribute(name = "LATLONG")
         private String latlong;
+
         @XmlAttribute(name = "URL")
         private String url;
+
         @XmlAttribute(name = "LOCALTIME")
         private String localtime;
+
         @XmlElement(name = "HOST")
         private Collection<GangliaHostInfo> hostsInfo;
 
@@ -359,24 +389,34 @@ public class GangliaDataSource extends AbstractPoolingDataSource {
 
         @XmlAttribute(name = "NAME", required = true)
         private String name;
+
         @XmlAttribute(name = "IP", required = true)
         private String ip;
+
         @XmlAttribute(name = "LOCATION", required = true)
         private String location;
+
         @XmlAttribute(name = "TAGS")
         private String tags;
+
         @XmlAttribute(name = "REPORTED")
         private String reported;
+
         @XmlAttribute(name = "TN")
         private String tn;
+
         @XmlAttribute(name = "TMAX")
         private String tmax;
+
         @XmlAttribute(name = "DMAX")
         private String dmax;
+
         @XmlAttribute(name = "GMOND_STARTED")
         private String gmondStarted;
+
         @XmlAttribute(name = "SOURCE")
         private String source;
+
         @XmlElement(name = "METRIC")
         Collection<GangliaMetricInfo> metrics;
 

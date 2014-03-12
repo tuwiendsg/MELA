@@ -32,7 +32,6 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDa
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
-import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,13 +41,20 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
+@Service("autoStructureDetectionDataAccess")
 public class DataAccessWithGuidedAutoStructureDetection extends AbstractDataAccess {
 
+    
+   @Value("${dataservice.autoStructureDetection.monitoredElementIDMetricName:serviceUnitID}")
+   private String monitoredElementIDMetricName; 
+    
     /**
      * Left as this in case we want to limit in the future the nr of DataAccess
      * instances we create and maybe use a pool of instances
@@ -156,7 +162,7 @@ public class DataAccessWithGuidedAutoStructureDetection extends AbstractDataAcce
                     metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
                     MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
                     monitoredMetricValues.put(metric, metricValue);
-                    if (metric.getName().equals(Configuration.getMonitoredElementIDMetricName())) {
+                    if (metric.getName().equals(monitoredElementIDMetricName)) {
                         monitoredElement = new MonitoredElement();
                         monitoredElement.setId(gangliaMetricInfo.getValue());
                         monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);

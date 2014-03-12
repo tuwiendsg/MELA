@@ -19,26 +19,18 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.config;
 
-import java.io.Serializable;
+import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
-import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.dataservice.utils.ResourceLoader;
-import java.io.InputStream;
-import org.apache.log4j.Logger;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import org.apache.log4j.Level;
+import java.io.Serializable;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Configuration")
@@ -46,8 +38,10 @@ public class ConfigurationXMLRepresentation implements Serializable {
 
     @XmlElement(name = "ServiceStructure", required = false)
     private MonitoredElement serviceConfiguration;
+
     @XmlElement(name = "CompositionRulesConfiguration", required = false)
     private CompositionRulesConfiguration compositionRulesConfiguration;
+
     @XmlElement(name = "Requirements", required = false)
     private Requirements requirements;
 
@@ -76,8 +70,7 @@ public class ConfigurationXMLRepresentation implements Serializable {
         this.requirements = requirements;
     }
 
-    public ConfigurationXMLRepresentation(
-            MonitoredElement serviceConfiguration,
+    public ConfigurationXMLRepresentation(MonitoredElement serviceConfiguration,
             CompositionRulesConfiguration compositionRulesConfiguration,
             Requirements requirements) {
         super();
@@ -88,70 +81,8 @@ public class ConfigurationXMLRepresentation implements Serializable {
 
     public ConfigurationXMLRepresentation() {
 
+ 
     }
 
-    public static ConfigurationXMLRepresentation createDefaultConfiguration() {
-        ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
-        CompositionRulesConfiguration compositionRulesConfiguration = new CompositionRulesConfiguration();
-        Requirements requirements = new Requirements();
-        // create service with 1 topology and 1 service unit having * (all) VMs
-
-        MonitoredElement service = new MonitoredElement();
-        {
-            service.setLevel(MonitoredElementLevel.SERVICE);
-            service.setId("Service");
-
-            {
-                MonitoredElement topology = new MonitoredElement();
-                {
-                    topology.setLevel(MonitoredElementLevel.SERVICE_TOPOLOGY);
-                    topology.setId("ServiceTopology");
-                    service.addElement(topology);
-                }
-                {
-                    MonitoredElement serviceUnit = new MonitoredElement();
-                    {
-                        serviceUnit.setLevel(MonitoredElementLevel.SERVICE_UNIT);
-                        serviceUnit.setId("ServiceUnit");
-                        topology.addElement(serviceUnit);
-                        {
-                        }
-                    }
-                }
-            }
-        }
-
-        //retrieve the default config from files
-        try {
-            JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
-            InputStream fileStream = ResourceLoader.getDefaultServiceStructureStream();
-            service = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (Exception ex) {
-            Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.ERROR, null, ex);
-        }
-
-        //retrieve the default config from files
-        try {
-            JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
-            InputStream fileStream = ResourceLoader.getDefaultMetricCompositionRulesStream();
-            compositionRulesConfiguration = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (Exception ex) {
-            Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.ERROR, null, ex);
-        }
-
-        //retrieve the default config from files
-        try {
-            JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
-            InputStream fileStream = ResourceLoader.getDefaultRequirementsStream();
-            requirements = (Requirements) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (Exception ex) {
-            Logger.getLogger(ConfigurationXMLRepresentation.class.getName()).log(Level.ERROR, null, ex);
-        }
-
-        configurationXMLRepresentation.setServiceConfiguration(service);
-        configurationXMLRepresentation.setCompositionRulesConfiguration(compositionRulesConfiguration);
-        configurationXMLRepresentation.setRequirements(requirements);
-
-        return configurationXMLRepresentation;
-    }
+ 
 }

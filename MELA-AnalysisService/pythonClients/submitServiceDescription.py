@@ -1,9 +1,10 @@
 import urllib, urllib2, sys, httplib
 
-url = "/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS"
+url = "/MELA/REST_WS"
 #HOST_IP="83.212.112.35"
 #HOST_IP="83.212.117.112"
 HOST_IP="localhost:8080"
+#HOST_IP="128.130.172.214:8080"
 
  
 

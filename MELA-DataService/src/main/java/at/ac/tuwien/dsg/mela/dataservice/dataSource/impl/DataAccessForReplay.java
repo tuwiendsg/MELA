@@ -32,7 +32,6 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDa
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
-import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,14 +41,21 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-//TODO: to write correctly
+//TODO: to write correctly and introduce
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
- * Each time it gets new data, it also gets from DB the service structure recorded with the data timestamp
+ * Each time it gets new data, it also gets from DB the service structure
+ * recorded with the data timestamp
  */
+@Service("replayDataAccess")
 public class DataAccessForReplay extends AbstractDataAccess {
+
+    @Value("${dataservice.autoStructureDetection.monitoredElementIDMetricName:serviceUnitID}")
+    private String monitoredElementIDMetricName;
 
     /**
      * Left as this in case we want to limit in the future the nr of DataAccess
@@ -78,8 +84,6 @@ public class DataAccessForReplay extends AbstractDataAccess {
      */
     @Override
     public synchronized ServiceMonitoringSnapshot getStructuredMonitoredData(MonitoredElement m) {
-        
-        
 
         if (m == null) {
             Logger.getLogger(DataAccessWithManualStructureManagement.class).log(Level.WARN, "No supplied service configuration");
@@ -87,7 +91,7 @@ public class DataAccessForReplay extends AbstractDataAccess {
         }
         MonitoredElement structureRoot = m.clone();
 
-		// extract all VMs from the service structure
+              // extract all VMs from the service structure
         // Map<MonitoredElement, MonitoredElement> vms = new
         // LinkedHashMap<MonitoredElement, MonitoredElement>();
         /**
@@ -99,7 +103,7 @@ public class DataAccessForReplay extends AbstractDataAccess {
 
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = new ServiceMonitoringSnapshot();
 
-		// traverse the MonitoredElement hierarchical tree in BFS and extract
+        // traverse the MonitoredElement hierarchical tree in BFS and extract
         // the serviceStructure elements
         List<MonitoredElementMonitoringSnapshot> bfsTraversalQueue = new ArrayList<MonitoredElementMonitoringSnapshot>();
         MonitoredElementMonitoringSnapshot rootMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureRoot,
@@ -119,7 +123,7 @@ public class DataAccessForReplay extends AbstractDataAccess {
             lowestLevelFoundMonitoredElement = processedElement;
             lowestLevelFoundMonitoredSnapshot = element;
 
-			// if(processedElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
+            // if(processedElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
             // vms.put(processedElement, processedElement);
             // }
             for (MonitoredElement child : processedElement.getContainedElements()) // add
@@ -139,13 +143,13 @@ public class DataAccessForReplay extends AbstractDataAccess {
 
         }
 
-		// go through each monitored element and update the service monitoring
+        // go through each monitored element and update the service monitoring
         // snapshot
         for (AbstractDataSource dataSource : freshestMonitoredData.keySet()) {
 			// maybe in the future we use data source information, but now we
             // extract the monitored data directly
 
-			// maybe in the future we use information from MonitoringData, but
+            // maybe in the future we use information from MonitoringData, but
             // now we extract the monitored data elements directly
             for (MonitoredElementData elementData : freshestMonitoredData.get(dataSource).getMonitoredElementDatas()) {
 
@@ -160,13 +164,13 @@ public class DataAccessForReplay extends AbstractDataAccess {
                     metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
                     MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
                     monitoredMetricValues.put(metric, metricValue);
-                    if (metric.getName().equals(Configuration.getMonitoredElementIDMetricName())) {
+                    if (metric.getName().equals(monitoredElementIDMetricName)) {
                         monitoredElement = new MonitoredElement();
                         monitoredElement.setId(gangliaMetricInfo.getValue());
                         monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
                     }
                 }
-				// if we have found a metric containing a MonitoredElementID,
+                // if we have found a metric containing a MonitoredElementID,
                 // and if that ID is present in our structure
                 // add it as VM level child to the found Service ID (this is the
                 // logic under our ganglia deployment so far)
@@ -183,11 +187,10 @@ public class DataAccessForReplay extends AbstractDataAccess {
 //                    for (Metric metric : monitoredMetricValues.keySet()) {
 //                        metric.setMonitoredElement(vmLevelElement);
 //                    }
-                    
                     MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vmLevelElement,
                             monitoredMetricValues);
 
-					// also add VM monitoring info to children tree
+                    // also add VM monitoring info to children tree
                     // TODO: CHECK THIS: not sure if this does not introduce
                     // errors with SUM. In the case of not automatic structure
                     // detection, it DOES
@@ -199,7 +202,7 @@ public class DataAccessForReplay extends AbstractDataAccess {
             }
         }
 
-		// filter the monitoredMetricValues according to the metric filters if
+        // filter the monitoredMetricValues according to the metric filters if
         // such exist
         serviceMonitoringSnapshot.applyMetricFilters(metricFilters);
 

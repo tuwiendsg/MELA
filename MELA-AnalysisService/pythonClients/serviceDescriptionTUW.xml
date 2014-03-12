@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <MonitoredElement id="CloudService" level="SERVICE">
-    <MonitoredElement id="ServiceTopologyA" level="SERVICE_TOPOLOGY">
-        <MonitoredElement id="ServiceUnitA" level="SERVICE_UNIT">
-           <MonitoredElement id="10.99.0.30" level="VM"/> 
-           <MonitoredElement id="10.99.0.33" level="VM"/>
+    <MonitoredElement id="DataEndServiceTopology" level="SERVICE_TOPOLOGY">
+        <MonitoredElement id="DataControllerServiceUnit" level="SERVICE_UNIT">
+           <MonitoredElement id="10.99.0.44" level="VM"/>
         </MonitoredElement>   
-        <MonitoredElement id="ServiceUnitB" level="SERVICE_UNIT">
-           <MonitoredElement id="10.99.0.23" level="VM"/>             
+        <MonitoredElement id="DataNodeServiceUnit" level="SERVICE_UNIT">
+           <MonitoredElement id="10.99.0.34" level="VM" />
+        </MonitoredElement>   
+    </MonitoredElement>
+    <MonitoredElement id="EventProcessingServiceTopology" level="SERVICE_TOPOLOGY">
+        <MonitoredElement id="EventProcessingServiceUnit" level="SERVICE_UNIT">
+            <MonitoredElement id="10.99.0.24" level="VM" />
+        </MonitoredElement>  
+        <MonitoredElement id="LoadBalancerServiceUnit" level="SERVICE_UNIT">
+            <MonitoredElement id="10.99.0.39" level="VM" />
         </MonitoredElement>   
     </MonitoredElement>
 </MonitoredElement>
