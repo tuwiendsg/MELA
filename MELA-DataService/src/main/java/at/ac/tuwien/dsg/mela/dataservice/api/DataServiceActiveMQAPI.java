@@ -112,16 +112,16 @@ public class DataServiceActiveMQAPI implements Runnable {
                         String cfg = (String) mapMessage.getObject(ADD_EXECUTING_ACTION);
 
                         JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
-                        ActionXML action = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                        ActionXML actions = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.addExecutingAction(action.getElement().getId(), action.getActions());
+                        collectionService.addExecutingActions(actions.getActions());
                     } else if (mapMessage.itemExists(REMOVE_EXECUTING_ACTION)) {
                         String cfg = (String) mapMessage.getObject(REMOVE_EXECUTING_ACTION);
 
                         JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
-                        ActionXML action = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                        ActionXML actions = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.removeExecutingAction(action.getElement().getId(), action.getActions());
+                        collectionService.removeExecutingActions(actions.getActions());
                     } else if (mapMessage.itemExists(SUBMIT_REQUIREMENTS)) {
                         String cfg = (String) mapMessage.getObject(SUBMIT_REQUIREMENTS);
 

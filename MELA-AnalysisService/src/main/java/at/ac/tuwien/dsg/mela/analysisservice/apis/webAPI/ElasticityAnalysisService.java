@@ -239,6 +239,7 @@ public class ElasticityAnalysisService {
             Logger.getLogger(this.getClass()).log(Level.WARN, "supplied service requirements are null");
         }
     }
+    
 
     /**
      * Method used to list for a particular service unit ID what are the
@@ -324,6 +325,16 @@ public class ElasticityAnalysisService {
     public List<MonitoredElementMonitoringSnapshot> getAllAggregatedMonitoringData() {
         return systemControl.getAllAggregatedMonitoringData();
     }
+    
+    
+    @GET
+    @Path("/servicerequirements")
+    @Produces("application/xml")
+    public Requirements getRequirements() {
+        return systemControl.getRequirements();
+    }
+    
+    
 
     @GET
     @Path("/metriccompositionrules")

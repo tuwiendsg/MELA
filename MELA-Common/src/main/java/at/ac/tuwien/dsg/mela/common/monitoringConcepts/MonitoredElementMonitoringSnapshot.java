@@ -56,13 +56,14 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     private HashMap<Metric, MetricValue> monitoredData;
     
     @XmlElement(name = "Action", required = false)
-    private List<String> executingActions;
+    private List<Action> executingActions;
+    
     @XmlElement(name = "MonitoredElementSnapshot")
     private ArrayList<MonitoredElementMonitoringSnapshot> children;
 
     {
         monitoredData = new LinkedHashMap<Metric, MetricValue>();
-        executingActions = new ArrayList<String>();
+        executingActions = new ArrayList<Action>();
         children = new ArrayList<MonitoredElementMonitoringSnapshot>();
     }
 
@@ -129,19 +130,19 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
         this.children.remove(child);
     }
 
-    public List<String> getExecutingActions() {
+    public List<Action> getExecutingActions() {
         return executingActions;
     }
 
-    public void setExecutingActions(List<String> executingActions) {
+    public void setExecutingActions(List<Action> executingActions) {
         this.executingActions = executingActions;
     }
 
-    public void addExecutingActions(List<String> executingActions) {
+    public void addExecutingActions(List<Action> executingActions) {
         this.executingActions.addAll(executingActions);
     }
 
-    public void addExecutingAction(String executingAction) {
+    public void addExecutingAction(Action executingAction) {
         this.executingActions.add(executingAction);
     }
 

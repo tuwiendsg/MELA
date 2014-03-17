@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.api.DataServiceActiveMQAPI;
@@ -92,8 +93,7 @@ public class MelaDataServiceConfigurationAPIConnector {
             JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
             ActionXML action = new ActionXML();
             MonitoredElement element = new MonitoredElement(targetEntityID);
-            action.setElement(element);
-            action.addAction(actionName);
+            action.addAction(new Action(targetEntityID, actionName));
 
             StringWriter writer = new StringWriter();
             jAXBContext.createMarshaller().marshal(action, writer);
@@ -110,8 +110,7 @@ public class MelaDataServiceConfigurationAPIConnector {
             JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
             ActionXML action = new ActionXML();
             MonitoredElement element = new MonitoredElement(targetEntityID);
-            action.setElement(element);
-            action.addAction(actionName);
+            action.addAction(new Action(targetEntityID, actionName));
 
             StringWriter writer = new StringWriter();
             jAXBContext.createMarshaller().marshal(action, writer);

@@ -23,6 +23,7 @@ import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
+import javax.xml.bind.annotation.XmlElement;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -37,31 +38,32 @@ import org.apache.log4j.Logger;
  * to process.
  */
 public class ServiceMonitoringSnapshot implements Serializable {
-
+    
+    @XmlElement(name = "TimestampID", required = false)
     private int timestampID;
     // stores monitoring information by LEVEL, then by MonitoredElement. Service Element also stores hierarchical info
     private Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> monitoredData;
-
+    
     {
         monitoredData = Collections.synchronizedMap(new EnumMap<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>>(MonitoredElement.MonitoredElementLevel.class));
     }
-
+    
     public Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> getMonitoredData() {
         return monitoredData;
     }
-
+    
     public void setMonitoredData(Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> monitoredData) {
         this.monitoredData = monitoredData;
     }
-
+    
     public int getTimestampID() {
         return timestampID;
     }
-
+    
     public void setTimestampID(int timestampID) {
         this.timestampID = timestampID;
     }
-
+    
     public void addMonitoredData(MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot) {
         MonitoredElement MonitoredElement = MonitoredElementMonitoringSnapshot.getMonitoredElement();
         MonitoredElement.MonitoredElementLevel level = MonitoredElement.getLevel();
@@ -78,7 +80,7 @@ public class ServiceMonitoringSnapshot implements Serializable {
             map.put(MonitoredElement, MonitoredElementMonitoringSnapshot);
             monitoredData.put(level, map);
         }
-
+        
     }
 
     /**
@@ -105,7 +107,7 @@ public class ServiceMonitoringSnapshot implements Serializable {
             return monitoredData.get(level);
         } else {
             Map<MonitoredElement, MonitoredElementMonitoringSnapshot> filtered = Collections.synchronizedMap(new LinkedHashMap<MonitoredElement, MonitoredElementMonitoringSnapshot>());
-
+            
             for (Map.Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> entry : monitoredData.get(level).entrySet()) {
                 if (MonitoredElementIDs.contains(entry.getKey().getId())) {
                     filtered.put(entry.getKey(), entry.getValue());
@@ -113,9 +115,9 @@ public class ServiceMonitoringSnapshot implements Serializable {
             }
             return filtered;
         }
-
+        
     }
-
+    
     public MonitoredElementMonitoringSnapshot getMonitoredData(MonitoredElement MonitoredElement) {
         if (!monitoredData.containsKey(MonitoredElement.getLevel())) {
             return new MonitoredElementMonitoringSnapshot(MonitoredElement, new LinkedHashMap<Metric, MetricValue>());
@@ -127,27 +129,27 @@ public class ServiceMonitoringSnapshot implements Serializable {
         }
         return new MonitoredElementMonitoringSnapshot(MonitoredElement, new LinkedHashMap<Metric, MetricValue>());
     }
-
+    
     public void keepOnlyDataForElement(MonitoredElement monitoredElement) {
         if (!monitoredData.containsKey(monitoredElement.getLevel())) {
             return;
         }
-
+        
         MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = null;
-
+        
         for (Map.Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> entry : monitoredData.get(monitoredElement.getLevel()).entrySet()) {
             if (monitoredElement.equals(entry.getKey())) {
                 elementMonitoringSnapshot = entry.getValue();
                 break;
             }
         }
-
+        
         monitoredData.clear();
         if (elementMonitoringSnapshot != null) {
             this.addMonitoredData(elementMonitoringSnapshot);
         }
     }
-
+    
     public MonitoredElement getMonitoredService() {
         if (monitoredData.containsKey(MonitoredElement.MonitoredElementLevel.SERVICE)) {
             return monitoredData.get(MonitoredElement.MonitoredElementLevel.SERVICE).keySet().iterator().next();
@@ -155,11 +157,11 @@ public class ServiceMonitoringSnapshot implements Serializable {
             return new MonitoredElement();
         }
     }
-
+    
     public Collection<MonitoredElement> getMonitoredElements(MonitoredElement.MonitoredElementLevel level) {
         return monitoredData.get(level).keySet();
     }
-
+    
     public Collection<MonitoredElement> getMonitoredElements(MonitoredElement.MonitoredElementLevel level, Collection<String> MonitoredElementIDs) {
         if (!monitoredData.containsKey(level)) {
             return new ArrayList<MonitoredElement>();
@@ -168,7 +170,7 @@ public class ServiceMonitoringSnapshot implements Serializable {
             return monitoredData.get(level).keySet();
         } else {
             Collection<MonitoredElement> filtered = new ArrayList<MonitoredElement>();
-
+            
             for (Map.Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> entry : monitoredData.get(level).entrySet()) {
                 if (MonitoredElementIDs.contains(entry.getKey().getId())) {
                     filtered.add(entry.getKey());
@@ -176,17 +178,16 @@ public class ServiceMonitoringSnapshot implements Serializable {
             }
             return filtered;
         }
-
+        
     }
-
+    
     public void applyMetricFilters(Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters) {
-
-
+        
         for (MonitoredElement.MonitoredElementLevel level : monitoredData.keySet()) {
             if (metricFilters.containsKey(level)) {
-
+                
                 Map<MonitoredElement, List<Metric>> metricsToKeep = new LinkedHashMap<MonitoredElement, List<Metric>>();
-
+                
                 List<MetricFilter> filters = metricFilters.get(level);
 
                 //make one pass over the filters to extract a common metric list from multiple filters for one serviceStructure (ex filter for all Units and then keep VM)
@@ -207,7 +208,7 @@ public class ServiceMonitoringSnapshot implements Serializable {
                         }
                     }
                 }
-
+                
                 for (MonitoredElement element : monitoredData.get(level).keySet()) {
                     List<Metric> toKeep = metricsToKeep.get(element);
                     MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = monitoredData.get(level).get(element);
@@ -218,14 +219,14 @@ public class ServiceMonitoringSnapshot implements Serializable {
 
         //make second pass in which we apply the filters on the targeted elements
     }
-
+    
     @Override
     public String toString() {
         String description = "\tServiceMonitoringSnapshot{";
         //traverse in DFS the tree
 
         for (Map.Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> entry : monitoredData.get(MonitoredElement.MonitoredElementLevel.SERVICE).entrySet()) {
-
+            
             List<MonitoredElement> stack = new ArrayList<MonitoredElement>();
             stack.add(entry.getKey());
             while (!stack.isEmpty()) {
@@ -245,27 +246,29 @@ public class ServiceMonitoringSnapshot implements Serializable {
                     case VM:
                         space = "\t\t\t";
                         break;
-
+                    
                 }
                 description += "\n" + space + currentElement.getLevel() + ": " + currentElement.getId() + " Metrics:" + monitoredData.get(currentElement.getLevel()).get(currentElement).getMonitoredData().size();
             }
-
-
+            
         }
-
+        
         return description;
     }
-
-    public void setExecutingActions(MonitoredElement element, List<String> actions) {
-
-        for (MonitoredElement.MonitoredElementLevel level : monitoredData.keySet()) {
-            for (Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> entry : monitoredData.get(level).entrySet()) {
-                if (entry.getKey().getId().contains(element.getId())) {
-                    entry.getValue().setExecutingActions(actions);
-                    break;
+    
+    public void setExecutingActions(List<Action> actions) {
+        for (Action action : actions) {
+            for (MonitoredElement.MonitoredElementLevel level : monitoredData.keySet()) {
+                for (Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> entry : monitoredData.get(level).entrySet()) {
+                    if (entry.getKey().getId().contains(action.getTargetEntityID())) {
+                        entry.getValue().addExecutingAction(action);
+                        break;
+                    }
                 }
             }
         }
-
+        //add executing actions also on the overall service, to have an overall view 
+        monitoredData.get(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next().setExecutingActions(actions);
+        
     }
 }

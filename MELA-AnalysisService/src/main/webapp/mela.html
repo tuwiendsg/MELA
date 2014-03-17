@@ -483,7 +483,7 @@
                         .attr("dy", -5)
                         .attr("dx", -15)
                         .style("font-size", function(d) {
-                            return d.children ? 18 : 18;
+                            return (d.type == "metric") ? 14 : 18;
                         })
                         .attr("font-style", function(d) {
                             return d.children ? "normal" : "italic";
@@ -524,7 +524,7 @@
                         })
                         .attr("dy", -5)
                         .style("font-size", function(d) {
-                            return d.children ? 18 : 18;
+                            return (d.type == "metric") ? 14 : 18;
                         })
                         .attr("font-style", function(d) {
                             return d.children ? "normal" : "italic";
@@ -539,7 +539,7 @@
                             return d.value ? 0 : 10;
                         })
                         .style("font-size", function(d) {
-                            return d.children ? 18 : 18;
+                            return (d.type == "metric") ? 14 : 18;
                         })
                         .attr("text-anchor", function(d) {
                             return d.ip ? "end" : "start";
@@ -770,7 +770,7 @@
                             return  d.ip || d.children ? "end" : "start";
                         })
                         .style("font-size", function(d) {
-                            return d.children ? 19 : 19;
+                            return (d.type == "metric") ? 14 : 19;
                         })
                         .attr("font-style", function(d) {
                             return d.children ? "normal" : "italic";
@@ -848,7 +848,7 @@
                         .attr("dy", -5)
                         .attr("dx", -15)
                         .style("font-size", function(d) {
-                            return d.children ? 19 : 19;
+                            return (d.type == "metric") ? 14 : 19;
                         })
                         .attr("font-style", function(d) {
                             return d.children ? "normal" : "italic";
@@ -874,7 +874,7 @@
                         })
                         .attr("dy", -5)
                         .style("font-size", function(d) {
-                            return d.children ? 19 : 19;
+                            return (d.type == "metric") ? 14 : 19;
                         })
                         .attr("font-style", function(d) {
                             return d.children ? "normal" : "italic";

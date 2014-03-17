@@ -37,6 +37,7 @@ import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
@@ -54,6 +55,7 @@ import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithUnguidedA
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 import java.lang.String;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -84,7 +86,7 @@ public class DataCollectionService {
     private int aggregationWindowsCount = Configuration.getDataAggregationWindows();
     private Timer monitoringTimer;
     // holding MonitoredElement name, and Actions Name
-    private Map<MonitoredElement, List<String>> actionsInExecution;
+    private List<Action> actionsInExecution;
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
     private PersistenceSQLAccess persistenceSQLAccess;
     // used in monitoring
@@ -103,7 +105,7 @@ public class DataCollectionService {
         historicalMonitoringData = new ArrayList<ServiceMonitoringSnapshot>();
         monitoringTimer = new Timer();
         // selfReference = this;
-        actionsInExecution = new ConcurrentHashMap<MonitoredElement, List<String>>();
+        actionsInExecution = Collections.synchronizedList(new ArrayList<Action>());
 
         if ((int) (monitoringIntervalInSeconds / aggregationWindowsCount) == 0) {
             aggregationWindowsCount = 1 * monitoringIntervalInSeconds;
@@ -138,9 +140,8 @@ public class DataCollectionService {
         return serviceConfiguration;
     }
 
-    public synchronized void addExecutingAction(String targetEntityID, List<String> actionName) {
-        MonitoredElement element = new MonitoredElement(targetEntityID);
-        actionsInExecution.put(element, actionName);
+    public synchronized void addExecutingActions(List<Action> actions) {
+        actionsInExecution.addAll(actions);
     }
 
     public synchronized void setConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
@@ -163,11 +164,8 @@ public class DataCollectionService {
         startMonitoring();
     }
 
-    public synchronized void removeExecutingAction(String targetEntityID, List<String> actionName) {
-        MonitoredElement element = new MonitoredElement(targetEntityID);
-        if (actionsInExecution.containsKey(element)) {
-            actionsInExecution.get(element).removeAll(actionName);
-        }
+    public synchronized void removeExecutingActions(List<Action> actions) {
+        actionsInExecution.removeAll(actions);
     }
 
     public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
@@ -241,7 +239,7 @@ public class DataCollectionService {
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
         dataAccess.getMetricFilters().clear();
-        
+
         // set metric filters on data access
         for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
             // go trough each CompositionOperation and extract the source
@@ -442,9 +440,7 @@ public class DataCollectionService {
 
                         if (compositionRulesConfiguration != null) {
                             ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
-                            for (MonitoredElement element : actionsInExecution.keySet()) {
-                                latestMonitoringData.setExecutingActions(element, actionsInExecution.get(element));
-                            }
+                            latestMonitoringData.setExecutingActions(actionsInExecution);
 
                             // write monitoring data in sql
                             Date before = new Date();
