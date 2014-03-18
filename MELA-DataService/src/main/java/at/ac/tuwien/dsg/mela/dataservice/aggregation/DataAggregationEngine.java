@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -104,6 +105,7 @@ public class DataAggregationEngine {
      * @return
      */
     public ServiceMonitoringSnapshot aggregateMonitoringDataOverTime(final CompositionRulesConfiguration compositionRulesConfiguration, final List<ServiceMonitoringSnapshot> serviceMonitoringSnapshots) {
+       
         if (serviceMonitoringSnapshots == null) {
             return new ServiceMonitoringSnapshot();
         }

@@ -429,6 +429,14 @@ public class ElasticityAnalysisManager {
         }
         return elementMonitoringSnapshots;
     }
+    
+    public synchronized List<MonitoredElementMonitoringSnapshot> getAggregatedMonitoringDataInTimeInterval(String startTimestamp, String endTimestamp) {
+        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestamp,endTimestamp)) {
+            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
+        }
+        return elementMonitoringSnapshots;
+    }
 
 //    // performs multiple database interrogations (avids using memory)
 //    public synchronized String getElasticityPathwayLazy(MonitoredElement element) {

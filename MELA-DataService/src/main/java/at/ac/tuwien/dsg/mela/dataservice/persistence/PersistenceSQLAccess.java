@@ -90,6 +90,8 @@ public class PersistenceSQLAccess {
     private PreparedStatement getMaxTimestamp;
 
     private PreparedStatement getLastAggregatedDataStatement;
+    private PreparedStatement getLastAggregatedDataStatementBetweenTime;
+
     private PreparedStatement getLastElasticitySpaceStatement;
 
     private PreparedStatement getLastElasticityPathwayStatement;
@@ -234,6 +236,17 @@ public class PersistenceSQLAccess {
                 String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID = (SELECT MAX(ID) from " + AGGREGATED_DATA_TABLE_NAME
                         + " where monSeqID=?) LIMIT 1000;";
                 getLastAggregatedDataStatement = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+        {
+            try {
+
+                String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + " timestampID >= (select ID from Timestamp where timestamp = ? ) "
+                        + "AND timestampID <= (select ID from Timestamp where timestamp = ? ) AND monSeqID=?;";
+                getLastAggregatedDataStatementBetweenTime = connection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -708,9 +721,9 @@ public class PersistenceSQLAccess {
             return null;
         }
         Requirements requirements = cfg.getRequirements();
-        
-         Logger.getLogger(this.getClass()).log(Level.INFO, " reqs  " + requirements);
-        
+
+        Logger.getLogger(this.getClass()).log(Level.INFO, " reqs  " + requirements);
+
         MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
         try {
             getLastElasticitySpaceStatement.setString(1, monitoringSequenceID);
@@ -950,6 +963,32 @@ public class PersistenceSQLAccess {
 
                 while (resultSet.next()) {
                     ServiceMonitoringSnapshot monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(1);
+                    monitoringSnapshots.add(monitoringSnapshot);
+                }
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+        return monitoringSnapshots;
+    }
+
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(String startTime, String endTime) {
+        largeDataManagementConnection = refreshConnection(largeDataManagementConnection);
+
+        List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
+        try {
+            getLastAggregatedDataStatementBetweenTime.setString(1, startTime);
+            getLastAggregatedDataStatementBetweenTime.setString(2, endTime);
+            getLastAggregatedDataStatementBetweenTime.setString(3, monitoringSequenceID);
+
+            ResultSet resultSet = getLastAggregatedDataStatementBetweenTime.executeQuery();
+            if (resultSet != null) {
+
+                while (resultSet.next()) {
+                    int sTimestamp = resultSet.getInt(1);
+                    ServiceMonitoringSnapshot monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(2);
+                    monitoringSnapshot.setTimestampID(sTimestamp);
                     monitoringSnapshots.add(monitoringSnapshot);
                 }
             }

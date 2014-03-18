@@ -120,7 +120,7 @@ public class MELADataService {
             connection
                     .createStatement()
                     .execute(
-                    "create CACHED table Timestamp (ID int IDENTITY, monSeqID VARCHAR(200), timestamp VARCHAR(200), serviceStructure LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
+                    "create CACHED table Timestamp (ID int IDENTITY, monSeqID VARCHAR(200), timestamp BIGINT, serviceStructure LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
             connection
                     .createStatement()
                     .execute(
@@ -192,7 +192,7 @@ public class MELADataService {
             connection
                     .createStatement()
                     .execute(
-                    "create CACHED table IF NOT EXISTS Timestamp (ID int IDENTITY, monSeqID VARCHAR(200), timestamp VARCHAR(200), serviceStructure LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
+                    "create CACHED table IF NOT EXISTS Timestamp (ID int IDENTITY, monSeqID VARCHAR(200), timestamp BIGINT, serviceStructure LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) );");
             connection
                     .createStatement()
                     .execute(

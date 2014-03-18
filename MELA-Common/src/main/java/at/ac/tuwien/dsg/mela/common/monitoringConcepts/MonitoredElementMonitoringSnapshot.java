@@ -50,14 +50,18 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
 
     @XmlElement(name = "MonitoredElement", required = false)
     private MonitoredElement monitoredElement;
+
+    @XmlElement(name = "Timestamp", required = false)
+    private String timestamp;
+
     @XmlElement(name = "Metrics", required = false)
-    
+
     @XmlJavaTypeAdapter(MonitoringEntriesAdapter.class)
     private HashMap<Metric, MetricValue> monitoredData;
-    
+
     @XmlElement(name = "Action", required = false)
     private List<Action> executingActions;
-    
+
     @XmlElement(name = "MonitoredElementSnapshot")
     private ArrayList<MonitoredElementMonitoringSnapshot> children;
 
@@ -100,6 +104,14 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
 
     public synchronized boolean containsMetric(Metric metric) {
         return monitoredData.containsKey(metric);
+    }
+
+    public synchronized String getTimestamp() {
+        return timestamp;
+    }
+
+    public synchronized void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 
     public synchronized Map<Metric, MetricValue> getMonitoredData() {
@@ -168,7 +180,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
         return new MyIterator(this);
     }
 
-    private class MyIterator implements Iterator<MonitoredElementMonitoringSnapshot> {
+    private static class MyIterator implements Iterator<MonitoredElementMonitoringSnapshot> {
 
         List<MonitoredElementMonitoringSnapshot> toProcess;
 
