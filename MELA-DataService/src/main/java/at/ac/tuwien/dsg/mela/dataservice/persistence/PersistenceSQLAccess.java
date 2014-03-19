@@ -1007,7 +1007,7 @@ public class PersistenceSQLAccess {
 
             {
                 getMaxTimestampID.setString(1, monitoringSequenceID);
-                ResultSet resultSet = getMinTimestampID.executeQuery();
+                ResultSet resultSet = getMaxTimestampID.executeQuery();
                 if (resultSet != null) {
 
                     while (resultSet.next()) {
