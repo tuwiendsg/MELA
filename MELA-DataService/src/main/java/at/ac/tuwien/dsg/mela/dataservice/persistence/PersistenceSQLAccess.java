@@ -994,7 +994,7 @@ public class PersistenceSQLAccess {
             int maxIimestampID = 0;
 
             {
-                getMinTimestampID.setString(3, monitoringSequenceID);
+                getMinTimestampID.setString(1, monitoringSequenceID);
                 ResultSet resultSet = getMinTimestampID.executeQuery();
                 if (resultSet != null) {
 
@@ -1006,7 +1006,7 @@ public class PersistenceSQLAccess {
             }
 
             {
-                getMaxTimestampID.setString(3, monitoringSequenceID);
+                getMaxTimestampID.setString(1, monitoringSequenceID);
                 ResultSet resultSet = getMinTimestampID.executeQuery();
                 if (resultSet != null) {
 
