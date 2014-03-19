@@ -42,6 +42,7 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 
 import java.io.InputStream;
@@ -422,12 +423,14 @@ public class ElasticityAnalysisManager {
         }
     }
 
-    public synchronized List<MonitoredElementMonitoringSnapshot> getAllAggregatedMonitoringData() {
+    public synchronized MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData() {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
         for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringData()) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
-        return elementMonitoringSnapshots;
+        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+        snapshots.setChildren(elementMonitoringSnapshots);
+        return snapshots;
     }
     
     public synchronized List<MonitoredElementMonitoringSnapshot> getAggregatedMonitoringDataInTimeInterval(String startTimestamp, String endTimestamp) {

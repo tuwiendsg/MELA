@@ -322,7 +322,7 @@ public class ElasticityAnalysisService {
     @GET
     @Path("/historicalmonitoringdataXML")
     @Produces("application/xml")
-    public List<MonitoredElementMonitoringSnapshot> getAllAggregatedMonitoringData() {
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData() {
         return systemControl.getAllAggregatedMonitoringData();
     }
     
