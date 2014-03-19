@@ -31,7 +31,6 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
 
-
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,7 +63,7 @@ public class ElasticityAnalysisService {
     private ElasticityAnalysisManager systemControl;
 
     {
-		// Logger.getLogger(ElasticityAnalysisService.class).log(Level.INFO,
+        // Logger.getLogger(ElasticityAnalysisService.class).log(Level.INFO,
         // "MELA started");
         systemControl = SystemControlFactory.getSystemControlInstance();
     }
@@ -99,7 +98,7 @@ public class ElasticityAnalysisService {
 
         // Runtime.getRuntime().gc();
         return systemControl.getElasticityPathway(element);
-		// return ConvertToJSON.convertElasticityPathway(new
+        // return ConvertToJSON.convertElasticityPathway(new
         // ArrayList<Metric>(map.keySet()), neurons);
     }
 
@@ -128,7 +127,7 @@ public class ElasticityAnalysisService {
 
         // Runtime.getRuntime().gc();
         return systemControl.getElasticityPathwayInXML(element);
-		// return ConvertToJSON.convertElasticityPathway(new
+        // return ConvertToJSON.convertElasticityPathway(new
         // ArrayList<Metric>(map.keySet()), neurons);
     }
 
@@ -240,7 +239,6 @@ public class ElasticityAnalysisService {
             Logger.getLogger(this.getClass()).log(Level.WARN, "supplied service requirements are null");
         }
     }
-    
 
     /**
      * Method used to list for a particular service unit ID what are the
@@ -321,29 +319,33 @@ public class ElasticityAnalysisService {
     }
 
     @GET
-    @Path("/historicalmonitoringdataXML")
+    @Path("/historicalmonitoringdataXML/all")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData() {
         return systemControl.getAllAggregatedMonitoringData();
     }
-    
+
     @GET
-    @Path("/historicalmonitoringdataXMLininterval")
+    @Path("/historicalmonitoringdataXML/ininterval")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@QueryParam("startTimestamp") String startTimestamp,
             @QueryParam("endTimestamp") String endTimestamp) {
-        return systemControl.getAggregatedMonitoringDataInTimeInterval(startTimestamp,endTimestamp);
+        return systemControl.getAggregatedMonitoringDataInTimeInterval(startTimestamp, endTimestamp);
     }
-    
-    
+
+    @GET
+    @Path("/historicalmonitoringdataXML/lastX")
+    @Produces("application/xml")
+    public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@QueryParam("count") int count) {
+        return systemControl.getLastXAggregatedMonitoringData(count);
+    }
+
     @GET
     @Path("/servicerequirements")
     @Produces("application/xml")
     public Requirements getRequirements() {
         return systemControl.getRequirements();
     }
-    
-    
 
     @GET
     @Path("/metriccompositionrules")

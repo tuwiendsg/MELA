@@ -443,6 +443,16 @@ public class ElasticityAnalysisManager {
         return snapshots;
     }
 
+    public synchronized MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(int count) {
+        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractLastXMonitoringDataSnapshots(count)) {
+            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
+        }
+        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+        snapshots.setChildren(elementMonitoringSnapshots);
+        return snapshots;
+    }
+
 //    // performs multiple database interrogations (avids using memory)
 //    public synchronized String getElasticityPathwayLazy(MonitoredElement element) {
 //        // if no service configuration, we can't have elasticity space function

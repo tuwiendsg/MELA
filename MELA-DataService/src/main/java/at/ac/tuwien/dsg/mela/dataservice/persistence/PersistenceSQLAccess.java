@@ -86,11 +86,12 @@ public class PersistenceSQLAccess {
     private PreparedStatement getAggregatedDataStatementFromTimestamp;
     private PreparedStatement insertIntoTimestamp;
     private PreparedStatement getFromTimestamp;
-    private PreparedStatement getMinTimestamp;
-    private PreparedStatement getMaxTimestamp;
+    private PreparedStatement getMinTimestampID;
+    private PreparedStatement getMaxTimestampID;
 
     private PreparedStatement getLastAggregatedDataStatement;
     private PreparedStatement getLastAggregatedDataStatementBetweenTime;
+    private PreparedStatement getLastAggregatedDataStatementBetweenTimestampIDs;
 
     private PreparedStatement getLastElasticitySpaceStatement;
 
@@ -195,7 +196,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "SELECT MIN(id) from timestamp where monSeqID=?;";
-                getMinTimestamp = largeDataManagementConnection.prepareStatement(sql);
+                getMinTimestampID = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -204,7 +205,7 @@ public class PersistenceSQLAccess {
         {
             try {
                 String sql = "SELECT MAX(id) from timestamp where monSeqID=?;";
-                getMaxTimestamp = largeDataManagementConnection.prepareStatement(sql);
+                getMaxTimestampID = largeDataManagementConnection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -247,6 +248,17 @@ public class PersistenceSQLAccess {
                 String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + " timestampID >= (select ID from Timestamp where timestamp = ? ) "
                         + "AND timestampID <= (select ID from Timestamp where timestamp = ? ) AND monSeqID=?;";
                 getLastAggregatedDataStatementBetweenTime = connection.prepareStatement(sql);
+            } catch (SQLException ex) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            }
+        }
+
+        {
+            try {
+
+                String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + " timestampID >= ? "
+                        + " AND monSeqID=?;";
+                getLastAggregatedDataStatementBetweenTimestampIDs = connection.prepareStatement(sql);
             } catch (SQLException ex) {
                 Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
             }
@@ -963,6 +975,60 @@ public class PersistenceSQLAccess {
 
                 while (resultSet.next()) {
                     ServiceMonitoringSnapshot monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(1);
+                    monitoringSnapshots.add(monitoringSnapshot);
+                }
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+        }
+        return monitoringSnapshots;
+    }
+
+    public List<ServiceMonitoringSnapshot> extractLastXMonitoringDataSnapshots(int x) {
+        List<ServiceMonitoringSnapshot> monitoringSnapshots = new ArrayList<ServiceMonitoringSnapshot>();
+
+        try {
+
+            int minIimestampID = 0;
+            int maxIimestampID = 0;
+
+            {
+                getMinTimestampID.setString(3, monitoringSequenceID);
+                ResultSet resultSet = getMinTimestampID.executeQuery();
+                if (resultSet != null) {
+
+                    while (resultSet.next()) {
+                        minIimestampID = resultSet.getInt(1);
+                        break;
+                    }
+                }
+            }
+
+            {
+                getMaxTimestampID.setString(3, monitoringSequenceID);
+                ResultSet resultSet = getMinTimestampID.executeQuery();
+                if (resultSet != null) {
+
+                    while (resultSet.next()) {
+                        maxIimestampID = resultSet.getInt(1);
+                        break;
+                    }
+                }
+            }
+
+            int timestampIDToSelectFrom = (maxIimestampID - x) >= 0 ? maxIimestampID - x : minIimestampID;
+
+            getLastAggregatedDataStatementBetweenTimestampIDs.setInt(1, timestampIDToSelectFrom);
+            getLastAggregatedDataStatementBetweenTimestampIDs.setString(2, monitoringSequenceID);
+
+            ResultSet resultSet = getLastAggregatedDataStatementBetweenTimestampIDs.executeQuery();
+            if (resultSet != null) {
+
+                while (resultSet.next()) {
+                    int sTimestamp = resultSet.getInt(1);
+                    ServiceMonitoringSnapshot monitoringSnapshot = (ServiceMonitoringSnapshot) resultSet.getObject(2);
+                    monitoringSnapshot.setTimestampID(sTimestamp);
                     monitoringSnapshots.add(monitoringSnapshot);
                 }
             }
