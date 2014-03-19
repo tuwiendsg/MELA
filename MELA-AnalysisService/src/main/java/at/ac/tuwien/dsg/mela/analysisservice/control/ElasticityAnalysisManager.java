@@ -432,13 +432,15 @@ public class ElasticityAnalysisManager {
         snapshots.setChildren(elementMonitoringSnapshots);
         return snapshots;
     }
-    
-    public synchronized List<MonitoredElementMonitoringSnapshot> getAggregatedMonitoringDataInTimeInterval(String startTimestamp, String endTimestamp) {
+
+    public synchronized MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String startTimestamp, String endTimestamp) {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestamp,endTimestamp)) {
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestamp, endTimestamp)) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
-        return elementMonitoringSnapshots;
+        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+        snapshots.setChildren(elementMonitoringSnapshots);
+        return snapshots;
     }
 
 //    // performs multiple database interrogations (avids using memory)
@@ -699,7 +701,7 @@ public class ElasticityAnalysisManager {
                 requirements).getRequirementsAnalysisResult();
         //remove overall executing actions so that they do not show up in JSON
         serviceMonitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next().getExecutingActions().clear();
-       
+
         String converted = ConvertToJSON.convertMonitoringSnapshot(serviceMonitoringSnapshot, requirements, reqAnalysisResult);
         Date after = new Date();
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());

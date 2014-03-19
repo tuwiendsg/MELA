@@ -330,7 +330,7 @@ public class ElasticityAnalysisService {
     @GET
     @Path("/historicalmonitoringdataXMLininterval")
     @Produces("application/xml")
-    public List<MonitoredElementMonitoringSnapshot> getAllAggregatedMonitoringDataInTimeInterval(@QueryParam("startTimestamp") String startTimestamp,
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@QueryParam("startTimestamp") String startTimestamp,
             @QueryParam("endTimestamp") String endTimestamp) {
         return systemControl.getAggregatedMonitoringDataInTimeInterval(startTimestamp,endTimestamp);
     }
