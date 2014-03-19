@@ -256,7 +256,7 @@ public class PersistenceSQLAccess {
         {
             try {
 
-                String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + " timestampID >= ? "
+                String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + " timestampID > ? "
                         + " AND monSeqID=?;";
                 getLastAggregatedDataStatementBetweenTimestampIDs = connection.prepareStatement(sql);
             } catch (SQLException ex) {
@@ -1017,7 +1017,7 @@ public class PersistenceSQLAccess {
                 }
             }
 
-            int timestampIDToSelectFrom = (maxIimestampID - x) >= 0 ? maxIimestampID - x : minIimestampID;
+            int timestampIDToSelectFrom = (maxIimestampID - x ) >= 0 ? maxIimestampID - x : minIimestampID;
 
             getLastAggregatedDataStatementBetweenTimestampIDs.setInt(1, timestampIDToSelectFrom);
             getLastAggregatedDataStatementBetweenTimestampIDs.setString(2, monitoringSequenceID);
