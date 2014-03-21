@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -27,7 +28,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Action")
-public class Action {
+public class Action implements Serializable {
 
     @XmlAttribute(name = "targetEntityID", required = true)
     private String targetEntityID;
@@ -57,4 +58,33 @@ public class Action {
     public void setAction(String action) {
         this.action = action;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + (this.targetEntityID != null ? this.targetEntityID.hashCode() : 0);
+        hash = 31 * hash + (this.action != null ? this.action.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Action other = (Action) obj;
+        if ((this.targetEntityID == null) ? (other.targetEntityID != null) : !this.targetEntityID.equals(other.targetEntityID)) {
+            return false;
+        }
+        if ((this.action == null) ? (other.action != null) : !this.action.equals(other.action)) {
+            return false;
+        }
+        return true;
+    }
+    
+    
+    
 }

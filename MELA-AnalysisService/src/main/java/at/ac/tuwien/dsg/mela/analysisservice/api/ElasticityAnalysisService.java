@@ -23,6 +23,7 @@ import at.ac.tuwien.dsg.mela.analysisservice.control.ElasticityAnalysisManager;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
+
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
@@ -41,6 +42,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
 import javax.xml.bind.JAXBContext;
 import java.io.InputStream;
+
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
+
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,11 +73,12 @@ public class ElasticityAnalysisService {
             notes = "Retrieves the elasticity pathway for the given MonitoredElement",
             response = String.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Invalid ID supplied"),
-            @ApiResponse(code = 404, message = "Service element not found in service structure")
+        @ApiResponse(code = 400, message = "Invalid ID supplied"),
+        @ApiResponse(code = 404, message = "Service element not found in service structure")
     })
     public String getElasticityPathwayInJSON(MonitoredElement element) {
         return systemControl.getElasticityPathway(element);
+
     }
 
     @POST
@@ -82,12 +87,13 @@ public class ElasticityAnalysisService {
     @Produces("application/xml")
     public ElasticityPathwayXML getElasticityPathwayInXML(MonitoredElement element) {
         return systemControl.getElasticityPathwayInXML(element);
+
     }
 
     /**
-     * @param element the MonitoredElement for which the elasticity space must be
-     *                returned. Needs BOTH the Element ID and the Element LEVEL
-     *                (SERVICE, SERVICE_TOPOLOGY, etc)
+     * @param element the MonitoredElement for which the elasticity space must
+     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
+     * SERVICE_TOPOLOGY, etc)
      * @return the elasticity space in JSON
      */
     @POST
@@ -99,9 +105,9 @@ public class ElasticityAnalysisService {
     }
 
     /**
-     * @param element the MonitoredElement for which the elasticity space must be
-     *                returned. Needs BOTH the Element ID and the Element LEVEL
-     *                (SERVICE, SERVICE_TOPOLOGY, etc)
+     * @param element the MonitoredElement for which the elasticity space must
+     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
+     * SERVICE_TOPOLOGY, etc)
      * @return the elasticity space in XML WITH historical monitoring data
      */
     @POST
@@ -113,9 +119,9 @@ public class ElasticityAnalysisService {
     }
 
     /**
-     * @param element the MonitoredElement for which the elasticity space must be
-     *                returned. Needs BOTH the Element ID and the Element LEVEL
-     *                (SERVICE, SERVICE_TOPOLOGY, etc)
+     * @param element the MonitoredElement for which the elasticity space must
+     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
+     * SERVICE_TOPOLOGY, etc)
      * @return the elasticity space in XML WITH historical monitoring data
      */
     @POST
@@ -127,8 +133,8 @@ public class ElasticityAnalysisService {
     }
 
     /**
-     * @param compositionRulesConfiguration the metric composition rules, both the HISTORICAL and
-     *                                      MULTI_LEVEL rules
+     * @param compositionRulesConfiguration the metric composition rules, both
+     * the HISTORICAL and MULTI_LEVEL rules
      */
     @PUT
     @Path("/metricscompositionrules")
@@ -157,8 +163,8 @@ public class ElasticityAnalysisService {
 
     /**
      * @param element refreshes the VM's attached to each Service Unit. For a
-     *                structural update, use "PUT servicedescription", as in such a
-     *                case the elasticity signature needs to be recomputed
+     * structural update, use "PUT servicedescription", as in such a case the
+     * elasticity signature needs to be recomputed
      */
     @POST
     @Path("/servicedescription")
@@ -172,8 +178,8 @@ public class ElasticityAnalysisService {
     }
 
     /**
-     * @param requirements service behavior limits on metrics directly measured or
-     *                     obtained from metric composition
+     * @param requirements service behavior limits on metrics directly measured
+     * or obtained from metric composition
      */
     @PUT
     @Path("/servicerequirements")
@@ -190,18 +196,17 @@ public class ElasticityAnalysisService {
      * Method used to list for a particular service unit ID what are the
      * available metrics that can be monitored directly
      *
-     * @param monitoredElementID ID of the service UNIT from which to return the available
-     *                           monitored data (before composition) for the VMS belonging to
-     *                           the SERVICE UNIT example:
-     *                           http://localhost:8080/MELA/REST_WS/metrics
-     *                           ?serviceID=CassandraController
+     * @param monitoredElementID ID of the service UNIT from which to return the
+     * available monitored data (before composition) for the VMS belonging to
+     * the SERVICE UNIT example: http://localhost:8080/MELA/REST_WS/metrics
+     * ?serviceID=CassandraController
      * @return
      */
     @GET
     @Path("/metrics")
     @Produces("application/xml")
     public Collection<Metric> getAvailableMetrics(@QueryParam("monitoredElementID") String monitoredElementID,
-                                                  @QueryParam("monitoredElementLevel") String monitoredElementLevel) {
+            @QueryParam("monitoredElementLevel") String monitoredElementLevel) {
         try {
             JAXBContext context = JAXBContext.newInstance(MonitoredElement.class);
             String monElementRepr = "<MonitoredElement id=\"" + monitoredElementID + "\"  level=\"" + monitoredElementLevel + "\"/>";
@@ -224,8 +229,7 @@ public class ElasticityAnalysisService {
      * ,"type":"MonitoredElementType","children":[{"name":"metric value
      * [metricName]","type":"metric"}]} JSON Example:
      * {"name":"LoadBalancer","children":[{"name":"1
-     * [vmCount]","type":"metric"},{"name":"51
-     * [clients]","type":"metric"},{"
+     * [vmCount]","type":"metric"},{"name":"51 [clients]","type":"metric"},{"
      * name":"10.99.0.62","children":[{"name":"51
      * [activeConnections]","type":"metric"},{"name":"1
      * [vmCount]","type":"metric"}],"type":"VM"}],"type":"SERVICE_UNIT"}
@@ -264,10 +268,32 @@ public class ElasticityAnalysisService {
     }
 
     @GET
-    @Path("/historicalmonitoringdataXML")
+    @Path("/historicalmonitoringdataXML/all")
     @Produces("application/xml")
-    public List<MonitoredElementMonitoringSnapshot> getAllAggregatedMonitoringData() {
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData() {
         return systemControl.getAllAggregatedMonitoringData();
+    }
+
+    @GET
+    @Path("/historicalmonitoringdataXML/ininterval")
+    @Produces("application/xml")
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@QueryParam("startTimestamp") String startTimestamp,
+            @QueryParam("endTimestamp") String endTimestamp) {
+        return systemControl.getAggregatedMonitoringDataInTimeInterval(startTimestamp, endTimestamp);
+    }
+
+    @GET
+    @Path("/historicalmonitoringdataXML/lastX")
+    @Produces("application/xml")
+    public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@QueryParam("count") int count) {
+        return systemControl.getLastXAggregatedMonitoringData(count);
+    }
+
+    @GET
+    @Path("/servicerequirements")
+    @Produces("application/xml")
+    public Requirements getRequirements() {
+        return systemControl.getRequirements();
     }
 
     @GET

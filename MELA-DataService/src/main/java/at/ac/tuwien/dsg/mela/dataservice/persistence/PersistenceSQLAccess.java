@@ -29,10 +29,9 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredEntry;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationUtility;
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
@@ -60,7 +59,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Level;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -69,7 +67,6 @@ import org.apache.log4j.Level;
 public class PersistenceSQLAccess {
 
     private static final String AGGREGATED_DATA_TABLE_NAME = "AggregatedData";
-
     static final Logger log = LoggerFactory.getLogger(PersistenceSQLAccess.class);
 
     @Value("#{dataSource}")
@@ -198,14 +195,67 @@ public class PersistenceSQLAccess {
             }
         };
 
-        List<ElasticitySpace> spaces = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
-        if (spaces.isEmpty()) {
+        //get last space
+        ElasticitySpace space = jdbcTemplate.queryForObject(sql, rowMapper, monitoringSequenceID);
+
+        //update space with new data
+        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration();
+
+        if (cfg == null) {
+            log.error("Retrieved empty configuration.");
             return null;
+        } else if (cfg.getRequirements() == null) {
+            log.error("Retrieved configuration does not contain Requirements.");
+            return null;
+        } else if (cfg.getServiceConfiguration() == null) {
+            log.error("Retrieved configuration does not contain Service Configuration.");
+            return null;
+        }
+        Requirements requirements = cfg.getRequirements();
+        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
+
+        //if space == null, compute it 
+        if (space == null) {
+
+            //if space is null, compute it from all aggregated monitored data recorded so far
+            List<ServiceMonitoringSnapshot> dataFromTimestamp = this.extractMonitoringData(monitoringSequenceID);
+
+            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+            fct.setRequirements(requirements);
+            fct.trainElasticitySpace(dataFromTimestamp);
+            space = fct.getElasticitySpace();
+
+            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+            space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+
+            //persist cached space
+            this.writeElasticitySpace(space, monitoringSequenceID);
         } else {
-            return spaces.get(0);
+            //else read max 1000 monitoring data records at a time, train space, and repeat as needed
+
+            //if space is not null, update it with new data
+            List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
+
+            //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
+            do {
+                dataFromTimestamp = this.extractMonitoringData(space.getTimestampID(), monitoringSequenceID);
+                //check if new data has been collected between elasticity space querries
+                if (!dataFromTimestamp.isEmpty()) {
+                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+                    fct.setRequirements(requirements);
+                    fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
+                    //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+                    space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+
+                    //persist cached space
+                    this.writeElasticitySpace(space, monitoringSequenceID);
+                }
+
+            } while (!dataFromTimestamp.isEmpty());
+
         }
 
-        //write last configuration
+        return space;
     }
 
     public MonitoringData getRawMonitoringData(String monitoringSequenceID, String timestampID) {
@@ -318,6 +368,62 @@ public class PersistenceSQLAccess {
         };
 
         return jdbcTemplate.query(sql, rowMapper, startIndex, startIndex + count, monitoringSequenceID);
+    }
+
+    public List<ServiceMonitoringSnapshot> extractLastXMonitoringDataSnapshots(int x, String monitoringSequenceID) {
+
+        int minIimestampID = 0;
+        int maxIimestampID = 0;
+
+        {
+            String getMinTimestampIDSQL = "SELECT MIN(id) from timestamp where monSeqID=?;";
+            RowMapper<Integer> getMinTimestampRowMapper = new RowMapper<Integer>() {
+                public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    return rs.getInt(1);
+                }
+            };
+
+            minIimestampID = jdbcTemplate.queryForObject(getMinTimestampIDSQL, getMinTimestampRowMapper, monitoringSequenceID);
+        }
+
+        {
+            String getMaxTimestampIDSQL = "SELECT MAX(id) from timestamp where monSeqID=?;";
+            RowMapper<Integer> getMaxTimestampRowMapper = new RowMapper<Integer>() {
+                public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    return rs.getInt(1);
+                }
+            };
+
+            maxIimestampID = jdbcTemplate.queryForObject(getMaxTimestampIDSQL, getMaxTimestampRowMapper, monitoringSequenceID);
+        }
+
+        int timestampIDToSelectFrom = (maxIimestampID - x) >= 0 ? maxIimestampID - x : minIimestampID;
+
+        String getLastXAggregatedDataSQL = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID > (?) AND ID < (?) AND monSeqID=(?);";
+
+        RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
+            public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return (ServiceMonitoringSnapshot) rs.getObject(1);
+            }
+        };
+
+        return jdbcTemplate.query(getLastXAggregatedDataSQL, rowMapper, timestampIDToSelectFrom, maxIimestampID, monitoringSequenceID);
+
+    }
+
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(String startTime, String endTime, String monitoringSequenceID) {
+
+        String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + " timestampID >= (select ID from Timestamp where timestamp = ? ) "
+                + "AND timestampID <= (select ID from Timestamp where timestamp = ? ) AND monSeqID=?;";
+
+        RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
+            public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return (ServiceMonitoringSnapshot) rs.getObject(1);
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, startTime, endTime, monitoringSequenceID);
+
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity;
 
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,36 +35,26 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "ActionsOnElement")
 public class ActionXML {
 
-    @XmlElement(name = "MonitoredElement")
-    private MonitoredElement element;
     @XmlElement(name = "Action")
-    private List<String> actions;
+    private List<Action> actions;
 
     {
-        actions = new ArrayList<String>();
+        actions = new ArrayList<Action>();
     }
 
-    public MonitoredElement getElement() {
-        return element;
-    }
-
-    public void setElement(MonitoredElement element) {
-        this.element = element;
-    }
-
-    public List<String> getActions() {
+    public List<Action> getActions() {
         return actions;
     }
 
-    public void setActions(List<String> actions) {
+    public void setActions(List<Action> actions) {
         this.actions = actions;
     }
-    
-    public void addActions(List<String> actions) {
+
+    public void addActions(List<Action> actions) {
         this.actions.addAll(actions);
     }
-    
-    public void addAction( String  action) {
+
+    public void addAction(Action action) {
         this.actions.add(action);
     }
 }

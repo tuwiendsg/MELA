@@ -36,6 +36,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -212,14 +213,34 @@ public class ElasticityAnalysisManager {
         }
     }
 
-    public synchronized List<MonitoredElementMonitoringSnapshot> getAllAggregatedMonitoringData() {
-        ConfigurationXMLRepresentation cxmlr = persistenceSQLAccess.getLatestConfiguration();
-
+    public synchronized MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData() {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringData(cxmlr.getServiceConfiguration().getId())) {
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringData(getServiceConfiguration().getId())) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
-        return elementMonitoringSnapshots;
+        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+        snapshots.setChildren(elementMonitoringSnapshots);
+        return snapshots;
+    }
+
+    public synchronized MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String startTimestamp, String endTimestamp) {
+        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestamp, endTimestamp, getServiceConfiguration().getId())) {
+            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
+        }
+        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+        snapshots.setChildren(elementMonitoringSnapshots);
+        return snapshots;
+    }
+
+    public synchronized MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(int count) {
+        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractLastXMonitoringDataSnapshots(count, getServiceConfiguration().getId())) {
+            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
+        }
+        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+        snapshots.setChildren(elementMonitoringSnapshots);
+        return snapshots;
     }
 
     // uses a lot of memory (all directly in memory)
@@ -381,8 +402,7 @@ public class ElasticityAnalysisManager {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceSQLAccess.getLatestConfiguration();
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData(cfg.getServiceConfiguration().getId());
-        Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysisResult = instantMonitoringDataAnalysisEngine.analyzeRequirements(serviceMonitoringSnapshot,
-                cfg.getRequirements()).getRequirementsAnalysisResult();
+        Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysisResult = instantMonitoringDataAnalysisEngine.analyzeRequirements(serviceMonitoringSnapshot, cfg.getRequirements()).getRequirementsAnalysisResult();
 
         String converted = jsonConverter.convertMonitoringSnapshot(serviceMonitoringSnapshot, cfg.getRequirements(), reqAnalysisResult);
 

@@ -31,6 +31,7 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathwa
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 
 import java.text.DecimalFormat;
@@ -336,12 +337,12 @@ public class JsonConverter {
                 if (monitoredData.containsKey(element.getLevel())) {
                     MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = monitoredData.get(element.getLevel()).get(element);
 
-                    List<String> actions = monitoredElementMonitoringSnapshot.getExecutingActions();
+                    List<Action> actions = monitoredElementMonitoringSnapshot.getExecutingActions();
                     //currently showing only first action
                     String actionsName = "";
 
-                    for (String a : actions) {
-                        actionsName += a + ";";
+                    for (Action a : actions) {
+                        actionsName += a.getAction() + ";";
                     }
                     if (!actions.isEmpty()) {
                         object.put("attention", true);

@@ -2,6 +2,7 @@ package at.ac.tuwien.dsg.mela.analysisservice.connectors;
 
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
@@ -99,9 +100,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     private String marshalActionElement(String targetEntityID, String actionName) throws JAXBException {
         ActionXML action = new ActionXML();
-        MonitoredElement element = new MonitoredElement(targetEntityID);
-        action.setElement(element);
-        action.addAction(actionName);
+        action.addAction(new Action(targetEntityID, actionName));
         return marshal(action, ActionXML.class);
     }
 
@@ -115,5 +114,7 @@ public class MelaDataServiceConfigurationAPIConnector {
             }
         });
     }
+    
+    
 
 }
