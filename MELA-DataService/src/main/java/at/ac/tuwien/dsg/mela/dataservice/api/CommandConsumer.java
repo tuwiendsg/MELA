@@ -1,11 +1,18 @@
 package at.ac.tuwien.dsg.mela.dataservice.api;
 
+import static at.ac.tuwien.dsg.mela.common.configuration.ConfigurationCommands.ADD_EXECUTING_ACTION;
+import static at.ac.tuwien.dsg.mela.common.configuration.ConfigurationCommands.REMOVE_EXECUTING_ACTION;
+import static at.ac.tuwien.dsg.mela.common.configuration.ConfigurationCommands.SET_SERVICE_STRUCTURE;
+import static at.ac.tuwien.dsg.mela.common.configuration.ConfigurationCommands.SUBMIT_COMPOSITION_RULES;
+import static at.ac.tuwien.dsg.mela.common.configuration.ConfigurationCommands.SUBMIT_CONFIGURATION_COMMAND;
+import static at.ac.tuwien.dsg.mela.common.configuration.ConfigurationCommands.SUBMIT_REQUIREMENTS;
+import static at.ac.tuwien.dsg.mela.common.configuration.ConfigurationCommands.UPDATE_SERVICE_STRUCTURE;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.DataCollectionService;
-import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +25,6 @@ import javax.jms.MessageListener;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.io.StringReader;
-import org.apache.log4j.Level;
 
 /**
  * Created by omoser on 1/17/14.
@@ -27,17 +33,10 @@ import org.apache.log4j.Level;
 public class CommandConsumer implements MessageListener {
 
     static final Logger log = LoggerFactory.getLogger(CommandConsumer.class);
-
-    public static final String SUBMIT_CONFIGURATION_COMMAND = "SubmitConfig";
-    public static final String SUBMIT_COMPOSITION_RULES = "SubmitCompositionRules";
-    public static final String SUBMIT_REQUIREMENTS = "SubmitServiceStructure";
-    public static final String UPDATE_SERVICE_STRUCTURE = "UpdateServiceStructure";
-    public static final String SET_SERVICE_STRUCTURE = "SetServiceStructure";
-    public static final String ADD_EXECUTING_ACTION = "AddExecutingAction";
-    public static final String REMOVE_EXECUTING_ACTION = "RemoveExecutingAction";
+  
 
     @Autowired
-    DataCollectionService collectionService;
+    private DataCollectionService collectionService;
 
     public void onMessage(Message message) {
 

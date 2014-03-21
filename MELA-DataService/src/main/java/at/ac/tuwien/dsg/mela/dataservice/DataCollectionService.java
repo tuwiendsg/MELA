@@ -18,7 +18,7 @@
  * the License.
  */
 package at.ac.tuwien.dsg.mela.dataservice;
- 
+
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
@@ -32,10 +32,10 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDa
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
- 
-import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
- 
-import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
+
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
+
+import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,11 +54,9 @@ import java.util.*;
 @DependsOn("persistenceSQLAccess")
 public class DataCollectionService {
 
-
     static final Logger log = LoggerFactory.getLogger(DataCollectionService.class);
 
-    @Value("#{${dataaccess.automaticstructuredetection} ? @autoStructureDetectionDataAccess : @defaultDataAccess}")
-
+    @Value("#{${dataaccess.automaticstructuredetection} ? @autoUnguidedStructureDetectionDataAccess : @defaultDataAccess}")
     private AbstractDataAccess dataAccess;
 
     private Requirements requirements;
@@ -98,14 +96,13 @@ public class DataCollectionService {
     private Timer monitoringTimer;
 
     // holding MonitoredElement name, and Actions Name
-
-    @Autowired
     private List<Action> actionsInExecution;
 
+    @Autowired
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
 
     @Autowired
-    private PersistenceSQLAccess persistenceSQLAccess;
+    private PersistenceDelegate persistenceSQLAccess;
 
     @Autowired
     private ApplicationContext context;
@@ -123,21 +120,21 @@ public class DataCollectionService {
         historicalMonitoringData = new ArrayList<ServiceMonitoringSnapshot>();
         monitoringTimer = new Timer();
         actionsInExecution = Collections.synchronizedList(new ArrayList<Action>());
-        
+
         if ((monitoringIntervalInSeconds / aggregationWindowsCount) == 0) {
             aggregationWindowsCount = monitoringIntervalInSeconds;
         }
- 
+
     }
-    
+
     public synchronized MonitoredElement getServiceConfiguration() {
         return serviceConfiguration;
     }
-    
+
     public synchronized void addExecutingActions(List<Action> actions) {
         actionsInExecution.addAll(actions);
     }
-    
+
     public synchronized void setConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
 
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
@@ -149,33 +146,30 @@ public class DataCollectionService {
         requirements = configurationXMLRepresentation.getRequirements();
         monitoringTimer.cancel();
         monitoringTimer.purge();
- 
+
         startMonitoring();
     }
-    
+
     public synchronized void removeExecutingActions(List<Action> actions) {
         actionsInExecution.removeAll(actions);
     }
-    
+
     public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
         this.serviceConfiguration = serviceConfiguration;
         monitoringTimer.cancel();
         monitoringTimer.purge();
- 
 
         persistenceSQLAccess.writeMonitoringSequenceId(serviceConfiguration.getId());
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
- 
         startMonitoring();
     }
-    
+
     public synchronized void setRequirements(Requirements requirements) {
         this.requirements = requirements;
- 
 
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
- 
+
     }
 
     // actually removes all VMs and Virtual Clusters from the ServiceUnit and
@@ -202,7 +196,7 @@ public class DataCollectionService {
             }
         }
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
-        
+
     }
 
     public synchronized void setCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
@@ -210,7 +204,7 @@ public class DataCollectionService {
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
         dataAccess.getMetricFilters().clear();
- 
+
         // set metric filters on data access
         for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
             // go trough each CompositionOperation and extract the source
@@ -218,7 +212,7 @@ public class DataCollectionService {
 
             List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
             queue.add(compositionRule.getOperation());
-            
+
             while (!queue.isEmpty()) {
                 CompositionOperation operation = queue.remove(0);
                 queue.addAll(operation.getSubOperations());
@@ -250,7 +244,7 @@ public class DataCollectionService {
             return new ServiceMonitoringSnapshot();
         }
     }
-    
+
     public synchronized ServiceMonitoringSnapshot getAggregatedMonitoringDataOverTime(List<ServiceMonitoringSnapshot> serviceMonitoringSnapshots) {
         if (serviceMonitoringSnapshots.size() > 1) {
             return instantMonitoringDataEnrichmentEngine.aggregateMonitoringDataOverTime(compositionRulesConfiguration, serviceMonitoringSnapshots);
@@ -258,7 +252,7 @@ public class DataCollectionService {
             return instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, serviceMonitoringSnapshots.get(0));
         }
     }
-    
+
     public synchronized Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement MonitoredElement) {
         if (dataAccess != null) {
             return dataAccess.getAvailableMetricsForMonitoredElement(MonitoredElement);
@@ -267,7 +261,7 @@ public class DataCollectionService {
             return new ArrayList<Metric>();
         }
     }
-    
+
     public synchronized void addMetricFilter(MetricFilter metricFilter) {
         if (dataAccess != null) {
             dataAccess.addMetricFilter(metricFilter);
@@ -275,7 +269,7 @@ public class DataCollectionService {
             log.warn("Data Access source not set yet on SystemControl");
         }
     }
-    
+
     public synchronized void addMetricFilters(Collection<MetricFilter> newFilters) {
         if (dataAccess != null) {
             dataAccess.addMetricFilters(newFilters);
@@ -283,7 +277,7 @@ public class DataCollectionService {
             log.warn("Data Access source not set yet on SystemControl");
         }
     }
-    
+
     public synchronized void removeMetricFilter(MetricFilter metricFilter) {
         if (dataAccess != null) {
             dataAccess.removeMetricFilter(metricFilter);
@@ -291,7 +285,7 @@ public class DataCollectionService {
             log.warn("Data Access source not set yet on SystemControl");
         }
     }
-    
+
     public synchronized void removeMetricFilters(Collection<MetricFilter> filtersToRemove) {
         if (dataAccess != null) {
             dataAccess.removeMetricFilters(filtersToRemove);
@@ -299,27 +293,24 @@ public class DataCollectionService {
             log.warn("Data Access source not set yet on SystemControl");
         }
     }
-    
+
     public synchronized void setMonitoringIntervalInSeconds(int monitoringIntervalInSeconds) {
         this.monitoringIntervalInSeconds = monitoringIntervalInSeconds;
     }
-    
+
     public synchronized void setNrOfMonitoringWindowsToAggregate(int aggregationIntervalInSeconds) {
         this.aggregationWindowsCount = aggregationIntervalInSeconds;
     }
 
     public synchronized void startMonitoring() {
- 
+
         if (serviceConfiguration == null) {
- 
             return;
         }
         log.debug("Starting monitoring for serviceConfiguration {}", serviceConfiguration.getId());
 
- 
         // list all MELA datasources from application context
         Map<String, AbstractDataSource> dataSources = context.getBeansOfType(AbstractDataSource.class);
- 
 
         for (String dataSourceName : dataSources.keySet()) {
             AbstractDataSource dataSource = dataSources.get(dataSourceName);
@@ -328,23 +319,22 @@ public class DataCollectionService {
 
         }
 
- 
         monitoringTimer = new Timer();
-        
+
         task = new TimerTask() {
             @Override
             public void run() {
                 if (serviceConfiguration != null) {
                     log.debug("Refreshing data");
                     ServiceMonitoringSnapshot monitoringData = getRawMonitoringData();
-                    
+
                     if (monitoringData != null) {
                         historicalMonitoringData.add(monitoringData);
                         // remove the oldest and add the new value always
                         if (historicalMonitoringData.size() > aggregationWindowsCount) {
                             historicalMonitoringData.remove(0);
                         }
-                        
+
                         if (compositionRulesConfiguration != null) {
                             ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
                             latestMonitoringData.setExecutingActions(actionsInExecution);
@@ -356,9 +346,8 @@ public class DataCollectionService {
                             //persist updated configuration
                             persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
                             // add new timestamp
- 
+
                             persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration, serviceConfiguration.getId());
- 
 
                             //add same timestamp on all mon data
                             //this is something as a short-hand solution
@@ -398,9 +387,9 @@ public class DataCollectionService {
         log.debug("Scheduling data pool at " + monitoringIntervalInSeconds + " seconds");
         // repeat the monitoring every monitoringIntervalInSeconds seconds
         monitoringTimer.schedule(task, 0, monitoringIntervalInSeconds * 1000);
-        
+
     }
-    
+
     public synchronized void stopMonitoring() {
         /*try {
          persistenceSQLAccess.closeConnection();

@@ -1,13 +1,12 @@
 package at.ac.tuwien.dsg.mela.analysisservice.connectors;
 
+import at.ac.tuwien.dsg.mela.common.configuration.ConfigurationCommands;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.dataservice.api.CommandConsumer;
-import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     public void sendConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
         try {
-            sendMessage(CommandConsumer.SUBMIT_CONFIGURATION_COMMAND, marshal(configurationXMLRepresentation, ConfigurationXMLRepresentation.class));
+            sendMessage(ConfigurationCommands.SUBMIT_CONFIGURATION_COMMAND, marshal(configurationXMLRepresentation, ConfigurationXMLRepresentation.class));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + configurationXMLRepresentation.getClass() + " into String", ex);
         }
@@ -42,7 +41,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     public void sendCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration) {
         try {
-            sendMessage(CommandConsumer.SUBMIT_COMPOSITION_RULES, marshal(compositionRulesConfiguration, CompositionRulesConfiguration.class));
+            sendMessage(ConfigurationCommands.SUBMIT_COMPOSITION_RULES, marshal(compositionRulesConfiguration, CompositionRulesConfiguration.class));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + compositionRulesConfiguration.getClass() + " into String", ex);
         }
@@ -50,7 +49,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     public void sendRequirements(Requirements requirements) {
         try {
-            sendMessage(CommandConsumer.SUBMIT_REQUIREMENTS, marshal(requirements, Requirements.class));
+            sendMessage(ConfigurationCommands.SUBMIT_REQUIREMENTS, marshal(requirements, Requirements.class));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + requirements.getClass() + " into String", ex);
         }
@@ -58,7 +57,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     public void sendUpdatedServiceStructure(MonitoredElement serviceConfiguration) {
         try {
-            sendMessage(CommandConsumer.UPDATE_SERVICE_STRUCTURE, marshal(serviceConfiguration, MonitoredElement.class));
+            sendMessage(ConfigurationCommands.UPDATE_SERVICE_STRUCTURE, marshal(serviceConfiguration, MonitoredElement.class));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + serviceConfiguration.getClass() + " into String", ex);
         }
@@ -67,7 +66,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     public void addExecutingAction(String targetEntityID, String actionName) {
         try {
-            sendMessage(CommandConsumer.ADD_EXECUTING_ACTION, marshalActionElement(targetEntityID, actionName));
+            sendMessage(ConfigurationCommands.ADD_EXECUTING_ACTION, marshalActionElement(targetEntityID, actionName));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + ActionXML.class + " into String", ex);
         }
@@ -76,7 +75,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     public void removeExecutingAction(String targetEntityID, String actionName) {
         try {
-            sendMessage(CommandConsumer.REMOVE_EXECUTING_ACTION, marshalActionElement(targetEntityID, actionName));
+            sendMessage(ConfigurationCommands.REMOVE_EXECUTING_ACTION, marshalActionElement(targetEntityID, actionName));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + ActionXML.class + " into String", ex);
         }
@@ -84,7 +83,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     public void sendServiceStructure(MonitoredElement serviceConfiguration) {
         try {
-            sendMessage(CommandConsumer.SET_SERVICE_STRUCTURE, marshal(serviceConfiguration, MonitoredElement.class));
+            sendMessage(ConfigurationCommands.SET_SERVICE_STRUCTURE, marshal(serviceConfiguration, MonitoredElement.class));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + serviceConfiguration.getClass() + " into String", ex);
         }

@@ -19,21 +19,26 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice;
 
+import java.io.InputStream;
+import java.util.Date;
+import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
-
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.ResourceLoader;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  */
 public class Main {
-
+ 
     static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws InterruptedException {
         log.info("Starting up MELA. Initializing application context.");
-        new FileSystemXmlApplicationContext("/config/mela-data-service-context.xml");
+//        new FileSystemXmlApplicationContext("/config/mela-data-service-context.xml");
+
+        new ClassPathXmlApplicationContext("mela-data-service-context.xml");
         log.info("Initialized application context. Startup complete");
     }
 }

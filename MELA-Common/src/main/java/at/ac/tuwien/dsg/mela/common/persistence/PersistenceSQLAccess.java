@@ -17,7 +17,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.dataservice.persistence;
+package at.ac.tuwien.dsg.mela.common.persistence;
 
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.MonitoredElementElasticityDependencies;
 
@@ -33,8 +33,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 
-import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationUtility;
-import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import java.io.Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,16 +65,12 @@ import java.util.Map;
 @Service
 public class PersistenceSQLAccess {
 
-    private static final String AGGREGATED_DATA_TABLE_NAME = "AggregatedData";
     static final Logger log = LoggerFactory.getLogger(PersistenceSQLAccess.class);
 
-    @Value("#{dataSource}")
+    @Value("#{melaDBConnector}")
     private DataSource dataSource;
 
     private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private ConfigurationUtility configurationUtility;
 
     public PersistenceSQLAccess() {
     }
@@ -89,8 +84,14 @@ public class PersistenceSQLAccess {
     public void writeMonitoringSequenceId(String sequenceId) {
 
         String checkIfExistsSql = "select count(1) from MonitoringSeq where ID=?";
-        long result = jdbcTemplate.queryForObject(checkIfExistsSql, Long.class, sequenceId);
-        if (result < 1) {
+
+        RowMapper<Long> rowMapper = new RowMapper<Long>() {
+            public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return rs.getLong(1);
+            }
+        };
+
+        if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, sequenceId) < 1) {
             log.debug("Inserting sequenceId into MontoringSeq");
             String sql = "insert into MonitoringSeq (ID) VALUES (?)";
             jdbcTemplate.update(sql, sequenceId);
@@ -147,7 +148,7 @@ public class PersistenceSQLAccess {
     public void writeMonitoringData(String timestamp, ServiceMonitoringSnapshot monitoringSnapshot, String monitoringSequenceID) {
         // if the firstMonitoringSequenceTimestamp is null, insert new
         // monitoring sequence
-        String sql = "INSERT INTO " + AGGREGATED_DATA_TABLE_NAME + " (data, monSeqID, timestampID) "
+        String sql = "INSERT INTO AggregatedData (data, monSeqID, timestampID) "
                 + "VALUES (?, ?, (SELECT ID from Timestamp where timestamp=? AND monSeqID=?))";
 
         jdbcTemplate.update(sql, monitoringSnapshot, monitoringSequenceID, timestamp, monitoringSequenceID);
@@ -196,66 +197,12 @@ public class PersistenceSQLAccess {
         };
 
         //get last space
-        ElasticitySpace space = jdbcTemplate.queryForObject(sql, rowMapper, monitoringSequenceID);
-
-        //update space with new data
-        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration();
-
-        if (cfg == null) {
-            log.error("Retrieved empty configuration.");
+        List<ElasticitySpace> space = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
+        if (space.isEmpty()) {
             return null;
-        } else if (cfg.getRequirements() == null) {
-            log.error("Retrieved configuration does not contain Requirements.");
-            return null;
-        } else if (cfg.getServiceConfiguration() == null) {
-            log.error("Retrieved configuration does not contain Service Configuration.");
-            return null;
-        }
-        Requirements requirements = cfg.getRequirements();
-        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
-
-        //if space == null, compute it 
-        if (space == null) {
-
-            //if space is null, compute it from all aggregated monitored data recorded so far
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = this.extractMonitoringData(monitoringSequenceID);
-
-            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-            fct.setRequirements(requirements);
-            fct.trainElasticitySpace(dataFromTimestamp);
-            space = fct.getElasticitySpace();
-
-            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-            space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-
-            //persist cached space
-            this.writeElasticitySpace(space, monitoringSequenceID);
         } else {
-            //else read max 1000 monitoring data records at a time, train space, and repeat as needed
-
-            //if space is not null, update it with new data
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
-
-            //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
-            do {
-                dataFromTimestamp = this.extractMonitoringData(space.getTimestampID(), monitoringSequenceID);
-                //check if new data has been collected between elasticity space querries
-                if (!dataFromTimestamp.isEmpty()) {
-                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-                    fct.setRequirements(requirements);
-                    fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
-                    //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-                    space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-
-                    //persist cached space
-                    this.writeElasticitySpace(space, monitoringSequenceID);
-                }
-
-            } while (!dataFromTimestamp.isEmpty());
-
+            return space.get(0);
         }
-
-        return space;
     }
 
     public MonitoringData getRawMonitoringData(String monitoringSequenceID, String timestampID) {
@@ -307,7 +254,7 @@ public class PersistenceSQLAccess {
 
         };
 
-        jdbcTemplate.queryForObject(sql, rowMapper, monitoringSequenceID, timestampID);
+        jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, timestampID);
 
         monitoringData.addMonitoredElementDatas(retrievedData.values());
 
@@ -350,7 +297,12 @@ public class PersistenceSQLAccess {
             }
         };
 
-        return jdbcTemplate.queryForObject(sql, rowMapper, monitoringSequenceID);
+        List<LightweightEncounterRateElasticityPathway> pathways = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
+        if (pathways.isEmpty()) {
+            return null;
+        } else {
+            return pathways.get(0);
+        }
 
     }
 
@@ -360,7 +312,7 @@ public class PersistenceSQLAccess {
      * @return returns maximum count elements
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int startIndex, int count, String monitoringSequenceID) {
-        String sql = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID > (?) AND ID < (?) AND monSeqID=(?);";
+        String sql = "SELECT data from AggregatedData where " + "ID > (?) AND ID < (?) AND monSeqID=(?);";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return (ServiceMonitoringSnapshot) rs.getObject(1);
@@ -383,7 +335,13 @@ public class PersistenceSQLAccess {
                 }
             };
 
-            minIimestampID = jdbcTemplate.queryForObject(getMinTimestampIDSQL, getMinTimestampRowMapper, monitoringSequenceID);
+            List<Integer> ints = jdbcTemplate.query(getMinTimestampIDSQL, getMinTimestampRowMapper, monitoringSequenceID);
+            if (ints.isEmpty()) {
+                minIimestampID = 0;
+            } else {
+                minIimestampID = ints.get(0);
+            }
+
         }
 
         {
@@ -394,12 +352,17 @@ public class PersistenceSQLAccess {
                 }
             };
 
-            maxIimestampID = jdbcTemplate.queryForObject(getMaxTimestampIDSQL, getMaxTimestampRowMapper, monitoringSequenceID);
+            List<Integer> ints = jdbcTemplate.query(getMaxTimestampIDSQL, getMaxTimestampRowMapper, monitoringSequenceID);
+            if (ints.isEmpty()) {
+                maxIimestampID = 0;
+            } else {
+                maxIimestampID = ints.get(0);
+            }
         }
 
         int timestampIDToSelectFrom = (maxIimestampID - x) >= 0 ? maxIimestampID - x : minIimestampID;
 
-        String getLastXAggregatedDataSQL = "SELECT data from " + AGGREGATED_DATA_TABLE_NAME + " where " + "ID > (?) AND ID < (?) AND monSeqID=(?);";
+        String getLastXAggregatedDataSQL = "SELECT data from AggregatedData where " + "ID > (?) AND ID < (?) AND monSeqID=(?);";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -413,7 +376,7 @@ public class PersistenceSQLAccess {
 
     public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(String startTime, String endTime, String monitoringSequenceID) {
 
-        String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where " + " timestampID >= (select ID from Timestamp where timestamp = ? ) "
+        String sql = "SELECT timestampID, data from AggregatedData where " + " timestampID >= (select ID from Timestamp where timestamp = ? ) "
                 + "AND timestampID <= (select ID from Timestamp where timestamp = ? ) AND monSeqID=?;";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
@@ -430,11 +393,7 @@ public class PersistenceSQLAccess {
      * @return returns maximum count elements
      */
     public ServiceMonitoringSnapshot extractLatestMonitoringData(String monitoringSequenceID) {
-        String sql = "SELECT timestampID, data from "
-                + AGGREGATED_DATA_TABLE_NAME
-                + " where " + "ID = (SELECT MAX(ID) from "
-                + AGGREGATED_DATA_TABLE_NAME
-                + " where monSeqID=?);";
+        String sql = "SELECT timestampID, data from AggregatedData where " + "ID = (SELECT MAX(ID) from AggregatedData where monSeqID=?);";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -445,12 +404,17 @@ public class PersistenceSQLAccess {
             }
         };
 
-        return jdbcTemplate.queryForObject(sql, rowMapper, monitoringSequenceID); // todo does this do the expected thing?
+        List<ServiceMonitoringSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots.get(0);
+        }
 
     }
 
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int timestamp, String monitoringSequenceID) {
-        String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=? and timestampID > ? LIMIT 1000;";
+        String sql = "SELECT timestampID, data from AggregatedData where monSeqID=? and timestampID > ? LIMIT 1000;";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
@@ -467,7 +431,7 @@ public class PersistenceSQLAccess {
      * @return returns maximum count elements
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData(String monitoringSequenceID) {
-        String sql = "SELECT timestampID, data from " + AGGREGATED_DATA_TABLE_NAME + " where monSeqID=? LIMIT 1000;";
+        String sql = "SELECT timestampID, data from AggregatedData where monSeqID=? LIMIT 1000;";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
@@ -525,11 +489,8 @@ public class PersistenceSQLAccess {
             log.error("Cannot unmarshall configuration in XML object: " + e.getMessage());
         }
 
-        if (configurationXMLRepresentation == null) {
-            return configurationUtility.createDefaultConfiguration();
-        } else {
-            return configurationXMLRepresentation;
-        }
+        return configurationXMLRepresentation;
+
     }
 
     /**
