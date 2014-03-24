@@ -14,7 +14,6 @@
        http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd">
 
  
-    <mela:ganglia-datasource id="ganglia-remote-1" host="128.130.172.214" port="8649" polling-interval-ms="5000"/>
-    <mela:ganglia-datasource id="ganglia-remote-2" host="128.130.172.215" port="8649" polling-interval-ms="5000"/>
+    <mela:ganglia-datasource id="ganglia-1" host="GANGLIA_IP" port="GANGLIA_PORT" polling-interval-ms="5000"/>
 
 </beans>

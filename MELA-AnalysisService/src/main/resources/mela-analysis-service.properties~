@@ -1,5 +1,0 @@
-analysisservice.elasticityanalysis=true
-dataservice.data.port=9123
-dataservice.configuration.uri=tcp://localhost:9124
-MELA_LOG_DIR=/tmp/mela
-MELA_CONFIG_DIR=./config
