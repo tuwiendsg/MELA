@@ -10,12 +10,13 @@
 
 RUN_MODE="daemons"
 
-JAVA=`which java`
+JAVA=$(which java)
 NAME=mela-data-service
 DAEMONDIR=./
-DAEMON=MELA-DataService-1.0-SNAPSHOT.jar
+DAEMON=MELA-DataService-2.0-SNAPSHOT.jar
 PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-data-service.pid
+LOG_DIR=/tmp/mela
 
 
 test -x $JAVA -a -f $DAEMONDIR/$DAEMON || echo "test -x $JAVA -a -f $DAEMONDIR/$DAEMON failed" exit 0
@@ -29,7 +30,7 @@ case "$1" in
 		log_progress_msg "mela"
 		# Make sure we have our PIDDIR, even if it's on a tmpfs
 		#install -o root -g root -m 755 -d $PIDDIR
-        if ! start-stop-daemon --start --chdir $DAEMONDIR --quiet --pidfile $PIDFILE --make-pidfile --background --exec $JAVA -- -jar $DAEMON; then
+        if ! start-stop-daemon --start --chdir $DAEMONDIR --quiet --pidfile $PIDFILE --make-pidfile --background --exec $JAVA -- -DLOG_DIR=$LOG_DIR -jar $DAEMON; then
 		    log_end_msg 1
 		    exit 1
 		fi

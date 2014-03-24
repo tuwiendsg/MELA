@@ -24,6 +24,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -97,9 +98,7 @@ public class Condition implements Serializable {
 
     public Condition(Type type, Metric metric, MetricValue... value) {
         this.type = type;
-        for (MetricValue element : value) {
-            this.value.add(element);
-        }
+        Collections.addAll(this.value, value);
     }
 
     public Type getType() {

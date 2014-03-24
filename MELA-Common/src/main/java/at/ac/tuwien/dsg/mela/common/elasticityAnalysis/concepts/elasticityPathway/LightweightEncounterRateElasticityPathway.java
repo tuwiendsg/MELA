@@ -152,8 +152,7 @@ public class LightweightEncounterRateElasticityPathway implements Serializable {
                     Logger.getLogger(this.getClass()).log(Level.ERROR, "Elasticity Pathway can't be applied on non-numeric metric value " + value);
                 }
             }
-            Neuron neuron = som.classifySituation(new Neuron(values));
-            signatureEntry.mappedNeuron = neuron;
+            signatureEntry.mappedNeuron = som.classifySituation(new Neuron(values));
         }
 
 

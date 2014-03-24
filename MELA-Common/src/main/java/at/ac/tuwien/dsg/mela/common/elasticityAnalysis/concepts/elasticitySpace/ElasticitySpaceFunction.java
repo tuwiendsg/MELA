@@ -27,7 +27,6 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 /**

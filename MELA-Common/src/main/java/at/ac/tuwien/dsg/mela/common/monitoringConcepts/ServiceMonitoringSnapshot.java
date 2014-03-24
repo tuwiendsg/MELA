@@ -23,9 +23,7 @@ import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
-import javax.xml.bind.annotation.XmlElement;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *

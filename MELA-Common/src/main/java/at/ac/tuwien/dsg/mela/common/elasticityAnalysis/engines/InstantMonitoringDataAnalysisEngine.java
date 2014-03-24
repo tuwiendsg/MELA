@@ -22,11 +22,14 @@ package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
+import org.springframework.stereotype.Component;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
- *
- */
+ * Author: Daniel Moldovan 
+ * E-Mail: d.moldovan@dsg.tuwien.ac.at 
+ **/
+
+@Component
 public class InstantMonitoringDataAnalysisEngine {
 
     public AnalysisReport analyzeRequirements(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Requirements requirements) {

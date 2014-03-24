@@ -217,34 +217,6 @@ public class InMemoryEncounterRateElasticityPathway {
             signatureEntry.mappedNeuron = neuron;
         }
 
-
-        //classify entries by encounterRate? Nooo? Yes? Who Knows? I mean, we need to be carefull not to lose monitoring information
-        //we might need two things to do: 1 to say in 1 chart this metric point is usual, this not
-        //the second to say ok in usual case the metric value combinations are ..
-        //currently we go with the second, for which we did not need storing the order of the monitoring data in the entries, but it might be useful later
-//        Map<NeuronUsageLevel, List<SignatureEntry>> pathway = new LinkedHashMap<NeuronUsageLevel, List<SignatureEntry>>();
-//        List<SignatureEntry> rare = new ArrayList<SignatureEntry>();
-//        List<SignatureEntry> neutral = new ArrayList<SignatureEntry>();
-//        List<SignatureEntry> dominant = new ArrayList<SignatureEntry>();
-//
-//        pathway.put(NeuronUsageLevel.DOMINANT, rare);
-//        pathway.put(NeuronUsageLevel.NEUTRAL, neutral);
-//        pathway.put(NeuronUsageLevel.RARE, dominant);
-//
-//        for (SignatureEntry signatureEntry : mapped) {
-//            switch (signatureEntry.getMappedNeuron().getUsageLevel()) {
-//                case RARE:
-//                    rare.add(signatureEntry);
-//                    break;
-//                case NEUTRAL:
-//                    neutral.add(signatureEntry);
-//                    break;
-//                case DOMINANT:
-//                    dominant.add(signatureEntry);
-//                    break;
-//            }
-//        }
-
         //returning all, such that I can sort them after occurrence and say this pair of values has been encountered 70%
         List<Neuron> neurons = new ArrayList<Neuron>();
         for (Neuron neuron : som) {

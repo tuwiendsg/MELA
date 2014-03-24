@@ -40,14 +40,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
- *
  */
+
+@Service
 public class DataAggregationEngine {
+
+    static final Logger log = LoggerFactory.getLogger(DataAggregationEngine.class);
 
     private List<MonitoredElement.MonitoredElementLevel> serviceLevelProcessingOrder;
 
@@ -61,29 +65,31 @@ public class DataAggregationEngine {
 
     /**
      * @param compositionRulesConfiguration the metric composition rules to be
-     * applied on the serviceStructure monitoring snapshot
-     * @param serviceMonitoringSnapshot simple serviceStructure monitoring data
+     *                                      applied on the serviceStructure monitoring snapshot
+     * @param serviceMonitoringSnapshot     simple serviceStructure monitoring data
      * @return monitoring data enriched with composite metrics
      */
-    public ServiceMonitoringSnapshot enrichMonitoringData(final CompositionRulesConfiguration compositionRulesConfiguration, final ServiceMonitoringSnapshot serviceMonitoringSnapshot) {
+    public ServiceMonitoringSnapshot enrichMonitoringData(final CompositionRulesConfiguration compositionRulesConfiguration,
+                                                          final ServiceMonitoringSnapshot serviceMonitoringSnapshot) {
+
         if (serviceMonitoringSnapshot == null) {
             return null;
         } else if (compositionRulesConfiguration == null || compositionRulesConfiguration.getMetricCompositionRules() == null) {
-        	Logger.getLogger(this.getClass()).log(Level.WARN, "CompositionRulesConfiguration either null, missing composition rules, or target service ID");
+            log.warn("CompositionRulesConfiguration either null, missing composition rules, or target service ID");
             return serviceMonitoringSnapshot;
         }
-        CompositionRulesBlock compositionRulesBlock = compositionRulesConfiguration.getMetricCompositionRules();
 
+        CompositionRulesBlock compositionRulesBlock = compositionRulesConfiguration.getMetricCompositionRules();
         ArrayList<CompositionRule> metricCompositionRules = compositionRulesBlock.getCompositionRules();
 
-        //sort the rules after their level (the ENUM levels are declared from SERVICE to VM. Hope this is the right way
+        // sort the rules after their level (the ENUM levels are declared from SERVICE to VM. Hope this is the right way
         Collections.sort(metricCompositionRules, new Comparator<CompositionRule>() {
             public int compare(CompositionRule o1, CompositionRule o2) {
                 return -o1.getTargetMonitoredElementLevel().compareTo(o2.getTargetMonitoredElementLevel());
             }
         });
 
-        //apply each composition rule in sequence
+        // apply each composition rule in sequence
         for (CompositionRule compositionRule : metricCompositionRules) {
             compositionRule.apply(serviceMonitoringSnapshot);
         }
@@ -99,46 +105,42 @@ public class DataAggregationEngine {
      * data
      *
      * @param compositionRulesConfiguration rules to aggregate instant data
-     * @param compositionRules takes composition rules which specify for
-     * ServiceUNIT ID what rules to apply at the VM level.
      * @param serviceMonitoringSnapshots
      * @return
      */
-    public ServiceMonitoringSnapshot aggregateMonitoringDataOverTime(final CompositionRulesConfiguration compositionRulesConfiguration, final List<ServiceMonitoringSnapshot> serviceMonitoringSnapshots) {
-       
+    public ServiceMonitoringSnapshot aggregateMonitoringDataOverTime(final CompositionRulesConfiguration compositionRulesConfiguration,
+                                                                     final List<ServiceMonitoringSnapshot> serviceMonitoringSnapshots) {
+
         if (serviceMonitoringSnapshots == null) {
             return new ServiceMonitoringSnapshot();
         }
-//        ServiceMonitoringSnapshot composedMonitoringSnapshot = new ServiceMonitoringSnapshot();
-
 
         Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>> dataToAggregate;
-        {
-            dataToAggregate = new EnumMap<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>>(MonitoredElement.MonitoredElementLevel.class);
-            dataToAggregate.put(MonitoredElement.MonitoredElementLevel.VM, new LinkedHashMap<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>());
-            dataToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT, new LinkedHashMap<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>());
-            dataToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY, new LinkedHashMap<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>());
-            dataToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE, new LinkedHashMap<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>());
-        }
+        dataToAggregate = new EnumMap<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>>(MonitoredElement.MonitoredElementLevel.class);
+        dataToAggregate.put(MonitoredElement.MonitoredElementLevel.VM, new LinkedHashMap<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>());
+        dataToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT, new LinkedHashMap<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>());
+        dataToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY, new LinkedHashMap<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>());
+        dataToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE, new LinkedHashMap<MonitoredElement, List<MonitoredElementMonitoringSnapshot>>());
 
-        //go trough supplied monitoring snapshots
+        // go trough supplied monitoring snapshots
         for (ServiceMonitoringSnapshot serviceMonitoringSnapshot : serviceMonitoringSnapshots) {
             Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> monitoredData = serviceMonitoringSnapshot.getMonitoredData();
             if (monitoredData == null || monitoredData.isEmpty()) {
-                Logger.getLogger(this.getClass()).log(Level.WARN, "No monitoring data in theserviceMonitoringSnapshot ");
+                log.warn("No monitoring data in serviceMonitoringSnapshot ");
                 continue;
             }
-            //extract for each Level the monitored data
+
+            // extract for each Level the monitored data
             for (MonitoredElement.MonitoredElementLevel level : monitoredData.keySet()) {
                 Map<MonitoredElement, MonitoredElementMonitoringSnapshot> dataForLevel = monitoredData.get(level);
                 if (dataForLevel == null || dataForLevel.isEmpty()) {
-                    Logger.getLogger(this.getClass()).log(Level.WARN, "No monitoring data in the serviceMonitoringSnapshot for Level:" + level);
+                    log.warn("No monitoring data in the serviceMonitoringSnapshot for Level:" + level);
                     continue;
                 }
 
                 Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>> dataToAggregateForLevel = dataToAggregate.get(level);
 
-                //for each monitored MonitoredElement at each level add monitoring data
+                // for each monitored MonitoredElement at each level add monitoring data
                 for (MonitoredElement monitoredElement : dataForLevel.keySet()) {
                     if (dataToAggregateForLevel.containsKey(monitoredElement)) {
                         dataToAggregateForLevel.get(monitoredElement).add(dataForLevel.get(monitoredElement));
@@ -151,7 +153,7 @@ public class DataAggregationEngine {
             }
         }
 
-        //filter elements that do not have the same number of monitoring snapshots. I.E. elements that disappeared are removed, ones which appeared are kept.
+        // filter elements that do not have the same number of monitoring snapshots. I.E. elements that disappeared are removed, ones which appeared are kept.
         for (Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>> datas : dataToAggregate.values()) {
             List<MonitoredElement> elementsThatHaveDisappeared = new ArrayList<MonitoredElement>();
             for (MonitoredElement MonitoredElement : datas.keySet()) {
@@ -166,29 +168,19 @@ public class DataAggregationEngine {
 
         ServiceMonitoringSnapshot composedMonitoringSnapshot = new ServiceMonitoringSnapshot();
 
-        //create composite monitoring data after the last service we have
+        // create composite monitoring data after the last service we have
         Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>> serviceLevelDataToAggregate = dataToAggregate.get(MonitoredElement.MonitoredElementLevel.SERVICE);
-//        if (serviceLevelDataToAggregate == null) {
-//            Logger.getLogger(this.getClass()).log(Level.WARN, "No service level data found to compose historical data");
-//            if (!serviceMonitoringSnapshots.isEmpty()) {
-//                //return last monitored data
-//                return serviceMonitoringSnapshots.get(serviceMonitoringSnapshots.size() - 1);
-//            } else {
-//                return composedMonitoringSnapshot;
-//            }
-//        }
-
         List<MonitoredElement> encounteredServices = new ArrayList<MonitoredElement>(serviceLevelDataToAggregate.keySet());
         if (encounteredServices.isEmpty()) {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "No service level data found to compose historical data");
+            log.warn("No service level data found to compose historical data");
             if (!serviceMonitoringSnapshots.isEmpty()) {
-                //return last monitored data
+                // return last monitored data
                 return serviceMonitoringSnapshots.get(serviceMonitoringSnapshots.size() - 1);
             } else {
                 return composedMonitoringSnapshot;
             }
         }
-        
+
         MonitoredElement lastEncounteredElement = encounteredServices.get(encounteredServices.size() - 1);
 
         /**
@@ -198,7 +190,7 @@ public class DataAggregationEngine {
          */
         Map<MonitoredElement, MonitoredElement> elements = new LinkedHashMap<MonitoredElement, MonitoredElement>();
 
-        //traverse the MonitoredElement hierarchical tree in BFS and extract the serviceStructure elements
+        // traverse the MonitoredElement hierarchical tree in BFS and extract the serviceStructure elements
         List<MonitoredElementMonitoringSnapshot> bfsTraversalQueue = new ArrayList<MonitoredElementMonitoringSnapshot>();
         MonitoredElementMonitoringSnapshot rootMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(lastEncounteredElement, new LinkedHashMap<Metric, MetricValue>());
 
@@ -220,40 +212,30 @@ public class DataAggregationEngine {
 
         }
 
-//
-//        //also maintain children structure
-//
-//        for (MonitoredElement.MonitoredElementLevel level : dataToAggregate.keySet()) {
-//            for (MonitoredElement MonitoredElement : dataToAggregate.get(level).keySet()) {
-//                MonitoredElementMonitoringSnapshot MonitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(MonitoredElement, new HashMap<Metric, MetricValue>());
-//                composedMonitoringSnapshot.addMonitoredData(MonitoredElementMonitoringSnapshot);
-//            }
-//        }
 
-        //if no composition rules, return  only service structure (to display nice)
+        // if no composition rules, return  only service structure (to display nice)
         if (compositionRulesConfiguration == null || compositionRulesConfiguration.getHistoricMetricCompositionRules() == null) {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "CompositionRulesConfiguration either null, missing composition rules, or target service ID");
+            log.warn("CompositionRulesConfiguration either null, missing composition rules, or target service ID");
             return composedMonitoringSnapshot;
         }
 
-        //CURRENTLY only aggregates at VM level and the rules are supplied at Service Unit level
+        // CURRENTLY only aggregates at VM level and the rules are supplied at Service Unit level
         for (CompositionRule compositionRule : compositionRulesConfiguration.getHistoricMetricCompositionRules().getCompositionRules()) {
 
             Collection<String> targetServiceUnits = compositionRule.getTargetMonitoredElementIDs();
             for (MonitoredElement monitoredElement : dataToAggregate.get(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT).keySet()) {
-                //if this rule block also targets this serviceStructure unit
+                // if this rule block also targets this serviceStructure unit
                 if (targetServiceUnits == null || targetServiceUnits.isEmpty() || targetServiceUnits.contains(monitoredElement.getId())) {
-                    //extract serviceStructure unit VM level children and aggregate their data
+                    // extract serviceStructure unit VM level children and aggregate their data
                     for (MonitoredElement child : monitoredElement.getContainedElements()) {
                         if (child.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
                             Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>> vmDataToAggregate = dataToAggregate.get(MonitoredElement.MonitoredElementLevel.VM);
 
-                            //for each child apply aggregation rule
-                            if (vmDataToAggregate != null
-                                    || vmDataToAggregate.containsKey(child)) {
+                            // for each child apply aggregation rule
+                            if (vmDataToAggregate != null || vmDataToAggregate.containsKey(child)) {
                                 List<MonitoredElementMonitoringSnapshot> childData = vmDataToAggregate.get(child);
 
-                                //for each metric extract list of values to be aggregated
+                                // for each metric extract list of values to be aggregated
                                 Map<Metric, List<MetricValue>> valuesForEachMetric = new HashMap<Metric, List<MetricValue>>();
                                 for (MonitoredElementMonitoringSnapshot childSnapshot : childData) {
                                     if (childSnapshot.getMonitoredData() == null) {
@@ -269,7 +251,8 @@ public class DataAggregationEngine {
                                         }
                                     }
                                 }
-                                //apply aggregation rules
+
+                                // apply aggregation rules
                                 HashMap<Metric, MetricValue> compositeData = new HashMap<Metric, MetricValue>();
                                 CompositionOperation operation = compositionRule.getOperation();
                                 Metric targetMetric = operation.getTargetMetric();
@@ -278,10 +261,11 @@ public class DataAggregationEngine {
                                     if (value != null) {
                                         compositeData.put(targetMetric, value);
                                     } else {
-                                        Logger.getLogger(this.getClass()).log(Level.WARN, "Operation" + operation.getOperationType() + " for " + operation.getTargetMetric() + " returned null");
+                                        log.warn("Operation" + operation.getOperationType() + " for " + operation.getTargetMetric() + " returned null");
                                     }
                                 }
-                                //add aggregated data to the composed snapshot
+
+                                // add aggregated data to the composed snapshot
                                 MonitoredElementMonitoringSnapshot childElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(child, compositeData);
                                 composedMonitoringSnapshot.addMonitoredData(childElementMonitoringSnapshot);
 
@@ -293,11 +277,7 @@ public class DataAggregationEngine {
             }
         }
 
-//        for (CompositionRule historicalCompositionRule : compositionRulesConfiguration.getHistoricDataAggregationRules().getCompositionRules()) {
-//            historicalCompositionRule.apply(composedMonitoringSnapshot);
-//        }
-
-        //enrich the composite data since the composite only composes VM level data, thus we need to aggregate it to get Service level data and etc
+        // enrich the composite data since the composite only composes VM level data, thus we need to aggregate it to get Service level data and etc
         return enrichMonitoringData(compositionRulesConfiguration, composedMonitoringSnapshot);
 
     }

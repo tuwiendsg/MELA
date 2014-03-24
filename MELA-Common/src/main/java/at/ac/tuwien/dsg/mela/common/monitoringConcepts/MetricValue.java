@@ -82,34 +82,8 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
 
     public String getValueRepresentation() {
         if (value instanceof Number) {
-            String a;
             DecimalFormat df = new DecimalFormat("0.####");
-
-            String formatted = df.format(value);
-//            int index = formatted.indexOf(".");
-//
-//            if (index != -1) {
-//                String[] parts = formatted.split("\\.");
-//                String rest = "";
-//                int zeroesCount = 0;
-//                for (char c : parts[1].toCharArray()) {
-//                    if (c == '0') {
-//                        zeroesCount++;
-//                    } else {
-//                        for (int i = 0; i < zeroesCount; i++) {
-//                            rest += '0';
-//                        }
-//                        rest += c;
-//                        break;
-//                    }
-//                }
-//                a = (rest.length() > 0) ? parts[0] + "." + rest : parts[0];
-//            } else {
-//                a = formatted;
-//            }
-//            return a;
-
-            return formatted;
+            return df.format(value);
         } else if (value instanceof String) {
             return value.toString();
         } else {

@@ -58,6 +58,7 @@ public class Action implements Serializable {
     public void setAction(String action) {
         this.action = action;
     }
+    
 
     @Override
     public int hashCode() {

@@ -1049,25 +1049,17 @@
                     return
                 }
 
+ 
                 var source = selectedMetric;
 
-                //                //try to get the new selected element just in case the layout has changed and now is up or down due to node add/remove at runtime
-                //                var nodes = tree.nodes(root);
-                //                for(var i = 0; i < nodes.length; i++){
-                //                    var node = nodes[i];
-                //                    if(source.name == node.name && source.parent.name == node.parent.name){
-                //                        source = node;
-                //                    }
-                //                }
-                //               
-
-                //metric names in D3JS are "value [metricName]" and need to extract the metricName
+ 
+   
                 var indexOfFirstBracket = source.name.match(/[a-zA-Z]/);
                 var indexOfLastBracket = source.name.match(/ \(/);
                 var sourceMetricName = source.name.slice(indexOfFirstBracket.index, indexOfLastBracket.index);
 
                 var sourceMetricParent = source.parent;
-
+ 
                 //traverse metrics and find out what metric we have selected 
                 var compositionRule;
                 for (var i = 0; i < metrics.length; i++) {
@@ -1152,7 +1144,7 @@
                     }
                 }
                 //console.log(ruleChildMetrics)
-                drawMetricsLines(source, ruleChildMetrics);
+                drawMetricsLines(selectedMetric, ruleChildMetrics);
 
             }
 
@@ -1163,25 +1155,15 @@
                     return
                 }
 
+ 
                 var source = selectedMetric;
-
-                //                //try to get the new selected element just in case the layout has changed and now is up or down due to node add/remove at runtime
-                //                var nodes = tree.nodes(root);
-                //                for(var i = 0; i < nodes.length; i++){
-                //                    var node = nodes[i];
-                //                    if(source.name == node.name && source.parent.name == node.parent.name){
-                //                        source = node;
-                //                    }
-                //                }
-                //               
-
-                //metric names in D3JS are "value [metricName]" and need to extract the metricName
+ 
                 var indexOfFirstBracket = source.name.match(/[a-zA-Z]/);
                 var indexOfLastBracket = source.name.match(/ \(/);
                 var sourceMetricName = source.name.slice(indexOfFirstBracket.index, indexOfLastBracket.index);
 
                 var sourceMetricParent = source.parent;
-
+ 
                 //traverse metrics and find out what metric we have selected 
                 var compositionRule;
                 for (var i = 0; i < metrics.length; i++) {
@@ -1263,7 +1245,7 @@
                     }
                 }
                 //console.log(ruleChildMetrics)
-                drawMetricsLines(source, ruleChildMetrics);
+                drawMetricsLines(selectedMetric, ruleChildMetrics);
 
             }
 

@@ -9,8 +9,8 @@
 
         <fileSets>
                 <fileSet>
-                        <directory>${project.basedir}/dataServiceConfig</directory>
-                        <outputDirectory>/dataServiceConfig</outputDirectory>
+                        <directory>${project.basedir}/src/main/resources/etc</directory>
+                        <outputDirectory>/etc</outputDirectory>
                 </fileSet>
 
                 <fileSet>

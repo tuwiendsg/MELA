@@ -1,0 +1,7 @@
+dataservice.operationmode.continuous=true
+dataservice.configuration.uri=tcp://localhost:9124
+
+dataaccess.automaticstructuredetection=true
+
+monitoring.polling.interval=10
+monitoring.aggregation.windowsize=5

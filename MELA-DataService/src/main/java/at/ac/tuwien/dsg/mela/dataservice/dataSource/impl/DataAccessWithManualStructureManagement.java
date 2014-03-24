@@ -37,11 +37,14 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
+
+@Service("defaultDataAccess")
 public class DataAccessWithManualStructureManagement extends AbstractDataAccess {
 
     private static final MonitoredElement ALL_VMS = new MonitoredElement("-");

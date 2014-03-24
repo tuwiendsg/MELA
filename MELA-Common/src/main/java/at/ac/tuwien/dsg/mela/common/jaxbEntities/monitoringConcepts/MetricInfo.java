@@ -20,10 +20,6 @@
 package at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts;
 
 import javax.xml.bind.annotation.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -128,12 +124,11 @@ public class MetricInfo {
 
     @Override
     public String toString() {
-        String info = "GangliaMetricInfo{"
+        return "GangliaMetricInfo{"
                 + "name='" + name + '\''
                 + ", value='" + value + '\''
                 + ", type='" + type + '\''
                 + ", units='" + units + '\''
                 + "}";
-        return info;
     }
 }
