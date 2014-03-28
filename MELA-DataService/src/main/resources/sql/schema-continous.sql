@@ -5,5 +5,5 @@ create CACHED table IF NOT EXISTS Configuration (ID int IDENTITY, configuration 
 create CACHED table IF NOT EXISTS AggregatedData (ID int IDENTITY, monSeqID VARCHAR(200), timestampID int, data OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
 create CACHED table IF NOT EXISTS ElasticitySpace (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticitySpace OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
 create CACHED table IF NOT EXISTS ElasticityPathway (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticityPathway OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
-create CACHED table IF NOT EXISTS ELASTICITYDEPENDENCY (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticityDependency LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
+create CACHED table IF NOT EXISTS ELASTICITYDEPENDENCY (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, elasticityDependency LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
 

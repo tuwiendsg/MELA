@@ -27,8 +27,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "MonitoredElementElasticityDependencies")
-public class MonitoredElementElasticityDependencies {
+@XmlRootElement(name = "ServiceElasticityDependencies")
+public class ServiceElasticityDependencies {
 
     @XmlAttribute(name = "TimestampID", required = true)
     private int timestampID;

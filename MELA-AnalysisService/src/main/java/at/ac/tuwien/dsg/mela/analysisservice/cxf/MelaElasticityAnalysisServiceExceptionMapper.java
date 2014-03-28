@@ -41,7 +41,8 @@ public class MelaElasticityAnalysisServiceExceptionMapper implements ExceptionMa
                     .build();
         }
 
-        return Response.serverError().entity("Internal Error: " + exception.getMessage()).build();
+//        return Response.serverError().entity("Internal Error: " + exception.getMessage()).build();
+        return Response.serverError().entity("Internal Error: " + exception).build();
     }
 
 
