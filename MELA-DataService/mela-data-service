@@ -19,8 +19,8 @@ PIDFILE=$PIDDIR/mela-data-service.pid
 LOG_DIR=/tmp/mela
 
 
-test -x $JAVA -a -f $DAEMONDIR/$DAEMON || echo "test -x $JAVA -a -f $DAEMONDIR/$DAEMON failed" exit 0
-#test -x $DAEMONDIR/$DAEMON || exit 0
+test -x $JAVA -a -f $DAEMONDIR/$DAEMON || echo "test -x $JAVA -a -f $DAEMONDIR/$DAEMON failed" 
+test -x $JAVA -a -f $DAEMONDIR/$DAEMON || exit 0
 
 . /lib/lsb/init-functions
 
