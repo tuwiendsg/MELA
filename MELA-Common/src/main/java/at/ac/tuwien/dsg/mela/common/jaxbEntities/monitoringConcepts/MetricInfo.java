@@ -31,6 +31,12 @@ public class MetricInfo {
 
     @XmlAttribute(name = "Name", required = true)
     private String name;
+    
+    
+    /**
+     * float, double, int, long, or if left empty is is "text"
+     * Type means primitive type
+     */
     @XmlAttribute(name = "Value", required = true)
     private String value;
     @XmlAttribute(name = "Type", required = true)
