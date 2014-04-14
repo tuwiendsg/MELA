@@ -219,6 +219,14 @@ public class ElasticityAnalysisService {
         }
 
     }
+//
+//    @GET
+//    @Path("/unitBehavingNormally")
+//    @Produces("application/xml")
+//    public Boolean testIfAllVMsHaveJoined(@QueryParam("monitoredElementID") String monitoredElementID) {
+//        MonitoredElement element = new MonitoredElement(monitoredElementID);
+//        return systemControl.testIfAllVMsReportMEtricsGreaterThanZero(element);
+//    }
 
     /**
      * Method for retrieving an easy to display JSON string of the latest

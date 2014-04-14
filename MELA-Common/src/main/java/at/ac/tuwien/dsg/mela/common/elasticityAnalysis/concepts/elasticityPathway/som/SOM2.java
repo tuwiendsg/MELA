@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -24,15 +26,11 @@ import java.util.List;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
-
- **/
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
+ *
+ */
 public class SOM2 extends SOM {
-
-
 
     public SOM2(int elementsNo, int weightsNo, int minWeightValue, int maxWeightValue, SOMStrategy strategy) {
         super(elementsNo, weightsNo, minWeightValue, maxWeightValue, strategy);
@@ -48,21 +46,22 @@ public class SOM2 extends SOM {
 
     /**
      *
-     * @return the difference in mapped values, such that we have also an overview in how close the mapped values are
+     * @return the difference in mapped values, such that we have also an
+     * overview in how close the mapped values are
      */
     public Integer[] getNeuronsMappedValuesMeanAndStdDeviation() {
 
         ArrayList<Double> mappedValues = new ArrayList<Double>();
-        Double mappedValuesMean  = 0d;
+        Double mappedValuesMean = 0d;
 
         for (int row = 0; row < elementsNo; row++) {
             for (int column = 0; column < elementsNo; column++) {
                 Neuron neuron = neurons[row][column];
                 Double mappedVal = 0d;
-                for(Double weight: neuron.getWeights()){
-                    mappedVal += Math.pow(weight,2);
+                for (Double weight : neuron.getWeights()) {
+                    mappedVal += Math.pow(weight, 2);
                 }
-                if(mappedVal < 1d){
+                if (mappedVal < 1d) {
                     continue;
                 }
                 mappedValues.add(mappedVal);
@@ -71,7 +70,6 @@ public class SOM2 extends SOM {
             }
         }
         mappedValuesMean /= mappedValues.size();
-
 
         Double variance = 0d;
         for (Double integer : mappedValues) {
@@ -157,23 +155,21 @@ public class SOM2 extends SOM {
 //
 //        return new Integer[]{average.intValue(), sdtDev.intValue()};
 //    }
-
     //actually computes Average Absolute Variation  on nr of MAPPED SITUATIONS
-
     /**
      *
-     * @return the mean and std deviation of the number of mapped situations pe neuron
+     * @return the mean and std deviation of the number of mapped situations pe
+     * neuron
      */
     @Override
     public Integer[] getUsageMeanAndStdDeviation() {
         ArrayList<Integer> mappedSituationsNr = new ArrayList<Integer>();
         Integer average = 0;
 
-
         for (int row = 0; row < elementsNo; row++) {
             for (int column = 0; column < elementsNo; column++) {
                 Neuron neuron = neurons[row][column];
-                if(neuron.getMappedWeights() == 0){
+                if (neuron.getMappedWeights() == 0) {
                     continue;
                 }
                 mappedSituationsNr.add(neuron.getMappedWeights());
@@ -183,7 +179,7 @@ public class SOM2 extends SOM {
 
         Integer totalMapped = average;
 
-        average = (mappedSituationsNr.size() > 0)?average/mappedSituationsNr.size():average;
+        average = (mappedSituationsNr.size() > 0) ? average / mappedSituationsNr.size() : average;
         Double sdtDev = 0d;
         for (Integer sitNr : mappedSituationsNr) {
             sdtDev += Math.abs(sitNr - average);
@@ -193,7 +189,6 @@ public class SOM2 extends SOM {
 //        sdtDev += Math.sqrt(sdtDev);
 
 //        System.out.println("Mapped " + totalMapped + " average " + average + " stdDev " + sdtDev);
-
         return new Integer[]{average.intValue(), sdtDev.intValue()};
     }
 
@@ -223,8 +218,14 @@ public class SOM2 extends SOM {
 //                                }
                                 //just increments with 1 the nr of mappedWeights
                                 //if the neuron has not been used before, do not inchrease usage
-                                if(neuron.getMappedWeights() != 0 ){
-                                    neuron.updateNeuron(new Neuron());
+                                if (neuron.getMappedWeights() != 0) {
+                                    neuron.updateNeuron(neuron2);
+                                    //set usage level and percentage
+                                    NeuronUsageLevel level_1 = neuron.getUsageLevel();
+                                    NeuronUsageLevel level_2 = neuron2.getUsageLevel();
+                                    level_1.setUsageCount(level_1.getUsageCount() + level_2.getUsageCount());
+                                    level_1.setUsagePercentage(level_1.getUsagePercentage() + level_2.getUsagePercentage());
+                                    neuron.setUsagePercentage(neuron.getUsagePercentage() + neuron2.getUsagePercentage());
                                 }
                                 neuron2.setMappedWeights(0);
 //                                neuron2.getMappedWeights().clear();
@@ -236,8 +237,7 @@ public class SOM2 extends SOM {
                         }
                     }
                 }
-                
-                
+
             }
         }
 
@@ -255,7 +255,7 @@ public class SOM2 extends SOM {
 
                         if (mappedSituations > 0) {
                             Integer distanceFromMean = mappedSituations - averageUsageLevel;
-                            Double percentage = (mappedSituations * 100.d)/numberOfMappedSituations.get();
+                            Double percentage = (mappedSituations * 100.d) / numberOfMappedSituations.get();
                             source.setUsagePercentage(percentage);
 
                             //if more usage than average
@@ -274,15 +274,14 @@ public class SOM2 extends SOM {
                                 Double mappedValue = 0d;
 
                                 //compute the sum of the weights square
-                                for(Double weight: source.getWeights()){
-                                    mappedValue += Math.pow(weight,2);
+                                for (Double weight : source.getWeights()) {
+                                    mappedValue += Math.pow(weight, 2);
                                 }
                                 mappedValueDistanceFromAverage = Math.abs(mappedValue - neuronsAverageMappedValue);
 
-                                if(mappedValueDistanceFromAverage <= neuronsMappedValueStandardDeviation) {
+                                if (mappedValueDistanceFromAverage <= neuronsMappedValueStandardDeviation) {
                                     source.setUsageLevel(NeuronUsageLevel.NEUTRAL);
-                                }else
-                                if (distanceAbsValue > standardDeviation) {
+                                } else if (distanceAbsValue > standardDeviation) {
                                     source.setUsageLevel(NeuronUsageLevel.RARE);
                                 } else if (distanceAbsValue >= partialDeviation && Math.abs(distanceFromMean) <= standardDeviation) {
                                     source.setUsageLevel(NeuronUsageLevel.RARE);
@@ -411,7 +410,6 @@ public class SOM2 extends SOM {
         }
         Double distance = 0d;
 
-
         //update neighbours if needed
         {
             int leftNeighbourI = row;
@@ -422,7 +420,6 @@ public class SOM2 extends SOM {
                 distance += neuron.computeEuclideanDistanceFromNeuronAsSingleValue(neighbour);
             }
         }
-
 
         {
             int rightNeighbourI = row;
@@ -437,7 +434,6 @@ public class SOM2 extends SOM {
         {
             int topNeighbourI = row - 1;
             int topNeighbourJ = column;
-
 
             if (topNeighbourI >= 0 && topNeighbourJ >= 0 && topNeighbourI < elementsNo && topNeighbourJ < elementsNo) {
                 Neuron neighbour = neurons[topNeighbourI][topNeighbourJ];

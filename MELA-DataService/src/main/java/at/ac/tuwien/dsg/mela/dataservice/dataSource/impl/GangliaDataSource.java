@@ -57,8 +57,8 @@ public class GangliaDataSource extends AbstractPollingDataSource {
     private String hostname = DEFAULT_HOST;
 
     private int port = DEFAULT_PORT;
-	
-	public MonitoringData getMonitoringData() throws DataAccessException {
+
+    public MonitoringData getMonitoringData() throws DataAccessException {
 
         // todo: configure dinamically port and IP
         // todo DO NOT RELY ON TELNET being present on the machine, instead use a socket connection
@@ -121,13 +121,12 @@ public class GangliaDataSource extends AbstractPollingDataSource {
                     //for VM level, we use IP as monitored element ID
                     monitoredElement.setId(gangliaHostInfo.ip);
                     monitoredElement.setName(gangliaHostInfo.name);
-                    
+
                     //for the moment we assume all what Ganglia returns is associated to VM level
                     //TODO: consider inserting better level management mechanism in which one data source can return data for multiple levels
                     monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
 
                     elementData.setMonitoredElement(monitoredElement);
-
 
                     //for each metric retrieved from ganglia, create its representation and store it in elementData
                     for (GangliaMetricInfo gangliaMetricInfo : gangliaHostInfo.metrics) {
@@ -142,16 +141,14 @@ public class GangliaDataSource extends AbstractPollingDataSource {
                     monitoringData.addMonitoredElementData(elementData);
                 }
 
-
             }
 
             stringReader.close();
 
             //dataSQLWriteAccess.writeMonitoringData(gangliaClusterInfo);
-
             return monitoringData;
         } catch (Exception e) {
-            Logger.getLogger(this.getClass()).log(Level.ERROR, null,e);
+            Logger.getLogger(this.getClass()).log(Level.ERROR, null, e);
             return new MonitoringData();
         }
     }
@@ -174,13 +171,21 @@ public class GangliaDataSource extends AbstractPollingDataSource {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof GangliaDataSource)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof GangliaDataSource)) {
+            return false;
+        }
 
         GangliaDataSource that = (GangliaDataSource) o;
 
-        if (port != that.port) return false;
-        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) return false;
+        if (port != that.port) {
+            return false;
+        }
+        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) {
+            return false;
+        }
 
         return true;
     }
@@ -194,11 +199,11 @@ public class GangliaDataSource extends AbstractPollingDataSource {
 
     @Override
     public String toString() {
-        return "GangliaDataSource{" +
-                "hostname='" + hostname + '\'' +
-                ", port=" + port +
-                ", pollingInterval=" + getPollingIntervalMs() +
-                "}";
+        return "GangliaDataSource{"
+                + "hostname='" + hostname + '\''
+                + ", port=" + port
+                + ", pollingInterval=" + getPollingIntervalMs()
+                + "}";
     }
 
     /**
@@ -367,11 +372,9 @@ public class GangliaDataSource extends AbstractPollingDataSource {
                     + ", url='" + url + '\''
                     + ", localtime='" + localtime + '\'' + ", hostsInfo=";
 
-
             for (GangliaHostInfo hostInfo : hostsInfo) {
                 info += "\n " + hostInfo.toString() + "\n";
             }
-
 
             info += '}';
             return info;

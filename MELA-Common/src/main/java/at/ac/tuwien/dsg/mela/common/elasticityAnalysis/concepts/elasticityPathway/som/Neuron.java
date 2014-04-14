@@ -37,6 +37,7 @@ public class Neuron implements Serializable { //implements Iterable<Neuron> {
     private List<Double> weights;
     //    private List<Neuron> neighbours;
 //    private List<List<Double>> mappedWeights;
+    //used in determining if the neuron is used or not
     private AtomicInteger mappedWeights;
     private NeuronUsageLevel usageLevel;
     private DecimalFormat df = new DecimalFormat("#.###");

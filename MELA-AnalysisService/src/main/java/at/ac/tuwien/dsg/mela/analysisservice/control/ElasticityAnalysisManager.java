@@ -168,6 +168,29 @@ public class ElasticityAnalysisManager {
 
     }
 
+    public Boolean testIfAllVMsReportMEtricsGreaterThanZero(MonitoredElement element) {
+        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration();
+        if (cxmlr != null) {
+            ServiceMonitoringSnapshot data = persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId());
+            if (data.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT).containsKey(element)) {
+                MonitoredElementMonitoringSnapshot mems = data.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT).get(element);
+                for (MonitoredElementMonitoringSnapshot childSnapshot : mems.getChildren()) {
+                    for (MetricValue metricValue : childSnapshot.getMonitoredData().values()) {
+                        if (metricValue.compareTo(new MetricValue(0)) < 0) {
+                            return false;
+                        }
+                    }
+                }
+            } else {
+                log.error("Monitoring Data not found for " + element.getId());
+                throw new RuntimeException("Monitoring Data not found for " + element.getId());
+            }
+        } else {
+            return true;
+        }
+        return true;
+    }
+
     public synchronized void setRequirements(Requirements requirements) {
         melaApi.sendRequirements(requirements);
 
