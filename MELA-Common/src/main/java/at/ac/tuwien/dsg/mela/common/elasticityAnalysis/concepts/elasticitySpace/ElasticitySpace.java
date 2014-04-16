@@ -30,10 +30,10 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
-public class ElasticitySpace implements Serializable{
+public class ElasticitySpace implements Serializable {
 
     /**
      * The space structure seems a bit odd, but it holds also analysis reports
@@ -43,14 +43,12 @@ public class ElasticitySpace implements Serializable{
      * Currently we see the space recorded in time as a list of entries saying
      * AnalysisReport (violated, not) and monitored snapshot
      */
-    
-    
     private List<ElasticitySpaceEntry> spaceEntries;
     private ElasticitySpaceBoundary elasticitySpaceBoundary;
     private MonitoredElement service;
     //stored monitoring data for easy access -> for a service element, the recorded data for the space dimensions
     private Map<MonitoredElement, Map<Metric, List<MetricValue>>> monitoringData;
-    
+
     //used to referenciate the timestamp at which this space was computed
     //used in space caching
     private int timestampID;
@@ -114,8 +112,6 @@ public class ElasticitySpace implements Serializable{
     public void setTimestampID(int timestampID) {
         this.timestampID = timestampID;
     }
-    
-    
 
     public List<ElasticitySpaceEntry> getSpaceEntries() {
         return spaceEntries;
@@ -136,7 +132,13 @@ public class ElasticitySpace implements Serializable{
         queue.add(this.service);
         while (!queue.isEmpty()) {
             MonitoredElement element = queue.remove(0);
+
             queue.addAll(element.getContainedElements());
+            //VM monitored elements should NOT be kept in space
+            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
+                continue;
+            }
+
             MonitoredElementMonitoringSnapshot snapshot = serviceMonitoringSnapshot.getMonitoredData(element);
             Map<Metric, List<MetricValue>> data = monitoringData.get(element);
             for (Metric metric : snapshot.getMetrics()) {
@@ -175,7 +177,7 @@ public class ElasticitySpace implements Serializable{
         return service;
     }
 
-    public class ElasticitySpaceEntry implements Serializable{
+    public class ElasticitySpaceEntry implements Serializable {
 
         private AnalysisReport analysisReport;
         private ServiceMonitoringSnapshot serviceMonitoringSnapshot;

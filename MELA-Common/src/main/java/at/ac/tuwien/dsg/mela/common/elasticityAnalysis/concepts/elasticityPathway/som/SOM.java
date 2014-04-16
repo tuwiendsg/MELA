@@ -573,9 +573,9 @@ public class SOM implements Iterable<Neuron>, Serializable {
 //        source.updateUsageLevel(usageMeanAndStdDev[0],usageMeanAndStdDev[1]);
         final Integer averageUsageLevel = usageMeanAndStdDev [ 0 ];
         final Integer standardDeviation = usageMeanAndStdDev [ 1 ];
-        Thread t = new Thread(){
-            @Override
-            public void run() {
+//        Thread t = new Thread(){
+//            @Override
+//            public void run() {
                 int mappedSituations = source.getMappedWeights();
 
                 Integer partialDeviation = new Double(standardDeviation * toleranceRange).intValue();
@@ -606,10 +606,10 @@ public class SOM implements Iterable<Neuron>, Serializable {
                 } else {
                     source.setUsageLevel(NeuronUsageLevel.RARE);
                 }
-            }
-        };
-
-        t.run();
+//            }
+//        };
+//        t.setDaemon(true);
+//        t.start();
     }
 
 

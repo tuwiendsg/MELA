@@ -45,6 +45,11 @@ public class ElasticityBehavior {
 
         Map<MonitoredElement, Map<Metric, List<MetricValue>>> spaceData = elasticitySpace.getMonitoringData();
         for (MonitoredElement element : spaceData.keySet()) {
+
+            //VM monitored elements DO NOT HAVE boundaries
+            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
+                continue;
+            }
             List<ElasticityBehaviorDimension> elementDimensions = new ArrayList<ElasticityBehaviorDimension>();
 
             Map<Metric, List<MetricValue>> values = spaceData.get(element);
