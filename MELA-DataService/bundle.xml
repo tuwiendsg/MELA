@@ -8,9 +8,9 @@
         </formats>
 
         <fileSets>
-                <fileSet>
-                        <directory>${project.basedir}/src/main/resources/etc</directory>
-                        <outputDirectory>/etc</outputDirectory>
+                 <fileSet>
+                        <directory>${project.basedir}/config</directory>
+                        <outputDirectory>/config</outputDirectory>
                 </fileSet>
 
                 <fileSet>
