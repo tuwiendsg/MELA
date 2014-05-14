@@ -93,6 +93,9 @@ public class DataCollectionService {
     @Value("${monitoring.aggregation.windowsize:2}")
     private int aggregationWindowsCount;
 
+    @Value("${dataservice.behavior.monitoring}")
+    private boolean monitoring;
+
     private Timer monitoringTimer;
 
     // holding MonitoredElement name, and Actions Name
@@ -125,8 +128,12 @@ public class DataCollectionService {
             aggregationWindowsCount = monitoringIntervalInSeconds;
         }
 
+        if (monitoring) {
+            startMonitoring();
+        }
+
     }
-    
+
     public synchronized MonitoredElement getServiceConfiguration() {
         return serviceConfiguration;
     }
@@ -134,7 +141,7 @@ public class DataCollectionService {
     public synchronized void addExecutingActions(List<Action> actions) {
         actionsInExecution.addAll(actions);
     }
-    
+
     public synchronized void setConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
 
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
@@ -153,7 +160,7 @@ public class DataCollectionService {
     public synchronized void removeExecutingActions(List<Action> actions) {
         actionsInExecution.removeAll(actions);
     }
-    
+
     public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
         this.serviceConfiguration = serviceConfiguration;
         monitoringTimer.cancel();
@@ -164,7 +171,7 @@ public class DataCollectionService {
 
         startMonitoring();
     }
-    
+
     public synchronized void setRequirements(Requirements requirements) {
         this.requirements = requirements;
 
@@ -196,7 +203,7 @@ public class DataCollectionService {
             }
         }
         persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
-        
+
     }
 
     public synchronized void setCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
@@ -212,7 +219,7 @@ public class DataCollectionService {
 
             List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
             queue.add(compositionRule.getOperation());
-            
+
             while (!queue.isEmpty()) {
                 CompositionOperation operation = queue.remove(0);
                 queue.addAll(operation.getSubOperations());
@@ -244,7 +251,7 @@ public class DataCollectionService {
             return new ServiceMonitoringSnapshot();
         }
     }
-    
+
     public synchronized ServiceMonitoringSnapshot getAggregatedMonitoringDataOverTime(List<ServiceMonitoringSnapshot> serviceMonitoringSnapshots) {
         if (serviceMonitoringSnapshots.size() > 1) {
             return instantMonitoringDataEnrichmentEngine.aggregateMonitoringDataOverTime(compositionRulesConfiguration, serviceMonitoringSnapshots);
@@ -252,7 +259,7 @@ public class DataCollectionService {
             return instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, serviceMonitoringSnapshots.get(0));
         }
     }
-    
+
     public synchronized Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement MonitoredElement) {
         if (dataAccess != null) {
             return dataAccess.getAvailableMetricsForMonitoredElement(MonitoredElement);
@@ -261,7 +268,7 @@ public class DataCollectionService {
             return new ArrayList<Metric>();
         }
     }
-    
+
     public synchronized void addMetricFilter(MetricFilter metricFilter) {
         if (dataAccess != null) {
             dataAccess.addMetricFilter(metricFilter);
@@ -269,7 +276,7 @@ public class DataCollectionService {
             log.warn("Data Access source not set yet on SystemControl");
         }
     }
-    
+
     public synchronized void addMetricFilters(Collection<MetricFilter> newFilters) {
         if (dataAccess != null) {
             dataAccess.addMetricFilters(newFilters);
@@ -277,7 +284,7 @@ public class DataCollectionService {
             log.warn("Data Access source not set yet on SystemControl");
         }
     }
-    
+
     public synchronized void removeMetricFilter(MetricFilter metricFilter) {
         if (dataAccess != null) {
             dataAccess.removeMetricFilter(metricFilter);
@@ -285,7 +292,7 @@ public class DataCollectionService {
             log.warn("Data Access source not set yet on SystemControl");
         }
     }
-    
+
     public synchronized void removeMetricFilters(Collection<MetricFilter> filtersToRemove) {
         if (dataAccess != null) {
             dataAccess.removeMetricFilters(filtersToRemove);
@@ -293,11 +300,11 @@ public class DataCollectionService {
             log.warn("Data Access source not set yet on SystemControl");
         }
     }
-    
+
     public synchronized void setMonitoringIntervalInSeconds(int monitoringIntervalInSeconds) {
         this.monitoringIntervalInSeconds = monitoringIntervalInSeconds;
     }
-    
+
     public synchronized void setNrOfMonitoringWindowsToAggregate(int aggregationIntervalInSeconds) {
         this.aggregationWindowsCount = aggregationIntervalInSeconds;
     }
@@ -320,21 +327,21 @@ public class DataCollectionService {
         }
 
         monitoringTimer = new Timer();
-        
+
         task = new TimerTask() {
             @Override
             public void run() {
                 if (serviceConfiguration != null) {
                     log.debug("Refreshing data");
                     ServiceMonitoringSnapshot monitoringData = getRawMonitoringData();
-                    
+
                     if (monitoringData != null) {
                         historicalMonitoringData.add(monitoringData);
                         // remove the oldest and add the new value always
                         if (historicalMonitoringData.size() > aggregationWindowsCount) {
                             historicalMonitoringData.remove(0);
                         }
-                        
+
                         if (compositionRulesConfiguration != null) {
                             ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
                             latestMonitoringData.setExecutingActions(actionsInExecution);
@@ -387,9 +394,9 @@ public class DataCollectionService {
         log.debug("Scheduling data pool at " + monitoringIntervalInSeconds + " seconds");
         // repeat the monitoring every monitoringIntervalInSeconds seconds
         monitoringTimer.schedule(task, 0, monitoringIntervalInSeconds * 1000);
-        
+
     }
-    
+
     public synchronized void stopMonitoring() {
         /*try {
          persistenceSQLAccess.closeConnection();

@@ -19,9 +19,29 @@
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
-public abstract class AbstractPushDataSource implements AbstractDataSource{
+public abstract class AbstractPushDataSource implements AbstractDataSource {
+
+    //data is being pushed into this data cache, replacing old data
+    protected MonitoringData freshestData;
+
+    {
+        freshestData = new MonitoringData();
+        freshestData.setSource("AbstractPushDataSource");
+
+    }
+
+    public void pushData(MonitoredElementData monitoredElementData) {
+        if (freshestData.getMonitoredElementDatas().contains(monitoredElementData)) {
+            freshestData.getMonitoredElementDatas().remove(monitoredElementData);
+        }
+        freshestData.getMonitoredElementDatas().add(monitoredElementData);
+    }
+
 }

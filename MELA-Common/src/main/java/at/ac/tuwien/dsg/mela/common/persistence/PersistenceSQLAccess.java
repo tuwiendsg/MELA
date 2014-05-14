@@ -19,26 +19,19 @@
  */
 package at.ac.tuwien.dsg.mela.common.persistence;
 
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.ServiceElasticityDependencies;
 
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -59,8 +52,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -105,8 +96,6 @@ public class PersistenceSQLAccess {
     public JdbcTemplate getJdbcTemplate() {
         return jdbcTemplate;
     }
-    
-    
 
     /**
      * @param monitoringData MonitoringData objects collected from different
@@ -193,7 +182,6 @@ public class PersistenceSQLAccess {
         jdbcTemplate.update(sql, timestamp, elasticityPathway);
     }
 
-
     public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID) {
         String sql = "SELECT timestampID, elasticitySpace from ElasticitySpace where monSeqID=?;";
         RowMapper<ElasticitySpace> rowMapper = new RowMapper<ElasticitySpace>() {
@@ -213,6 +201,24 @@ public class PersistenceSQLAccess {
         } else {
             return space.get(0);
         }
+    }
+
+    /**
+     * 
+     * @param monitoringSequenceID 
+     * @return IDs for all timestamps recorded for the supplied monitoringSequenceID
+     */
+    public List<Integer> getTimestampIDs(String monitoringSequenceID) {
+        String sql = "SELECT id from Timestamp where monSeqID=?;";
+        RowMapper<Integer> rowMapper = new RowMapper<Integer>() {
+            public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Integer id = rs.getInt(1);
+
+                return id;
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
     }
 
     public MonitoringData getRawMonitoringData(String monitoringSequenceID, String timestampID) {
@@ -270,7 +276,6 @@ public class PersistenceSQLAccess {
 
         return monitoringData;
     }
- 
 
     public LightweightEncounterRateElasticityPathway extractLatestElasticityPathway(String monitoringSequenceID) {
         String sql = "SELECT elasticityPathway from ElasticityPathway where monSeqID=?;";

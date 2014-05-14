@@ -19,5 +19,16 @@
             </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
+    
+    <xsd:element name="replay-datasource">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="beans:identifiedType">
+                    <xsd:attribute name="monitoringSequenceID" type="xsd:string" use="required"/>
+                    <xsd:attribute name="polling-interval-ms" type="xsd:int" use="optional" default="1000"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
 
 </xsd:schema>

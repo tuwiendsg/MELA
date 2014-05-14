@@ -13,6 +13,8 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by omoser on 2/14/14.
@@ -20,15 +22,17 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 @Provider
 @Component
 public class MelaElasticityAnalysisServiceExceptionMapper implements ExceptionMapper<Exception> {
-
+    
+    static final Logger log = LoggerFactory.getLogger(MelaElasticityAnalysisServiceExceptionMapper.class);
+    
     @Autowired
     DocumentationProvider documentationProvider;
-
+    
     @PostConstruct
     public void init() {
         System.out.println("initialized");
     }
-
+    
     public Response toResponse(Exception exception) {
         if (exception instanceof ServiceElementNotFoundException) {
             return Response
@@ -42,48 +46,47 @@ public class MelaElasticityAnalysisServiceExceptionMapper implements ExceptionMa
         }
 
 //        return Response.serverError().entity("Internal Error: " + exception.getMessage()).build();
+        log.error("Internal error", exception);
         return Response.serverError().entity("Internal Error: " + exception).build();
     }
-
-
+    
     class ErrorResponse {
-
+        
         private int code;
-
+        
         private String message;
-
+        
         private String documentationUri;
-
+        
         @JsonProperty("error-code")
         public int getCode() {
             return code;
         }
-
+        
         @JsonProperty("error-message")
         public String getMessage() {
             return message;
         }
-
+        
         @JsonProperty("documentation-uri")
         public String getDocumentationUri() {
             return documentationUri;
         }
-
+        
         public ErrorResponse withDocumentationUri(final String documentationUri) {
             this.documentationUri = documentationUri;
             return this;
         }
-
+        
         public ErrorResponse withCode(final int code) {
             this.code = code;
             return this;
         }
-
+        
         public ErrorResponse withMessage(final String message) {
             this.message = message;
             return this;
         }
-
-
+        
     }
 }

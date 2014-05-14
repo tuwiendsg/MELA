@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -49,7 +50,7 @@ public class PersistenceDelegate {
     public void writeMonitoringSequenceId(String sequenceId) {
         persistenceSQLAccess.writeMonitoringSequenceId(sequenceId);
     }
- 
+
     public void writeRawMonitoringData(String timestamp, Collection<MonitoringData> monitoringData, String monitoringSequenceID) {
         persistenceSQLAccess.writeRawMonitoringData(timestamp, monitoringData, monitoringSequenceID);
     }
@@ -61,7 +62,14 @@ public class PersistenceDelegate {
     public void writeMonitoringData(String timestamp, ServiceMonitoringSnapshot monitoringSnapshot, String monitoringSequenceID) {
         persistenceSQLAccess.writeMonitoringData(timestamp, monitoringSnapshot, monitoringSequenceID);
     }
- 
+
+    public List<Integer> getTimestampIDs(String monitoringSequenceID) {
+        return persistenceSQLAccess.getTimestampIDs(monitoringSequenceID);
+    }
+
+    public MonitoringData getRawMonitoringData(String monitoringSequenceID, String timestampID) {
+        return persistenceSQLAccess.getRawMonitoringData(monitoringSequenceID, timestampID);
+    }
 
     public ConfigurationXMLRepresentation getLatestConfiguration() {
         ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration();

@@ -9,5 +9,6 @@ public class MelaNamespaceHandler extends NamespaceHandlerSupport {
 
     public void init() {
         registerBeanDefinitionParser("ganglia-datasource", new GangliaDataSourceBeanDefinitionParser());
+        registerBeanDefinitionParser("replay-datasource", new ReplayDataSourceBeanDefinitionParser());
     }
 }
