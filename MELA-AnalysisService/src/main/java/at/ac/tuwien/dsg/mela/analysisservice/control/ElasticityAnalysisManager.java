@@ -442,7 +442,7 @@ public class ElasticityAnalysisManager {
     public synchronized String getLatestMonitoringDataINJSON() {
         
         Date before = new Date();
-        ConfigurationXMLRepresentation cfg = null; persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(cfg.getServiceConfiguration().getId());
         Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysisResult = instantMonitoringDataAnalysisEngine.analyzeRequirements(serviceMonitoringSnapshot, cfg.getRequirements()).getRequirementsAnalysisResult();
 
