@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="MonitoredElement" type="monitoredElement"/>
+
+  <xs:element name="MonitoredElementLevel" type="monitoredElementLevel"/>
+
+  <xs:complexType name="applicationComponentIterator">
+    <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="monitoredElement">
+    <xs:sequence>
+      <xs:element ref="MonitoredElement" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+    <xs:attribute name="level" type="monitoredElementLevel" use="required"/>
+  </xs:complexType>
+
+  <xs:simpleType name="monitoredElementLevel">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SERVICE"/>
+      <xs:enumeration value="SERVICE_TOPOLOGY"/>
+      <xs:enumeration value="SERVICE_UNIT"/>
+      <xs:enumeration value="VM"/>
+      <xs:enumeration value="VIRTUAL_CLUSTER"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+

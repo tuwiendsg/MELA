@@ -1,99 +1,213 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+        <!--[if lt IE 9]>
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
 
-    <title>Mela by tuwiendsg</title>
-  </head>
+        <title>Mela by tuwiendsg</title>
 
-  <body>
-    <header>
-      <div class="inner">
-        <h1>Mela</h1>
-        <h2>Monitoring and analyzing elasticity of cloud services</h2>
-        <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
-      </div>
-    </header>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript">
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h2>
-<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+            $(document).ready(function() {
+                var top = $('#navibar').offset().top - parseFloat($('#navibar').css('marginTop').replace(/auto/, 100));
+                $(window).scroll(function(event) {
+                    // what the y position of the scroll is
+                    var y = $(this).scrollTop();
 
-<p>MELA is a framework for elasticity space monitoring and analysis as a service, and provides three features:</p>
+                    // whether that's below the form
+                    if (y >= top) {
+                        // if so, ad the fixed class
+                        $('#navibar').addClass('fixed');
+                    } else {
+                        // otherwise remove it
+                        $('#navibar').removeClass('fixed');
+                    }
+                });
+            });</script>
 
-<ol>
-<li>Monitoring data structuring and enrichment</li>
-<li>Elasticity Space and Boundary analysis</li>
-<li>Elasticity Pathway analysis</li>
-</ol><h2>
-<a name="background" class="anchor" href="#background"><span class="octicon octicon-link"></span></a>Background</h2>
+        <script>
+            (function(i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                i[r] = i[r] || function() {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+                a = s.createElement(o),
+                        m = s.getElementsByTagName(o)[0];
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-<p>In order to analyze the elastic behavior of cloud services, MELA uses the concept of elasticity boundary. An elasticity boundary describes the upper and lower allowed values over a set of metrics for a Cloud application. Another MELA core concept is elasticity space. An elasticity space is determined via an elasticity space function and captures all runtime metrics described in the user-defined elasticity boundary when a monitored element is in elastic behavior.  Based on the elasticity space, MELA provides a mechanism for extracting characteristics of the elasticity space that can be used to predict its behavior, characteristics called “elasticity pathway”.  An elasticity pathway function is designed to perform a complex evaluation of the cloud service behavior, extracting characteristics that can be used to predict its behavior. </p>
+            ga('create', 'UA-43025584-5', 'tuwiendsg.github.io');
+            ga('send', 'pageview');
 
-<p>MELA contains a core MELA Service, and a lightweight Data Collector node (Figure 19). The Data Collector node is a customizable component that gathers from existing monitoring solutions monitoring data, associates it with the application structure (e.g., VM metrics or Service Level metrics), and sends it for processing and analysis to the MELA Service. </p>
+        </script>
 
-<p>Monitoring data is usually associated with a single level, e.g., virtual infrastructure, service topology or service unit.  An important MELA feature is the linking of these levels through multi-level metric aggregation, which implies a configuration, defining for the monitored elements at each level metric composition operations to be applied. </p>
+    </head>
 
-<p>All functionality is exposed through REST services.</p>
+    <body>
+        <header>
+            <div class="inner">
+                <h1>MELA</h1>
+                <h2>Monitoring and analyzing elasticity of cloud services</h2>
+                <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+            </div>
+        </header>
 
-<p>For compiling and deploying MELA check <a href="https://github.com/tuwiendsg/MELA/wiki/Compiling-and-Deployment"> Compiling and Deployment section </a> </p>
+        <div id="content-wrapper">
 
-<h2>
-<a name="acknowledgment" class="anchor" href="#acknowledgment"><span class="octicon octicon-link"></span></a>Acknowledgment</h2>
+            <aside id="navibar">
 
-<p>This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 #317790)</p>
+                <div id="nav">
+                    <ul>
+                        <li><a href="./index.html" id="homenav">Home</a>
+                            <ul>
+                                <li><a href="#introduction"  >What is MELA</a>
+                                <li><a href="#features"  >Features</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="./background.html" id="Background">Background</a></li>
+                        <li><a href="./guide.html" id="guide">How does MELA work?</a>    
+                        <li><a href="./contact.html" id="contactnav">Contact</a></li>
+                    </ul>
 
-<p>For any research work in which MELA is used, please cite the following articles:</p>
+                </div>
+            </aside>
 
-<ul>
-<li>Daniel Moldovan, Georgiana Copil, Hong-Linh Truong, Schahram Dustdar, <a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6753781">MELA: Monitoring and Analyzing Elasticity of Cloud Services</a>, 5'th International Conference on Cloud Computing, CloudCom. Bristol, UK, 2-5 December, 2013, </li>
-</ul><h2>
-<a name="links" class="anchor" href="#links"><span class="octicon octicon-link"></span></a>Links</h2>
+            <div class="inner clearfix">
+                <section id="main-content">
+                    <h1>
+                        <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>What is MELA?</h1>
 
-<ul>
-<li>Celar EU FP7 project <a href="http://www.celarcloud.eu/">http://www.celarcloud.eu/</a>
-</li>
-<li>Vienna Elastic Computing Model (more prototypes and information) <a href="http://www.infosys.tuwien.ac.at/research/viecom/">http://www.infosys.tuwien.ac.at/research/viecom/</a>
-</li>
-<li>MELA Demo video <a href="http://www.infosys.tuwien.ac.at/research/viecom/mela/">http://www.infosys.tuwien.ac.at/research/viecom/mela/</a>
-</li>
-</ul><h2>
-<a name="contact" class="anchor" href="#contact"><span class="octicon octicon-link"></span></a>Contact</h2>
+                    <p> Note: From here onwards we will refer to services and cloud applications with the same "services" term.  </p>
 
-<ul>
-<li>E-Mail d.moldovan [at] tuwien.ac.at (<a href="http://www.infosys.tuwien.ac.at/staff/dmoldovan/">http://www.infosys.tuwien.ac.at/staff/dmoldovan/</a>)</li>
-</ul>
-        </section>
+                    <div id="whatMelaISList"> <p>
+                        <ul> <h2> What MELA is: </h2>
+                            <li> a tool for monitoring and analysis of elastic cloud services </li>
+                            <li> designed with elasticity analysis in mind</li>
+                            <li> a tool for structuring and enriching information collected from existing monitoring solutions (e.g., <a href="http://ganglia.sourceforge.net/">Ganglia)</a></i>                 
+                            <li> a tool for discovering boundaries and patterns in elasticity behavior of cloud services </i>
+                                <!--<li> can be used standalone, or as support for an elasticity controller (e.g., <a href="https://github.com/tuwiendsg/rSYBL">rSYBL</a>)</li>-->
+                                <!--<li> runs on top existing monitoring solutions (e.g., <a href="http://ganglia.sourceforge.net/">Ganglia</a>) </li> -->
+                        </ul>  </p>
+                    </div>
 
-        <aside id="sidebar">
-          <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
+                    <div id="whatMelaISNOTList">  <p> 
+                        <ul> <h2>What MELA is NOT:</h2>
+                            <li> a standalone cloud monitoring tool </li>
+                            <li> a replacement for existing cloud monitoring tools</li>
+                        </ul>  
+                        </p> </div>
 
-          <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+                    <p>For more information on the motivation behind MELA, check the <a href="./background.html" id="Background">Background</a> section. </p>           
 
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
-    </div>
 
-  
-  </body>
+                    <h1>
+                        <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h1	>
+
+
+                    <div id="feature">
+                        <h3>Designed with virtual infrastructure volatility in mind</h3>
+                        <div  >
+
+                            <p align="left" style="text-align:left; width:80%">
+                                Traditional monitoring systems such as <a href="http://ganglia.sourceforge.net/">Ganglia</a> or <a href="http://www.nagios.org/">Nagios</a>
+                                are designed to monitor infrastructures which have low volatility, 
+                                i.e., change at a very low rate, and assume a monitored node/machine dies only if an error occurs. 
+                                </br> </br> MELA differs, as it assumes virtual machines are volatile, and only the service running those virtual machines is persistent.
+                                Thus, MELA associates monitoring information with the service structure, without loosing information if VMs disappear.
+                            </p></div>
+                        <figure >
+                            <img src="images/volatility.png" alt="Elastic Cloud Service" style="padding-left: 20%" />
+                        </figure>
+                    </div>
+
+                    <div id="feature">
+                        <h3>Associates service structure with monitoring information</h3>
+                        <div  >
+
+                            <p align="left" style="text-align:left; width:80%">
+                                Traditional monitoring systems associate monitoring information (i.e., metrics) with individual VMs or virtual clusters.
+                                As the virtual infrastructure running elastic cloud services is volatile, MELA allows associating metrics to logical service elements: service units, topology, or whole service.
+                                This enables analysis of service unit behavior, irrespective if or or more service unit instances run on one or multiple virtual machines.
+                            </p></div>
+                        <figure >
+                            <img src="images/structuring.png" alt="Associating structure to monitoring data"  style="padding-left: 20%" />
+                        </figure>
+                    </div>
+
+
+                    <div id="feature">
+                        <h3>Enriches monitoring information</h3>
+                        <div  >
+
+                            <p align="left" style="text-align:left; width:80%">
+                                Traditional monitoring systems just collect monitoring information, and do not enrich it with information hard to monitor directly, such as 
+                                virtual infrastructure usage cost.
+
+                                As elasticity of cloud services revolves around resources elasticity (allocation, deallocation), quality elasticity (increase/decrease), 
+                                and cost elasticity (changing pricing schemes, increasing/decreasing cost), only directly monitored information is not sufficient for analyzing the elasticity of cloud services. 
+                                MELA provides users the ability of defining custom metric composition and aggregation rules. Using such rules, one can create new metrics based on existing ones, add enrich collected information
+                                with information hard to monitor directly, such as cost.                                
+
+                            </p></div>
+                        <figure >
+                            <img src="images/enriching.png" alt="Enriching monitoring information" style="padding-left: 20%" />
+                        </figure>
+                    </div>
+
+                    <div id="feature">
+                        <h3><span>Analyzes elasticity boundaries of cloud services</span></h3>
+                        <div>
+
+                            <p align="left" style="text-align:left; width:80%">
+                                The service units, topologies and whole cloud service have elasticity boundaries on the  service metrics (i.e., service elasticity dimensions) important for the MELA user.
+                                These boundaries are requirements expressed over the service metrics, which need to be enforced by elasticity controllers. Simple boundaries could be "response time &lt; X", 
+                                "latency &lt; Y". A higher level requirement could be "cost/client/hour &lt; Z$". 
+                                </br>  </br> Unfortunately, many times the complete boundaries needed to control the service are not known in advanced. For example, a service owner might know 
+                                that s/he wants a cost less than 10$/hour, but might have no idea on what the values of CPU usage or response time need to be for the cost requirement to be fulfilled.
+                                Knowing the complete boundaries is crucial for elasticity controllers which must determine what is the cause of requirements violation. For example, if the previous "cost" 
+                                requirement must be enforced, a controller must decide if the cost is too high due low number of clients, which means resources are underused and a SCALE IN is needed, or due to 
+                                very high response time, which means resources are overused and a SCALE OUT is needed. 
+
+                                </br> </br> MELA provides functionality for determining, from real-time monitoring information, the elasticity boundaries of all metrics recorded for a service, thus allowing a human user 
+                                or automated controller to analyze which metrics do not respect their individual boundaries, and take appropriate actions.
+
+                            </p></div>
+                        <figure >
+                            <img src="images/elBoundary.png" alt="Elasticity Space, Boundary and Pathway"    style="padding-left: 20%" />
+                        </figure>
+                    </div>
+
+
+                </section>
+                c	  
+
+
+                <aside id="sidebar">
+                    <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+                        <small>Download</small>
+                        .zip file
+                    </a>
+                    <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+                        <small>Download</small>
+                        .tar.gz file
+                    </a>
+
+                    <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+                </aside>
+            </div>
+        </div>
+    </body>
 </html>

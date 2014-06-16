@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Mela by tuwiendsg</title>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript">
+
+            $(document).ready(function() {
+                var top = $('#navibar').offset().top - parseFloat($('#navibar').css('marginTop').replace(/auto/, 100));
+                $(window).scroll(function(event) {
+                    // what the y position of the scroll is
+                    var y = $(this).scrollTop();
+
+                    // whether that's below the form
+                    if (y >= top) {
+                        // if so, ad the fixed class
+                        $('#navibar').addClass('fixed');
+                    } else {
+                        // otherwise remove it
+                        $('#navibar').removeClass('fixed');
+                    }
+                });
+            });</script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-43025584-5', 'tuwiendsg.github.io');
+  ga('send', 'pageview');
+
+</script>
+
+
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Background</h1>
+        <h2>Monitoring elastic cloud services</h2>
+        <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+
+ <aside id="navibar">
+      
+	<div id="nav">
+	 <ul>
+		<li><a href="./index.html" id="homenav">Home</a></li>
+		<li><a href="./background.html" id="Background">Background</a>
+		<ul>
+                                <li><a href="#introduction"  >What is an elastic service?</a>
+                                <li><a href="#motivation"  >Challenges</a></li>
+                            </ul>
+   
+                </li>
+                <li><a href="./guide.html" id="guide">How does MELA work?</a>    
+	        <li><a href="./contact.html" id="contactnav">Contact</a></li>
+	    </ul>
+
+        </div>
+</aside>
+
+
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>What is an elastic service?</h1>
+
+<p> Note: From here onwards we will refer to services and cloud applications with the same "services" term.  </p>
+
+<p>We consider that any <i>elastic service</i> provides a series of <i>elasticity capabilities</i>, allowing dynamic service reconfiguration during its run-time. Leveraging on the power of cloud computing, an  elastic cloud service can change its structure/topology at run-time as to maintain some predefined performance, quality and cost requirements.</p>
+
+<p>To illustrate the concept of elastic service, let us consider the following example. We have a data-as-a-service (DaaS) application for an M2M cloud platform-as-a-service, for which we have user-defined elasticity requirements w.r.t service run-time performance and cost (e.g., overall response time &lt; X, and cost/client/h &lt; Y$).
+</br>
+Conceptually, we consider any cloud service as composed of:
+<ul>
+ <li>service units</lii>: functional entities of a cloud service, i.e., component having some functionality, 
+ <li>service topologies</lii>: logical groupings of service units, e.g., a data or business tier 
+ <li>virtual machines (VMs)</lii>: representing the underlying cloud infrastructure, each VM running one or more <i>instances</i> of service units
+</ul>
+</br>
+<center>
+<figure>
+ <img src="images/daas.png" alt="Elastic Cloud Service" width="70%" />
+  <figcaption>Figure 1: Elastic Cloud Service</figcaption>
+</figure>
+</center>
+
+</br>
+Returning to our example, the DaaS from <b>Figure 1</b> has two service topologies, <i> Data End</i> and <i> Event Processing </i>, supporting horizontal scaling by addition and removal of VMs. The <i> Data End</i> service topology includes two service units, a <i> Data Node</i> holding data, and a <i> Data Controller</i> managing it. The <i> Event Processing</i> service topology also contains two service units: <i> Load Balancer</i>, distributing client requests, and <i> Event Processing</i> interacting with the <i> Data End</i> and processing data. A
+</br>
+At run-time, due to user-defined elasticity requirements, service unit instances are added/removed dynamically, triggering allocation and deallocation of virtual machines at the virtual infrastructure level. 
+To enforce such requirements at the virtual infrastructure level, i.e. when to add/remove a VM, of what type, under which pricing scheme, the requirements need to be linked and mapped to the run-time service structure. Monitoring data from the run-time view must also be linked back to the user-defined elasticity requirements. 
+
+<h1><a name="motivation" class="anchor" href="#motivation"><span class="octicon octicon-link"></span></a>Challenges in monitoring and analyzing elastic cloud services</h1>
+
+Due to elasticity requirements w.r.t. the cost, quality and performance of individual service units or the whole service, during run-time, <i> elasticity controllers</i> enforce the service's elasticity capabilities as to fulfill the requirements. 
+
+</br> In <b>Figure 2</b> we depict an example of cloud service configuration, in which one virtual machine runs a single instance of a service unit. In this case, when scaling the service unit, the controller adds/removes virtual machines, each running an Event Processing instance. 
+
+</br></br>
+<figure>
+ <img src="images/elasticService_scaling_ep.png" alt="Scaling" width="100%" />
+  <figcaption>Figure 2: Scaling Event Processing Service Unit</figcaption>
+</figure>
+ 
+</br> 
+
+Thus, at run-time (<b>Figure 3</b>, the virtual machines used by the service unit change, new machines being deployed and running machines being destroyed, depending on run-time performance and cost. 
+ 
+</br></br> 
+ 
+<figure>
+ <img src="images/eventProcessingVMUSage.png" alt="VMs used" width="100%" />
+  <figcaption>Figure 3: VMs used by Event Processing Service Unit during its lifetime</figcaption>
+</figure>
+
+
+</br>
+ 
+<h2>Challenges:</h2>
+From the previous example, we can see the following challenges in monitoring elastic cloud services:
+<ul>
+   <li>VMs used by service units change during the service's run-time -> There is a need to collect, keep and associate monitoring information with the service unit, not just VM </li> 
+   <li>Owners of cloud services might be interested in different monitoring information at different levels (topology or unit)</li>
+</ul>
+
+In <b>conclusion</b>, the VM monitoring paradigm in which the virtual machine is the core monitored entity is not sufficient for supporting elasticity controllers. We need something more than just monitoring information associated with VMs possibly grouped in clusters, as more service topologies could have different service units deployed over virtual machines in the same or different virtual clusters (e.g, high network performance clusters). With this in mind, we have developed <b>MELA</b> for monitoring and analyzing the elasticity behavior of cloud applications.
+
+ 
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+        </aside>
+
+
+  
+      </div>
+    </div>
+
+  
+  </body>
+</html>
