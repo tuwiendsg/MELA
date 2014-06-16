@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Mela by tuwiendsg</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Mela</h1>
+        <h2>Monitoring and analyzing elasticity of cloud services</h2>
+        <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>MELA is a framework for elasticity space monitoring and analysis as a service, and provides three features:</p>
+
+<ol>
+<li>Monitoring data structuring and enrichment</li>
+<li>Elasticity Space and Boundary analysis</li>
+<li>Elasticity Pathway analysis</li>
+</ol><h2>
+<a name="background" class="anchor" href="#background"><span class="octicon octicon-link"></span></a>Background</h2>
+
+<p>In order to analyze the elastic behavior of cloud services, MELA uses the concept of elasticity boundary. An elasticity boundary describes the upper and lower allowed values over a set of metrics for a Cloud application. Another MELA core concept is elasticity space. An elasticity space is determined via an elasticity space function and captures all runtime metrics described in the user-defined elasticity boundary when a monitored element is in elastic behavior.  Based on the elasticity space, MELA provides a mechanism for extracting characteristics of the elasticity space that can be used to predict its behavior, characteristics called “elasticity pathway”.  An elasticity pathway function is designed to perform a complex evaluation of the cloud service behavior, extracting characteristics that can be used to predict its behavior. </p>
+
+<p>MELA contains a core MELA Service, and a lightweight Data Collector node (Figure 19). The Data Collector node is a customizable component that gathers from existing monitoring solutions monitoring data, associates it with the application structure (e.g., VM metrics or Service Level metrics), and sends it for processing and analysis to the MELA Service. </p>
+
+<p>Monitoring data is usually associated with a single level, e.g., virtual infrastructure, service topology or service unit.  An important MELA feature is the linking of these levels through multi-level metric aggregation, which implies a configuration, defining for the monitored elements at each level metric composition operations to be applied. </p>
+
+<p>All functionality is exposed through REST services.</p>
+
+<p>For compiling and deploying MELA check <a href="https://github.com/tuwiendsg/MELA/wiki/Compiling-and-Deployment"> Compiling and Deployment section </a> </p>
+
+<h2>
+<a name="acknowledgment" class="anchor" href="#acknowledgment"><span class="octicon octicon-link"></span></a>Acknowledgment</h2>
+
+<p>This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 #317790)</p>
+
+<p>For any research work in which MELA is used, please cite the following articles:</p>
+
+<ul>
+<li>Daniel Moldovan, Georgiana Copil, Hong-Linh Truong, Schahram Dustdar, <a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6753781">MELA: Monitoring and Analyzing Elasticity of Cloud Services</a>, 5'th International Conference on Cloud Computing, CloudCom. Bristol, UK, 2-5 December, 2013, </li>
+</ul><h2>
+<a name="links" class="anchor" href="#links"><span class="octicon octicon-link"></span></a>Links</h2>
+
+<ul>
+<li>Celar EU FP7 project <a href="http://www.celarcloud.eu/">http://www.celarcloud.eu/</a>
+</li>
+<li>Vienna Elastic Computing Model (more prototypes and information) <a href="http://www.infosys.tuwien.ac.at/research/viecom/">http://www.infosys.tuwien.ac.at/research/viecom/</a>
+</li>
+<li>MELA Demo video <a href="http://www.infosys.tuwien.ac.at/research/viecom/mela/">http://www.infosys.tuwien.ac.at/research/viecom/mela/</a>
+</li>
+</ul><h2>
+<a name="contact" class="anchor" href="#contact"><span class="octicon octicon-link"></span></a>Contact</h2>
+
+<ul>
+<li>E-Mail d.moldovan [at] tuwien.ac.at (<a href="http://www.infosys.tuwien.ac.at/staff/dmoldovan/">http://www.infosys.tuwien.ac.at/staff/dmoldovan/</a>)</li>
+</ul>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
