@@ -87,7 +87,6 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         return this;
     }
 
-
     public void addElement(MonitoredElement MonitoredElement) {
         containedElements.add(MonitoredElement);
     }
@@ -161,7 +160,7 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
     }
 
     //traverses the monitored data tree in a breadth-first manner
-    public class ApplicationComponentIterator implements Iterator<MonitoredElement> {
+    public static class ApplicationComponentIterator implements Iterator<MonitoredElement> {
 
         //        private ApplicationNodeMonitoredData root;
         private List<MonitoredElement> elements;
@@ -171,6 +170,9 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         {
             //todo why is this type of initialization used?
             elements = new ArrayList<MonitoredElement>();
+        }
+
+        public ApplicationComponentIterator() {
         }
 
         private ApplicationComponentIterator(MonitoredElement root) {
@@ -232,17 +234,13 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
     }
 
     // fluent interface methods
-
-
-
-
     @Override
     public String toString() {
         return "MonitoredElement{"
                 + ", id='" + id + '\''
                 + ", level=" + level
                 + ", name='" + name + '\''
-//                + "containedElements=" + containedElements
+                //                + "containedElements=" + containedElements
                 + '}';
     }
 }

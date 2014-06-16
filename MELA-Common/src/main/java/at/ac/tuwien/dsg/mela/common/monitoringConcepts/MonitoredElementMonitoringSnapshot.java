@@ -188,6 +188,11 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
             toProcess = new ArrayList<MonitoredElementMonitoringSnapshot>();
         }
 
+        public MyIterator() {
+        }
+
+        
+        
         public MyIterator(MonitoredElementMonitoringSnapshot root) {
             toProcess.add(root);
         }

@@ -408,7 +408,7 @@
                             } else
                                 return "red";
                         });
-                        
+
                 nodeEnter.append("svn:image")
                         .attr("xlink:href", function(d) {
                             if (d.type == "VM") {
@@ -1049,17 +1049,17 @@
                     return
                 }
 
- 
+
                 var source = selectedMetric;
 
- 
-   
+
+
                 var indexOfFirstBracket = source.name.match(/[a-zA-Z]/);
                 var indexOfLastBracket = source.name.match(/ \(/);
                 var sourceMetricName = source.name.slice(indexOfFirstBracket.index, indexOfLastBracket.index);
 
                 var sourceMetricParent = source.parent;
- 
+
                 //traverse metrics and find out what metric we have selected 
                 var compositionRule;
                 for (var i = 0; i < metrics.length; i++) {
@@ -1155,15 +1155,15 @@
                     return
                 }
 
- 
+
                 var source = selectedMetric;
- 
+
                 var indexOfFirstBracket = source.name.match(/[a-zA-Z]/);
                 var indexOfLastBracket = source.name.match(/ \(/);
                 var sourceMetricName = source.name.slice(indexOfFirstBracket.index, indexOfLastBracket.index);
 
                 var sourceMetricParent = source.parent;
- 
+
                 //traverse metrics and find out what metric we have selected 
                 var compositionRule;
                 for (var i = 0; i < metrics.length; i++) {
@@ -1269,32 +1269,38 @@
             function processMonitoringDataResponse() {
                 if (reqMonitoringDataObject.readyState == 4) {
 
+                    try {
+                        new_root = JSON.parse(reqMonitoringDataObject.responseText);
 
-                    new_root = JSON.parse(reqMonitoringDataObject.responseText);
 
-                    setTimeout(refreshMonitoringData, 5000);
 
-                    if (new_root.children) {
-                        loadingSpinner.stop();
-                        d3.select("#A").remove();
-                        //                        setTimeout(refreshMonitoringData, 1000);
-                    }
-
-                    //if we have root that changed and is not metric, update its tree
-                    if ((root == null) || (root.type != "metric" && root.name != new_root.name)) {
-                        root = new_root;
-                        update(root);
-                        //                        updateTextOnNode(root, root, change);
-                    } else {
-                        var change = -1;
-                        updateTextOnNode(root, new_root, change);
-                        if (change == -1) {
-                            updateText(root);
-                        } else {
-                            update(new_root);
+                        if (new_root.children) {
+                            loadingSpinner.stop();
+                            d3.select("#A").remove();
+                            //                        setTimeout(refreshMonitoringData, 1000);
                         }
+
+                        //if we have root that changed and is not metric, update its tree
+                        if ((root == null) || (root.type != "metric" && root.name != new_root.name)) {
+                            root = new_root;
+                            update(root);
+                            //                        updateTextOnNode(root, root, change);
+                        } else {
+                            var change = -1;
+                            updateTextOnNode(root, new_root, change);
+                            if (change == -1) {
+                                updateText(root);
+                            } else {
+                                update(new_root);
+                            }
+                        }
+
+                    } catch (error) {
+                        console.log("Error encountered when processing metrics");
                     }
+                    setTimeout(refreshMonitoringData, 5000);
                 }
+
             }
 
 
@@ -1317,16 +1323,22 @@
 
             function processCompositionMetricsResponse() {
                 if (reqMetricCompositionRulesObj.readyState == 4) {
+
+
+                    try {
+                        metrics = JSON.parse(reqMetricCompositionRulesObj.responseText);
+                        vis.selectAll("path.metricLink").remove();
+                        if (fullPath) {
+                            highlightMetricsSources(selectedMetric);
+                        } else {
+                            highlightMetricsSourcesOneLevel(selectedMetric);
+                        }
+                    }
+                    catch (err) {
+                        console.log("Error encountered when processing composition metrics");
+                    }
                     setTimeout(refreshMetricsCompositionRules, 5000);
 
-                    metrics = JSON.parse(reqMetricCompositionRulesObj.responseText);
-
-                    vis.selectAll("path.metricLink").remove();
-                    if (fullPath) {
-                        highlightMetricsSources(selectedMetric);
-                    } else {
-                        highlightMetricsSourcesOneLevel(selectedMetric);
-                    }
                 }
             }
 

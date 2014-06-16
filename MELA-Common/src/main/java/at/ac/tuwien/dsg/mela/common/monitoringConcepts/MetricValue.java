@@ -29,6 +29,9 @@ import org.apache.log4j.Logger;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
+
+//TODO: I should embed the XML operation processing engine also in requirements, to be able to say
+// requiremment: cost < reqsNumber / 1000 * 0.01 (e.g., if I charge 0.01$ per 1000 requests, I want to have profit)
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MetricValue")
 public class MetricValue implements Comparable<MetricValue>, Serializable {

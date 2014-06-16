@@ -35,7 +35,7 @@ import java.util.List;
 @XmlRootElement(name = "MonitoredElementData")
 public class MonitoredElementData {
 	
-    @XmlAttribute(name = "MonitoredElement", required = true)
+    @XmlElement(name = "MonitoredElement", required = true)
     private MonitoredElement monitoredElement; 
 
     @XmlElement(name = "Metric")

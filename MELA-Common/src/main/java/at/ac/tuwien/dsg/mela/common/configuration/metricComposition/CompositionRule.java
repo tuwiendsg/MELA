@@ -22,7 +22,6 @@ package at.ac.tuwien.dsg.mela.common.configuration.metricComposition;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 import java.io.Serializable;
@@ -136,7 +135,7 @@ public class CompositionRule implements Serializable {
      * trimmed in the future to minimize communication)
      * @return
      */
-    public void apply(ServiceMonitoringSnapshot serviceMonitoringSnapshot) {
+    public void apply(at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot serviceMonitoringSnapshot) {
 
         //1'step extract the monitoring data for the target service elements
         Map<MonitoredElement, MonitoredElementMonitoringSnapshot> levelMonitoringData = serviceMonitoringSnapshot.getMonitoredData(targetMonitoredElementLevel);
