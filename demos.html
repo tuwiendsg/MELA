@@ -78,7 +78,12 @@
                                 <li><a href="./compiling.html">Compiling and deployment</a></li>
                                 <li><a href="./structure.html">Service structure specification</a></li>
                                 <li><a href="./compositionRules.html">Composition rules specification</a></li>
-                                <li> <div id="currentNav"><a id="currentNav" href="./demos.html" >Demos and examples</a></div></li>
+                                <li> <div id="currentNav"><a id="currentNav" href="./demos.html" >Demos and examples</a></div>
+                                    <ul>
+                                        <li><a href="#configuring" >Demos: Configuring MELA</a>
+                                        <li><a href="#multiCloud">Example: multi-cloud elastic service </a></li>
+                                    </ul>
+                                </li>
                                 <li><a href="./documentation.html">Other resources</a></li>
                             </ul> 
 
@@ -92,6 +97,8 @@
 
             <div class="inner clearfix">
                 <section id="main-content">
+                    <h1><a name="configuring" class="anchor" href="#configuring"><span class="octicon octicon-link"></span></a>Configuring MELA</h1>
+
                     <h2>
                         <a name="serviceStructure" class="anchor" href="#serviceStructure"><span class="octicon octicon-link"></span></a>Specifying and submitting service structure</h2>
 
@@ -163,11 +170,84 @@
 
                     <p>The XML schema for writing service structure specifications can be downloaded from <a href="./resources/structure.xsd">here</a></p>     
 
+
+                    <h1>
+                        <a name="multiCloud" class="anchor" href="#multiCloud"><span class="octicon octicon-link"></span></a>Analyzing multi-cloud elastic services</h1>
+                    <p> In the following we show a brief example of using MELA to analyze elastic services deployed on multiple-clouds.  </p>
+
+                    <h2>
+                        <a name="serviceOverview" class="anchor" href="#serviceOverview"><span class="octicon octicon-link"></span></a>Scenario description</h2>
+                    <p>    
+                        The example is centered around the Daas elastic service prototype we have implemented as to validate our tools. 
+                        The current prototype is available on GitHub <a href="https://github.com/tuwiendsg/DaaSM2M">here</a>.
+                        Detailed videos explaining how to configure and deploy our prototype are available on the DaaSM2M project  <a href="https://github.com/tuwiendsg/DaaSM2M/wiki">wiki</a>.
+                    </p>
+
+
+                    <p>
+                        For the example, we use two cloud providers. The first is the private cloud of the
+                        <a href="http://www.infosys.tuwien.ac.at/">Distributed Systems Group</a> (DSG) from Vienna University of Technology,
+                        running on top of <a href="https://www.openstack.org/">OpenStack</a>. The second cloud is a public cloud 
+                        offered by a commercial cloud provider: <a href="http://www.flexiant.com/flexiant-cloud-orchestrator/">Flexiant Cloud Orchestrator</a>.
+
+                    </p>
+
+                    <p>The pilot elastic cloud service runs a distributed NOSQL data end on top of <a href="http://cassandra.apache.org/">Cassandra</a>. We configure
+                        Cassandra in a master-slave fashion, in which we have a fixed Cassandra Seed, and a variable number of Cassandra Node instances. Thus,
+                        the elasticity of the data end is given by the ability of adding and removing at run-time nodes for holding data. 
+                        The data end is deployed on the DSG cloud.
+                    </p>
+
+                    <p>The second tier of the elastic cloud service handles client requests and read/writes from/to the data end. 
+                        The request are received by a Load Balancer running <a href="http://haproxy.1wt.eu/">HAProxy</a>, which distributes them to
+                        instances of an Event Processing Service, which in turn processes the request and writes/reads data from the data end. Thus, the
+                        elasticity of this tier is achieved by adding/removing Event Processing Service instances at run-time.
+                        This tier is deployed on the Flexiant cloud.
+                    </p>
+
+                    <p>An overview over our elastic cloud service deployed in a multi-cloud environment is shown in the figure below. </p>
+
+
+                    <center><figure>
+                            <img src="images/multiCloudDaas.png" alt="multiCloudDaas" width="100%" />
+                            <figcaption>Figure 1: Multi-cloud elastic cloud service</figcaption>
+                        </figure></center>
+
+                    <h2>
+                        <a name="configuringMELA" class="anchor" href="#configuringMELA"><span class="octicon octicon-link"></span></a>Configuring MELA for multi-cloud analysis</h2>
+                    <p> 
+                        MELA has two components: a MELA-DataService which collects monitoring information from existing cloud monitoring solutions,
+                        and a MELA-AnalysisService which used data from the data service to analyze elastic cloud services.
+                    </p>
+                    <p> 
+                        In this example we deploy a distributed monitoring solution <a href="http://ganglia.sourceforge.net/">Ganglia</a> 
+                        on the virtual machines running our elastic cloud services in both clouds. We configure Ganglia separately on each cloud, depending on the clouds' particularities.
+                        Most importantly, the two Ganglia installations on the two clouds are independent, and do not communicate one with each other.
+                    </p>
+                    <p>For configuring MELA to collect data from multiple clouds, we just need to define in the MELA-DataService configuration folder, 
+                        in the <a href="https://github.com/tuwiendsg/MELA/blob/master/MELA-DataService/config/dataSources.xml">dataSources.xml</a>, the "data sources" from which MELA should collect data. In this case, we define two data sources, as in the example below (by adding valid IPs and ports):</p>
+
+                    <p><pre><code>
+&lt;mela:ganglia-datasource id="ganglia-dsg" host="DSG_PUBLIC_IP" port="DSG_PUBLIC_PORT" polling-interval-ms="5000"/&gt;
+&lt;mela:ganglia-datasource id="ganglia-flexiant" host="FLEXIANT_PUBLIC_IP" port="FLEXIANT_PUBLIC_PORT" polling-interval-ms="5000"/&gt;
+ </code></pre></p>
+
+
+                    <p>An overview over the monitoring data flow and how MELA interacts with this multi-cloud setup is provided in the figure below.</p> 
+                    <center><figure>
+                            <img src="images/multidataCollection.png" alt="MELA in multi-cloud" width="100%" />
+                            <figcaption>Figure 2: MELA in a multi-cloud scenario</figcaption>
+                        </figure></center>
+                    </p>
+
+
                     For detailed information from deployment to configuring MELA for specific elastic services, check:
                     <ul><li><a href="./compiling.html">Compiling and deployment</a></li>
                         <li><a href="./structure.html">Service structure specification</a></li>
                         <li><a href="./compositionRules.html">Composition rules specification</a></li>
                     </ul>
+
+
 
                 </section>
 
