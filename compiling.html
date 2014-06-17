@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+        <!--[if lt IE 9]>
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <title>Mela by tuwiendsg</title>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript">
+
+            $(document).ready(function() {
+                var top = $('#navibar').offset().top - parseFloat($('#navibar').css('marginTop').replace(/auto/, 100));
+                $(window).scroll(function(event) {
+                    // what the y position of the scroll is
+                    var y = $(this).scrollTop();
+
+                    // whether that's below the form
+                    if (y >= top) {
+                        // if so, ad the fixed class
+                        $('#navibar').addClass('fixed');
+                    } else {
+                        // otherwise remove it
+                        $('#navibar').removeClass('fixed');
+                    }
+                });
+            });</script>
+
+        <script>
+            (function(i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                i[r] = i[r] || function() {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+                a = s.createElement(o),
+                        m = s.getElementsByTagName(o)[0];
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+            ga('create', 'UA-43025584-5', 'tuwiendsg.github.io');
+            ga('send', 'pageview');
+
+        </script>
+
+    </head>
+
+    <body>
+        <header>
+            <div class="inner">
+                <h1>Documentation and Guides</h1>
+                <h2>Compiling and Deployment</h2>
+                <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+            </div>
+        </header>
+
+        <div id="content-wrapper">
+
+            <aside id="navibar">
+
+                <div id="nav">
+                    <ul>
+                        <li><a href="./index.html" id="homenav">Home</a></li>
+                        <li><a href="./background.html" id="Background">Background</a>
+                        <li><a href="./guide.html" id="guide">How does MELA work?</a>    
+                            <ul>
+                                <li><a href="./guide.html" >MELA Overview</a>
+                                <li><div id="currentNav"><a href="./compiling.html">Compiling and deployment</a></div></li>
+                                <li><a href="./structure.html">Service structure specification</a></li>
+                                <li><a href="./compositionRules.html">Composition rules specification</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>
+                                <li><a href="./documentation.html">Other resources</a></li>
+                            </ul>
+                        </li> 
+                        <li><a href="./contact.html" id="contactnav">Contact and Acknowledgments</a></li>
+                    </ul>
+
+                </div>
+            </aside>
+
+
+            <div class="inner clearfix">
+                <section id="main-content">
+ 
+                    <p>The latest MELA prototype is available on GitHub </a href="https://github.com/tuwiendsg/MELA/">here</a></p>   
+
+                    <p>The “MELA” directory contains a MELA Maven "pom" project. The project has a set of Maven modules: MELA-AnalysisService, MELA-DataService, MELA-Common and MELA-DataCollector. 
+                        MELA-DataService is responsible of collecting monitoring information from existing monitoring systems, and storing it in a local monitoring repository. </p>
+
+                    <p>The MELA-AnalysisService is a Web Application queries monitoring data from the MELA-DataService, structures and analyzes it. MELA-Common contains the common data model used by the other two modules.
+                        MELA- DataCollector currently contains scripts for installing Ganglia and configuring it to work with MELA automatic structure detection. </p>
+
+                    <p>MELA-DataCollector compiles and packages using Maven in a “tar.gz” archive, containing scripts for installing Ganglia, and configuring it for supporting automatic service structure detection.
+                        MELA-Common compiles in jar.</p>
+
+                    <p>MELA-AnalysisService and MELA-DataService have two maven profiles: the standard profile compiles them in shaded .jar files. The “Release” profile also produces for each project a “tar.gz” archive containing the jars, necessary configuration files, and scripts for running them.
+                        To compile the modules using Maven, from the MELA main directory, running "mvn clean install" or "mvn clean package" will compile all MELA Modules.  Running "mvn clean install –P Release” or "mvn clean package –P Release” activates the Release profile which also produces the project’s “ tar.gz”  distribution.</p>
+
+                    <h2>Prerequisites</h2>
+                    <p>In the current prorotype, MELA-DataService can collect monitoring information from one or more <a href=http://sourceforge.net/apps/trac/ganglia/wiki">Ganglia Monitoring System</a>
+                        clusters. This means Ganglia should be installed on any VM from which MELA will collect data, and that MELA can collect data from separate Ganglia clusters. </p>
+
+                    <p>On Ubuntu Ganglia can be installed via apt-get by `sudo apt-get install ganglia-monitor gmond`</p>
+
+                    <p>Note: By default, Ganglia data collection interval might be too large. If data collection must perform more often, please configure Ganglia accordingly following the instructions [here](http://sourceforge.net/apps/trac/ganglia/wiki/Gmond%203.1.x%20General%20Configuration#collection_group). Basically, set ` collect_every`, and `time_threshold` for each collection group to smaller values.
+                    </p>
+
+                    <h2>Running MELA</h2>
+
+                            <p>Both MELA-DataService and MELA-AnalysisService must run for obtaining the complete system functionality. MELA-DataService can also run standalone, during which it will collect data. MELA-AnalysisService just processes already collected data and provides services for setting the monitored service structure, metric composition rules 
+                                )), and service requirements, which affect the way MELA-DataService structures collected data.</p>
+                            <h3> MELA-DataService</h3>
+
+                            <h4> Configuration</h4>
+                            <ul>
+                                <li> Configure if required the options presented in "./config/mela-data-service.properties" </li>
+                                <li> Configure the data sources from which data is to be collected in "./config/dataSources.xml" </li>
+                                <li> If necessary the default metric composition rules, service structure and service requirements can be configured by modifying the files in "./config/default"</li>
+                            </ul>
+                            <h4>Compile and Run</h4>
+                            <ul>
+                                <li>If compiled with "mvn clean package -P Release", extract the "tar.gz", perform necessary configurations, 
+                                    and start the MELA-DataService using the provided script by executing "mela-data-service start".
+                                    With "mela-data-service stop" the MELA-DataService can be shut down. </li>
+                                <li> If compiled with the standard profile, run from the target directory the MELA-DataService as any simple
+                                    jar with "java -DLOG_DIR=dir_to_store_logs -jar ./MELA-DataService" </li>
+                            </ul>
+                            <h3> MELA-AnalysisService</h3>
+
+                            <h4> Configuration</h4>
+
+                            <p> Configure if required the options presented in "./config/mela-analysis-service.properties"</p>
+
+                            <h4> Compile and Run</h4>
+                            <ul>
+                                <li> If compiled with "mvn clean package -P Release", extract the "tar.gz", perform necessary configurations, and start the MELA-AnalysisService using the provided script by executing "mela-analysis-service start". With "mela-analysis-service stop" the MELA-AnalysisService can be shut down. </li>
+                                <li> If compiled with the standard profile, run from the target directory the MELA-AnalysisService as any simple jar with "java -DLOG_DIR=dir_to_store_logs -jar ./MELA-AnalysisService ", as it is packaged with an embedded Apache Tomcat 7.</li>
+                            </ul>
+                            As MELA-AnalysisService is packaged with an embedded Apache Tomcat 7, it will try to start on a standard HTTP 8080 port. If that port is occupied, change the "mela-analysis-service" script to include in the java -jar ./MELA-AnalysisService -httpPort=port", or add "-httpPort=port" if running from command line.
+
+                            <ul><li> Open MELA at http://IP:PORT/MELA</li>
+                                </li> MELA RESTful API is located at http://IP:PORT/MELA/REST_WS. Test if the API works by invoking http://IP:PORT/MELA/REST_WS/monitoringdataJSON </li>
+                            </ul>
+
+ For detailed information from deployment to configuring MELA for specific elastic services, check:
+                    <ul><li><a href="./compiling.html">Compiling and deployment</a></li>
+                        <li><a href="./structure.html">Service structure specification</a></li>
+                        <li><a href="./compositionRules.html">Composition rules specification</a></li>
+                    </ul>
+
+                </section>
+
+                <aside id="sidebar">
+                    <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+                        <small>Download</small>
+                        .zip file
+                    </a>
+                    <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+                        <small>Download</small>
+                        .tar.gz file
+                    </a>
+
+                    <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+                </aside>
+
+
+
+            </div>
+        </div>
+
+
+    </body>
+</html>

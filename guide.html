@@ -71,15 +71,17 @@
                     <ul>
                         <li><a href="./index.html" id="homenav">Home</a></li>
                         <li><a href="./background.html" id="Background">Background</a>
-                        <li><a href="./guide.html" id="guide">How does MELA work?</a>    
+                        <li><a href="./guide.html" id="guide">How does MELA work?</a>  
                             <ul>
-                                <li><a href="#introduction" >MELA Overview</a>
-                                <li><a href="#configuration">Service specific configuration</a></li>
-                                <li><a href="#compiling">Compiling and Deployment</a></li>
+                                <li><div id="currentNav"><a href="./guide.html" >MELA Overview</a></div>
+                                <li><a href="./compiling.html">Compiling and deployment</a></li>
+                                <li><a href="./structure.html">Service structure specification</a></li>
+                                <li><a href="./compositionRules.html">Composition rules specification</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>
+                                <li><a href="./documentation.html">Other resources</a></li>
                             </ul>
-
                         </li> 
-                        <li><a href="./contact.html" id="contactnav">Contact</a></li>
+                        <li><a href="./contact.html" id="contactnav">Contact and Acknowledgments</a></li>
                     </ul>
 
                 </div>
@@ -157,259 +159,27 @@
                     </center>
                     </br></br>
 
-                    <p> MELA considers any cloud application as a service, and uses a representational model which divides Cloud Services in Service Topologies, which are composed of Service Units, which run in Virtual Machines members of Virtual Clusters.
-                        In Listing 1 we show an application description example, which describes a CloudService having two topologies, a DataEndServiceTopology and an EventProcessingServiceTopology. The topologies are just logical concepts, and have no physical equivalent. Each topology has Service Units.
-                        The service description must be submitted to MELA issuing a “PUT” request towards the MELA “/servicedescription” service. </p>
+                </section>
 
+                <aside id="sidebar">
+                    <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+                        <small>Download</small>
+                        .zip file
+                    </a>
+                    <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+                        <small>Download</small>
+                        .tar.gz file
+                    </a>
 
-                    Listing 1: Service Structure Description Example
-                    <pre><code>&lt;MonitoredElement id="CloudService" level="SERVICE"&gt;
-                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:noNamespaceSchemaLocation="structure.xsd"
-    &lt;MonitoredElement id="DataEndServiceTopology" level="SERVICE_TOPOLOGY"&gt;
-        &lt;MonitoredElement id="DataControllerServiceUnit" level="SERVICE_UNIT"/&gt;
-        &lt;MonitoredElement id="DataNodeServiceUnit" level="SERVICE_UNIT"/&gt;
-    &lt;/MonitoredElement&gt;
-    &lt;MonitoredElement id="EventProcessingServiceTopology" level="SERVICE_TOPOLOGY"&gt;
-        &lt;MonitoredElement id="LoadBalancerServiceUnit" level="SERVICE_UNIT"/&gt;
-        &lt;MonitoredElement id="EventProcessingServiceUnit" level="SERVICE_UNIT"/&gt;
-&lt;/MonitoredElement&gt;
-&lt;/MonitoredElement&gt;'
-</code></pre>
-                    <p>The XML schema for writing service structure specifications can be downloaded from <a href="./resources/structure.xsd">here</a></p>     
+                    <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
 
-                    <h2> Metric Composition Rules Specification </h2>
-                    The second important configuration step is the specification of metric composition rules, issuing a “PUT” request towards the MELA “/metricscompositionrules” service. 
-                    In Listing 2 we show a composition rule example, which applies a SUM operation over the “numberOfVMs” metric collected from all the Virtual Machine instances belonging to 
-                    any Service unit, and  creates a new metric also called “numberOfVMs” which will be associated with the Service Unit for which is computed. 
-
-
-                    <pre><code>&lt;CompositionRulesConfiguration&gt;
-                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:noNamespaceSchemaLocation="compositionRules.xsd"
-    &lt;MetricsCompositionRules&gt;
-        &lt;CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT"&gt;
-            &lt;ResultingMetric type="RESOURCE" measurementUnit="number" name="numberOfVMs"/&gt;
-            &lt;Operation MetricSourceMonitoredElementLevel="VM" type="SUM"&gt;
-                &lt;ReferenceMetric type="RESOURCE" name="numberOfVMs"/&gt;
-            &lt;/Operation&gt;
-        &lt;/CompositionRule&gt;
-    &lt;/MetricsCompositionRules&gt;
-&lt;/CompositionRulesConfiguration&gt;
-</code></pre>
-
-                    <p>The XML schema for writing smetrics composition rules can be downloaded from <a href="./resources/compositionRules.xsd.xsd">here</a></p>     
-
-
-                    <p> A composition rule applies a set of composition operations over a set of operands. </p> 
-                    <h3> Writing a Composition rule </h3>
-                    <ol><li><p> For a composition rule one must first specify the “ResultingMetric”, i.e. the type (RESOURCE, COST, QUALITY), name and measurement unit of the Metric resulting from the composition rule.
-                            </p><p><code>Example: &lt;ResultingMetric type="RESOURCE" measurementUnit="ms" name="avgResponseTime"/&gt;</code>
-                            </p></li>
-                        <li> <p>The “TargetMonitoredElementLevel” must be specified, which defines at WHICH level in the application structure level (SERVICE, SERVICE_TOPOLOGY, SERVICE_UNIT, VIRTUAL_CLUSTER, and VM) the composition rule is applied. If ONLY the “TargetMonitoredElementLevel” is specified, the composition rule will be applied to all instances having the specified level (e.g., to all SERVICE_UNIT instances)
-                            </p><p><code> Example: &lt;CompositionRuleTargetMonitoredElementLevel="SERVICE_UNIT"&gt;</code> 
-                            </p></li>
-                        <li> <p>If a list of "TargetMonitoredElementID" are specified, this indicates particular elements from the application structure on which the composition rule will be applied.
-                            </p>
-                            <p><pre><code> Example: 
-&lt;TargetMonitoredElementID&gt;DataControllerServiceUnit&lt;/TargetMonitoredElementID&gt;
-&lt;TargetMonitoredElementID&gt;LoadBalancerServiceUnit&lt;/TargetMonitoredElementID&gt;
-</code></pre></p></li>
-                        <li> <p> The last element is the list of “CompositionOperation” specifications, where we define the composition operation to be applied at the specified “TargetMonitoredElementLevel” over the optionally specified “TargetMonitoredElementID”
-                            </p></li>
-                        <li><p>The metric resulting from applying the composition rule will be added to the monitoring data at the specified “TargetMonitoredElementLevel” and optionally specified “TargetMonitoredElementID”. If no optionally specified “TargetMonitoredElementID” are present, the metric will be added to all elements belonging to the specified level.
-                            </p></li>
-                    </ol>
-                    <h3> Composition Operation </h3>
-
-                    <p>
-                        A Composition Operation applies an operation over one or more operands, which can be values or metrics. Depending on the operation type, each operation is processed differently.
-                    </p>
-                    <h4>Operands</h4>
-                    <p>For a composition operation, an operand can be:
-                    <ul>
-                        <li> 
-                            <p> A “value”: any statically defined value
-                                <code>Example: &lt;Operation value="100" type="ADD"&gt; </code>
-                            </p>
-                        </li>
-                        <li> 
-                            <p> A “ReferenceMetric” , which indicates that the operation will be applied on value of the ReferenceMetric. 
-                            <pre><code>Example:
-     &lt;Operation MetricSourceMonitoredElementLevel="VM" type="AVG"&gt;
-         &lt;ReferenceMetric type="RESOURCE" name="cpuIdle"/&gt;
-     &lt;/Operation&gt;
-  </code></pre>
-                            </p>
-                        </li>
-                        <li><p>For an operation involving a “ReferenceMetric” , one must also specify the “MetricSourceMonitoredElementLevel”, which indicates at which application structure level (SERVICE, SERVICE_TOPOLOGY, SERVICE_UNIT, VIRTUAL_CLUSTER, and VM) the reference metric will be found  UNDER the monitored element over which the rule is applied. The “MetricSourceMonitoredElementLevel”  can equal the “TargetMonitoredElementLevel”, or indicate any level belonging to the children of the “TargetMonitoredElementLevel”.
-                            </p>
-                            <pre><code>Example:
-     &lt;CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT"&gt;
-         &lt;Operation MetricSourceMonitoredElementLevel="VM" type="AVG"&gt;
-  </code></pre>
-                        </li>
-
-
-                        <li><p> For defining which monitored element from the “MetricSourceMonitoredElementLevel“ is considered in extracting metric values, any number of  “SourceMonitoredElementID” can be defined.
-                            </p>
-                            <p>
-                            <pre><code>Example:
-     &lt;Operation MetricSourceMonitoredElementLevel="SERVICE_UNIT" type="KEEP"&gt;
-        &lt;ReferenceMetric type="RESOURCE" measurementUnit="req/s" name="troughput"/&gt;
-        &lt;SourceMonitoredElementID>LoadGenerator</SourceMonitoredElementID&gt;
-        &lt;/Operation&gt;
-  </code></pre></p></li>
-
-                    </ul></p>
+                </aside>
 
 
 
-                    <h4>Sub-Operations</h4>
-                    <p>
-                        An operation can contain sub-operations, and the values returned by those sub-operations are used by the current operation, in a hierarchical manner. 
-
-                    <pre><code>Example
-     &lt;Operation value="100" type="ADD"&gt;
-       &lt;Operation value="-1" type="MUL"&gt;
-         &lt;Operation MetricSourceMonitoredElementLevel="VM" type="AVG"&gt;
-	   &lt;ReferenceMetric type="RESOURCE" name="cpuIdle"/&gt;
-         &lt;/Operation&gt;
-       &lt;/Operation&gt;
-     &lt;/Operation&gt;
-  </code></pre></p>
-
-                    <h4> Operation Type</h4> 
-                    <p> For any operation, it is important to specify the type, as the operations are processed differently depending on their type
-                    <ul>
-                        <li><p>SUM:</br>
-                                Intended to sum the values retrieved from a “ReferenceMetric”
-                            </p><p>
-                            <pre><code>Example
-     &lt;CompositionRuleTargetMonitoredElementLevel="SERVICE_UNIT"&gt;
-       &lt;ResultingMetric type="RESOURCE" measurementUnit="numberOf" name="numberOfVMs"/&gt;
-       &lt;Operation MetricSourceMonitoredElementLevel="VM" type="SUM"&gt;
-         &lt;ReferenceMetric type="RESOURCE" name="numberOfVMs"/&gt;
-       &lt;/Operation&gt;
-     &lt;/CompositionRule&gt;
-   </code></pre></p></li>
-                        <li><p>AVG:</br>
-                                Applied similar to SUM, extracts the average.
-                            </p></li>
-                        </li>
-                        <li>
-                            <p> MAX / MIN: </br>
-                                Applied similar to SUM, extracts the maximum or minimum value.</p></li>
-
-                        <li><p> DIV/MUL/ADD/SUB: </br>
-                                Divide, Multiply, Subtract From, Add To, the value of the first operand the value of the second operand</p>
-                            <p>
-                            <pre><code>Example
-     &lt;Operation value="-1" type="MUL"&gt;
-         &lt;Operation MetricSourceMonitoredElementLevel="VM" type="AVG"&gt;
-           &lt;ReferenceMetric type="RESOURCE" name="cpuIdle"/&gt;
-         &lt;/Operation&gt;
-     &lt;/Operation&gt; 
- </code></pre>  </p></li>
-                        <li><p>SET_VALUE</br> 
-                                Used in creating metric values</p>
-                            <p><pre><code>Example
-     &lt;CompositionRuleTargetMonitoredElementLevel="VM"&gt;
-     &lt;ResultingMetric type="RESOURCE" measurementUnit="ms" name="numberOfVMs"/&gt;
-       &lt;Operation value="1" type="SET_VALUE"/&gt;
-     &lt;/CompositionRule&gt;
- </code></pre><p></li> 
-                        <li>CONCAT</li>
-                        <li>UNION</li>
-                        <li>KEEP/ KEEP_LAST/ KEEP_FIRST</li>
-                    </ul>
-                    </p>
+            </div>
+        </div>
 
 
-
-                    <h1>
-                        <a name="compiling" class="anchor" href="#compiling"><span class="octicon octicon-link"></span></a>Compiling and Deployment</h1>
-                    <p>The latest MELA prototype is available on GitHub </a href="https://github.com/tuwiendsg/MELA/">here</a></p>   
-
-                    <p>The “MELA” directory contains a MELA Maven "pom" project. The project has a set of Maven modules: MELA-AnalysisService, MELA-DataService, MELA-Common and MELA-DataCollector. 
-                        MELA-DataService is responsible of collecting monitoring information from existing monitoring systems, and storing it in a local monitoring repository. </p>
-
-                    <p>The MELA-AnalysisService is a Web Application queries monitoring data from the MELA-DataService, structures and analyzes it. MELA-Common contains the common data model used by the other two modules.
-                        MELA- DataCollector currently contains scripts for installing Ganglia and configuring it to work with MELA automatic structure detection. </p>
-
-                    <p>MELA-DataCollector compiles and packages using Maven in a “tar.gz” archive, containing scripts for installing Ganglia, and configuring it for supporting automatic service structure detection.
-                        MELA-Common compiles in jar.</p>
-
-                    <p>MELA-AnalysisService and MELA-DataService have two maven profiles: the standard profile compiles them in shaded .jar files. The “Release” profile also produces for each project a “tar.gz” archive containing the jars, necessary configuration files, and scripts for running them.
-                        To compile the modules using Maven, from the MELA main directory, running "mvn clean install" or "mvn clean package" will compile all MELA Modules.  Running "mvn clean install –P Release” or "mvn clean package –P Release” activates the Release profile which also produces the project’s “ tar.gz”  distribution.</p>
-
-                    <h2>Prerequisites</h2>
-                    <p>In the current prorotype, MELA-DataService can collect monitoring information from one or more <a href=http://sourceforge.net/apps/trac/ganglia/wiki">Ganglia Monitoring System</a>
-                        clusters. This means Ganglia should be installed on any VM from which MELA will collect data, and that MELA can collect data from separate Ganglia clusters. </p>
-
-                    <p>On Ubuntu Ganglia can be installed via apt-get by `sudo apt-get install ganglia-monitor gmond`</p>
-
-                    <p>Note: By default, Ganglia data collection interval might be too large. If data collection must perform more often, please configure Ganglia accordingly following the instructions [here](http://sourceforge.net/apps/trac/ganglia/wiki/Gmond%203.1.x%20General%20Configuration#collection_group). Basically, set ` collect_every`, and `time_threshold` for each collection group to smaller values.
-                    </p>
-
-                    <h2>Running MELA</h2>
-
-                            <p>Both MELA-DataService and MELA-AnalysisService must run for obtaining the complete system functionality. MELA-DataService can also run standalone, during which it will collect data. MELA-AnalysisService just processes already collected data and provides services for setting the monitored service structure, metric composition rules 
-                                )), and service requirements, which affect the way MELA-DataService structures collected data.</p>
-                            <h3> MELA-DataService</h3>
-
-                            <h4> Configuration</h4>
-                            <ul>
-                                <li> Configure if required the options presented in "./config/mela-data-service.properties" </li>
-                                <li> Configure the data sources from which data is to be collected in "./config/dataSources.xml" </li>
-                                <li> If necessary the default metric composition rules, service structure and service requirements can be configured by modifying the files in "./config/default"</li>
-                            </ul>
-                            <h4>Compile and Run</h4>
-                            <ul>
-                                <li>If compiled with "mvn clean package -P Release", extract the "tar.gz", perform necessary configurations, 
-                                    and start the MELA-DataService using the provided script by executing "mela-data-service start".
-                                    With "mela-data-service stop" the MELA-DataService can be shut down. </li>
-                                <li> If compiled with the standard profile, run from the target directory the MELA-DataService as any simple
-                                    jar with "java -DLOG_DIR=dir_to_store_logs -jar ./MELA-DataService" </li>
-                            </ul>
-                            <h3> MELA-AnalysisService</h3>
-
-                            <h4> Configuration</h4>
-
-                            <p> Configure if required the options presented in "./config/mela-analysis-service.properties"</p>
-
-                            <h4> Compile and Run</h4>
-                            <ul>
-                                <li> If compiled with "mvn clean package -P Release", extract the "tar.gz", perform necessary configurations, and start the MELA-AnalysisService using the provided script by executing "mela-analysis-service start". With "mela-analysis-service stop" the MELA-AnalysisService can be shut down. </li>
-                                <li> If compiled with the standard profile, run from the target directory the MELA-AnalysisService as any simple jar with "java -DLOG_DIR=dir_to_store_logs -jar ./MELA-AnalysisService ", as it is packaged with an embedded Apache Tomcat 7.</li>
-                            </ul>
-                            As MELA-AnalysisService is packaged with an embedded Apache Tomcat 7, it will try to start on a standard HTTP 8080 port. If that port is occupied, change the "mela-analysis-service" script to include in the java -jar ./MELA-AnalysisService -httpPort=port", or add "-httpPort=port" if running from command line.
-
-                            <ul><li> Open MELA at http://IP:PORT/MELA</li>
-                                </li> MELA RESTful API is located at http://IP:PORT/MELA/REST_WS. Test if the API works by invoking http://IP:PORT/MELA/REST_WS/monitoringdataJSON </li>
-                            </ul>
-
-                            </section>
-
-                            <aside id="sidebar">
-                                <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
-                                    <small>Download</small>
-                                    .zip file
-                                </a>
-                                <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
-                                    <small>Download</small>
-                                    .tar.gz file
-                                </a>
-
-                                <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
-
-                            </aside>
-
-
-
-                            </div>
-                            </div>
-
-
-                            </body>
-                            </html>
+    </body>
+</html>
