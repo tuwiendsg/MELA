@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Elasticity Space</title>
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .x.axis path {
+        display: none;
+    }
+
+    .line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 1.5px;
+    }
+
+    #loadingIcon{
+        position:absolute;
+        top:50%;
+        left:50%;
+    }
+
+</style>
+<body>
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="./spin.js" type="text/javascript"></script>
+    <div id="loadingIcon"></div>
+    <script>
+
+        //        var deploymentIP = "http://localhost:8080";
+        //        //var deploymentIP = "http://83.212.117.112";
+        //        var elasticitySpaceURL=deploymentIP.concat("/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/elasticityspace");
+        //        var elasticityPathwayURL=deploymentIP.concat("/MELA-AnalysisService-0.1-SNAPSHOT/REST_WS/elasticitypathway");
+
+        var margin = {top:20, right:20, bottom:30, left:120},
+        width = 500 - margin.left - margin.right,
+        height = 270 - margin.top - margin.bottom;
+        
+        var opts = {
+            lines: 20, // The number of lines to draw
+            length: 7, // The length of each line
+            width: 10, // The line thickness
+            radius: 100, // The radius of the inner circle
+            corners: 1, // Corner roundness (0..1)
+            rotate: 0, // The rotation offset
+            color: '#000', // #rgb or #rrggbb
+            speed: 1, // Rounds per second
+            trail: 60, // Afterglow percentage
+            shadow: false, // Whether to render a shadow
+            hwaccel: false, // Whether to use hardware acceleration
+            className: 'spinner', // The CSS class to assign to the spinner
+            zIndex: 2e9, // The z-index (defaults to 2000000000)
+            top: 'auto', // Top position relative to parent in px
+            left: 'auto', // Left position relative to parent in px
+            visibility: true
+        };
+
+        var loadingSpinner = new Spinner(opts);
+        
+        function generateElSpaceChart(elSpaceJSON, rootNode, lineThickness, lineColors, xLoc, yLoc, width, height, xAxisLabel) {
+            var currentColumn = 0;
+            var currentRow = 0;
+            
+            for (var dimensionIndex = 0; dimensionIndex < elSpaceJSON.dimensions.length; dimensionIndex++) {
+                if(currentColumn >= maxColumns){
+                    currentColumn = 0;
+                    currentRow = currentRow  + 1;
+                } 
+                xLocation = xLoc + currentColumn * (width+100)  ; 
+                yLocation = yLoc + currentRow * (width-20); 
+                
+                var x = d3.scale.linear()
+                .range([xLocation, xLocation + width]);
+
+                var y = d3.scale.linear()
+                .range([yLocation + height, yLocation]);
+
+                var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom");
+
+                var yAxis = d3.svg.axis()
+                .scale(y)
+                .orient("left");
+            
+                dimension = elSpaceJSON.dimensions[dimensionIndex];
+
+                var index = 1;
+                
+                
+                for(var valueIndex = 0; valueIndex < dimension.values.length; valueIndex++){
+                    dimension.values[valueIndex].index=index*10;
+                    dimension.upperBoundary[valueIndex].index=index*10;
+                    dimension.lowerBoundary[valueIndex].index=index*10;
+                    index = index + 1;
+                }
+
+                x.domain(d3.extent(dimension.values, function (d) {
+                    return d.index;
+                }));
+
+                var minY = dimension.lowerBoundary[0].value;
+                
+                
+                var maxValue = Math.max.apply(null, dimension.values.map(function (c) {
+                    return c.value;
+                }));
+                
+                var minValue = Math.min.apply(null, dimension.values.map(function (c) {
+                    return c.value;
+                }));
+                
+                
+                var maxY = dimension.upperBoundary[0].value;
+                
+                if(minY == maxY){
+                    if(minY != 0){
+                        minY = 0;
+                    }else{
+                        maxY = 1;
+                    }
+                }
+                
+                if(maxY < maxValue){
+                    maxY = maxValue;
+                }
+                
+                if(minY > minValue){
+                    minY = minValue;
+                }
+                
+                y.domain([minY, maxY] );
+                
+                var yAxisLabel = dimension.name + " (" + dimension.unit + ")";
+
+                rootNode.append("rect")
+                .attr("x", xLocation )
+                .attr("y", yLocation)
+                .attr("width", width)
+                .attr("height", height).style("fill","none").style("stroke","black");
+                
+
+                var path = rootNode.append("g")
+                .attr("class", "y axis")
+                .attr("x", xLocation )
+                                .style("font-size", "140%")
+                .attr("transform", "translate(0," + (+yLocation + +height) + ")")
+                //                .transition().duration(1000)
+                .call(xAxis)
+                .selectAll("text")  
+	            .style("text-anchor", "end")
+	            .attr("dx", "-.8em")
+	            .attr("dy", ".15em")
+	            .attr("transform", function(d) {
+	                return "rotate(-65)" 
+	                });
+
+                //
+                //                path.transition()
+                //                .duration(1000)
+                //                .ease("linear");
+
+                rootNode.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate("+xLocation +",0)")
+                                .style("font-size", "140%")
+                .call(yAxis)
+                
+                
+                rootNode.append("g")
+                .attr("class", "y axis").append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", xLocation-70)
+                .attr("x", -yLocation - +height / 2 - yAxisLabel.length * 4 )
+                .attr("dy", ".71em")
+                .style("text-anchor", "start")
+                                .style("font-size", "180%")
+                .text(yAxisLabel);
+
+                rootNode.append("g")
+                .attr("class", "y axis")
+                .append("text")
+                .attr("y", +yLocation + +height + 60)
+                .attr("x", +xLocation + +width / 2 - xAxisLabel.length*6/2)
+                .attr("dy", ".71em")
+                .style("text-anchor", "start")
+                                .style("font-size", "200%")
+                .text(xAxisLabel);
+
+              
+                var line = d3.svg.line()
+                .x(function (d) {
+                    return x(d.index);
+                })
+                .y(function (d) {
+                    return y(d.value);
+                });
+
+                rootNode.append("path")
+                .datum(dimension.values)
+                .attr("class", "line")
+                .style("stroke", lineColors[0])
+                .style("stroke-width", lineThickness[0])
+                .attr("d", line);
+                    
+                rootNode.append("path")
+                .datum(dimension.upperBoundary)
+                .attr("class", "line")
+                .style("stroke", lineColors[1])
+                .style("stroke-width", lineThickness[1])
+                .attr("d", line);
+                    
+                rootNode.append("path")
+                .datum(dimension.lowerBoundary)
+                .attr("class", "line")
+                .style("stroke", lineColors[2])
+                .style("stroke-width", lineThickness[2])
+                .attr("d", line);
+
+               
+                
+                
+
+//                var legendNames = ["Upper Boundary", "Dimension: " + dimension.name, "Lower Boundary" ];
+                var legendNames = ["Upper Boundary", dimension.name, "Determined Boundaries" ];
+                
+//                //upper boundary legend entry
+//                {
+//                    var legend = rootNode                 
+//                    .append("g")
+//                    .data([legendNames[0]])
+//                    .attr("class", "legend")
+//                    .attr("transform", function(d, i) { return "translate("  + 100 + "," + (+yLocation -20 )+ ")"; });
+//
+//                    legend.append("rect")
+//                    .attr("x", xLocation - 18)
+//                    .attr("y", -5)
+//                    .attr("width", 10)
+//                    .attr("height", 10)
+//                    .style("fill", function(d){
+//                        if(d.match(/.*Boundary/)){
+//                            return "D13F31";
+//                        }else{
+//                            return "72B095";
+//                        }
+//                    });
+//
+//                    legend.append("text")
+//                    .attr("x", xLocation - 24)
+//                    .attr("dy", ".35em")
+//                    //                    .style("font-size", "200%")
+//                    .style("text-anchor", "end")
+//                    .text(function(d) { return d; });
+//                }
+                
+                //metric legend entry
+                {
+                    var legend = rootNode                 
+                    .append("g")
+                    .data([legendNames[1]])
+                    .attr("class", "legend")
+                    .attr("transform", function(d, i) { return "translate("  + (legendNames[1].length *9) + "," + (+yLocation -20 )+ ")"; });
+
+                    legend.append("rect")
+                    .attr("x", xLocation  - 18)
+                    .attr("y", -5)
+                    .attr("width", 10)
+                    .attr("height", 10)
+                    .style("fill", function(d){
+                        if(d.match(/.*Boundary/)){
+                            return "D13F31";
+                        }else{
+                            return "72B095";
+                        }
+                    });
+
+                    legend.append("text")
+                    .attr("x", xLocation  - 24)
+                    .attr("dy", ".35em")
+                                        .style("font-size", "160%")
+                    .style("text-anchor", "end")
+                    .text(function(d) { return d; });
+                }
+                
+                //upper boundary legend entry
+                {
+                    var legend = rootNode                 
+                    .append("g")
+                    .data([legendNames[2]])
+                    .attr("class", "legend")
+                    .attr("transform", function(d, i) { return "translate("  + 0 + "," + (+yLocation -20 )+ ")"; });
+
+                    legend.append("rect")
+                    .attr("x", xLocation +  width - 18)
+                    .attr("y", -5)
+                    .attr("width", 10)
+                    .attr("height", 10)
+                    .style("fill", function(d){
+                        if(d.match(/.*Boundar/)){
+                            return "D13F31";
+                        }else{
+                            return "72B095";
+                        }
+                    });
+
+                    legend.append("text")
+                    .attr("x", xLocation + width - 24)
+                    .attr("dy", ".35em")
+                                        .style("font-size", "160%")
+                    .style("text-anchor", "end")
+                    .text(function(d) { return d; });
+                }
+                
+                yLocation = yLocation+ height + 50;
+                currentColumn = currentColumn + 1;
+            }
+
+        }
+
+        function generateElPathwayChart(signature, rootNode, colors, xLocation,yLocation, width, height, xAxisLabel, yAxisLabel) {
+ 
+            var x0 = d3.scale.ordinal()
+            .rangeRoundBands([xLocation, xLocation +  width], .1);
+
+            var x1 = d3.scale.ordinal();
+
+            var y = d3.scale.linear()
+            .range([yLocation + height, yLocation]);
+
+            var color = d3.scale.ordinal()
+            .range(colors);
+
+            var xAxis = d3.svg.axis()
+            .scale(x0)
+            .orient("bottom");
+
+            var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .tickFormat(d3.format(".2s"));
+
+            var data = signature.neurons;
+             
+            var ageNames = signature.metricLabels.map(function(d){
+                return d.name;
+            });
+            
+            data.forEach(function(d) {
+                d.ages = ageNames.map(function(name) {
+                    return {name: name, value: +d[name]}; });
+            });
+            
+            x0.domain(data.map(function(d) { return d.encounterRate; }));
+            x1.domain(ageNames).rangeRoundBands([0, x0.rangeBand()]);
+            y.domain([-0.1, d3.max(data, function(d) { return d3.max(d.ages, function(d) { return d.value; }); })]);
+            
+            rootNode.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(0," + (yLocation +  height) + ")")
+             .style("font-size", "140%")
+            .call(xAxis) 
+            .selectAll("text")  
+	            .style("text-anchor", "end")
+	            .attr("dx", "-.8em")
+	            .attr("dy", ".15em")
+	            .attr("transform", function(d) {
+	                return "rotate(-65)" 
+	                });
+
+            
+            rootNode.append("g")
+            .attr("class", "y axis")
+            .style("font-size", "140%")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", + (+xLocation-45))
+            .attr("x", +  (-yLocation - height/2 - yAxisLabel.length*12/2))
+            .attr("dy", ".71em")
+            .style("text-anchor", "start")
+            .style("font-size", "150%")
+            .text(yAxisLabel);
+            
+            
+            rootNode.append("g")
+            .attr("class", "y axis")
+            .append("text")
+            .attr("y",+yLocation+ height  + 60)
+            .attr("x", +xLocation + width/2 - xAxisLabel.length*6/2)
+            .attr("dy", ".71em")
+            .style("text-anchor", "start")
+            .style("font-size", "150%")
+            .text(xAxisLabel);
+            
+            
+            var state = rootNode.selectAll(".encounterRate")
+            .data(data)
+            .enter().append("g")
+            .attr("class", "g")
+            .attr("transform", function(d) { return "translate(" + x0(d.encounterRate) + ",0)"; });
+            
+            state.selectAll("rect")
+            .data(function(d) { return d.ages; })
+            .enter().append("rect")
+            .attr("width", x1.rangeBand())
+            .attr("x", function(d) {
+                return x1(d.name); })
+            .attr("y", function(d) {
+                return y(d.value); })
+            .attr("height", function(d) {
+                return (+yLocation + +height) - y(d.value); })
+            .style("fill", function(d,i) { 
+                return color(i); });
+            
+            var legend = rootNode.selectAll(".legend")
+            .data(ageNames.slice())
+            .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate("+(50 +i*width/ageNames.length)+"," + (+yLocation - 40) + ")"; });
+            
+            legend.append("rect")
+            .attr("x", xLocation  - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", function(d,i) {
+                return color(i); });
+            
+            legend.append("text")
+            .attr("x", xLocation +5 )
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("font-size", "140%")
+            .style("text-anchor", "start")
+            .text(function(d) { return d; });
+            
+          
+        }
+    
+        var elSpaceColors = ["72B095", "D13F31", "D13F31" ];
+        var elPathwayColors = ["#1C4946", "#1F7872", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"];
+        //       
+        var lineThickness = new Array("3px", "3px", "3px");
+        var elSpaceLoaded = false;
+        var elPathwayLoaded = false;
+        
+
+         
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        
+        var elSpaceDiv = d3.select("body").append("div");
+        var elPthwDiv = d3.select("body").append("div");
+        var maxColumns;
+        
+        document.title = vars[0]+ ": Elasticity Analysis";
+       
+        function refreshElSpace(){
+                
+            elasticitySpaceRequest=null;
+                     
+            if(window.XMLHttpRequest){
+                elasticitySpaceRequest=new XMLHttpRequest();
+            }else {
+                elasticitySpaceRequest=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            
+            elasticitySpaceRequest.onreadystatechange=processElasticitySpaceRequestResponse;
+            elasticitySpaceRequest.open("POST","./REST_WS/elasticityspace",true);
+            elasticitySpaceRequest.setRequestHeader('Content-type', 'application/xml');
+            elasticitySpaceRequest.send("<MonitoredElement id=\"" + vars[0] + "\" level=\"" + vars[1] + "\"/>");
+                    
+        }
+            
+        function processElasticitySpaceRequestResponse(){
+            if(elasticitySpaceRequest.readyState==4){
+                
+                
+                elasticitySpace = JSON.parse(elasticitySpaceRequest.responseText);
+                elSpaceLoaded = true;
+                if(  elSpaceLoaded && elPathwayLoaded ){
+                    loadingSpinner.stop(); 
+                }
+                
+               
+                drawElSpace(elasticitySpace,vars)  
+               
+             
+                setTimeout(refreshElSpace, 5000);
+            }
+        }
+       
+       
+        function refreshElPathway(){
+                
+            elasticityPathwayRequest=null;
+                     
+            if(window.XMLHttpRequest){
+                elasticityPathwayRequest=new XMLHttpRequest();
+            }else {
+                elasticityPathwayRequest=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            
+            elasticityPathwayRequest.onreadystatechange=processElasticityPathwayRequestResponse;
+            elasticityPathwayRequest.open("POST","./REST_WS/elasticitypathway",true);
+            elasticityPathwayRequest.setRequestHeader('Content-type', 'application/xml');
+            elasticityPathwayRequest.send("<MonitoredElement id=\"" + vars[0] + "\" level=\"" + vars[1] + "\"/>");
+                    
+        }
+            
+        function processElasticityPathwayRequestResponse(){
+            if(elasticityPathwayRequest.readyState==4){
+                
+                    
+                elasticityPathway = JSON.parse(elasticityPathwayRequest.responseText);
+                
+                elPathwayLoaded = true;
+                if(elSpaceLoaded && elPathwayLoaded ){
+                    loadingSpinner.stop(); 
+                    d3.select("#loadingIcon").remove();
+                }
+                drawElasticityPathway(elasticityPathway, vars)
+             
+                setTimeout(refreshElPathway, 5000);
+            }
+        }
+       
+       
+        function drawElSpace(elSpace,vars){   
+               
+            elSpaceDiv.selectAll("h2").remove();
+            elSpaceDiv.selectAll("svg").remove();
+                
+            elSpaceDiv.append("h2").text("Elasticity Space  for " + vars[0]);
+                
+            maxColumns = Math.floor(window.innerWidth/(width + 60));
+            
+            elSpaceSVGHeight = Math.ceil(elSpace.dimensions.length / maxColumns) * (height + 120);
+             
+            elSpaceSVG = elSpaceDiv.append("svg")           
+            .attr("width",  window.innerWidth)
+            .attr("height", elSpaceSVGHeight)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top  + ")");
+                 
+            elSpaceSVG.append("line")
+            .attr("x1", -margin.left)
+            .attr("y1", -20)
+            .attr("x2", window.innerWidth)
+            .attr("y2", -20)
+            .attr("stroke-width", 1)
+            .attr("stroke", "black");
+                 
+            generateElSpaceChart(elSpace, elSpaceSVG, lineThickness, elSpaceColors, -50, 20, width, height, "Time (s)");
+            
+        }
+        
+        function drawElasticityPathway(elPthw, vars){
+             
+               
+            elPthwDiv.selectAll("h2").remove();
+            elPthwDiv.selectAll("svg").remove();
+                
+            elPthwDiv.append("h2").text("Elasticity Pathway  for " + vars[0]);
+                
+            elPthwSVG = elPthwDiv.append("svg")           
+            .attr("width",  window.innerWidth)
+            .attr("height", window.innerHeight)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+              
+            elPthwSVG.append("line")
+            .attr("x1", -margin.left)
+            .attr("y1", 0)
+            .attr("x2", window.innerWidth)
+            .attr("y2", 0)
+            .attr("stroke-width", 1)
+            .attr("stroke", "black");
+                
+                 
+            var elSgnChartWidth =  window.innerWidth - 200;
+                
+            if( (elSgnChartWidth / elPthw.neurons.length) > 200 && elPthw.neurons.length>0  ){
+                elSgnChartWidth = elPthw.neurons.length * 200;  
+            }
+                
+            if( (elSgnChartWidth / elPthw.metricLabels.length) < 200 && elPthw.metricLabels.length>0  ){
+                elSgnChartWidth = elPthw.metricLabels.length * 200;  
+            }
+                
+            generateElPathwayChart(elPthw, elPthwSVG, elPathwayColors, 0,70 , elSgnChartWidth, height,"Situations Encounter Rate (%)", "Value");
+            
+        }
+        
+       
+        function drawSpinner(spinnerContainer){
+            var target = document.getElementById(spinnerContainer);
+            loadingSpinner.spin(target);
+        }
+                
+        drawSpinner('loadingIcon');
+        
+        refreshElSpace();
+        refreshElPathway();
+
+    </script>
