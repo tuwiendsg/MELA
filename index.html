@@ -20,6 +20,7 @@
 
             $(document).ready(function() {
                 var top = $('#navibar').offset().top - parseFloat($('#navibar').css('marginTop').replace(/auto/, 100));
+
                 $(window).scroll(function(event) {
                     // what the y position of the scroll is
                     var y = $(this).scrollTop();
@@ -60,11 +61,8 @@
             <div class="inner">
                 <h1>MELA</h1>
                 <h2>Monitoring and analyzing elasticity of cloud services</h2>
-                <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+                <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on </small> GitHub</a>
             </div>
-        </header>
-
-        <div id="content-wrapper">
 
             <aside id="navibar">
 
@@ -83,6 +81,32 @@
 
                 </div>
             </aside>
+
+
+
+
+
+        </header>
+
+        <div id="horizontalNav">
+            <ul>
+                <li><div id="horizontalNavCurrentNav"><a href="./index.html" id="homenav">Home</a></div>
+                    <ul>
+                        <li><a href="#introduction"  >What is MELA</a>
+                        <li><a href="#features"  >Features</a></li>
+                    </ul>
+                </li>
+                <li><a href="./background.html" id="Background">Background</a></li>
+                <li><a href="./guide.html" id="guide">How does MELA work?</a>    
+                <li><a href="./contact.html" id="contactnav">Contact and Acknowledgments</a></li>
+            </ul>
+
+        </div>
+
+        <div id="content-wrapper">
+
+
+
 
             <div class="inner clearfix">
                 <section id="main-content">
@@ -117,7 +141,7 @@
 
 
                     <div id="feature">
-                        <h3>Designed with virtual infrastructure volatility in mind</h3>
+                        <h2>Designed with virtual infrastructure volatility in mind</h2>
                         <div  >
 
                             <p align="left" style="text-align:left; width:80%">
@@ -133,7 +157,7 @@
                     </div>
 
                     <div id="feature">
-                        <h3>Associates service structure with monitoring information</h3>
+                        <h2>Associates service structure with monitoring information</h2>
                         <div  >
 
                             <p align="left" style="text-align:left; width:80%">
@@ -148,7 +172,7 @@
 
 
                     <div id="feature">
-                        <h3>Enriches monitoring information</h3>
+                        <h2>Enriches monitoring information</h2>
                         <div  >
 
                             <p align="left" style="text-align:left; width:80%">
@@ -167,7 +191,7 @@
                     </div>
 
                     <div id="feature">
-                        <h3><span>Analyzes elasticity boundaries of cloud services</span></h3>
+                        <h2><span>Analyzes elasticity boundaries of cloud services</span></h2>
                         <div>
 
                             <p align="left" style="text-align:left; width:80%">
@@ -191,8 +215,18 @@
 
 
                 </section>
-                c	  
 
+                <aside id="sidebar">
+                    <a href="http://www.tuwien.ac.at/" class="button" style="background: url(./images/TU_logo.png) 0 0 no-repeat; height:70px;  width:300px">
+                    </a>
+
+                    <a href="http://www.infosys.tuwien.ac.at/" class="button" style="background: url(./images/dsgComplet.png) 0 0 no-repeat; background-size:100%; width:300px; height:70px">
+                    </a>
+
+                    <p class="repo-owner" style="width:300px"><a href="https://github.com/tuwiendsg/MELA"></a> Maintained and distributed by <a href="http://www.infosys.tuwien.ac.at/staff/dmoldovan/"> Daniel Moldovan </a>
+                        </br> </br><a href="http://www.infosys.tuwien.ac.at/">Distributed Systems Group</a>
+                        , <a href="http://www.tuwien.ac.at/">Vienna University of Technology</a>.</p>
+                </aside>
 
                 <aside id="sidebar">
                     <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
@@ -204,7 +238,8 @@
                         .tar.gz file
                     </a>
 
-                    <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+
 
                 </aside>
             </div>
