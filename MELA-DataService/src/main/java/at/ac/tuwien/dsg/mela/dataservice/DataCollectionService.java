@@ -176,49 +176,6 @@ public class DataCollectionService {
             compositionRulesConfigurations.put(monSeqID, configurationXMLRepresentation.getCompositionRulesConfiguration());
             requirementsConfiguration.put(monSeqID, configurationXMLRepresentation.getRequirements());
 
-            AbstractDataAccess dataAccess = DataAccessWithManualStructureManagement.createInstance();
-            dataAccesses.put(monSeqID, dataAccess);
-            dataAccess.getMetricFilters().clear();
-
-             // list all MELA datasources from application context
-            //maybe in future add specific source for specific service
-            Map<String, AbstractDataSource> dataSources = context.getBeansOfType(AbstractDataSource.class);
-
-            for (String dataSourceName : dataSources.keySet()) {
-                AbstractDataSource dataSource = dataSources.get(dataSourceName);
-                log.debug("Found Datasource '{}': {}", dataSourceName, dataSource);
-                dataAccess.addDataSource(dataSource);
-            }
-
-            // set metric filters on data access
-            for (CompositionRule compositionRule : configurationXMLRepresentation.getCompositionRulesConfiguration().getMetricCompositionRules().getCompositionRules()) {
-                // go trough each CompositionOperation and extract the source
-                // metrics
-
-                List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
-                queue.add(compositionRule.getOperation());
-
-                while (!queue.isEmpty()) {
-                    CompositionOperation operation = queue.remove(0);
-                    queue.addAll(operation.getSubOperations());
-                    Metric targetMetric = operation.getTargetMetric();
-                    // metric can be null if a composition rule artificially creates
-                    // a metric using SET_VALUE
-                    if (targetMetric != null) {
-                        MetricFilter metricFilter = new MetricFilter();
-                        metricFilter.setId(targetMetric.getName() + "_Filter");
-                        metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
-                        Collection<Metric> metrics = new ArrayList<Metric>();
-                        metrics.add(new Metric(targetMetric.getName()));
-                        metricFilter.setMetrics(metrics);
-
-                        if (monitoring) {
-                            dataAccess.addMetricFilter(metricFilter);
-                        }
-                    }
-                }
-            }
-
             startMonitoring(monSeqID);
 
         }
@@ -367,6 +324,17 @@ public class DataCollectionService {
 
             dataAccess = DataAccessWithManualStructureManagement.createInstance();
             dataAccesses.put(serviceID, dataAccess);
+
+            // list all MELA datasources from application context
+            //maybe in future add specific source for specific service
+            Map<String, AbstractDataSource> dataSources = context.getBeansOfType(AbstractDataSource.class);
+
+            for (String dataSourceName : dataSources.keySet()) {
+                AbstractDataSource dataSource = dataSources.get(dataSourceName);
+                log.debug("Found Datasource '{}': {}", dataSourceName, dataSource);
+                dataAccess.addDataSource(dataSource);
+            }
+
         } else {
             dataAccess = dataAccesses.get(serviceID);
         }
@@ -523,6 +491,58 @@ public class DataCollectionService {
         }
 
         if (monitoring) {
+
+            //reapply composition rules
+            AbstractDataAccess dataAccess = null;
+            if (!dataAccesses.containsKey(serviceID)) {
+                dataAccess = DataAccessWithManualStructureManagement.createInstance();
+                dataAccesses.put(serviceID, dataAccess);
+
+                // list all MELA datasources from application context
+                //maybe in future add specific source for specific service
+                Map<String, AbstractDataSource> dataSources = context.getBeansOfType(AbstractDataSource.class);
+
+                for (String dataSourceName : dataSources.keySet()) {
+                    AbstractDataSource dataSource = dataSources.get(dataSourceName);
+                    log.debug("Found Datasource '{}': {}", dataSourceName, dataSource);
+                    dataAccess.addDataSource(dataSource);
+                }
+
+            } else {
+                dataAccess = dataAccesses.get(serviceID);
+            }
+            dataAccess.getMetricFilters().clear();
+
+            if (compositionRulesConfigurations.containsKey(serviceID)) {
+                // set metric filters on data access
+                for (CompositionRule compositionRule : compositionRulesConfigurations.get(serviceID).getMetricCompositionRules().getCompositionRules()) {
+                    // go trough each CompositionOperation and extract the source
+                    // metrics
+
+                    List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+                    queue.add(compositionRule.getOperation());
+
+                    while (!queue.isEmpty()) {
+                        CompositionOperation operation = queue.remove(0);
+                        queue.addAll(operation.getSubOperations());
+                        Metric targetMetric = operation.getTargetMetric();
+                        // metric can be null if a composition rule artificially creates
+                        // a metric using SET_VALUE
+                        if (targetMetric != null) {
+                            MetricFilter metricFilter = new MetricFilter();
+                            metricFilter.setId(targetMetric.getName() + "_Filter");
+                            metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+                            Collection<Metric> metrics = new ArrayList<Metric>();
+                            metrics.add(new Metric(targetMetric.getName()));
+                            metricFilter.setMetrics(metrics);
+
+                            if (monitoring) {
+                                dataAccess.addMetricFilter(metricFilter);
+                            }
+                        }
+                    }
+                }
+            }
 
             log.debug("Starting monitoring for serviceConfiguration {}", serviceID);
 
