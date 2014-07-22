@@ -47,12 +47,20 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
     @XmlElement(name = "MonitoredElement", required = false)
     private Collection<MonitoredElement> containedElements;
 
-    public MonitoredElement() {
+    @XmlElement(name = "Relationship", required = false)
+    private Collection<Relationship> relationships;
+    
+    public static final long serialVersionUID = -4788504262348634847L;
+
+    {
+        relationships = new ArrayList<Relationship>();
         containedElements = new ArrayList<MonitoredElement>();
     }
 
+    public MonitoredElement() {
+    }
+
     public MonitoredElement(String id) {
-        containedElements = new ArrayList<MonitoredElement>();
         this.id = id;
     }
 
@@ -109,6 +117,22 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
     public void setContainedElements(Collection<MonitoredElement> containedElements) {
         this.containedElements = containedElements;
+    }
+
+    public Collection<Relationship> getRelationships() {
+        return relationships;
+    }
+
+    public void setRelationships(Collection<Relationship> relationships) {
+        this.relationships = relationships;
+    }
+
+    public void addRelationship(Relationship relationship) {
+        relationships.add(relationship);
+    }
+
+    public void removeRelationship(Relationship relationship) {
+        relationships.remove(relationship);
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
