@@ -103,11 +103,11 @@ public class DataCollectionService {
     // used for data Aggregation over time
     //key is service ID
     //temporarily removed
-//    private Map<String, List<ServiceMonitoringSnapshot>> historicalMonitoringDatas;
-//
-//    {
-//        historicalMonitoringDatas = new ConcurrentHashMap<String, List<ServiceMonitoringSnapshot>>();
-//    }
+    private Map<String, List<ServiceMonitoringSnapshot>> historicalMonitoringDatas;
+
+    {
+        historicalMonitoringDatas = new ConcurrentHashMap<String, List<ServiceMonitoringSnapshot>>();
+    }
     // used if someone wants freshest data
     // private ServiceMonitoringSnapshot latestMonitoringData;
     // interval at which RAW monitoring data is collected
@@ -161,10 +161,6 @@ public class DataCollectionService {
     public void init() {
         log.debug("Initializing DataCollectionService");
         actionsInExecution = new HashMap<String, List<Action>>();
-
-        if ((monitoringIntervalInSeconds / aggregationWindowsCount) == 0) {
-            aggregationWindowsCount = monitoringIntervalInSeconds;
-        }
 
         scheduler = Executors.newFixedThreadPool(100);
 
@@ -560,12 +556,12 @@ public class DataCollectionService {
                         if (monitoringData != null) {
                             List<ServiceMonitoringSnapshot> dataToAggregate = null;
 
-//                            if (historicalMonitoringDatas.containsKey(serviceID)) {
-//                                dataToAggregate = historicalMonitoringDatas.get(serviceID);
-//                            } else {
-                            dataToAggregate = new ArrayList<ServiceMonitoringSnapshot>();
-//                                historicalMonitoringDatas.put(serviceID, dataToAggregate);
-//                            }
+                            if (historicalMonitoringDatas.containsKey(serviceID)) {
+                                dataToAggregate = historicalMonitoringDatas.get(serviceID);
+                            } else {
+                                dataToAggregate = new ArrayList<ServiceMonitoringSnapshot>();
+                                historicalMonitoringDatas.put(serviceID, dataToAggregate);
+                            }
 
                             dataToAggregate.add(monitoringData);
                             // remove the oldest and add the new value always

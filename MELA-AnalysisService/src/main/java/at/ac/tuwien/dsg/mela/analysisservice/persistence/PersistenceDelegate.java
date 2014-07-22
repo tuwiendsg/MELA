@@ -49,7 +49,11 @@ public class PersistenceDelegate {
     }
 
     public void writeElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
-        persistenceSQLAccess.writeElasticitySpace(elasticitySpace, monitoringSequenceID);
+        try {
+            persistenceSQLAccess.writeElasticitySpace(elasticitySpace, monitoringSequenceID);
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+        }
     }
 
     public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID) {
