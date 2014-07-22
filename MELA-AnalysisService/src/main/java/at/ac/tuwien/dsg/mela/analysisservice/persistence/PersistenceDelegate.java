@@ -57,7 +57,7 @@ public class PersistenceDelegate {
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID);
 
         //update space with new data
-        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration(monitoringSequenceID);
 
         if (cfg == null) {
             log.error("Retrieved empty configuration.");
@@ -140,13 +140,17 @@ public class PersistenceDelegate {
         return persistenceSQLAccess.getAvailableMetrics(monitoredElement, monitoringSequenceID);
     }
 
-    public ConfigurationXMLRepresentation getLatestConfiguration() {
-        return persistenceSQLAccess.getLatestConfiguration();
+    public ConfigurationXMLRepresentation getLatestConfiguration(String monitoringSequenceID) {
+        return persistenceSQLAccess.getLatestConfiguration(monitoringSequenceID);
 
     }
 
     public ServiceMonitoringSnapshot extractLatestMonitoringData(String monitoringSequenceID) {
         return persistenceSQLAccess.extractLatestMonitoringData(monitoringSequenceID);
+    }
+
+    public List<String> getMonitoringSequencesIDs() {
+        return persistenceSQLAccess.getMonitoringSequencesIDs();
     }
 
 }

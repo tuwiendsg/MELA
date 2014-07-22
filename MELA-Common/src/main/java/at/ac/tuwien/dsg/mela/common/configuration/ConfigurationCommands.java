@@ -13,7 +13,7 @@ public interface ConfigurationCommands {
 
     public static final String SUBMIT_CONFIGURATION_COMMAND = "SubmitConfig";
     public static final String SUBMIT_COMPOSITION_RULES = "SubmitCompositionRules";
-    public static final String SUBMIT_REQUIREMENTS = "SubmitServiceStructure";
+    public static final String SUBMIT_REQUIREMENTS = "SubmitServiceRequirements";
     public static final String UPDATE_SERVICE_STRUCTURE = "UpdateServiceStructure";
     public static final String SET_SERVICE_STRUCTURE = "SetServiceStructure";
     public static final String ADD_EXECUTING_ACTION = "AddExecutingAction";

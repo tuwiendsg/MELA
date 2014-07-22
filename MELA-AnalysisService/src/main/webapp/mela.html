@@ -46,6 +46,11 @@
         <script src="./spin.js" type="text/javascript"></script>
         <script type="text/javascript">
 
+
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            var serviceID = vars[0];
+
             function contains(children, child) {
                 for (var index = 0; index < children.length; index++) {
                     if (children[index].name == child.name) {
@@ -971,7 +976,7 @@
             //open el Space only for VMs
             function click(d) {
                 if (d.type != "VM") {
-                    var win = window.open("elasticitySpaceAndPathway.html?" + d.name + "&" + d.type, '_blank');
+                    var win = window.open("elasticitySpaceAndPathway.html?"+ serviceID + "&" + d.name + "&" + d.type, '_blank');
                 }
             }
 
@@ -1261,7 +1266,7 @@
                 }
 
                 reqMonitoringDataObject.onreadystatechange = processMonitoringDataResponse;
-                reqMonitoringDataObject.open("GET", "./REST_WS/monitoringdataJSON", true);
+                reqMonitoringDataObject.open("GET", "./REST_WS/"+ serviceID + "/monitoringdataJSON", true);
                 reqMonitoringDataObject.send(null);
 
             }
@@ -1316,7 +1321,7 @@
                 }
 
                 reqMetricCompositionRulesObj.onreadystatechange = processCompositionMetricsResponse;
-                reqMetricCompositionRulesObj.open("GET", "./REST_WS/metriccompositionrules", true);
+                reqMetricCompositionRulesObj.open("GET", "./REST_WS/"+ serviceID + "/metriccompositionrules", true);
                 reqMetricCompositionRulesObj.send(null);
 
             }

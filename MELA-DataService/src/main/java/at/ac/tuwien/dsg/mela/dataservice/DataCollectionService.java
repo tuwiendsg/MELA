@@ -34,6 +34,7 @@ import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
 
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceDelegate;
 import org.slf4j.Logger;
@@ -46,6 +47,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -56,34 +61,57 @@ public class DataCollectionService {
 
     static final Logger log = LoggerFactory.getLogger(DataCollectionService.class);
 
-    @Value("#{${dataaccess.automaticstructuredetection} ? @autoUnguidedStructureDetectionDataAccess : @defaultDataAccess}")
-    private AbstractDataAccess dataAccess;
-
-    private Requirements requirements;
+//    @Value("#{${dataaccess.automaticstructuredetection} ? @autoUnguidedStructureDetectionDataAccess : @defaultDataAccess}")
+//    private AbstractDataAccess dataAccess;
+//    @Value("${dataaccess.automaticstructuredetection")
+//    private boolean automaticStructureDetection;
+    /**
+     * Key is ID of service monitored, and value its personal data access object
+     */
+    private Map<String, AbstractDataAccess> dataAccesses;
 
     {
-        requirements = new Requirements();
+        dataAccesses = new ConcurrentHashMap<String, AbstractDataAccess>();
     }
 
-    private CompositionRulesConfiguration compositionRulesConfiguration;
+    /**
+     * key = ID of service for which Requirements are stored in values field
+     */
+    private Map<String, Requirements> requirementsConfiguration;
 
     {
-        compositionRulesConfiguration = new CompositionRulesConfiguration();
+        requirementsConfiguration = new ConcurrentHashMap();
     }
 
-    private MonitoredElement serviceConfiguration;
+    /**
+     * key = ID of service for which Rules are stored in values field
+     */
+    private Map<String, CompositionRulesConfiguration> compositionRulesConfigurations;
 
     {
-        serviceConfiguration = new MonitoredElement();
+        compositionRulesConfigurations = new ConcurrentHashMap();
+    }
+    /**
+     * key = ID of service for which Service structure is stored in values field
+     */
+    private Map<String, MonitoredElement> serviceConfigurations;
+
+    {
+        serviceConfigurations = new ConcurrentHashMap();
     }
 
     // used for data Aggregation over time
-    private List<ServiceMonitoringSnapshot> historicalMonitoringData;
-
+    //key is service ID
+    //temporarily removed
+//    private Map<String, List<ServiceMonitoringSnapshot>> historicalMonitoringDatas;
+//
+//    {
+//        historicalMonitoringDatas = new ConcurrentHashMap<String, List<ServiceMonitoringSnapshot>>();
+//    }
     // used if someone wants freshest data
     // private ServiceMonitoringSnapshot latestMonitoringData;
     // interval at which RAW monitoring data is collected
-    @Value("${monitoring.polling.interval:5}")
+    @Value("${monitoring.polling.interval:1}")
     private int monitoringIntervalInSeconds;
 
     // interval over which raw monitoring data is aggregated.
@@ -96,10 +124,21 @@ public class DataCollectionService {
     @Value("${dataservice.behavior.monitoring}")
     private boolean monitoring;
 
-    private Timer monitoringTimer;
+    /**
+     * Key is ID of the service monitored by the monitoring timer
+     */
+    private Map<String, Timer> monitoringTimers;
+
+    {
+        monitoringTimers = new ConcurrentHashMap<String, Timer>();
+    }
 
     // holding MonitoredElement name, and Actions Name
-    private List<Action> actionsInExecution;
+    private Map<String, List<Action>> actionsInExecution;
+
+    {
+        actionsInExecution = new ConcurrentHashMap<String, List<Action>>();
+    }
 
     @Autowired
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
@@ -110,82 +149,179 @@ public class DataCollectionService {
     @Autowired
     private ApplicationContext context;
 
-    // used in monitoring
-    private TimerTask task = new TimerTask() {
-        @Override
-        public void run() {
-        }
-    };
+//    // used in monitoring
+//    private TimerTask task = new TimerTask() {
+//        @Override
+//        public void run() {
+//        }
+//    };
+    private ExecutorService scheduler;
 
     @PostConstruct
     public void init() {
         log.debug("Initializing DataCollectionService");
-        historicalMonitoringData = new ArrayList<ServiceMonitoringSnapshot>();
-        monitoringTimer = new Timer();
-        actionsInExecution = Collections.synchronizedList(new ArrayList<Action>());
+        actionsInExecution = new HashMap<String, List<Action>>();
 
         if ((monitoringIntervalInSeconds / aggregationWindowsCount) == 0) {
             aggregationWindowsCount = monitoringIntervalInSeconds;
         }
 
-        if (monitoring) {
-            startMonitoring();
+        scheduler = Executors.newFixedThreadPool(100);
+
+        //read all existing Service IDs and start monitoring timers for them
+        for (String monSeqID : persistenceSQLAccess.getMonitoringSequencesIDs()) {
+
+            ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration(monSeqID);
+            serviceConfigurations.put(monSeqID, configurationXMLRepresentation.getServiceConfiguration());
+            compositionRulesConfigurations.put(monSeqID, configurationXMLRepresentation.getCompositionRulesConfiguration());
+            requirementsConfiguration.put(monSeqID, configurationXMLRepresentation.getRequirements());
+
+            AbstractDataAccess dataAccess = DataAccessWithManualStructureManagement.createInstance();
+            dataAccesses.put(monSeqID, dataAccess);
+            dataAccess.getMetricFilters().clear();
+
+             // list all MELA datasources from application context
+            //maybe in future add specific source for specific service
+            Map<String, AbstractDataSource> dataSources = context.getBeansOfType(AbstractDataSource.class);
+
+            for (String dataSourceName : dataSources.keySet()) {
+                AbstractDataSource dataSource = dataSources.get(dataSourceName);
+                log.debug("Found Datasource '{}': {}", dataSourceName, dataSource);
+                dataAccess.addDataSource(dataSource);
+            }
+
+            // set metric filters on data access
+            for (CompositionRule compositionRule : configurationXMLRepresentation.getCompositionRulesConfiguration().getMetricCompositionRules().getCompositionRules()) {
+                // go trough each CompositionOperation and extract the source
+                // metrics
+
+                List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+                queue.add(compositionRule.getOperation());
+
+                while (!queue.isEmpty()) {
+                    CompositionOperation operation = queue.remove(0);
+                    queue.addAll(operation.getSubOperations());
+                    Metric targetMetric = operation.getTargetMetric();
+                    // metric can be null if a composition rule artificially creates
+                    // a metric using SET_VALUE
+                    if (targetMetric != null) {
+                        MetricFilter metricFilter = new MetricFilter();
+                        metricFilter.setId(targetMetric.getName() + "_Filter");
+                        metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+                        Collection<Metric> metrics = new ArrayList<Metric>();
+                        metrics.add(new Metric(targetMetric.getName()));
+                        metricFilter.setMetrics(metrics);
+
+                        if (monitoring) {
+                            dataAccess.addMetricFilter(metricFilter);
+                        }
+                    }
+                }
+            }
+
+            startMonitoring(monSeqID);
+
+        }
+    }
+
+    public synchronized Collection<MonitoredElement> getServiceConfiguration() {
+        return serviceConfigurations.values();
+    }
+
+    public synchronized void addExecutingActions(String serviceID, List<Action> actions) {
+        if (actionsInExecution.containsKey(serviceID)) {
+            List<Action> inExecution = actionsInExecution.get(serviceID);
+            inExecution.addAll(actions);
+        } else {
+            List<Action> inExecution = Collections.synchronizedList(new ArrayList<Action>());
+            inExecution.addAll(actions);
+            actionsInExecution.put(serviceID, inExecution);
         }
 
     }
 
-    public synchronized MonitoredElement getServiceConfiguration() {
-        return serviceConfiguration;
+    public synchronized void removeExecutingActions(String serviceID, List<Action> actions) {
+        if (actionsInExecution.containsKey(serviceID)) {
+            List<Action> inExecution = actionsInExecution.get(serviceID);
+            inExecution.removeAll(actions);
+        }
     }
 
-    public synchronized void addExecutingActions(List<Action> actions) {
-        actionsInExecution.addAll(actions);
-    }
+    public synchronized void addConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
 
-    public synchronized void setConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
+        MonitoredElement serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
 
-        serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
-        setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
+        serviceConfigurations.put(serviceConfiguration.getId(), serviceConfiguration);
+
+        setCompositionRulesConfiguration(serviceConfiguration.getId(), configurationXMLRepresentation.getCompositionRulesConfiguration());
 
         persistenceSQLAccess.writeMonitoringSequenceId(serviceConfiguration.getId());
-        persistenceSQLAccess.writeConfiguration(configurationXMLRepresentation);
+        persistenceSQLAccess.writeConfiguration(serviceConfiguration.getId(), configurationXMLRepresentation);
 
-        requirements = configurationXMLRepresentation.getRequirements();
-        monitoringTimer.cancel();
-        monitoringTimer.purge();
+        requirementsConfiguration.put(serviceConfiguration.getId(), configurationXMLRepresentation.getRequirements());
 
-        startMonitoring();
+        if (monitoringTimers.containsKey(serviceConfiguration.getId())) {
+            Timer t = monitoringTimers.get(serviceConfiguration.getId());
+            t.cancel();
+            t.purge();
+        }
+
+        startMonitoring(serviceConfiguration.getId());
     }
 
-    public synchronized void removeExecutingActions(List<Action> actions) {
-        actionsInExecution.removeAll(actions);
-    }
+    public synchronized void addService(MonitoredElement serviceConfiguration) {
 
-    public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
-        this.serviceConfiguration = serviceConfiguration;
-        monitoringTimer.cancel();
-        monitoringTimer.purge();
+        serviceConfigurations.put(serviceConfiguration.getId(), serviceConfiguration);
+
+        //check if this is update on previous service
+        if (monitoringTimers.containsKey(serviceConfiguration.getId())) {
+            Timer t = monitoringTimers.get(serviceConfiguration.getId());
+            t.cancel();
+            t.purge();
+        }
+
+        CompositionRulesConfiguration compositionRulesConfiguration = (compositionRulesConfigurations.containsKey(serviceConfiguration.getId()))
+                ? compositionRulesConfigurations.get(serviceConfiguration.getId()) : new CompositionRulesConfiguration();
+
+        Requirements requirements = (requirementsConfiguration.containsKey(serviceConfiguration.getId()))
+                ? requirementsConfiguration.get(serviceConfiguration.getId()) : new Requirements();
 
         persistenceSQLAccess.writeMonitoringSequenceId(serviceConfiguration.getId());
-        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
-
-        startMonitoring();
+        persistenceSQLAccess.writeConfiguration(serviceConfiguration.getId(), new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
+        setCompositionRulesConfiguration(serviceConfiguration.getId(), compositionRulesConfiguration);
+        startMonitoring(serviceConfiguration.getId());
     }
 
-    public synchronized void setRequirements(Requirements requirements) {
-        this.requirements = requirements;
+    public synchronized void addRequirements(String serviceID, Requirements requirements) {
 
-        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
+        if (!serviceConfigurations.containsKey(serviceID)) {
+            log.error("Service with id \"" + serviceID + "\" not found");
+            return;
+        }
+        MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
+
+        CompositionRulesConfiguration compositionRulesConfiguration = (compositionRulesConfigurations.containsKey(serviceConfiguration.getId()))
+                ? compositionRulesConfigurations.get(serviceConfiguration.getId()) : new CompositionRulesConfiguration();
+
+        requirementsConfiguration.put(serviceID, requirements);
+
+        persistenceSQLAccess.writeConfiguration(serviceID, new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
     }
 
     // actually removes all VMs and Virtual Clusters from the ServiceUnit and
     // adds new ones.
     public synchronized void updateServiceConfiguration(MonitoredElement serviceConfiguration) {
+
+        if (!serviceConfigurations.containsKey(serviceConfiguration.getId())) {
+            log.error("Service with id \"" + serviceConfiguration.getId() + "\" not found");
+            return;
+        }
+
         // extract all ServiceUnit level monitored elements from both services,
         // and replace their children
-        Map<MonitoredElement, MonitoredElement> serviceUnits = new HashMap<MonitoredElement, MonitoredElement>();
-        for (MonitoredElement element : this.serviceConfiguration) {
+        Map<MonitoredElement, MonitoredElement> serviceUnits = new ConcurrentHashMap<MonitoredElement, MonitoredElement>();
+        for (MonitoredElement element : serviceConfigurations.get(serviceConfiguration.getId())) {
             if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
                 // remove element's children
                 element.getContainedElements().clear();
@@ -202,13 +338,38 @@ public class DataCollectionService {
                 serviceUnits.get(element).getContainedElements().addAll(element.getContainedElements());
             }
         }
-        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
+
+        CompositionRulesConfiguration compositionRulesConfiguration = (compositionRulesConfigurations.containsKey(serviceConfiguration.getId()))
+                ? compositionRulesConfigurations.get(serviceConfiguration.getId()) : new CompositionRulesConfiguration();
+
+        Requirements requirements = (requirementsConfiguration.containsKey(serviceConfiguration.getId()))
+                ? requirementsConfiguration.get(serviceConfiguration.getId()) : new Requirements();
+
+        persistenceSQLAccess.writeConfiguration(serviceConfiguration.getId(), new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
 
     }
 
-    public synchronized void setCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
-        this.compositionRulesConfiguration = compositionRulesConfiguration;
-        persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
+    public synchronized void setCompositionRulesConfiguration(String serviceID, CompositionRulesConfiguration compositionRulesConfiguration) {
+
+        if (!serviceConfigurations.containsKey(serviceID)) {
+            log.error("Service with id \"" + serviceID + "\" not found");
+            return;
+        }
+        MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
+        compositionRulesConfigurations.put(serviceID, compositionRulesConfiguration);
+        Requirements requirements = (requirementsConfiguration.containsKey(serviceConfiguration.getId()))
+                ? requirementsConfiguration.get(serviceConfiguration.getId()) : new Requirements();
+
+        persistenceSQLAccess.writeConfiguration(serviceID, new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
+
+        AbstractDataAccess dataAccess = null;
+        if (!dataAccesses.containsKey(serviceID)) {
+
+            dataAccess = DataAccessWithManualStructureManagement.createInstance();
+            dataAccesses.put(serviceID, dataAccess);
+        } else {
+            dataAccess = dataAccesses.get(serviceID);
+        }
 
         dataAccess.getMetricFilters().clear();
 
@@ -233,14 +394,28 @@ public class DataCollectionService {
                     Collection<Metric> metrics = new ArrayList<Metric>();
                     metrics.add(new Metric(targetMetric.getName()));
                     metricFilter.setMetrics(metrics);
-                    dataAccess.addMetricFilter(metricFilter);
+
+                    if (monitoring) {
+                        dataAccess.addMetricFilter(metricFilter);
+                    }
                 }
             }
         }
     }
 
-    public synchronized ServiceMonitoringSnapshot getRawMonitoringData() {
+    public synchronized ServiceMonitoringSnapshot getRawMonitoringData(String serviceID) {
+        if (!dataAccesses.containsKey(serviceID)) {
+            log.error("Data Access not found for service with id \"" + serviceID + "\" not found");
+            return new ServiceMonitoringSnapshot();
+        }
+        AbstractDataAccess dataAccess = dataAccesses.get(serviceID);
         if (dataAccess != null) {
+            if (!serviceConfigurations.containsKey(serviceID)) {
+                log.error("Service with id \"" + serviceID + "\" not found");
+                return new ServiceMonitoringSnapshot();
+            }
+            MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
+
             Date before = new Date();
             ServiceMonitoringSnapshot monitoredData = dataAccess.getStructuredMonitoredData(serviceConfiguration);
             Date after = new Date();
@@ -252,7 +427,14 @@ public class DataCollectionService {
         }
     }
 
-    public synchronized ServiceMonitoringSnapshot getAggregatedMonitoringDataOverTime(List<ServiceMonitoringSnapshot> serviceMonitoringSnapshots) {
+    public ServiceMonitoringSnapshot getAggregatedMonitoringDataOverTime(String serviceID, List<ServiceMonitoringSnapshot> serviceMonitoringSnapshots) {
+        if (!serviceConfigurations.containsKey(serviceID)) {
+            log.error("Service with id \"" + serviceID + "\" not found");
+            return new ServiceMonitoringSnapshot();
+        }
+        CompositionRulesConfiguration compositionRulesConfiguration = (compositionRulesConfigurations.containsKey(serviceID))
+                ? compositionRulesConfigurations.get(serviceID) : new CompositionRulesConfiguration();
+
         if (serviceMonitoringSnapshots.size() > 1) {
             return instantMonitoringDataEnrichmentEngine.aggregateMonitoringDataOverTime(compositionRulesConfiguration, serviceMonitoringSnapshots);
         } else {
@@ -260,7 +442,12 @@ public class DataCollectionService {
         }
     }
 
-    public synchronized Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement MonitoredElement) {
+    public Collection<Metric> getAvailableMetricsForMonitoredElement(String serviceID, MonitoredElement MonitoredElement) {
+        if (!dataAccesses.containsKey(serviceID)) {
+            log.error("Data Access not found for service with id \"" + serviceID + "\" not found");
+            return new ArrayList<Metric>();
+        }
+        AbstractDataAccess dataAccess = dataAccesses.get(serviceID);
         if (dataAccess != null) {
             return dataAccess.getAvailableMetricsForMonitoredElement(MonitoredElement);
         } else {
@@ -269,7 +456,12 @@ public class DataCollectionService {
         }
     }
 
-    public synchronized void addMetricFilter(MetricFilter metricFilter) {
+    public synchronized void addMetricFilter(String serviceID, MetricFilter metricFilter) {
+        if (!dataAccesses.containsKey(serviceID)) {
+            log.error("Data Access not found for service with id \"" + serviceID + "\" not found");
+            return;
+        }
+        AbstractDataAccess dataAccess = dataAccesses.get(serviceID);
         if (dataAccess != null) {
             dataAccess.addMetricFilter(metricFilter);
         } else {
@@ -277,7 +469,12 @@ public class DataCollectionService {
         }
     }
 
-    public synchronized void addMetricFilters(Collection<MetricFilter> newFilters) {
+    public synchronized void addMetricFilters(String serviceID, Collection<MetricFilter> newFilters) {
+        if (!dataAccesses.containsKey(serviceID)) {
+            log.error("Data Access not found for service with id \"" + serviceID + "\" not found");
+            return;
+        }
+        AbstractDataAccess dataAccess = dataAccesses.get(serviceID);
         if (dataAccess != null) {
             dataAccess.addMetricFilters(newFilters);
         } else {
@@ -285,7 +482,12 @@ public class DataCollectionService {
         }
     }
 
-    public synchronized void removeMetricFilter(MetricFilter metricFilter) {
+    public synchronized void removeMetricFilter(String serviceID, MetricFilter metricFilter) {
+        if (!dataAccesses.containsKey(serviceID)) {
+            log.error("Data Access not found for service with id \"" + serviceID + "\" not found");
+            return;
+        }
+        AbstractDataAccess dataAccess = dataAccesses.get(serviceID);
         if (dataAccess != null) {
             dataAccess.removeMetricFilter(metricFilter);
         } else {
@@ -293,7 +495,12 @@ public class DataCollectionService {
         }
     }
 
-    public synchronized void removeMetricFilters(Collection<MetricFilter> filtersToRemove) {
+    public synchronized void removeMetricFilters(String serviceID, Collection<MetricFilter> filtersToRemove) {
+        if (!dataAccesses.containsKey(serviceID)) {
+            log.error("Data Access not found for service with id \"" + serviceID + "\" not found");
+            return;
+        }
+        AbstractDataAccess dataAccess = dataAccesses.get(serviceID);
         if (dataAccess != null) {
             dataAccess.removeMetricFilters(filtersToRemove);
         } else {
@@ -309,52 +516,64 @@ public class DataCollectionService {
         this.aggregationWindowsCount = aggregationIntervalInSeconds;
     }
 
-    public synchronized void startMonitoring() {
+    public synchronized void startMonitoring(final String serviceID) {
 
-        if (serviceConfiguration == null) {
+        if (!serviceConfigurations.containsKey(serviceID)) {
             return;
         }
-        log.debug("Starting monitoring for serviceConfiguration {}", serviceConfiguration.getId());
 
-        // list all MELA datasources from application context
-        Map<String, AbstractDataSource> dataSources = context.getBeansOfType(AbstractDataSource.class);
+        if (monitoring) {
 
-        for (String dataSourceName : dataSources.keySet()) {
-            AbstractDataSource dataSource = dataSources.get(dataSourceName);
-            log.debug("Found Datasource '{}': {}", dataSourceName, dataSource);
-            dataAccess.addDataSource(dataSource);
+            log.debug("Starting monitoring for serviceConfiguration {}", serviceID);
 
-        }
+            Timer monitoringTimer = new Timer();
+            monitoringTimers.put(serviceID, monitoringTimer);
 
-        monitoringTimer = new Timer();
+            final Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
 
-        task = new TimerTask() {
-            @Override
-            public void run() {
-                if (serviceConfiguration != null) {
-                    log.debug("Refreshing data");
-                    ServiceMonitoringSnapshot monitoringData = getRawMonitoringData();
+                    if (serviceConfigurations.containsKey(serviceID)) {
+                        log.debug("Refreshing data");
+                        ServiceMonitoringSnapshot monitoringData = getRawMonitoringData(serviceID);
 
-                    if (monitoringData != null) {
-                        historicalMonitoringData.add(monitoringData);
-                        // remove the oldest and add the new value always
-                        if (historicalMonitoringData.size() > aggregationWindowsCount) {
-                            historicalMonitoringData.remove(0);
-                        }
+                        if (monitoringData != null) {
+                            List<ServiceMonitoringSnapshot> dataToAggregate = null;
 
-                        if (compositionRulesConfiguration != null) {
-                            ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(historicalMonitoringData);
-                            latestMonitoringData.setExecutingActions(actionsInExecution);
+//                            if (historicalMonitoringDatas.containsKey(serviceID)) {
+//                                dataToAggregate = historicalMonitoringDatas.get(serviceID);
+//                            } else {
+                            dataToAggregate = new ArrayList<ServiceMonitoringSnapshot>();
+//                                historicalMonitoringDatas.put(serviceID, dataToAggregate);
+//                            }
+
+                            dataToAggregate.add(monitoringData);
+                            // remove the oldest and add the new value always
+                            if (dataToAggregate.size() > aggregationWindowsCount) {
+                                dataToAggregate.remove(0);
+                            }
+                            Date beforeAggregation = new Date();
+                            ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(serviceID, dataToAggregate);
+                            Date afterAggregation = new Date();
+
+                            log.debug("Data aggregation time time in ms:  " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime());
+
+                            if (actionsInExecution.containsKey(serviceID)) {
+                                latestMonitoringData.setExecutingActions(actionsInExecution.get(serviceID));
+                            }
 
                             // write monitoring data in sql
                             Date before = new Date();
                             String timestamp = "" + new Date().getTime();
 
-                            //persist updated configuration
-                            persistenceSQLAccess.writeConfiguration(new ConfigurationXMLRepresentation(serviceConfiguration, compositionRulesConfiguration, requirements));
-                            // add new timestamp
+                            Date beforePersisting = new Date();
+                            MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
 
+                            Date beforeTimestamp = new Date();
                             persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration, serviceConfiguration.getId());
+                            Date afterTimestamp = new Date();
+
+                            log.debug("Timestamp persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
 
                             //add same timestamp on all mon data
                             //this is something as a short-hand solution
@@ -365,11 +584,21 @@ public class DataCollectionService {
                                     }
                                 }
                             }
+                            Date beforeMonData = new Date();
                             // write structured monitoring data
                             persistenceSQLAccess.writeMonitoringData(timestamp, latestMonitoringData, serviceConfiguration.getId());
+                            Date afterMonData = new Date();
+                            log.debug("Aggregated monitoring data persistence time in ms:  " + new Date(afterMonData.getTime() - beforeMonData.getTime()).getTime());
 
-                            // write monitoring data directly collected
-                            persistenceSQLAccess.writeRawMonitoringData(timestamp, dataAccess.getFreshestMonitoredData(), serviceConfiguration.getId());
+//                            //temporarily due to performance reasons, raw data is not stored anymore (takes too long to store raw data)
+//                            Date beforeRawData = new Date();
+//                            // write monitoring data directly collected
+//                            persistenceSQLAccess.writeRawMonitoringData(timestamp, dataAccesses.get(serviceID).getFreshestMonitoredData(), serviceConfiguration.getId());
+//                            Date afterRawData = new Date();
+//                            log.debug("Raw monitoring data persistence time in ms:  " + new Date(afterRawData.getTime() - beforeRawData.getTime()).getTime());
+                            Date afterPersisting = new Date();
+
+                            log.debug("Data persistence time in ms:  " + new Date(afterPersisting.getTime() - beforePersisting.getTime()).getTime());
 
                             // update and store elasticity pathway
                             // LightweightEncounterRateElasticityPathway
@@ -378,54 +607,42 @@ public class DataCollectionService {
                             // in future just update pathway. now recompute
                             // elasticityPathway.trainElasticityPathway(null)
                             Date after = new Date();
-                            log.debug("DaaS data writing time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+                            log.debug("Complete data monitoring/aggregating/persisting cycle time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
                             // elasticitySpaceFunction.trainElasticitySpace(latestMonitoringData);
+//                                }
+
+                        } else {
+                            // stop the monitoring if the data replay is done
+                            // this.cancel();
+                            log.error("Monitoring data is NULL");
                         }
                     } else {
-                        // stop the monitoring if the data replay is done
-                        // this.cancel();
-                        log.error("Monitoring data is NULL");
+                        log.warn("No service configuration");
                     }
-                } else {
-                    log.warn("No service configuration");
                 }
-            }
-        };
-        log.debug("Scheduling data pool at " + monitoringIntervalInSeconds + " seconds");
-        // repeat the monitoring every monitoringIntervalInSeconds seconds
-        monitoringTimer.schedule(task, 0, monitoringIntervalInSeconds * 1000);
+            };
+
+            TimerTask task = new TimerTask() {
+
+                @Override
+                public void run() {
+                    scheduler.submit(runnable);
+                }
+            };
+
+            log.debug("Scheduling data pool at " + monitoringIntervalInSeconds + " seconds");
+            // repeat the monitoring every monitoringIntervalInSeconds seconds
+            monitoringTimer.schedule(task, 0, monitoringIntervalInSeconds * 1000);
+
+        }
 
     }
 
     public synchronized void stopMonitoring() {
-        /*try {
-         persistenceSQLAccess.closeConnection();
-         } catch (SQLException ex) {
-         Logger.getLogger(DataCollectionService.class.getName()).log(Level.ERROR, null, ex);
-         }*/
-        // task.cancel();
-        monitoringTimer.cancel();
+        for (Timer timer : monitoringTimers.values()) {
+            timer.cancel();
+            timer.purge();
+        }
     }
-    // public synchronized String getLatestMonitoringDataINJSON() {
-    // Date before = new Date();
-    // String converted =
-    // ConvertToJSON.convertMonitoringSnapshot(latestMonitoringData,
-    // requirements, actionsInExecution);
-    // Date after = new Date();
-    // log.warn(
-    // "Get Mon Data time in ms:  " + new Date(after.getTime() -
-    // before.getTime()).getTime());
-    // return converted;
-    // }
-    //
-    // public synchronized String getMetricCompositionRules() {
-    // if (compositionRulesConfiguration != null) {
-    // return
-    // ConvertToJSON.convertToJSON(compositionRulesConfiguration.getMetricCompositionRules());
-    // } else {
-    // JSONObject jsonObject = new JSONObject();
-    // jsonObject.put("name", "No composition rules yet");
-    // return jsonObject.toJSONString();
-    // }
-    // }
+
 }

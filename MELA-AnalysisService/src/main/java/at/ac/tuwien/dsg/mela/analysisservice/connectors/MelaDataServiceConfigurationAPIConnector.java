@@ -38,7 +38,6 @@ public class MelaDataServiceConfigurationAPIConnector {
         }
     }
 
-
     public void sendCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration) {
         try {
             sendMessage(ConfigurationCommands.SUBMIT_COMPOSITION_RULES, marshal(compositionRulesConfiguration, CompositionRulesConfiguration.class));
@@ -64,18 +63,18 @@ public class MelaDataServiceConfigurationAPIConnector {
 
     }
 
-    public void addExecutingAction(String targetEntityID, String actionName) {
+    public void addExecutingAction(String serviceID, String targetEntityID, String actionName) {
         try {
-            sendMessage(ConfigurationCommands.ADD_EXECUTING_ACTION, marshalActionElement(targetEntityID, actionName));
+            sendMessage(ConfigurationCommands.ADD_EXECUTING_ACTION, marshalActionElement(serviceID, targetEntityID, actionName));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + ActionXML.class + " into String", ex);
         }
 
     }
 
-    public void removeExecutingAction(String targetEntityID, String actionName) {
+    public void removeExecutingAction(String serviceID, String targetEntityID, String actionName) {
         try {
-            sendMessage(ConfigurationCommands.REMOVE_EXECUTING_ACTION, marshalActionElement(targetEntityID, actionName));
+            sendMessage(ConfigurationCommands.REMOVE_EXECUTING_ACTION, marshalActionElement(serviceID, targetEntityID, actionName));
         } catch (JAXBException ex) {
             log.error("Unable to marshall object of class " + ActionXML.class + " into String", ex);
         }
@@ -96,9 +95,9 @@ public class MelaDataServiceConfigurationAPIConnector {
         return writer.toString();
     }
 
-
-    private String marshalActionElement(String targetEntityID, String actionName) throws JAXBException {
+    private String marshalActionElement(String serviceID, String targetEntityID, String actionName) throws JAXBException {
         ActionXML action = new ActionXML();
+        action.setTargetServiceID(serviceID);
         action.addAction(new Action(targetEntityID, actionName));
         return marshal(action, ActionXML.class);
     }
@@ -113,7 +112,5 @@ public class MelaDataServiceConfigurationAPIConnector {
             }
         });
     }
-    
-    
 
 }

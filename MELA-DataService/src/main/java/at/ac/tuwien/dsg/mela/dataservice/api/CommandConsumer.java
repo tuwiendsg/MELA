@@ -33,78 +33,77 @@ import java.io.StringReader;
 public class CommandConsumer implements MessageListener {
 
     static final Logger log = LoggerFactory.getLogger(CommandConsumer.class);
-  
 
     @Autowired
     private DataCollectionService collectionService;
 
     public void onMessage(Message message) {
 
-            if (message instanceof MapMessage) {
+        if (message instanceof MapMessage) {
 
-                try {
+            try {
 
-                    MapMessage mapMessage = (MapMessage) message;
-                    if (mapMessage.itemExists(SUBMIT_CONFIGURATION_COMMAND)) {
-                        String cfg = (String) mapMessage.getObject(SUBMIT_CONFIGURATION_COMMAND);
+                MapMessage mapMessage = (MapMessage) message;
+                if (mapMessage.itemExists(SUBMIT_CONFIGURATION_COMMAND)) {
+                    String cfg = (String) mapMessage.getObject(SUBMIT_CONFIGURATION_COMMAND);
 
-                        JAXBContext jAXBContext = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
-                        ConfigurationXMLRepresentation repr = (ConfigurationXMLRepresentation) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    JAXBContext jAXBContext = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
+                    ConfigurationXMLRepresentation repr = (ConfigurationXMLRepresentation) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.setConfiguration(repr);
+                    collectionService.addConfiguration(repr);
 
-                    } else if (mapMessage.itemExists(SUBMIT_COMPOSITION_RULES)) {
-                        String cfg = (String) mapMessage.getObject(SUBMIT_COMPOSITION_RULES);
+                } else if (mapMessage.itemExists(SUBMIT_COMPOSITION_RULES)) {
+                    String cfg = (String) mapMessage.getObject(SUBMIT_COMPOSITION_RULES);
 
-                        JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
-                        CompositionRulesConfiguration repr = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
+                    CompositionRulesConfiguration repr = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.setCompositionRulesConfiguration(repr);
-                    }else if (mapMessage.itemExists(SET_SERVICE_STRUCTURE)) {
-                        String cfg = (String) mapMessage.getObject(SET_SERVICE_STRUCTURE);
+                    collectionService.setCompositionRulesConfiguration(repr.getTargetServiceID(), repr);
+                } else if (mapMessage.itemExists(SET_SERVICE_STRUCTURE)) {
+                    String cfg = (String) mapMessage.getObject(SET_SERVICE_STRUCTURE);
 
-                        JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
-                        MonitoredElement repr = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
+                    MonitoredElement repr = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.setServiceConfiguration(repr);
-                    }else if (mapMessage.itemExists(UPDATE_SERVICE_STRUCTURE)) {
-                        String cfg = (String) mapMessage.getObject(UPDATE_SERVICE_STRUCTURE);
+                    collectionService.addService(repr);
+                } else if (mapMessage.itemExists(UPDATE_SERVICE_STRUCTURE)) {
+                    String cfg = (String) mapMessage.getObject(UPDATE_SERVICE_STRUCTURE);
 
-                        JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
-                        MonitoredElement repr = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
+                    MonitoredElement repr = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.updateServiceConfiguration(repr);
-                    } else if (mapMessage.itemExists(ADD_EXECUTING_ACTION)) {
-                        String cfg = (String) mapMessage.getObject(ADD_EXECUTING_ACTION);
+                    collectionService.updateServiceConfiguration(repr);
+                } else if (mapMessage.itemExists(ADD_EXECUTING_ACTION)) {
+                    String cfg = (String) mapMessage.getObject(ADD_EXECUTING_ACTION);
 
-                        JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
-                        ActionXML actions = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
+                    ActionXML actions = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.addExecutingActions(actions.getActions());
-                    } else if (mapMessage.itemExists(REMOVE_EXECUTING_ACTION)) {
-                        String cfg = (String) mapMessage.getObject(REMOVE_EXECUTING_ACTION);
+                    collectionService.addExecutingActions(actions.getTargetServiceID(), actions.getActions());
+                } else if (mapMessage.itemExists(REMOVE_EXECUTING_ACTION)) {
+                    String cfg = (String) mapMessage.getObject(REMOVE_EXECUTING_ACTION);
 
-                        JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
-                        ActionXML actions = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
+                    ActionXML actions = (ActionXML) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.removeExecutingActions(actions.getActions());
-                    } else if (mapMessage.itemExists(SUBMIT_REQUIREMENTS)) {
-                        String cfg = (String) mapMessage.getObject(SUBMIT_REQUIREMENTS);
+                    collectionService.removeExecutingActions(actions.getTargetServiceID(), actions.getActions());
+                } else if (mapMessage.itemExists(SUBMIT_REQUIREMENTS)) {
+                    String cfg = (String) mapMessage.getObject(SUBMIT_REQUIREMENTS);
 
-                        JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
-                        Requirements requirements = (Requirements) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
+                    JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
+                    Requirements requirements = (Requirements) jAXBContext.createUnmarshaller().unmarshal(new StringReader(cfg));
 
-                        collectionService.setRequirements(requirements);
-                    }
-
-                } catch (JAXBException ex) {
-                    log.error( ex.getMessage(), ex);
-                } catch (JMSException ex) {
-                     log.error( ex.getMessage(), ex);
+                    collectionService.addRequirements(requirements.getTargetServiceID(), requirements);
                 }
-            } else {
-                System.out.println("Unrecognized message: " + message);
-            }
 
+            } catch (JAXBException ex) {
+                log.error(ex.getMessage(), ex);
+            } catch (JMSException ex) {
+                log.error(ex.getMessage(), ex);
+            }
+        } else {
+            System.out.println("Unrecognized message: " + message);
         }
+
+    }
 }

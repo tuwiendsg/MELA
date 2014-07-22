@@ -124,6 +124,8 @@ public class Requirement implements Serializable {
     public void setMetric(Metric metric) {
         this.metric = metric;
     }
+    
+    
 
     @Override
     public String toString() {
@@ -160,5 +162,35 @@ public class Requirement implements Serializable {
         r.targetMonitoredElementLevel = targetMonitoredElementLevel;
         r.targetMonitoredElementIDs = targetMonitoredElementIDs;
         return r;
+    }
+
+    public Requirement withMetric(final Metric metric) {
+        this.metric = metric;
+        return this;
+    }
+
+    public Requirement withConditions(final List<Condition> conditions) {
+        this.conditions = conditions;
+        return this;
+    }
+
+    public Requirement withId(final String id) {
+        this.id = id;
+        return this;
+    }
+
+    public Requirement withTargetMonitoredElementLevel(final MonitoredElement.MonitoredElementLevel targetMonitoredElementLevel) {
+        this.targetMonitoredElementLevel = targetMonitoredElementLevel;
+        return this;
+    }
+
+    public Requirement withTargetMonitoredElementIDs(final List<String> targetMonitoredElementIDs) {
+        this.targetMonitoredElementIDs = targetMonitoredElementIDs;
+        return this;
+    }
+
+    public Requirement withName(final String name) {
+        this.name = name;
+        return this;
     }
 }

@@ -19,7 +19,6 @@
  */
 package at.ac.tuwien.dsg.mela.common.persistence;
 
-
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
@@ -48,6 +47,7 @@ import javax.xml.bind.JAXBException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -204,9 +204,10 @@ public class PersistenceSQLAccess {
     }
 
     /**
-     * 
-     * @param monitoringSequenceID 
-     * @return IDs for all timestamps recorded for the supplied monitoringSequenceID
+     *
+     * @param monitoringSequenceID
+     * @return IDs for all timestamps recorded for the supplied
+     * monitoringSequenceID
      */
     public List<Integer> getTimestampIDs(String monitoringSequenceID) {
         String sql = "SELECT id from Timestamp where monSeqID=?;";
@@ -383,6 +384,7 @@ public class PersistenceSQLAccess {
     public ServiceMonitoringSnapshot extractLatestMonitoringData(String monitoringSequenceID) {
         String sql = "SELECT timestampID, data from AggregatedData where " + "ID = (SELECT MAX(ID) from AggregatedData where monSeqID=?);";
 
+
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
@@ -453,8 +455,8 @@ public class PersistenceSQLAccess {
 
     }
 
-    public ConfigurationXMLRepresentation getLatestConfiguration() {
-        String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration)";
+    public ConfigurationXMLRepresentation getLatestConfiguration(String serviceID) {
+        String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration) AND monSeqID=?";
         ConfigurationXMLRepresentation configurationXMLRepresentation = null;
         try {
             RowMapper<String> rowMapper = new RowMapper<String>() {
@@ -463,7 +465,7 @@ public class PersistenceSQLAccess {
                 }
             };
 
-            List<String> configs = jdbcTemplate.query(sql, rowMapper);
+            List<String> configs = jdbcTemplate.query(sql, rowMapper, serviceID);
 
             for (String config : configs) {
                 JAXBContext context = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
@@ -482,10 +484,12 @@ public class PersistenceSQLAccess {
     }
 
     /**
+     * @param serviceID ID of the service for which the configuration will be
+     * inserted
      * @param configurationXMLRepresentation the used MELA configuration to be
      * persisted in XML and reused
      */
-    public void writeConfiguration(final ConfigurationXMLRepresentation configurationXMLRepresentation) {
+    public void writeConfiguration(final String serviceID, final ConfigurationXMLRepresentation configurationXMLRepresentation) {
         final StringWriter stringWriter = new StringWriter();
         try {
             JAXBContext context = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
@@ -497,10 +501,12 @@ public class PersistenceSQLAccess {
 
         }
 
-        String sql = "INSERT INTO Configuration (configuration) " + "VALUES (?)";
+        String sql = "INSERT INTO Configuration (monSeqID, configuration) " + "VALUES (?, ?)";
+
         jdbcTemplate.execute(sql, new AbstractLobCreatingPreparedStatementCallback(new DefaultLobHandler()) {
             protected void setValues(PreparedStatement ps, LobCreator lobCreator) throws SQLException {
-                lobCreator.setClobAsString(ps, 1, stringWriter.toString());
+                ps.setString(1, serviceID);
+                lobCreator.setClobAsString(ps, 2, stringWriter.toString());
             }
         });
     }
@@ -510,4 +516,23 @@ public class PersistenceSQLAccess {
 
     }
 
+    public List<String> getMonitoringSequencesIDs() {
+
+        String sql = "SELECT ID from MonitoringSeq";
+        RowMapper<String> rowMapper = new RowMapper<String>() {
+            public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+                String id = rs.getString(1);
+                return id;
+
+            }
+        };
+
+        //get last space
+        List<String> strings = jdbcTemplate.query(sql, rowMapper);
+        if (strings.isEmpty()) {
+            return new ArrayList<String>();
+        } else {
+            return strings;
+        }
+    }
 }

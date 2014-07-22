@@ -66,13 +66,17 @@ public class PersistenceDelegate {
     public List<Integer> getTimestampIDs(String monitoringSequenceID) {
         return persistenceSQLAccess.getTimestampIDs(monitoringSequenceID);
     }
+    
+     public List<String> getMonitoringSequencesIDs() {
+        return persistenceSQLAccess.getMonitoringSequencesIDs();
+    }
 
     public MonitoringData getRawMonitoringData(String monitoringSequenceID, String timestampID) {
         return persistenceSQLAccess.getRawMonitoringData(monitoringSequenceID, timestampID);
     }
 
-    public ConfigurationXMLRepresentation getLatestConfiguration() {
-        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration();
+    public ConfigurationXMLRepresentation getLatestConfiguration(String monitoringSequenceID) {
+        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration(monitoringSequenceID);
 
         if (configurationXMLRepresentation == null) {
             return configurationUtility.createDefaultConfiguration();
@@ -82,11 +86,12 @@ public class PersistenceDelegate {
     }
 
     /**
+     * @param monitoringSequenceID IF of the service for which configuration will be stored
      * @param configurationXMLRepresentation the used MELA configuration to be
      * persisted in XML and reused
      */
-    public void writeConfiguration(final ConfigurationXMLRepresentation configurationXMLRepresentation) {
-        persistenceSQLAccess.writeConfiguration(configurationXMLRepresentation);
+    public void writeConfiguration(String monitoringSequenceID, final ConfigurationXMLRepresentation configurationXMLRepresentation) {
+        persistenceSQLAccess.writeConfiguration(monitoringSequenceID, configurationXMLRepresentation);
     }
 
 }

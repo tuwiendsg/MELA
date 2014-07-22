@@ -462,7 +462,7 @@
         var elPthwDiv = d3.select("body").append("div");
         var maxColumns;
         
-        document.title = vars[0]+ ": Elasticity Analysis";
+        document.title = vars[1]+ ": Elasticity Analysis";
        
         function refreshElSpace(){
                 
@@ -475,9 +475,9 @@
             }
             
             elasticitySpaceRequest.onreadystatechange=processElasticitySpaceRequestResponse;
-            elasticitySpaceRequest.open("POST","./REST_WS/elasticityspace",true);
+            elasticitySpaceRequest.open("POST","./REST_WS/" + vars[0] + "/elasticityspace",true);
             elasticitySpaceRequest.setRequestHeader('Content-type', 'application/xml');
-            elasticitySpaceRequest.send("<MonitoredElement id=\"" + vars[0] + "\" level=\"" + vars[1] + "\"/>");
+            elasticitySpaceRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
                     
         }
             
@@ -511,9 +511,9 @@
             }
             
             elasticityPathwayRequest.onreadystatechange=processElasticityPathwayRequestResponse;
-            elasticityPathwayRequest.open("POST","./REST_WS/elasticitypathway",true);
+            elasticityPathwayRequest.open("POST","./REST_WS/" + vars[0] + "/elasticitypathway",true);
             elasticityPathwayRequest.setRequestHeader('Content-type', 'application/xml');
-            elasticityPathwayRequest.send("<MonitoredElement id=\"" + vars[0] + "\" level=\"" + vars[1] + "\"/>");
+            elasticityPathwayRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
                     
         }
             
@@ -540,7 +540,7 @@
             elSpaceDiv.selectAll("h2").remove();
             elSpaceDiv.selectAll("svg").remove();
                 
-            elSpaceDiv.append("h2").text("Elasticity Space  for " + vars[0]);
+            elSpaceDiv.append("h2").text("Elasticity Space  for " + vars[1]);
                 
             maxColumns = Math.floor(window.innerWidth/(width + 60));
             
@@ -570,7 +570,7 @@
             elPthwDiv.selectAll("h2").remove();
             elPthwDiv.selectAll("svg").remove();
                 
-            elPthwDiv.append("h2").text("Elasticity Pathway  for " + vars[0]);
+            elPthwDiv.append("h2").text("Elasticity Pathway  for " + vars[1]);
                 
             elPthwSVG = elPthwDiv.append("svg")           
             .attr("width",  window.innerWidth)

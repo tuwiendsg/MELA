@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import org.json.simple.JSONArray;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -59,6 +60,12 @@ import java.util.*;
 public class ElasticityAnalysisManager {
 
     static final Logger log = LoggerFactory.getLogger(ElasticityAnalysisManager.class);
+
+    /**
+     * Value of metric that indicates that the unit has not started yet .Used to
+     * avoid analyzing the elasticity space also over that metric
+     */
+    private static final String UNSTABLE_METRIC_VALUE = "-1";
 
     @Value("${analysisservice.elasticityanalysis:true}")
     private boolean elasticityAnalysisEnabled;
@@ -88,7 +95,7 @@ public class ElasticityAnalysisManager {
         instantMonitoringDataAnalysisEngine = new InstantMonitoringDataAnalysisEngine();
 
         // get latest config
-//        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceDelegate.getLatestConfiguration();
+//        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceDelegate.getLatestConfiguration(serviceID);
 //        persistenceDelegate.setMonitoringId(configurationXMLRepresentation.getServiceConfiguration().getId());
         // open proper sql access
         //persistenceDelegate = new PersistenceSQLAccess(configurationXMLRepresentation.getServiceConfiguration().getId());
@@ -100,12 +107,12 @@ public class ElasticityAnalysisManager {
     protected ElasticityAnalysisManager() {
     }
 
-    public synchronized void addExecutingAction(String targetEntityID, String actionName) {
-        melaApi.addExecutingAction(targetEntityID, actionName);
+    public synchronized void addExecutingAction(String serviceID, String targetEntityID, String actionName) {
+        melaApi.addExecutingAction(serviceID, targetEntityID, actionName);
     }
 
-    public synchronized void removeExecutingAction(String targetEntityID, String actionName) {
-        melaApi.removeExecutingAction(targetEntityID, actionName);
+    public synchronized void removeExecutingAction(String serviceID, String targetEntityID, String actionName) {
+        melaApi.removeExecutingAction(serviceID, targetEntityID, actionName);
     }
 
     public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
@@ -114,8 +121,8 @@ public class ElasticityAnalysisManager {
         melaApi.sendServiceStructure(serviceConfiguration);
     }
 
-    public synchronized MonitoredElement getServiceConfiguration() {
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+    public synchronized MonitoredElement getServiceConfiguration(String serviceID) {
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         if (cfg != null) {
             return cfg.getServiceConfiguration();
         } else {
@@ -131,7 +138,7 @@ public class ElasticityAnalysisManager {
 
     public synchronized void updateServiceConfiguration(MonitoredElement serviceConfiguration) {
 
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceConfiguration.getId());
 
         // extract all ServiceUnit level monitored elements from both services,
         // and replace their children
@@ -158,8 +165,8 @@ public class ElasticityAnalysisManager {
 
     }
 
-    public synchronized Requirements getRequirements() {
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+    public synchronized Requirements getRequirements(String serviceID) {
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         if (cfg != null) {
             return cfg.getRequirements();
         } else {
@@ -168,22 +175,23 @@ public class ElasticityAnalysisManager {
 
     }
 
-    public Boolean testIfAllVMsReportMEtricsGreaterThanZero(MonitoredElement element) {
-        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration();
+    public boolean testIfAllVMsReportMEtricsGreaterThanZero(String serviceID) {
+        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
         if (cxmlr != null) {
+//            MonitoredElement element = cxmlr.getServiceConfiguration();
             ServiceMonitoringSnapshot data = persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId());
-            if (data.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT).containsKey(element)) {
-                MonitoredElementMonitoringSnapshot mems = data.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT).get(element);
-                for (MonitoredElementMonitoringSnapshot childSnapshot : mems.getChildren()) {
-                    for (MetricValue metricValue : childSnapshot.getMonitoredData().values()) {
+            if (data == null) {
+                log.error("Monitoring Data not found for " + serviceID);
+                throw new RuntimeException("Monitoring Data not found for " + serviceID);
+            }
+            for (MonitoredElementMonitoringSnapshot childSnapshot : data.getMonitoredData(MonitoredElement.MonitoredElementLevel.VM).values()) {
+                for (MetricValue metricValue : childSnapshot.getMonitoredData().values()) {
+                    if (metricValue.getValueType().equals(MetricValue.ValueType.NUMERIC)) {
                         if (metricValue.compareTo(new MetricValue(0)) < 0) {
                             return false;
                         }
                     }
                 }
-            } else {
-                log.error("Monitoring Data not found for " + element.getId());
-                throw new RuntimeException("Monitoring Data not found for " + element.getId());
             }
         } else {
             return true;
@@ -196,9 +204,9 @@ public class ElasticityAnalysisManager {
 
     }
 
-    public synchronized CompositionRulesConfiguration getCompositionRulesConfiguration() {
+    public synchronized CompositionRulesConfiguration getCompositionRulesConfiguration(String serviceID) {
 
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         if (cfg != null) {
             return cfg.getCompositionRulesConfiguration();
         } else {
@@ -212,8 +220,8 @@ public class ElasticityAnalysisManager {
         melaApi.sendCompositionRules(compositionRulesConfiguration);
     }
 
-    public synchronized AnalysisReport analyzeLatestMonitoringData() {
-        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration();
+    public AnalysisReport analyzeLatestMonitoringData(String serviceID) {
+        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
         if (cxmlr != null) {
             return instantMonitoringDataAnalysisEngine.analyzeRequirements(persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId()), cxmlr.getRequirements());
         } else {
@@ -222,8 +230,8 @@ public class ElasticityAnalysisManager {
 
     }
 
-    public synchronized Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement monitoredElement) {
-        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration();
+    public Collection<Metric> getAvailableMetricsForMonitoredElement(String serviceID, MonitoredElement monitoredElement) {
+        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
 
         if (cxmlr != null) {
             return persistenceDelegate.getAvailableMetrics(monitoredElement, cxmlr.getServiceConfiguration().getId());
@@ -232,8 +240,13 @@ public class ElasticityAnalysisManager {
         }
     }
 
-    public synchronized MonitoredElementMonitoringSnapshot getLatestMonitoringData() {
-        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration();
+    public synchronized MonitoredElementMonitoringSnapshot getLatestMonitoringData(String serviceID) {
+        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cxmlr == null) {
+            return new MonitoredElementMonitoringSnapshot();
+        }
+
         ServiceMonitoringSnapshot monitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId());
         if (monitoringSnapshot != null && !monitoringSnapshot.getMonitoredData().isEmpty()) {
             return monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next();
@@ -242,8 +255,11 @@ public class ElasticityAnalysisManager {
         }
     }
 
-    public synchronized MonitoredElementMonitoringSnapshot getLatestMonitoringData(MonitoredElement element) {
-        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration();
+    public synchronized MonitoredElementMonitoringSnapshot getLatestMonitoringData(String serviceID, MonitoredElement element) {
+        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
+        if (cxmlr == null) {
+            return new MonitoredElementMonitoringSnapshot();
+        }
         ServiceMonitoringSnapshot monitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId());
         if (monitoringSnapshot != null && !monitoringSnapshot.getMonitoredData().isEmpty()) {
             //keep data only for element
@@ -255,9 +271,9 @@ public class ElasticityAnalysisManager {
         }
     }
 
-    public synchronized MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData() {
+    public synchronized MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(String serviceID) {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringData(getServiceConfiguration().getId())) {
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringData(serviceID)) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
         MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
@@ -265,9 +281,9 @@ public class ElasticityAnalysisManager {
         return snapshots;
     }
 
-    public synchronized MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String startTimestamp, String endTimestamp) {
+    public synchronized MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String serviceID, String startTimestamp, String endTimestamp) {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringDataByTimeInterval(startTimestamp, endTimestamp, getServiceConfiguration().getId())) {
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringDataByTimeInterval(startTimestamp, endTimestamp, serviceID)) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
         MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
@@ -275,9 +291,9 @@ public class ElasticityAnalysisManager {
         return snapshots;
     }
 
-    public synchronized MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(int count) {
+    public synchronized MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(String serviceID, int count) {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractLastXMonitoringDataSnapshots(count, getServiceConfiguration().getId())) {
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractLastXMonitoringDataSnapshots(count, serviceID)) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
         MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
@@ -286,16 +302,16 @@ public class ElasticityAnalysisManager {
     }
 
     // uses a lot of memory (all directly in memory)
-    public synchronized String getElasticityPathway(MonitoredElement element) {
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
-        // if no service configuration, we can't have elasticity space function
-        // if no compositionRulesConfiguration we have no data
-        if (!elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
-            log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
-            JSONObject elSpaceJSON = new JSONObject();
-            elSpaceJSON.put("name", "ElPathway");
-            return elSpaceJSON.toJSONString();
-        }
+    public synchronized String getElasticityPathway(String serviceID, MonitoredElement element) {
+//        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+//        // if no service configuration, we can't have elasticity space function
+//        // if no compositionRulesConfiguration we have no data
+//        if (cfg != null && !elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
+//            log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
+//            JSONObject elSpaceJSON = new JSONObject();
+//            elSpaceJSON.put("name", "ElPathway");
+//            return elSpaceJSON.toJSONString();
+//        }
 
         Date before = new Date();
 
@@ -306,7 +322,7 @@ public class ElasticityAnalysisManager {
 
         List<Metric> metrics = null;
 
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
+        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(serviceID);
 
         if (space == null) {
             log.error("Elasticity Space returned is null");
@@ -345,13 +361,13 @@ public class ElasticityAnalysisManager {
 
     }
 
-    public synchronized ElasticityPathwayXML getElasticityPathwayInXML(MonitoredElement element) {
+    public synchronized ElasticityPathwayXML getElasticityPathwayInXML(String serviceID, MonitoredElement element) {
 
         ElasticityPathwayXML elasticityPathwayXML = new ElasticityPathwayXML();
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (!elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
+        if (cfg == null || !elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
             log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             return elasticityPathwayXML;
         }
@@ -365,7 +381,7 @@ public class ElasticityAnalysisManager {
 
         List<Metric> metrics = null;
 
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
+        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(element.getId());
 
         Map<Metric, List<MetricValue>> map = space.getMonitoredDataForService(element);
         if (map != null) {
@@ -389,12 +405,12 @@ public class ElasticityAnalysisManager {
 
     }
 
-    public synchronized String getElasticitySpaceJSON(MonitoredElement element) {
+    public synchronized String getElasticitySpaceJSON(String serviceID, MonitoredElement element) {
 
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (!elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
+        if (cfg == null || !elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
             log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElSpace");
@@ -402,7 +418,7 @@ public class ElasticityAnalysisManager {
         }
 
         Date before = new Date();
-        ElasticitySpace space = extractAndUpdateElasticitySpace();
+        ElasticitySpace space = extractAndUpdateElasticitySpace(serviceID);
 
         String jsonRepr = jsonConverter.convertElasticitySpace(space, element);
 
@@ -415,9 +431,14 @@ public class ElasticityAnalysisManager {
      * @param element
      * @return also contains the monitored values
      */
-    public synchronized ElasticitySpaceXML getCompleteElasticitySpaceXML(MonitoredElement element) {
+    public synchronized ElasticitySpaceXML getCompleteElasticitySpaceXML(String serviceID, MonitoredElement element) {
         Date before = new Date();
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return new ElasticitySpaceXML();
+        }
+
         ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
         ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXMLCompletely(space, element);
         Date after = new Date();
@@ -429,9 +450,13 @@ public class ElasticityAnalysisManager {
      * @param element
      * @return contains only the Metric and their ElasticityBoundaries
      */
-    public synchronized ElasticitySpaceXML getElasticitySpaceXML(MonitoredElement element) {
+    public synchronized ElasticitySpaceXML getElasticitySpaceXML(String serviceID, MonitoredElement element) {
         Date before = new Date();
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+        if (cfg == null) {
+            return new ElasticitySpaceXML();
+        }
+
         ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
         ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXML(space, element);
         Date after = new Date();
@@ -439,11 +464,19 @@ public class ElasticityAnalysisManager {
         return elasticitySpaceXML;
     }
 
-    public synchronized String getLatestMonitoringDataINJSON() {
-        
+    public synchronized String getLatestMonitoringDataINJSON(String serviceID) {
+
         Date before = new Date();
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(cfg.getServiceConfiguration().getId());
+        if (serviceMonitoringSnapshot == null) {
+            return "{nothing}";
+        }
         Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysisResult = instantMonitoringDataAnalysisEngine.analyzeRequirements(serviceMonitoringSnapshot, cfg.getRequirements()).getRequirementsAnalysisResult();
 
         String converted = jsonConverter.convertMonitoringSnapshot(serviceMonitoringSnapshot, cfg.getRequirements(), reqAnalysisResult);
@@ -453,19 +486,22 @@ public class ElasticityAnalysisManager {
         return converted;
     }
 
-    public synchronized MonitoredElement getLatestServiceStructure() {
+    public synchronized MonitoredElement getLatestServiceStructure(String serviceID) {
         Date before = new Date();
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+        if (cfg == null) {
+            return new MonitoredElement();
+        }
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(cfg.getServiceConfiguration().getId());
         Date after = new Date();
         log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return serviceMonitoringSnapshot.getMonitoredService();
     }
 
-    public synchronized String getMetricCompositionRules() {
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+    public synchronized String getMetricCompositionRules(String serviceID) {
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
 
-        if (cfg.getCompositionRulesConfiguration() != null) {
+        if (cfg != null && cfg.getCompositionRulesConfiguration() != null) {
             return jsonConverter.convertToJSON(cfg.getCompositionRulesConfiguration().getMetricCompositionRules());
         } else {
             JSONObject jsonObject = new JSONObject();
@@ -474,16 +510,26 @@ public class ElasticityAnalysisManager {
         }
     }
 
-    private ElasticitySpace extractAndUpdateElasticitySpace() {
+    private ElasticitySpace extractAndUpdateElasticitySpace(String serviceID) {
         //note persistenceDelegate.extractMonitoringData returns max 1000 rows
 
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return new ElasticitySpace(new MonitoredElement());
+        }
+
         ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
 
         //if space == null, compute it 
         if (space == null) {
             //if space is null, compute it from all aggregated monitored data recorded so far
             List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceDelegate.extractMonitoringData(cfg.getServiceConfiguration().getId());
+
+            //clean by removing all metric values which are below zero, meaning the units are not running yet
+            if (dataFromTimestamp != null) {
+                dataFromTimestamp = cleanMonData(dataFromTimestamp);
+            }
 
             ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(cfg.getServiceConfiguration());
             fct.setRequirements(cfg.getRequirements());
@@ -501,6 +547,12 @@ public class ElasticityAnalysisManager {
         //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
         do {
             dataFromTimestamp = persistenceDelegate.extractMonitoringData(space.getTimestampID(), cfg.getServiceConfiguration().getId());
+
+            //clean by removing all metric values which are below zero, meaning the units are not running yet
+            if (dataFromTimestamp != null) {
+                dataFromTimestamp = cleanMonData(dataFromTimestamp);
+            }
+
             //check if new data has been collected between elasticity space querries
             if (!dataFromTimestamp.isEmpty()) {
                 ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(cfg.getServiceConfiguration());
@@ -517,5 +569,42 @@ public class ElasticityAnalysisManager {
         persistenceDelegate.writeElasticitySpace(space, cfg.getServiceConfiguration().getId());
 
         return space;
+    }
+
+    /**
+     * Careful, modifies the supplied snapshots in place
+     *
+     * @param snapshots snapshots to be cleansed by the UNSTABLE_METRIC_VALUE
+     * @return snapshots
+     */
+    private List<ServiceMonitoringSnapshot> cleanMonData(List<ServiceMonitoringSnapshot> snapshots) {
+
+        for (ServiceMonitoringSnapshot monitoringSnapshot : snapshots) {
+            for (Map<MonitoredElement, MonitoredElementMonitoringSnapshot> map : monitoringSnapshot.getMonitoredData().values()) {
+                for (MonitoredElementMonitoringSnapshot elementMonitoringSnapshot : map.values()) {
+                    Iterator<Metric> it = elementMonitoringSnapshot.getMetrics().iterator();
+                    while (it.hasNext()) {
+                        Metric m = it.next();
+                        if (elementMonitoringSnapshot.getMetricValue(m).toString().contains(UNSTABLE_METRIC_VALUE)) {
+                            elementMonitoringSnapshot.getMonitoredData().remove(m);
+                        }
+                    }
+                }
+            }
+        }
+
+        return snapshots;
+    }
+
+    public String getAllManagedServicesIDs() {
+
+        JSONArray array = new JSONArray();
+
+        for (String s : persistenceDelegate.getMonitoringSequencesIDs()) {
+            JSONObject o = new JSONObject();
+            o.put("id", s);
+            array.add(o);
+        }
+        return array.toJSONString();
     }
 }

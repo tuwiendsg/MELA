@@ -66,7 +66,7 @@ public class ElasticityAnalysisService {
     }
 
     @POST
-    @Path("/elasticitypathway")
+    @Path("/{serviceID}/elasticitypathway")
     @Consumes("application/xml")
     @Produces("application/json")
     @ApiOperation(value = "Retrieve elasticity pathway",
@@ -76,17 +76,17 @@ public class ElasticityAnalysisService {
         @ApiResponse(code = 400, message = "Invalid ID supplied"),
         @ApiResponse(code = 404, message = "Service element not found in service structure")
     })
-    public String getElasticityPathwayInJSON(MonitoredElement element) {
-        return systemControl.getElasticityPathway(element);
+    public String getElasticityPathwayInJSON(@PathParam("serviceID") String serviceID, MonitoredElement element) {
+        return systemControl.getElasticityPathway(serviceID, element);
 
     }
 
     @POST
-    @Path("/elasticitypathwayxml")
+    @Path("/{serviceID}/elasticitypathwayxml")
     @Consumes("application/xml")
     @Produces("application/xml")
-    public ElasticityPathwayXML getElasticityPathwayInXML(MonitoredElement element) {
-        return systemControl.getElasticityPathwayInXML(element);
+    public ElasticityPathwayXML getElasticityPathwayInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
+        return systemControl.getElasticityPathwayInXML(serviceID, element);
 
     }
 
@@ -97,11 +97,11 @@ public class ElasticityAnalysisService {
      * @return the elasticity space in JSON
      */
     @POST
-    @Path("/elasticityspace")
+    @Path("/{serviceID}/elasticityspace")
     @Consumes("application/xml")
     @Produces("application/json")
-    public String getLatestElasticitySpaceInJSON(MonitoredElement element) {
-        return systemControl.getElasticitySpaceJSON(element);
+    public String getLatestElasticitySpaceInJSON(@PathParam("serviceID") String serviceID, MonitoredElement element) {
+        return systemControl.getElasticitySpaceJSON(serviceID, element);
     }
 
     /**
@@ -111,11 +111,11 @@ public class ElasticityAnalysisService {
      * @return the elasticity space in XML WITH historical monitoring data
      */
     @POST
-    @Path("/elasticityspacecompletexml")
+    @Path("/{serviceID}/elasticityspacecompletexml")
     @Consumes("application/xml")
     @Produces("application/xml")
-    public ElasticitySpaceXML getLatestElasticitySpaceInXMLComplete(MonitoredElement element) {
-        return systemControl.getCompleteElasticitySpaceXML(element);
+    public ElasticitySpaceXML getLatestElasticitySpaceInXMLComplete(@PathParam("serviceID") String serviceID, MonitoredElement element) {
+        return systemControl.getCompleteElasticitySpaceXML(serviceID, element);
     }
 
     /**
@@ -125,11 +125,11 @@ public class ElasticityAnalysisService {
      * @return the elasticity space in XML WITH historical monitoring data
      */
     @POST
-    @Path("/elasticityspacexml")
+    @Path("/{serviceID}/elasticityspacexml")
     @Consumes("application/xml")
     @Produces("application/xml")
-    public ElasticitySpaceXML getLatestElasticitySpaceInXML(MonitoredElement element) {
-        return systemControl.getElasticitySpaceXML(element);
+    public ElasticitySpaceXML getLatestElasticitySpaceInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
+        return systemControl.getElasticitySpaceXML(serviceID, element);
     }
 
     /**
@@ -137,7 +137,7 @@ public class ElasticityAnalysisService {
      * the HISTORICAL and MULTI_LEVEL rules
      */
     @PUT
-    @Path("/metricscompositionrules")
+    @Path("/{serviceID}/metricscompositionrules")
     @Consumes("application/xml")
     public void putCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration) {
         if (compositionRulesConfiguration != null) {
@@ -167,7 +167,7 @@ public class ElasticityAnalysisService {
      * elasticity signature needs to be recomputed
      */
     @POST
-    @Path("/servicedescription")
+    @Path("/{serviceID}/servicedescription")
     @Consumes("application/xml")
     public void updateServiceDescription(MonitoredElement element) {
         if (element != null) {
@@ -182,7 +182,7 @@ public class ElasticityAnalysisService {
      * or obtained from metric composition
      */
     @PUT
-    @Path("/servicerequirements")
+    @Path("/{serviceID}/servicerequirements")
     @Consumes("application/xml")
     public void putServiceRequirements(Requirements requirements) {
         if (requirements != null) {
@@ -203,16 +203,16 @@ public class ElasticityAnalysisService {
      * @return
      */
     @GET
-    @Path("/metrics")
+    @Path("/{serviceID}/metrics")
     @Produces("application/xml")
-    public Collection<Metric> getAvailableMetrics(@QueryParam("monitoredElementID") String monitoredElementID,
+    public Collection<Metric> getAvailableMetrics(@PathParam("serviceID") String serviceID, @QueryParam("monitoredElementID") String monitoredElementID,
             @QueryParam("monitoredElementLevel") String monitoredElementLevel) {
         try {
             JAXBContext context = JAXBContext.newInstance(MonitoredElement.class);
             String monElementRepr = "<MonitoredElement id=\"" + monitoredElementID + "\"  level=\"" + monitoredElementLevel + "\"/>";
             MonitoredElement monitoredElement = (MonitoredElement) context.createUnmarshaller().unmarshal(new StringReader(monElementRepr));
 
-            return systemControl.getAvailableMetricsForMonitoredElement(monitoredElement);
+            return systemControl.getAvailableMetricsForMonitoredElement(serviceID, monitoredElement);
         } catch (Exception ex) {
             Logger.getLogger(ElasticityAnalysisService.class.getName()).log(Level.ERROR, null, ex);
             return new ArrayList<Metric>();
@@ -243,10 +243,10 @@ public class ElasticityAnalysisService {
      * [vmCount]","type":"metric"}],"type":"VM"}],"type":"SERVICE_UNIT"}
      */
     @GET
-    @Path("/monitoringdataJSON")
+    @Path("/{serviceID}/monitoringdataJSON")
     @Produces("application/json")
-    public String getLatestMonitoringDataInJSON() {
-        return systemControl.getLatestMonitoringDataINJSON();
+    public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
+        return systemControl.getLatestMonitoringDataINJSON(serviceID);
     }
 
     /**
@@ -254,79 +254,92 @@ public class ElasticityAnalysisService {
      * running service units
      */
     @GET
-    @Path("/servicestructure")
+    @Path("/{serviceID}/servicestructure")
     @Produces("application/xml")
-    public MonitoredElement getLatestServiceStructure() {
-        return systemControl.getLatestServiceStructure();
+    public MonitoredElement getLatestServiceStructure(@PathParam("serviceID") String serviceID) {
+        return systemControl.getLatestServiceStructure(serviceID);
     }
 
     @GET
-    @Path("/monitoringdataXML")
+    @Path("/{serviceID}/monitoringdataXML")
     @Produces("application/xml")
-    public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML() {
-        return systemControl.getLatestMonitoringData();
+    public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID) {
+        return systemControl.getLatestMonitoringData(serviceID);
     }
 
     @POST
-    @Path("/monitoringdataXML")
+    @Path("/{serviceID}/monitoringdataXML")
     @Consumes("application/xml")
     @Produces("application/xml")
-    public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(MonitoredElement element) {
-        return systemControl.getLatestMonitoringData(element);
+    public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
+        return systemControl.getLatestMonitoringData(serviceID, element);
     }
 
     @GET
-    @Path("/historicalmonitoringdataXML/all")
+    @Path("/{serviceID}/historicalmonitoringdataXML/all")
     @Produces("application/xml")
-    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData() {
-        return systemControl.getAllAggregatedMonitoringData();
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(@PathParam("serviceID") String serviceID) {
+        return systemControl.getAllAggregatedMonitoringData(serviceID);
     }
 
     @GET
-    @Path("/historicalmonitoringdataXML/ininterval")
+    @Path("/{serviceID}/historicalmonitoringdataXML/ininterval")
     @Produces("application/xml")
-    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@QueryParam("startTimestamp") String startTimestamp,
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@PathParam("serviceID") String serviceID, @QueryParam("startTimestamp") String startTimestamp,
             @QueryParam("endTimestamp") String endTimestamp) {
-        return systemControl.getAggregatedMonitoringDataInTimeInterval(startTimestamp, endTimestamp);
+        return systemControl.getAggregatedMonitoringDataInTimeInterval(serviceID, startTimestamp, endTimestamp);
     }
 
     @GET
-    @Path("/historicalmonitoringdataXML/lastX")
+    @Path("/{serviceID}/historicalmonitoringdataXML/lastX")
     @Produces("application/xml")
-    public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@QueryParam("count") int count) {
-        return systemControl.getLastXAggregatedMonitoringData(count);
+    public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@PathParam("serviceID") String serviceID, @QueryParam("count") int count) {
+        return systemControl.getLastXAggregatedMonitoringData(serviceID, count);
     }
 
     @GET
-    @Path("/servicerequirements")
+    @Path("/{serviceID}/servicerequirements")
     @Produces("application/xml")
-    public Requirements getRequirements() {
-        return systemControl.getRequirements();
+    public Requirements getRequirements(@PathParam("serviceID") String serviceID) {
+        return systemControl.getRequirements(serviceID);
     }
 
     @GET
-    @Path("/metriccompositionrules")
+    @Path("/{serviceID}/metriccompositionrules")
     @Produces("application/json")
-    public String getMetricCompositionRules() {
-        return systemControl.getMetricCompositionRules();
+    public String getMetricCompositionRules(@PathParam("serviceID") String serviceID) {
+        return systemControl.getMetricCompositionRules(serviceID);
     }
 
     @GET
-    @Path("/metriccompositionrulesxml")
+    @Path("/{serviceID}/metriccompositionrulesxml")
     @Produces("application/xml")
-    public CompositionRulesConfiguration getMetricCompositionRulesXML() {
-        return systemControl.getCompositionRulesConfiguration();
+    public CompositionRulesConfiguration getMetricCompositionRulesXML(@PathParam("serviceID") String serviceID) {
+        return systemControl.getCompositionRulesConfiguration(serviceID);
     }
 
     @POST
-    @Path("/addexecutingactions")
-    public void addExecutingAction(Action action) {
-        systemControl.addExecutingAction(action.getTargetEntityID(), action.getAction());
+    @Path("/{serviceID}/addexecutingactions")
+    public void addExecutingAction(@PathParam("serviceID") String serviceID, Action action) {
+        systemControl.addExecutingAction(serviceID, action.getTargetEntityID(), action.getAction());
     }
 
     @POST
-    @Path("/removeexecutingactions")
-    public void removeExecutingAction(Action action) {
-        systemControl.removeExecutingAction(action.getTargetEntityID(), action.getAction());
+    @Path("/{serviceID}/removeexecutingactions")
+    public void removeExecutingAction(@PathParam("serviceID") String serviceID, Action action) {
+        systemControl.removeExecutingAction(serviceID, action.getTargetEntityID(), action.getAction());
+    }
+    
+    @GET
+    @Path("/{serviceID}/metricsGreaterThanZero")
+    public String testIfAllVMsReportMEtricsGreaterThanZero(@PathParam("serviceID") String serviceID) {
+        return "" + systemControl.testIfAllVMsReportMEtricsGreaterThanZero(serviceID);
+    }
+
+    @GET
+    @Path("/elasticservices")
+    @Produces("application/json")
+    public String getServices() {
+        return systemControl.getAllManagedServicesIDs();
     }
 }

@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  * Used to define restrictions for serviceStructure selection criteria
  */
@@ -180,5 +180,20 @@ public class Condition implements Serializable {
         return ""
                 + " " + type
                 + " " + value;
+    }
+
+    public Condition withId(final String id) {
+        this.id = id;
+        return this;
+    }
+
+    public Condition withType(final Type type) {
+        this.type = type;
+        return this;
+    }
+
+    public Condition withValue(final List<MetricValue> value) {
+        this.value = value;
+        return this;
     }
 }

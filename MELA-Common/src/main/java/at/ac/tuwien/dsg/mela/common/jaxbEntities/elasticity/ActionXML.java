@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -37,6 +38,9 @@ public class ActionXML {
 
     @XmlElement(name = "Action")
     private List<Action> actions;
+
+    @XmlAttribute(name = "TargetServiceID", required = true)
+    private String targetServiceID;
 
     {
         actions = new ArrayList<Action>();
@@ -57,4 +61,23 @@ public class ActionXML {
     public void addAction(Action action) {
         this.actions.add(action);
     }
+
+    public String getTargetServiceID() {
+        return targetServiceID;
+    }
+
+    public void setTargetServiceID(String targetServiceID) {
+        this.targetServiceID = targetServiceID;
+    }
+
+    public ActionXML withActions(final List<Action> actions) {
+        this.actions = actions;
+        return this;
+    }
+
+    public ActionXML withTargetServiceID(final String targetServiceID) {
+        this.targetServiceID = targetServiceID;
+        return this;
+    }
+
 }

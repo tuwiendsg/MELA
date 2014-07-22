@@ -79,6 +79,8 @@ public class Requirements implements Serializable {
     public void deleteRequirement(Requirement requirement) {
         this.requirements.remove(requirement);
     }
+    
+    
 
     @Override
     public int hashCode() {
@@ -115,5 +117,20 @@ public class Requirements implements Serializable {
             r.addRequirement(req.clone());
         }
         return r;
+    }
+
+    public Requirements withTargetServiceID(final String targetServiceID) {
+        this.targetServiceID = targetServiceID;
+        return this;
+    }
+
+    public Requirements withName(final String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Requirements withRequirements(final List<Requirement> requirements) {
+        this.requirements = requirements;
+        return this;
     }
 }

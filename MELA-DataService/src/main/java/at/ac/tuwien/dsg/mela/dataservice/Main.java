@@ -40,5 +40,6 @@ public class Main {
 
         new ClassPathXmlApplicationContext("mela-data-service-context.xml");
         log.info("Initialized application context. Startup complete");
+        
     }
 }

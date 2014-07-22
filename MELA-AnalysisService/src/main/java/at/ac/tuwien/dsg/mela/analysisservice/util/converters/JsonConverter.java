@@ -546,6 +546,7 @@ public class JsonConverter {
             }
 
             JSONObject jsonMetric = new JSONObject();
+            
             jsonMetric.put("name", resultingMetric.getName());
             jsonMetric.put("targetLevel", compositionRule.getTargetMonitoredElementLevel().toString());
             jsonMetric.put("targetMonitoredElementIDs", compositionRule.getTargetMonitoredElementIDs());
