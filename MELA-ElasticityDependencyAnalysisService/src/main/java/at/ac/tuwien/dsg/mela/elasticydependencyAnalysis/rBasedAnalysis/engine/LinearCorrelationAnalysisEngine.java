@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import rcaller.Globals;
 import rcaller.RCaller;
 import rcaller.RCode;
 
@@ -37,9 +38,6 @@ import rcaller.RCode;
 public class LinearCorrelationAnalysisEngine {
 
     static final org.slf4j.Logger log = LoggerFactory.getLogger(LinearCorrelationAnalysisEngine.class);
-
-    @Value("${R_PATH}")
-    private String rPath;
 
     public LinearCorrelation evaluateLinearCorrelation(final Variable dependent, final List<Variable> predictors) {
 
@@ -72,11 +70,8 @@ public class LinearCorrelationAnalysisEngine {
          */
         RCaller caller = new RCaller();
 
-        /*
-         * Full path of the Rscript. Rscript is an executable file shipped with R.
-         * It is something like C:\\Program File\\R\\bin.... in Windows
-         */
-        caller.setRscriptExecutable(rPath);
+        Globals.detect_current_rscript();
+        caller.setRscriptExecutable(Globals.Rscript_current);
         RCode rCode = new RCode();
 
         caller.setRCode(rCode);
@@ -106,14 +101,9 @@ public class LinearCorrelationAnalysisEngine {
                 public void run() {
 
                     RCaller caller = new RCaller();
-                    /*
-                     * Creating RCaller
-                     */
-                    /*
-                     * Full path of the Rscript. Rscript is an executable file shipped with R.
-                     * It is something like C:\\Program File\\R\\bin.... in Windows
-                     */
-                    caller.setRscriptExecutable(rPath);
+                    Globals.detect_current_rscript();
+                    caller.setRscriptExecutable(Globals.Rscript_current);
+
                     RCode rCode = new RCode();
                     try {
 
@@ -251,7 +241,9 @@ public class LinearCorrelationAnalysisEngine {
                  * Full path of the Rscript. Rscript is an executable file shipped with R.
                  * It is something like C:\\Program File\\R\\bin.... in Windows
                  */
-                caller.setRscriptExecutable(rPath);
+                Globals.detect_current_rscript();
+                caller.setRscriptExecutable(Globals.Rscript_current);
+
                 caller.setRCode(rCode);
                 rCode.addRCode("res <- summary(res)");
                 caller.runAndReturnResult("res");
@@ -298,12 +290,9 @@ public class LinearCorrelationAnalysisEngine {
                 {
                     caller.stopStreamConsumers();
                     caller = new RCaller();
+                    Globals.detect_current_rscript();
+                    caller.setRscriptExecutable(Globals.Rscript_current);
 
-                    /*
-                     * Full path of the Rscript. Rscript is an executable file shipped with R.
-                     * It is something like C:\\Program File\\R\\bin.... in Windows
-                     */
-                    caller.setRscriptExecutable(rPath);
                     caller.setRCode(rCode);
                     caller.runAndReturnResult("res");
                     double[] adjustedR = caller.getParser().getAsDoubleArray("adj_r_squared");

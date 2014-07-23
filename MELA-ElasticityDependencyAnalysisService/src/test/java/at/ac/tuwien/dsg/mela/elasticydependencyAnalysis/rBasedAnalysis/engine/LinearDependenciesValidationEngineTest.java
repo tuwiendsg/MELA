@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import rcaller.Globals;
 import rcaller.RCaller;
 import rcaller.RCode;
 
@@ -47,7 +48,6 @@ public class LinearDependenciesValidationEngineTest {
 //
 //    @Autowired
 //    private PersistenceDelegate persistenceDelegate;
-
     public LinearDependenciesValidationEngineTest() {
     }
 
@@ -169,7 +169,8 @@ public class LinearDependenciesValidationEngineTest {
          * Full path of the Rscript. Rscript is an executable file shipped with R.
          * It is something like C:\\Program File\\R\\bin.... in Windows
          */
-        caller.setRscriptExecutable("/usr/bin/Rscript");
+        Globals.detect_current_rscript();
+        caller.setRscriptExecutable(Globals.Rscript_current);
         RCode rCode = new RCode();
 
         caller.setRCode(rCode);
@@ -261,7 +262,8 @@ public class LinearDependenciesValidationEngineTest {
          * Full path of the Rscript. Rscript is an executable file shipped with R.
          * It is something like C:\\Program File\\R\\bin.... in Windows
          */
-        caller.setRscriptExecutable("/usr/bin/Rscript");
+        Globals.detect_current_rscript();
+        caller.setRscriptExecutable(Globals.Rscript_current);
         caller.setRCode(rCode);
 
         rCode.addDoubleArray("a", a);
@@ -293,7 +295,6 @@ public class LinearDependenciesValidationEngineTest {
         //add code which performs linear evaluation in R
         rCode.addRCode("res <- lm(a~b)");
 
-
 //        System.out.println("res <- lm(" + dependent.getId() + "~" + predictorNames + ")");
         //start processing result
         caller.runAndReturnResult("res");
@@ -312,12 +313,12 @@ public class LinearDependenciesValidationEngineTest {
             result += results[0] + " ";
             for (int i = 1; i < results.length; i++) {
                 //remove predictor if coeff is NA (not applicable) 
-                    //remove predictor
-                    result += results[i] + " *b";
+                //remove predictor
+                result += results[i] + " *b";
             }
 
         }
-        
+
         System.out.println(result);
     }
 
