@@ -39,9 +39,9 @@ public class RCallerTest {
 
 	@Test
 	public void testIntArrays() {
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();  
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 		RCode code = new RCode();
 
 		code.clear();

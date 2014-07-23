@@ -11,10 +11,10 @@ public class MatrixTest {
     public void simpleMatrixTest() {
 
         RCaller caller = new RCaller();
-        caller.setRscriptExecutable("/usr/bin/Rscript");
+//        caller.setRscriptExecutable("/usr/bin/Rscript");
 
-//        Globals.detect_current_rscript();
-//        caller.setRscriptExecutable(Globals.Rscript_current);
+        Globals.detect_current_rscript();
+        caller.setRscriptExecutable(Globals.Rscript_current);
 
         RCode code = new RCode();
 

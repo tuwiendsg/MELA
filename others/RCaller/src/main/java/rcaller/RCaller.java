@@ -212,6 +212,9 @@ public class RCaller {
             rError.start();
             process.waitFor();
         } catch (Exception e) {
+            if (process != null) {
+                process.destroy();
+            }
             throw new ExecutionException("Can not run " + RscriptExecutable + ". Reason: " + e.toString());
         }
 
@@ -408,13 +411,11 @@ public class RCaller {
         try {
             parser.parse();
         } catch (Exception e) {
-            stopStreamConsumers();
             System.out.println(rcode.toString());
-            throw new ParseException("Can not handle R results due to : " + e.toString());
-        } finally {
             if (process != null) {
                 process.destroy();
             }
+            throw new ParseException("Can not handle R results due to : " + e.toString());
         }
 
     }
