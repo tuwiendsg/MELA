@@ -107,9 +107,15 @@ public class ElasticityDependencyAnalysisManager {
                     dependencyDescription += "" + coefficient.getCoefficient() + "*" + coefficient.getMetric().getName() + ":" + coefficient.getMonitoredElement().getId() + " with lag " + coefficient.getLag() + " + ";
                     secondaryHeaderLine += "," + coefficient.getMetric().getName();
                 }
-                
-                dependencyDescription+=" and adjustedR " + dependencyElement.getAdjustedR();
 
+                dependencyDescription += " and adjustedR " + dependencyElement.getAdjustedR();
+                //add to dependencyDescription fake columns for the computed column and each coeff recorded value
+
+                //column for computed
+                dependencyDescription += ",";
+                for (int i = 0; i < dependencyElement.getCoefficients().size(); i++) {
+                    dependencyDescription += ",";
+                }
 //                System.out.println("\n !!! " + dependencyDescription);
                 dataColumn.add(dependencyDescription + ",");
 
@@ -167,7 +173,7 @@ public class ElasticityDependencyAnalysisManager {
             }
         }
 
-        //write to string
+    //write to string
         try {
             BufferedWriter writer = new BufferedWriter(sw);
 
