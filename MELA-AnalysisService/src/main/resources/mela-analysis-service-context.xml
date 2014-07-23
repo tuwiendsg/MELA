@@ -44,7 +44,7 @@
         <property name="scan" value="true"/>
     </bean>
 
-<!--    <bean class="at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess"/>-->
+    <!--    <bean class="at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess"/>-->
 
 
     <!-- JMS stuff -->
@@ -59,12 +59,7 @@
         <property name="defaultDestination" ref="destination"/>
     </bean>
 
-    <!-- database related configuration -->
-    <bean id="melaDBConnector" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-        <property name="url" value="jdbc:hsqldb:hsql://localhost:9001/mela"/>
-        <property name="username" value="SA"/>
-        <property name="password" value=""/>
-    </bean>
+    <import resource="file:./config/data-service-connector.xml" />
+   
 
 </beans>
