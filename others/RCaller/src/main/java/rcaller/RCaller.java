@@ -148,10 +148,10 @@ public class RCaller {
     public final void cleanRCode() {
         rcode.clear();
         rcode.addRCode("library(\"Runiversal\")\n");
-//        rcode.addRCode("packageExist<-require(Runiversal)");
-//        rcode.addRCode("if(!packageExist){");
-//        rcode.addRCode("install.packages(\"Runiversal\", repos=\" " + this.getCranRepos() + "\")");
-//        rcode.addRCode("}\n");
+        rcode.addRCode("packageExist<-require(Runiversal)");
+        rcode.addRCode("if(!packageExist){");
+        rcode.addRCode("install.packages(\"Runiversal\", repos=\" " + this.getCranRepos() + "\")");
+        rcode.addRCode("}\n");
     }
 
     /**
