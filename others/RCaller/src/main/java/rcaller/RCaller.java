@@ -148,10 +148,10 @@ public class RCaller {
     public final void cleanRCode() {
         rcode.clear();
         rcode.addRCode("library(\"Runiversal\")\n");
-        rcode.addRCode("packageExist<-require(Runiversal)");
-        rcode.addRCode("if(!packageExist){");
-        rcode.addRCode("install.packages(\"Runiversal\", repos=\" " + this.getCranRepos() + "\")");
-        rcode.addRCode("}\n");
+//        rcode.addRCode("packageExist<-require(Runiversal)");
+//        rcode.addRCode("if(!packageExist){");
+//        rcode.addRCode("install.packages(\"Runiversal\", repos=\" " + this.getCranRepos() + "\")");
+//        rcode.addRCode("}\n");
     }
 
     /**
@@ -393,11 +393,10 @@ public class RCaller {
         rcode.getCode().append("cat(makexml(obj=").append(var).append(", name=\"").append(var).
                 append("\"), file=\"").append(outputFile.toString().replace("\\", "/")).append("\")\n");
         rSourceFile = createRSourceFile();
-//        Process runAndReturnProcess = null;
         try {
             commandline = RscriptExecutable + " " + rSourceFile.toString();
             //This Process object is local to this method. Do not use the field!
-            process = Runtime.getRuntime().exec(commandline);
+            Process process = Runtime.getRuntime().exec(commandline);
             rOutput.setStream(process.getInputStream());
             rError.setStream(process.getErrorStream());
             rOutput.start();
@@ -411,6 +410,7 @@ public class RCaller {
         try {
             parser.parse();
         } catch (Exception e) {
+            stopStreamConsumers();
             System.out.println(rcode.toString());
             if (process != null) {
                 process.destroy();
@@ -418,6 +418,7 @@ public class RCaller {
             throw new ParseException("Can not handle R results due to : " + e.toString());
         }
 
+        stopStreamConsumers();
     }
 
     public void redirectROutputToConsole() {

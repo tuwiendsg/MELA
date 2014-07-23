@@ -5,38 +5,36 @@ import static org.junit.Assert.*;
 
 public class MatrixTest {
 
-    double delta = 0.0001;
+  double delta = 0.0001;
+  
+  @Test
+  public void simpleMatrixTest() {
 
-    @Test
-    public void simpleMatrixTest() {
+    RCaller caller = new RCaller();
+    Globals.detect_current_rscript();
+    caller.setRscriptExecutable(Globals.Rscript_current);
 
-        RCaller caller = new RCaller();
-//        caller.setRscriptExecutable("/usr/bin/Rscript");
+    RCode code = new RCode();
 
-        Globals.detect_current_rscript();
-        caller.setRscriptExecutable(Globals.Rscript_current);
+    double[][] matrix = new double[][]{{6, 4}, {9, 8}};
 
-        RCode code = new RCode();
+    code.addDoubleMatrix("x", matrix);
+    code.addRCode("s<-solve(x)");
 
-        double[][] matrix = new double[][]{{6, 4}, {9, 8}};
+    caller.setRCode(code);
 
-        code.addDoubleMatrix("x", matrix);
-        code.addRCode("s<-solve(x)");
+    caller.runAndReturnResult("s");
 
-        caller.setRCode(code);
+    double[][] inverse = caller.getParser().getAsDoubleMatrix("s", matrix.length, matrix[0].length);
 
-        caller.runAndReturnResult("s");
+    double[][] expected = new double[][]{{0.6666667, -0.7500000}, {-0.3333333, 0.5000000}};
 
-        double[][] inverse = caller.getParser().getAsDoubleMatrix("s", matrix.length, matrix[0].length);
-
-        double[][] expected = new double[][]{{0.6666667, -0.7500000}, {-0.3333333, 0.5000000}};
-
-        assertEquals(expected.length, inverse.length);
-        for (int i = 0; i < expected.length; i++) {
-            for (int j = 0; j < expected[0].length; j++) {
-                assertEquals(expected[i][j], inverse[i][j], delta);
-            }
-        }
-
+    assertEquals(expected.length, inverse.length);
+    for (int i = 0; i < expected.length; i++) {
+      for (int j = 0; j < expected[0].length; j++) {
+        assertEquals(expected[i][j], inverse[i][j], delta);
+      }
     }
+
+  }
 }

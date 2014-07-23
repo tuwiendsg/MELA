@@ -68,7 +68,6 @@ public class RStreamHandler implements Runnable {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                closeSignal = true;
             }
         }
     }

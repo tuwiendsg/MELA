@@ -29,10 +29,10 @@ public class RCode {
     public final void clear() {
         code.setLength(0);
         addRCode("library(\"Runiversal\")\n");
-        addRCode("packageExist<-require(Runiversal)");
-        addRCode("if(!packageExist){");
-        addRCode("install.packages(\"Runiversal\", repos=\" " + Globals.cranRepos + "\")");
-        addRCode("}\n");
+        //    addRCode("packageExist<-require(Runiversal)");
+        //    addRCode("if(!packageExist){");
+        //    addRCode("install.packages(\"Runiversal\", repos=\" " + Globals.cranRepos + "\")");
+        //    addRCode("}\n");
     }
 
     public void addRCode(String code) {

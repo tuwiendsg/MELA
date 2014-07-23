@@ -39,7 +39,7 @@ public class RCallerTest {
 
 	@Test
 	public void testIntArrays() {
-		RCaller rcaller = new RCaller();  
+		RCaller rcaller = new RCaller();
 		Globals.detect_current_rscript();
 		rcaller.setRscriptExecutable(Globals.Rscript_current);
 		RCode code = new RCode();
@@ -60,9 +60,9 @@ public class RCallerTest {
 	@Test
 	public void testDoubleArrays() {
 		double delta = 0.0000001;
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 
 		RCode code = new RCode();
 		code.clear();
@@ -82,9 +82,9 @@ public class RCallerTest {
 	@Test
 	public void testFloatArrays() {
 		double delta = 0.0000001;
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 
 		RCode code = new RCode();
 		code.clear();
@@ -103,9 +103,9 @@ public class RCallerTest {
 
 	@Test
 	public void testStringArrays() {
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 
 		RCode code = new RCode();
 		code.clear();
@@ -126,9 +126,9 @@ public class RCallerTest {
 	@Test
 	public void testLogicalArrays() {
 		boolean[] boolarr = new boolean[]{true, true, false, true, true, true, false};
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 
 		RCode code = new RCode();
 		code.clear();
@@ -148,9 +148,9 @@ public class RCallerTest {
 
 	@Test
 	public void testLists() {
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 
 		RCode code = new RCode();
 		code.clear();
@@ -178,9 +178,9 @@ public class RCallerTest {
 	@Test
 	public void TestLists2() throws Exception {
 		double delta = 0.0000001;
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 
 		RCode code = new RCode();
 		code.clear();
@@ -212,9 +212,9 @@ public class RCallerTest {
 
 	@Test
 	public void testPlot() {
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 		RCode code = new RCode();
 		code.clear();
 
@@ -237,9 +237,9 @@ public class RCallerTest {
 	@Test
 	public void singleResultTest() {
 		double delta = 0.0000001;
-		RCaller rcaller = new RCaller(); rcaller.setRscriptExecutable("/usr/bin/Rscript");
-		//Globals.detect_current_rscript();
-		//rcaller.setRscriptExecutable(Globals.Rscript_current);
+		RCaller rcaller = new RCaller();
+		Globals.detect_current_rscript();
+		rcaller.setRscriptExecutable(Globals.Rscript_current);
 
 		RCode code = new RCode();
 		code.clear();
