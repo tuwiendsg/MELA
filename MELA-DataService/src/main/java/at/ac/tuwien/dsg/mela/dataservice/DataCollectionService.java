@@ -562,7 +562,8 @@ public class DataCollectionService {
                                 dataToAggregate = new ArrayList<ServiceMonitoringSnapshot>();
                                 historicalMonitoringDatas.put(serviceID, dataToAggregate);
                             }
-
+                            
+                            //holds sliding window
                             dataToAggregate.add(monitoringData);
                             // remove the oldest and add the new value always
                             if (dataToAggregate.size() > aggregationWindowsCount) {

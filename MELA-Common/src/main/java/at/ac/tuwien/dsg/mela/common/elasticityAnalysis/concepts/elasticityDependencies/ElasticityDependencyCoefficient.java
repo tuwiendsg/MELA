@@ -49,14 +49,22 @@ public class ElasticityDependencyCoefficient implements Serializable {
     @XmlElement(name = "StdError", required = true)
     private double stdError;
 
+    /**
+     * Lag of coefficient from dependent. So a lag of 2 means coefficient is in
+     * front with 2, of  -2 means is behind with 2
+     */
+    @XmlElement(name = "Lag", required = true)
+    private int lag;
+
     public ElasticityDependencyCoefficient() {
     }
 
-    public ElasticityDependencyCoefficient(MonitoredElement monitoredElement, Metric metric, double coefficient, double stdError) {
+    public ElasticityDependencyCoefficient(MonitoredElement monitoredElement, Metric metric, double coefficient, double stdError, int lag) {
         this.monitoredElement = monitoredElement;
         this.metric = metric;
         this.coefficient = coefficient;
         this.stdError = stdError;
+        this.lag = lag;
     }
 
     public MonitoredElement getMonitoredElement() {
@@ -89,6 +97,39 @@ public class ElasticityDependencyCoefficient implements Serializable {
 
     public void setStdError(double stdError) {
         this.stdError = stdError;
+    }
+
+    public int getLag() {
+        return lag;
+    }
+
+    public void setLag(int lag) {
+        this.lag = lag;
+    }
+
+    public ElasticityDependencyCoefficient withMonitoredElement(final MonitoredElement monitoredElement) {
+        this.monitoredElement = monitoredElement;
+        return this;
+    }
+
+    public ElasticityDependencyCoefficient withMetric(final Metric metric) {
+        this.metric = metric;
+        return this;
+    }
+
+    public ElasticityDependencyCoefficient withCoefficient(final double coefficient) {
+        this.coefficient = coefficient;
+        return this;
+    }
+
+    public ElasticityDependencyCoefficient withStdError(final double stdError) {
+        this.stdError = stdError;
+        return this;
+    }
+
+    public ElasticityDependencyCoefficient withLag(final int lag) {
+        this.lag = lag;
+        return this;
     }
 
 }
