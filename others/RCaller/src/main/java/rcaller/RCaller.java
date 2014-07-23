@@ -408,10 +408,10 @@ public class RCaller {
         try {
             parser.parse();
         } catch (Exception e) {
+            stopStreamConsumers();
             System.out.println(rcode.toString());
             throw new ParseException("Can not handle R results due to : " + e.toString());
         } finally {
-            stopStreamConsumers();
             if (process != null) {
                 process.destroy();
             }
