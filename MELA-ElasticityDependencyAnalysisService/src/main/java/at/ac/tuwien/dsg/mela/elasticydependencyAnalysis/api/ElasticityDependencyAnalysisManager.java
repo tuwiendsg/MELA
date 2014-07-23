@@ -101,23 +101,28 @@ public class ElasticityDependencyAnalysisManager {
                 List<MetricValue> dependentMetricValues = dataForDependentElement.get(dependencyElement.getDependentMetric());
 
                 String dependencyDescription = dependencyElement.getDependentMetric().getName() + ":" + dependency.getMonitoredElement().getId() + "<- " + dependencyElement.getInterceptor() + " + ";
+                String secondaryHeaderLine = "Monitored,Computed";
 
                 for (ElasticityDependencyCoefficient coefficient : dependencyElement.getCoefficients()) {
-                    dependencyDescription += "" + coefficient.getCoefficient() + "*" + coefficient.getMetric().getName() + ":" + coefficient.getMonitoredElement().getId() + " with lag " + coefficient.getLag();
+                    dependencyDescription += "" + coefficient.getCoefficient() + "*" + coefficient.getMetric().getName() + ":" + coefficient.getMonitoredElement().getId() + " with lag " + coefficient.getLag() + " + ";
+                    secondaryHeaderLine += "," + coefficient.getMetric().getName();
                 }
+                
+                dependencyDescription+=" and adjustedR " + dependencyElement.getAdjustedR();
 
 //                System.out.println("\n !!! " + dependencyDescription);
                 dataColumn.add(dependencyDescription + ",");
-                dataColumn.add("Monitored,Computed");
+
+                dataColumn.add(secondaryHeaderLine);
 
                 //just test if the prediction applies
                 {
-                    List<String> dependencyDescriptionInStrings = new ArrayList<>();
+                    List<String> coefficientValuesColumns = new ArrayList<>();
                     List<Double> computed = new ArrayList<>();
 
                     //instantiate with name of dependent metric and monitored value
                     for (MetricValue value : dependentMetricValues) {
-                        dependencyDescriptionInStrings.add(value.getValueRepresentation() + "= ");
+                        coefficientValuesColumns.add("");
                         computed.add(0.0d);
                     }
 
@@ -128,10 +133,6 @@ public class ElasticityDependencyAnalysisManager {
                         int lag = dependencyCoefficient.getLag();
 
                         for (int i = 0; i < dependentMetricValues.size() && i < coefficientMetricValues.size(); i++) {
-
-                            String descr = dependencyDescriptionInStrings.get(i);
-                            descr += "" + dependencyCoefficient.getCoefficient() + "*" + coefficientMetricValues.get(i) + "+";
-                            dependencyDescriptionInStrings.set(i, descr);
 
                             int targetIndex = i + lag;
 
@@ -150,13 +151,17 @@ public class ElasticityDependencyAnalysisManager {
                             }
 
                             Double coeffValue = (Double) coefficientMetricValues.get(targetIndex).getValue();
+                            coefficientValuesColumns.set(i, coefficientValuesColumns.get(i) + "," + coeffValue);
 
                             computed.set(i, computed.get(i) + (dependencyCoefficient.getCoefficient() * coeffValue));
                         }
                     }
+
                     for (int i = 0; i < computed.size(); i++) {
 //                        System.out.println(dependencyDescriptionInStrings.get(i));
-                        dataColumn.add(dependentMetricValues.get(i).getValueRepresentation() + "= " + computed.get(i));
+                        String description = dependentMetricValues.get(i).getValueRepresentation() + ", " + computed.get(i) + coefficientValuesColumns.get(i);
+
+                        dataColumn.add(description);
                     }
                 }
             }

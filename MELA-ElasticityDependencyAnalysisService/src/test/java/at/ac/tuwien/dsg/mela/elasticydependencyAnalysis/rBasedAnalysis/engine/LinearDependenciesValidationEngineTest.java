@@ -42,11 +42,11 @@ import rcaller.RCode;
 @ContextConfiguration({"classpath*:mela-dependencies-analysis-service-context.xml"})
 public class LinearDependenciesValidationEngineTest {
 
-    @Autowired
-    private ElasticityDependencyAnalysisManager elasticityDependencyAnalysisManager;
-
-    @Autowired
-    private PersistenceDelegate persistenceDelegate;
+//    @Autowired
+//    private ElasticityDependencyAnalysisManager elasticityDependencyAnalysisManager;
+//
+//    @Autowired
+//    private PersistenceDelegate persistenceDelegate;
 
     public LinearDependenciesValidationEngineTest() {
     }
