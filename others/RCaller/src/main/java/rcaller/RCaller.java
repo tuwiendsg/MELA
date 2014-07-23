@@ -150,7 +150,7 @@ public class RCaller {
         rcode.addRCode("library(\"Runiversal\")\n");
         rcode.addRCode("packageExist<-require(Runiversal)");
         rcode.addRCode("if(!packageExist){");
-        rcode.addRCode("install.packages(\"Runiversal\", repos=\" " + this.getCranRepos() + "\")");
+        rcode.addRCode("install.packages(\"Runiversal\")");
         rcode.addRCode("}\n");
     }
 

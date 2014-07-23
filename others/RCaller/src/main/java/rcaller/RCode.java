@@ -31,7 +31,7 @@ public class RCode {
         addRCode("library(\"Runiversal\")\n");
         addRCode("packageExist<-require(Runiversal)");
         addRCode("if(!packageExist){");
-        addRCode("install.packages(\"Runiversal\", repos=\" " + Globals.cranRepos + "\")");
+        addRCode("install.packages(\"Runiversal\")");
         addRCode("}\n");
     }
 
