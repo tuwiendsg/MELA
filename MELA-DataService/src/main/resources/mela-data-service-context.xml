@@ -56,12 +56,12 @@
 
     <!-- JMS stuff -->
     <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="${dataservice.configuration.uri}"/>
+        <property name="brokerURL" value="tcp://localhost:9124"/>
     </bean>
 
     <amq:broker useJmx="true" persistent="false">
         <amq:transportConnectors>
-            <amq:transportConnector uri="${dataservice.configuration.uri}"/>
+            <amq:transportConnector uri="tcp://localhost:9124"/>
         </amq:transportConnectors>
     </amq:broker>
 

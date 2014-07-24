@@ -46,9 +46,14 @@
         <property name="scan" value="true"/>
     </bean>
 
-    
-    
-    <import resource="file:./config/data-service-connector.xml" />
+   
+    <bean id="melaDBConnector" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:hsql://${dataservice.ip}:9001/mela"/>
+        <property name="username" value="SA"/>
+        <property name="password" value=""/>
+    </bean>
+     
     
     <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler">
     </bean>
