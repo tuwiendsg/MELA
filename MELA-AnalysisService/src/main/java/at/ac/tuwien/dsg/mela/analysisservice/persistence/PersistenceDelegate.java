@@ -28,6 +28,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,7 @@ public class PersistenceDelegate {
         try {
             persistenceSQLAccess.writeElasticitySpace(elasticitySpace, monitoringSequenceID);
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -98,9 +99,28 @@ public class PersistenceDelegate {
             //if space is not null, update it with new data
             List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
 
+            //used to detect last snapshot timestamp, and then extratc new data until that timestamp
+            ServiceMonitoringSnapshot monitoringSnapshot = this.extractLatestMonitoringData(monitoringSequenceID);
+
+            Integer lastTimestampID = (monitoringSnapshot == null) ? Integer.MAX_VALUE : monitoringSnapshot.getTimestampID();
+
             //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
             do {
                 dataFromTimestamp = this.extractMonitoringData(space.getTimestampID(), monitoringSequenceID);
+
+                if (dataFromTimestamp != null) {
+
+                    //remove all data after monitoringSnapshot timestamp
+                    Iterator<ServiceMonitoringSnapshot> it = dataFromTimestamp.iterator();
+                    while (it.hasNext()) {
+
+                        Integer timestampID = it.next().getTimestampID();
+                        if (timestampID > lastTimestampID) {
+                            it.remove();
+                        }
+
+                    }
+                }
                 //check if new data has been collected between elasticity space querries
                 if (!dataFromTimestamp.isEmpty()) {
                     ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
@@ -109,12 +129,12 @@ public class PersistenceDelegate {
                     //set to the new space the timespaceID of the last snapshot monitored data used to compute it
                     space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
 
-                    //persist cached space
-                    this.writeElasticitySpace(space, monitoringSequenceID);
                 }
 
             } while (!dataFromTimestamp.isEmpty());
 
+            //persist cached space
+            this.writeElasticitySpace(space, monitoringSequenceID);
         }
 
         return space;
