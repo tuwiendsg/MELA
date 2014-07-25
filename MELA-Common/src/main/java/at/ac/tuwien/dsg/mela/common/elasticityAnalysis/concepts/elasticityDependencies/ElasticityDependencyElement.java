@@ -16,6 +16,7 @@
 package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +33,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "MonitoredElementElasticityDependency")
 public class ElasticityDependencyElement implements Serializable {
 
+    /**
+     * Element to which this metric belongs to
+     */
+    @XmlElement(name = "MonitoredElement", required = true)
+    private MonitoredElement monitoredElement;
+
     @XmlElement(name = "DependentMetric", required = true)
     private Metric dependentMetric;
 
@@ -39,7 +46,8 @@ public class ElasticityDependencyElement implements Serializable {
     private Collection<ElasticityDependencyCoefficient> coefficients;
 
     /**
-     * As we currently extract linear dependencies, f(x) = interceptor_constant + coeff*var
+     * As we currently extract linear dependencies, f(x) = interceptor_constant
+     * + coeff*var
      */
     @XmlElement(name = "Interceptor", required = true)
     private Double interceptor;
@@ -57,7 +65,8 @@ public class ElasticityDependencyElement implements Serializable {
     public ElasticityDependencyElement() {
     }
 
-    public ElasticityDependencyElement(Metric dependentMetric, Double interceptor, Double adjustedR) {
+    public ElasticityDependencyElement(MonitoredElement monitoredElement, Metric dependentMetric, Double interceptor, Double adjustedR) {
+        this.monitoredElement = monitoredElement;
         this.dependentMetric = dependentMetric;
         this.interceptor = interceptor;
         this.adjustedR = adjustedR;
@@ -109,6 +118,14 @@ public class ElasticityDependencyElement implements Serializable {
         return hash;
     }
 
+    public MonitoredElement getMonitoredElement() {
+        return monitoredElement;
+    }
+
+    public void setMonitoredElement(MonitoredElement monitoredElement) {
+        this.monitoredElement = monitoredElement;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -122,6 +139,31 @@ public class ElasticityDependencyElement implements Serializable {
             return false;
         }
         return true;
+    }
+
+    public ElasticityDependencyElement withMonitoredElement(final MonitoredElement monitoredElement) {
+        this.monitoredElement = monitoredElement;
+        return this;
+    }
+
+    public ElasticityDependencyElement withDependentMetric(final Metric dependentMetric) {
+        this.dependentMetric = dependentMetric;
+        return this;
+    }
+
+    public ElasticityDependencyElement withCoefficients(final Collection<ElasticityDependencyCoefficient> coefficients) {
+        this.coefficients = coefficients;
+        return this;
+    }
+
+    public ElasticityDependencyElement withInterceptor(final Double interceptor) {
+        this.interceptor = interceptor;
+        return this;
+    }
+
+    public ElasticityDependencyElement withAdjustedR(final Double adjustedR) {
+        this.adjustedR = adjustedR;
+        return this;
     }
 
 }

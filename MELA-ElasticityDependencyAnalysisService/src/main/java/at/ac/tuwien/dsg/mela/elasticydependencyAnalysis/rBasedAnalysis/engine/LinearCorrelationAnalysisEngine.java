@@ -196,11 +196,9 @@ public class LinearCorrelationAnalysisEngine {
 
         //add code which performs linear evaluation in R
         rCode.addRCode("res <- lm(" + dependent.getId() + "~" + predictorNames + ")");
-
-        Logger.getLogger(LinearCorrelationAnalysisEngine.class.getName()).log(Level.DEBUG, "res <- lm(" + dependent.getId() + "~" + predictorNames + ")");
-
-//        System.out.println("res <- lm(" + dependent.getId() + "~" + predictorNames + ")");
-        //start processing result
+ 
+        log.info(rCode.getCode().toString());
+        
         caller.runAndReturnResult("res");
 
         //will contain all removed predictors
