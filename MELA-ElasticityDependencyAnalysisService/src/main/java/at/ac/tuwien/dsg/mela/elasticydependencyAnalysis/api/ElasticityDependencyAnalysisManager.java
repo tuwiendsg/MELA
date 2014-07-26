@@ -158,7 +158,7 @@ public class ElasticityDependencyAnalysisManager {
                     for (int i = 0; i <  dependentMetricValues.size() && i <  dependencyElement.getDependentMetricValues().size()
                             && i < computedOriginal.size() && i < coefficientValuesColumns.size(); i++) {
 //                        System.out.println(dependencyDescriptionInStrings.get(i));
-                        String description = dependentMetricValues.get(i).getValueRepresentation() + "," + dependencyElement.getDependentMetricValues().get(i) + ", " + computedOriginal.get(i) + ","  + computedFiltered.get(i) + coefficientValuesColumns.get(i);
+                        String description = "," + dependentMetricValues.get(i).getValueRepresentation() + "," + dependencyElement.getDependentMetricValues().get(i) + ", " + computedOriginal.get(i) + ","  + computedFiltered.get(i) + coefficientValuesColumns.get(i);
 
                         dataColumn.add(description);
                     }
