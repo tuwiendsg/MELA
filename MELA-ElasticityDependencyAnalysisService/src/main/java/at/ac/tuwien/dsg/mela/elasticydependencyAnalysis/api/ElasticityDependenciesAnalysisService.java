@@ -25,6 +25,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class ElasticityDependenciesAnalysisService {
 
     @Context
     private UriInfo context;
-    
+
     @Autowired
     private ElasticityDependencyAnalysisManager elasticityDependencyAnalysisManager;
 
@@ -72,12 +73,12 @@ public class ElasticityDependenciesAnalysisService {
         return jsonString;
 
     }
-    
-    
+
     @GET
     @Path("/{serviceID}/csv/elasticitydependencies")
     @Produces("text/csv")
-    public String getElasticityDependenciesAsCSV(@PathParam("serviceID") String serviceID) {
+    public Response getElasticityDependenciesAsCSV(@PathParam("serviceID") String serviceID) {
+
         Logger.getLogger(ElasticityDependenciesAnalysisService.class.getName()).log(Level.INFO, "Requested dependencies as CSV for " + serviceID);
 
         MonitoredElement element = new MonitoredElement(serviceID);
@@ -85,7 +86,8 @@ public class ElasticityDependenciesAnalysisService {
 
         String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesAsCSV(element);
 
-        return jsonString;
+        Response response = Response.status(200).header("Content-Disposition", "attachment; filename=" + serviceID + "_complete_deps.csv").entity(jsonString).build();
+        return response;
 
     }
 
@@ -113,12 +115,11 @@ public class ElasticityDependenciesAnalysisService {
         return jsonString;
 
     }
-    
-    
+
     @GET
     @Path("/{serviceID}/csv/elasticitymetrics/elasticitydependencies")
     @Produces("text/csv")
-    public String getElasticityDependenciesBetweenElMetricsAsCSV(@PathParam("serviceID") String serviceID) {
+    public Response getElasticityDependenciesBetweenElMetricsAsCSV(@PathParam("serviceID") String serviceID) {
         Logger.getLogger(ElasticityDependenciesAnalysisService.class.getName()).log(Level.INFO, "Requested dependencies as CSV for " + serviceID);
 
         MonitoredElement element = new MonitoredElement(serviceID);
@@ -126,7 +127,8 @@ public class ElasticityDependenciesAnalysisService {
 
         String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesBetweenElMetricsAsCSV(element);
 
-        return jsonString;
+        Response response = Response.status(200).header("Content-Disposition", "attachment; filename=" + serviceID + "_el_metrics_deps.csv").entity(jsonString).build();
+        return response;
 
     }
 

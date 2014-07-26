@@ -105,23 +105,23 @@ public class ElasticityDependencyAnalysisManager {
                  * As interceptor is computed on percentages of UpperBoundary, I
                  * need to convert it to value
                  */
-                Double interceptorConvertedToValue = dependencyElement.getInterceptor()/100 * Double.parseDouble(space.getSpaceBoundaryForMetric(dependencyElement.getMonitoredElement(), dependencyElement.getDependentMetric())[1].getValueRepresentation());
+                Double interceptorConvertedToValue = dependencyElement.getInterceptor() / 100 * Double.parseDouble(space.getSpaceBoundaryForMetric(dependencyElement.getMonitoredElement(), dependencyElement.getDependentMetric())[1].getValueRepresentation());
 
                 String dependencyDescription = dependencyElement.getDependentMetric().getName() + ":" + dependency.getMonitoredElement().getId() + "<- " + interceptorConvertedToValue + " + ";
-                String secondaryHeaderLine = "Monitored,Computed";
+                String secondaryHeaderLine = ",Monitored original, Monitored Filtered, Computed Original, Computed Filtered";
 
                 for (ElasticityDependencyCoefficient coefficient : dependencyElement.getCoefficients()) {
                     dependencyDescription += "" + coefficient.getCoefficient() + "*" + coefficient.getMetric().getName() + ":" + coefficient.getMonitoredElement().getId() + " with lag " + coefficient.getLag() + " + ";
-                    secondaryHeaderLine += "," + coefficient.getMetric().getName();
+                    secondaryHeaderLine += "," + coefficient.getMetric().getName() + " filtered" + "," + coefficient.getMetric().getName() + " original";
                 }
 
                 dependencyDescription += " and adjustedR " + dependencyElement.getAdjustedR();
                 //add to dependencyDescription fake columns for the computed column and each coeff recorded value
 
                 //column for computed
-                dependencyDescription += ",";
+                dependencyDescription += ",,,,";
                 for (int i = 0; i < dependencyElement.getCoefficients().size(); i++) {
-                    dependencyDescription += ",";
+                    dependencyDescription += ",,";
                 }
 
                 dataColumn.add(dependencyDescription);
@@ -130,48 +130,35 @@ public class ElasticityDependencyAnalysisManager {
                 //just test if the prediction applies
                 {
                     List<String> coefficientValuesColumns = new ArrayList<>();
-                    List<Double> computed = new ArrayList<>();
+                    List<Double> computedOriginal = new ArrayList<>();
+                    List<Double> computedFiltered = new ArrayList<>();
 
                     //instantiate with name of dependent metric and monitored value
                     for (MetricValue value : dependentMetricValues) {
                         coefficientValuesColumns.add("");
-                        computed.add(interceptorConvertedToValue);
+                        computedOriginal.add(interceptorConvertedToValue);
+                        computedFiltered.add(interceptorConvertedToValue);
                     }
 
                     for (ElasticityDependencyCoefficient dependencyCoefficient : dependencyElement.getCoefficients()) {
-                        List<MetricValue> coefficientMetricValues = space.getMonitoredDataForService(dependencyCoefficient.getMonitoredElement()).get(dependencyCoefficient.getMetric());
+                        List<MetricValue> originalCoefficientMetricValues = space.getMonitoredDataForService(dependencyCoefficient.getMonitoredElement()).get(dependencyCoefficient.getMetric());
+                        List<MetricValue> filteredCoefficientMetricValues = dependencyCoefficient.getMetricValues();
 
-                        //lag of coefficients must be accounted for when computing value of dependent
-                        int lag = dependencyCoefficient.getLag();
+                        for (int i = 0; i < dependentMetricValues.size() && i < filteredCoefficientMetricValues.size(); i++) {
 
-                        for (int i = 0; i < dependentMetricValues.size() && i < coefficientMetricValues.size(); i++) {
+                            Double filteredCoeffValue = (Double) filteredCoefficientMetricValues.get(i).getValue();
+                            Double originalCoeffValue = (Double) originalCoefficientMetricValues.get(i).getValue();
+                            coefficientValuesColumns.set(i, coefficientValuesColumns.get(i) + "," + filteredCoeffValue + "," + originalCoeffValue);
 
-                            int targetIndex = i + lag;
-
-                            //check if we need to go around left or  right due to lag
-                            if (lag > 0) {
-                                if (targetIndex > coefficientMetricValues.size() - 1) {
-                                    targetIndex -= coefficientMetricValues.size() - 1;
-                                }
-
-                            } else {
-
-                                if (targetIndex < 0) {
-                                    targetIndex += coefficientMetricValues.size() - 1;
-                                }
-
-                            }
-
-                            Double coeffValue = (Double) coefficientMetricValues.get(targetIndex).getValue();
-                            coefficientValuesColumns.set(i, coefficientValuesColumns.get(i) + "," + coeffValue);
-
-                            computed.set(i, computed.get(i) + (dependencyCoefficient.getCoefficient() * coeffValue));
+                            computedFiltered.set(i, computedFiltered.get(i) + (dependencyCoefficient.getCoefficient() * filteredCoeffValue));
+                            computedOriginal.set(i, computedOriginal.get(i) + (dependencyCoefficient.getCoefficient() * originalCoeffValue));
                         }
                     }
 
-                    for (int i = 0; i < computed.size(); i++) {
+                    for (int i = 0; i <  dependentMetricValues.size() && i <  dependencyElement.getDependentMetricValues().size()
+                            && i < computedOriginal.size() && i < coefficientValuesColumns.size(); i++) {
 //                        System.out.println(dependencyDescriptionInStrings.get(i));
-                        String description = dependentMetricValues.get(i).getValueRepresentation() + ", " + computed.get(i) + coefficientValuesColumns.get(i);
+                        String description = dependentMetricValues.get(i).getValueRepresentation() + "," + dependencyElement.getDependentMetricValues().get(i) + ", " + computedOriginal.get(i) + ","  + computedFiltered.get(i) + coefficientValuesColumns.get(i);
 
                         dataColumn.add(description);
                     }
@@ -393,6 +380,15 @@ public class ElasticityDependencyAnalysisManager {
 
                             ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept, adjustedSquare);
 
+                            {
+                                List<MetricValue> values = new ArrayList<>();
+                                //as values stored in corelation are percentage of upper boundary, convert them back
+                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
+                                for (Double v : vDependent.getValues()) {
+                                    values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
+                                }
+                                dependencyElement.setDependentMetricValues(values);
+                            }
                             //extract each predictor its coefficient
                             List<Coefficient> predictors = c.getPredictors();
 
@@ -404,6 +400,16 @@ public class ElasticityDependencyAnalysisManager {
                                 MonitoredElement predictorElement = (MonitoredElement) variable.getMetaData(MonitoredElement.class.getName());
 
                                 ElasticityDependencyCoefficient elasticityDependencyCoefficient = new ElasticityDependencyCoefficient(predictorElement, predictorMetric, coeff, stdError, coefficient.getLag());
+
+                                {
+                                    List<MetricValue> values = new ArrayList<>();
+                                    Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
+                                    for (Double v : variable.getValues()) {
+                                        values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
+                                    }
+                                    elasticityDependencyCoefficient.setMetricValues(values);
+                                }
+
                                 dependencyElement.addCoefficient(elasticityDependencyCoefficient);
                             }
 
@@ -498,7 +504,6 @@ public class ElasticityDependencyAnalysisManager {
         }
 
         {
-            //else we recompute dependencies
             final ElasticityBehavior behavior = new ElasticityBehavior(elasticitySpace);
 
             final List<LinearCorrelation> corelations = Collections.synchronizedList(new ArrayList<LinearCorrelation>());
@@ -524,7 +529,7 @@ public class ElasticityDependencyAnalysisManager {
                         //transform from LinearCorrelation to MonitoredElementElasticityDependency
                         {
                             //write in csv the corelation data and result, to allow inspection
-                            List<List<String>> columns = new ArrayList<>();
+//                            List<List<String>> columns = new ArrayList<>();
 
                             //extract data about dependent metric
                             Double adjustedSquare = c.getAdjustedRSquared();
@@ -542,55 +547,63 @@ public class ElasticityDependencyAnalysisManager {
                                 for (Double value : vDependent.getValues()) {
                                     column.add("" + value);
                                 }
-                                columns.add(column);
+//                                columns.add(column);
                             }
 
                             ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept, adjustedSquare);
+
+                            {
+                                List<MetricValue> values = new ArrayList<>();
+                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
+                                for (Double v : vDependent.getValues()) {
+                                    values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
+                                }
+                                dependencyElement.setDependentMetricValues(values);
+                            }
 
                             //extract each predictor its coefficient
                             List<Coefficient> predictors = c.getPredictors();
 
                             {
-                                List<Double> predictedValues = new ArrayList<>();
-                                {
-                                    for (Double value : vDependent.getValues()) {
-                                        predictedValues.add(c.getIntercept()); // first ad intercept to predicted
-                                    }
-                                }
-                                {
-                                    String coeffNames = "";
-                                    for (Coefficient coefficient : predictors) {
-                                        Double coeff = coefficient.getCoefficient();
-                                        Variable variable = coefficient.getVariable();
-                                        MonitoredElement dependentElement = (MonitoredElement) variable.getMetaData(MonitoredElement.class.getName());
+//                                List<Double> predictedValues = new ArrayList<>();
+//                                {
+//                                    for (Double value : vDependent.getValues()) {
+//                                        predictedValues.add(c.getIntercept()); // first ad intercept to predicted
+//                                    }
+//                                }
+//                                {
+//                                    String coeffNames = "";
+//                                    for (Coefficient coefficient : predictors) {
+//                                        Double coeff = coefficient.getCoefficient();
+//                                        Variable variable = coefficient.getVariable();
+//                                        MonitoredElement dependentElement = (MonitoredElement) variable.getMetaData(MonitoredElement.class.getName());
+//
+//                                        coeffNames += variable.getId();
+//                                        for (int i = 0; i < vDependent.getValues().size(); i++) {
+//                                            predictedValues.set(i, predictedValues.get(i) + coeff * variable.getValues().get(i));
+//                                        }
+//                                    }
+//                                    List<String> predictedColumn = new ArrayList<>();
+//                                    predictedColumn.add("predicted");
+//                                    for (Double predicted : predictedValues) {
+//                                        predictedColumn.add("" + predicted);
+//                                    }
+//                                    columns.add(predictedColumn);
+//                                }
 
-                                        coeffNames += variable.getId();
-                                        for (int i = 0; i < vDependent.getValues().size(); i++) {
-                                            predictedValues.set(i, predictedValues.get(i) + coeff * variable.getValues().get(i));
-                                        }
-                                    }
-                                    List<String> predictedColumn = new ArrayList<>();
-                                    predictedColumn.add("predicted");
-                                    for (Double predicted : predictedValues) {
-                                        predictedColumn.add("" + predicted);
-                                    }
-                                    columns.add(predictedColumn);
-                                }
-
-                                for (Coefficient coefficient : predictors) {
-                                    Double coeff = coefficient.getCoefficient();
-                                    Variable variable = coefficient.getVariable();
-                                    MonitoredElement dependentElement = (MonitoredElement) variable.getMetaData(MonitoredElement.class.getName());
-                                    List<String> coefficientColumn = new ArrayList<>();
-                                    String coeffName = variable.getId();
-                                    coefficientColumn.add(c.getIntercept() + " + " + coefficient.getCoefficient() + "*" + coeffName);
-
-                                    for (int i = 0; i < vDependent.getValues().size(); i++) {
-                                        coefficientColumn.add("" + variable.getValues().get(i));
-                                    }
-                                    columns.add(coefficientColumn);
-                                }
-
+//                                for (Coefficient coefficient : predictors) {
+//                                    Double coeff = coefficient.getCoefficient();
+//                                    Variable variable = coefficient.getVariable();
+//                                    MonitoredElement dependentElement = (MonitoredElement) variable.getMetaData(MonitoredElement.class.getName());
+//                                    List<String> coefficientColumn = new ArrayList<>();
+//                                    String coeffName = variable.getId();
+//                                    coefficientColumn.add(c.getIntercept() + " + " + coefficient.getCoefficient() + "*" + coeffName);
+//
+//                                    for (int i = 0; i < vDependent.getValues().size(); i++) {
+//                                        coefficientColumn.add("" + variable.getValues().get(i));
+//                                    }
+//                                    columns.add(coefficientColumn);
+//                                }
                             }
 
                             for (Coefficient coefficient : predictors) {
@@ -600,8 +613,17 @@ public class ElasticityDependencyAnalysisManager {
                                 Metric predictorMetric = (Metric) variable.getMetaData(Metric.class.getName());
                                 MonitoredElement predictorElement = (MonitoredElement) variable.getMetaData(MonitoredElement.class.getName());
 
+                                List<MetricValue> values = new ArrayList<>();
+                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
+                                for (Double v : variable.getValues()) {
+                                    values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
+                                }
+
                                 ElasticityDependencyCoefficient elasticityDependencyCoefficient = new ElasticityDependencyCoefficient(predictorElement, predictorMetric, coeff, stdError, coefficient.getLag());
+
+                                elasticityDependencyCoefficient.withMetricValues(values);
                                 dependencyElement.addCoefficient(elasticityDependencyCoefficient);
+
                             }
 
                             if (dependencies.containsKey(element)) {

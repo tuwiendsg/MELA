@@ -15,20 +15,21 @@
  */
 package at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.engine;
 
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.concept.LinearCorrelation;
 import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.concept.Variable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import rcaller.Globals;
 import rcaller.RCaller;
 import rcaller.RCode;
+import static scala.xml.Null.value;
 
 /**
  *
@@ -36,9 +37,9 @@ import rcaller.RCode;
  */
 @Component
 public class LinearCorrelationAnalysisEngine {
-
+    
     static final org.slf4j.Logger log = LoggerFactory.getLogger(LinearCorrelationAnalysisEngine.class);
-
+    
     public LinearCorrelation evaluateLinearCorrelation(final Variable dependent, final List<Variable> predictors) {
 
         //in the case no predictor is left (purged by previous recursive calls)
@@ -57,103 +58,240 @@ public class LinearCorrelationAnalysisEngine {
         // 
         //do 1 pass and extracT minimum length of data, to be able to trim data
         int minimLength = dependent.getValues().size();
+        String descr = dependent.getMetaData(Metric.class.getName()).toString() + ".length=" + minimLength + " ";
         for (Variable v : predictors) {
             int vLength = v.getValues().size();
+            descr += ", " + v.getMetaData(Metric.class.getName()).toString() + ".length=" + vLength + " , ";
             if (vLength < minimLength) {
                 minimLength = vLength;
             }
         }
-
+        
+        log.info(
+                "Min value " + minimLength);
+        log.info(
+                "Classified DATA lengths " + descr);
 
         /*
          * Creating RCaller
          */
         RCaller caller = new RCaller();
-
+        
         Globals.detect_current_rscript();
+        
         caller.setRscriptExecutable(Globals.Rscript_current);
         RCode rCode = new RCode();
-
+        
         caller.setRCode(rCode);
+        
         caller.redirectROutputToConsole();
-
+        
         String predictorNames = "";
-        int coefficientIndex = 1;
+//
+        //compute outliers and remove them
+        //for each dependent variable, I compute time lag with respect to dependent
+        //then i shift it with this lag such that linear modelling is more accurate
+        List<Thread> outliersRemovalThreads = new ArrayList<>();
+        
+        List<Variable> allvars = new ArrayList<>(predictors);
+        allvars.add(dependent);
+        
+        for (final Variable v : allvars) {
+//
+            Thread outliersRemovalThread = new Thread() {
+                
+                @Override
+                public void run() {
+                    RCaller lagCaller = new RCaller();
+                    Globals.detect_current_rscript();
+                    lagCaller.setRscriptExecutable(Globals.Rscript_current);
+                    
+                    RCode lagRCode = new RCode();
+                    try {
+                        
+                        lagCaller.setRCode(lagRCode);
+                        lagCaller.redirectROutputToConsole();
+                        
+                        List<Double> data = v.getValues();
+                        
+                        double[] vDataAsDoubleArray = new double[v.getValues().size()];
+                        for (int i = 0; i < v.getValues().size(); i++) {
+                            vDataAsDoubleArray[i] = data.get(i);
+                        }
+                        
+                        lagRCode.addDoubleArray(v.getId(), vDataAsDoubleArray);
+                        
+                        lagRCode.addRCode("outLiers <- boxplot(" + v.getId() + ",plot=FALSE)$out");
+                        
+                        lagCaller.runAndReturnResult("outLiers");
+                        
+                        double[] outliers = lagCaller.getParser().getAsDoubleArray("outLiers");
 
-        //copy values only until minimLength, thus do data trimmingg 
-        //extract values such they can be trimmed to same length without affecting the input
-        double[] dependentValues = new double[minimLength];
-        double[][] predictorsValues = new double[predictors.size()][minimLength];
+                        //list to be ablke to check if equals really fast
+                        List<Double> outliersList = new ArrayList<>();
+                        for (int i = 0; i < outliers.length; i++) {
+                            BigDecimal bd = new BigDecimal(outliers[i]);
+                            bd = bd.setScale(4, RoundingMode.HALF_UP);
+                            outliersList.add(bd.doubleValue());
+                        }
 
+                    //go trough variable values and remove outliers
+                        //replace outliers by their neighbours average
+                        for (int i = 0; i < v.getValues().size(); i++) {
+                            
+                            BigDecimal bd = new BigDecimal(data.get(i));
+                            bd = bd.setScale(4, RoundingMode.HALF_UP);
+                            Double value = bd.doubleValue();
+                            
+                            if (outliersList.contains(value)) {
+                                
+                                double prevValue = 0d;
+                                double nextValue = 0d;
+
+                                //get previous and next which are NOT outliers and compute average, and put in place of outlier
+                                for (int j = i - 1; j > 0; j--) {
+                                    
+                                    BigDecimal bdPrev = new BigDecimal(data.get(j));
+                                    bdPrev = bdPrev.setScale(4, RoundingMode.HALF_UP);
+                                    Double prevValueDouble = bdPrev.doubleValue();
+                                    
+                                    if (!outliersList.contains(prevValueDouble)) {
+                                        prevValue = data.get(j);
+                                        break;
+                                    }
+                                }
+
+                                //get next which are NOT outliers and compute average, and put in place of outlier
+                                for (int j = i + 1; j < v.getValues().size(); j++) {
+                                    
+                                    BigDecimal bdNext = new BigDecimal(data.get(j));
+                                    bdNext = bdNext.setScale(4, RoundingMode.HALF_UP);
+                                    Double nextValueDouble = bdNext.doubleValue();
+                                    
+                                    if (!outliersList.contains(nextValueDouble)) {
+                                        nextValue = data.get(j);
+                                        break;
+                                    }
+                                }
+                                
+                                int divAmount = 1;
+                                if (prevValue > 0 && nextValue > 0) {
+                                    divAmount = 2;
+                                }
+                                
+                                data.set(i, (prevValue + nextValue) / divAmount);
+                                
+                            }
+                        }
+                        
+                        {
+                            
+                            double[] dataAfter = new double[v.getValues().size()];
+                            for (int i = 0; i < v.getValues().size(); i++) {
+                                dataAfter[i] = data.get(i);
+                            }
+                            rCode.addDoubleArray("AFTER_" + v.getId(), dataAfter);
+                            
+                        }
+                        log.info(lagRCode.getCode().toString());
+                        
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                        lagCaller.stopStreamConsumers();
+                        log.error("Start Logging code which generated previous error -------------");
+                        
+                        log.error("End logging code which generated previous error -------------");
+                    }
+                    
+                }
+            };
+            
+            outliersRemovalThreads.add(outliersRemovalThread);
+        }
+        
+        for (Thread t : outliersRemovalThreads) {
+            t.setDaemon(true);
+            t.start();
+        }
+        for (Thread t : outliersRemovalThreads) {
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                java.util.logging.Logger.getLogger(LinearCorrelationAnalysisEngine.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+        }
+        
         final Map<Variable, Integer> lagMap = new ConcurrentHashMap<>();
 
         //for each dependent variable, I compute time lag with respect to dependent
         //then i shift it with this lag such that linear modelling is more accurate
         List<Thread> lagComputationThreads = new ArrayList<>();
-
+        
         final int trimmedLength = minimLength;
-
+        
         for (final Variable predictor : predictors) {
-
+            
             Thread lagComputationThread = new Thread() {
-
+                
                 @Override
                 public void run() {
-
-                    RCaller caller = new RCaller();
+                    
+                    RCaller lagCaller = new RCaller();
                     Globals.detect_current_rscript();
-                    caller.setRscriptExecutable(Globals.Rscript_current);
-
-                    RCode rCode = new RCode();
+                    lagCaller.setRscriptExecutable(Globals.Rscript_current);
+                    
+                    RCode lagRCode = new RCode();
                     try {
-
-                        caller.setRCode(rCode);
-                        caller.redirectROutputToConsole();
-
+                        
+                        lagCaller.setRCode(lagRCode);
+                        lagCaller.redirectROutputToConsole();
+                        
                         List<Double> dependentData = dependent.getValues();
                         List<Double> predictorData = predictor.getValues();
-
+                        
                         double[] dependentDataAsDoubleArray = new double[trimmedLength];
                         for (int i = 0; i < trimmedLength; i++) {
                             dependentDataAsDoubleArray[i] = dependentData.get(i);
                         }
-
+                        
                         double[] predictorDataAsDoubleArray = new double[trimmedLength];
                         for (int i = 0; i < trimmedLength; i++) {
                             predictorDataAsDoubleArray[i] = predictorData.get(i);
                         }
-
-                        rCode.addDoubleArray("dependent", dependentDataAsDoubleArray);
-                        rCode.addDoubleArray("predictor", predictorDataAsDoubleArray);
-
-                        rCode.addRCode("res <- ccf(dependent,predictor,plot = FALSE)");
-                        rCode.addRCode("lag <- res$lag[which.max(res$acf)]");
-
-                        caller.runAndReturnResult("lag");
-
-                        int lag = caller.getParser().getAsIntArray("lag")[0];
+                        
+                        lagRCode.addDoubleArray(dependent.getId(), dependentDataAsDoubleArray);
+                        lagRCode.addDoubleArray(predictor.getId(), predictorDataAsDoubleArray);
+                        
+                        lagRCode.addRCode("res <- ccf(" + dependent.getId() + "," + predictor.getId() + ",plot = FALSE)");
+                        lagRCode.addRCode("lag <- res$lag[which.max(res$acf)]");
+                        
+                        lagCaller.runAndReturnResult("lag");
+                        
+                        int lag = lagCaller.getParser().getAsIntArray("lag")[0];
 
                         //shift predictor according to its lag
                         predictor.shiftData(lag);
 
                         //revert lag to make more sense when computing dependent from coefficient
-                        lagMap.put(predictor, -1 * lag);
-
+//                        lagMap.put(predictor, -1 * lag);
+                        log.info(lagRCode.getCode().toString());
+                        log.info("Lag " + lag);
+                        
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
-                        caller.stopStreamConsumers();
+                        lagCaller.stopStreamConsumers();
                         log.error("Start Logging code which generated previous error -------------");
-                        log.error(rCode.getCode().toString());
+                        
                         log.error("End logging code which generated previous error -------------");
                     }
-
+                    
                 }
             };
-
+            
             lagComputationThreads.add(lagComputationThread);
-
+            
         }
-
+        
         for (Thread t : lagComputationThreads) {
             t.setDaemon(true);
             t.start();
@@ -165,6 +303,10 @@ public class LinearCorrelationAnalysisEngine {
                 java.util.logging.Logger.getLogger(LinearCorrelationAnalysisEngine.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             }
         }
+        //copy values only until minimLength, thus do data trimmingg 
+        //extract values such they can be trimmed to same length without affecting the input
+        double[] dependentValues = new double[minimLength];
+        double[][] predictorsValues = new double[predictors.size()][minimLength];
 
         //resume as normal with linear regression
         //add values in R as variables 
@@ -174,16 +316,16 @@ public class LinearCorrelationAnalysisEngine {
                 dependentValues[i] = data.get(i);
             }
             rCode.addDoubleArray(dependent.getId(), dependentValues);
-
+            
         }
-
+        
         {
             for (int j = 0; j < predictors.size(); j++) {
                 Variable v = predictors.get(j);
-
+                
                 List<Double> data = v.getValues();
                 predictorsValues[j] = new double[minimLength];
-
+                
                 for (int i = 0; i < minimLength; i++) {
                     predictorsValues[j][i] = data.get(i);
                 }
@@ -191,12 +333,12 @@ public class LinearCorrelationAnalysisEngine {
                 predictorNames += "+" + v.getId();
             }
         }
-
+        
         predictorNames = predictorNames.substring(1, predictorNames.length());
 
         //add code which performs linear evaluation in R
         rCode.addRCode("res <- lm(" + dependent.getId() + "~" + predictorNames + ")");
- 
+        
         log.info(rCode.getCode().toString());
         
         caller.runAndReturnResult("res");
@@ -207,7 +349,7 @@ public class LinearCorrelationAnalysisEngine {
 
         //get coefficients
         {
-
+            
             String[] results = caller.getParser().getAsStringArray("coefficients");
 
             //check if any coefficient has NaS as number, indicating it does not belong to relationship
@@ -219,7 +361,7 @@ public class LinearCorrelationAnalysisEngine {
                     predictorsToRemove.add(predictors.get(i - 1));
                 }
             }
-
+            
         }
 
         //if we have coefficients to remove, then remove them and re-evaluate result.
@@ -241,17 +383,16 @@ public class LinearCorrelationAnalysisEngine {
                  */
                 Globals.detect_current_rscript();
                 caller.setRscriptExecutable(Globals.Rscript_current);
-
+                
                 caller.setRCode(rCode);
                 rCode.addRCode("res <- summary(res)");
                 caller.runAndReturnResult("res");
             }
-
             //else continue and remove elements which have too large an estimation error 
             //result is returned as : 4 means result always has 4 columns: Estimate,  Std. Error, t value, and Pr(>|t|) 
             // predictors.size()+1 is the number of variables for which coeff are returned; intercept and predictors
             double[][] results = caller.getParser().getAsDoubleMatrix("coefficients", 4, predictors.size() + 1);
-
+            
             double[] estimates = results[0];
             double[] estimateError = results[1];
             double[] pr = results[2]; //show P coefficient for each
@@ -277,10 +418,10 @@ public class LinearCorrelationAnalysisEngine {
 
                 //interceptor result is on position [0]
                 correlation.setIntercept(estimates[0]);
-
+                
                 for (int i = 1; i < estimates.length; i++) {
                     //predictors i-1 to offset the fact that on [0] we have intercept
-                    LinearCorrelation.Coefficient coefficient = new LinearCorrelation.Coefficient(predictors.get(i - 1), estimates[i], estimateError[i], lagMap.get(predictors.get(i - 1)));
+                    LinearCorrelation.Coefficient coefficient = new LinearCorrelation.Coefficient(predictors.get(i - 1), estimates[i], estimateError[i], 0);
                     coefficients.add(coefficient);
                 }
 
@@ -290,17 +431,21 @@ public class LinearCorrelationAnalysisEngine {
                     caller = new RCaller();
                     Globals.detect_current_rscript();
                     caller.setRscriptExecutable(Globals.Rscript_current);
-
+                    
                     caller.setRCode(rCode);
                     caller.runAndReturnResult("res");
                     double[] adjustedR = caller.getParser().getAsDoubleArray("adj_r_squared");
                     correlation.setAdjustedRSquared(adjustedR[0]);
                 }
                 return correlation;
-
+                
             }
-
+            
         }
-
+        
     }
+
+    //TODO: check why outliers do not work
+    //check what is with lag
+    //check why outputing nicely on 
 }

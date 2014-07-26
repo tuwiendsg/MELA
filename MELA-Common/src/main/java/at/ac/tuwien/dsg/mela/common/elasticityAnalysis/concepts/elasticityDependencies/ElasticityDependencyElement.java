@@ -16,10 +16,12 @@
 package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -41,6 +43,9 @@ public class ElasticityDependencyElement implements Serializable {
 
     @XmlElement(name = "DependentMetric", required = true)
     private Metric dependentMetric;
+    
+    @XmlElement(name = "MetricValue", required = true)
+    private List<MetricValue> dependentMetricValues;
 
     @XmlElement(name = "ElasticityDependencyCoefficient", required = false)
     private Collection<ElasticityDependencyCoefficient> coefficients;
@@ -71,6 +76,16 @@ public class ElasticityDependencyElement implements Serializable {
         this.interceptor = interceptor;
         this.adjustedR = adjustedR;
     }
+
+    public List<MetricValue> getDependentMetricValues() {
+        return dependentMetricValues;
+    }
+
+    public void setDependentMetricValues(List<MetricValue> dependentMetricValues) {
+        this.dependentMetricValues = dependentMetricValues;
+    }
+    
+    
 
     public void addCoefficient(ElasticityDependencyCoefficient element) {
         coefficients.add(element);
@@ -166,4 +181,4 @@ public class ElasticityDependencyElement implements Serializable {
         return this;
     }
 
-}
+    }

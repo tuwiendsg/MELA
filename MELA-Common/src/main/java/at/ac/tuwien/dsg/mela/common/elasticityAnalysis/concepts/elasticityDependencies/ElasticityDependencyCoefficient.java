@@ -16,8 +16,10 @@
 package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import java.io.Serializable;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -49,9 +51,12 @@ public class ElasticityDependencyCoefficient implements Serializable {
     @XmlElement(name = "StdError", required = true)
     private double stdError;
 
+    @XmlElement(name = "MetricValue", required = true)
+    private List<MetricValue> metricValues;
+
     /**
      * Lag of coefficient from dependent. So a lag of 2 means coefficient is in
-     * front with 2, of  -2 means is behind with 2
+     * front with 2, of -2 means is behind with 2
      */
     @XmlElement(name = "Lag", required = true)
     private int lag;
@@ -107,6 +112,14 @@ public class ElasticityDependencyCoefficient implements Serializable {
         this.lag = lag;
     }
 
+    public List<MetricValue> getMetricValues() {
+        return metricValues;
+    }
+
+    public void setMetricValues(List<MetricValue> metricValues) {
+        this.metricValues = metricValues;
+    }
+
     public ElasticityDependencyCoefficient withMonitoredElement(final MonitoredElement monitoredElement) {
         this.monitoredElement = monitoredElement;
         return this;
@@ -124,6 +137,11 @@ public class ElasticityDependencyCoefficient implements Serializable {
 
     public ElasticityDependencyCoefficient withStdError(final double stdError) {
         this.stdError = stdError;
+        return this;
+    }
+
+    public ElasticityDependencyCoefficient withMetricValues(final List<MetricValue> metricValues) {
+        this.metricValues = metricValues;
         return this;
     }
 

@@ -88,8 +88,8 @@ public class Variable {
     /**
      * Modifies variable data in place
      *
-     * Will shift data by ROTATION, so if right, last "shiftAmount" positions
-     * will be put as first
+     * Will shift data by ROTATION, COPYING the first value if shift is
+     * positive, and last if negative
      *
      * @param shiftAmount number of positions to shift data. Positive means
      * right, negative means left
@@ -98,21 +98,14 @@ public class Variable {
     public Variable shiftData(int shiftAmount) {
         if (shiftAmount > 0) {
 
-            for (int i = 0; i < values.size(); i++) {
-                int target = i + shiftAmount;
-                if (target > values.size() - 1) {
-                    target -= values.size() - 1;
-                }
-                values.set(target, values.get(i));
+            //if > 0, pull all towards end
+            for (int i = values.size() - 1; i >= shiftAmount; i--) {
+                values.set(i, values.get(i - shiftAmount));
             }
 
         } else {
-            for (int i = 0; i < values.size(); i++) {
-                int target = i + shiftAmount;
-                if (target < 0) {
-                    target += values.size() - 1;
-                }
-                values.set(target, values.get(i));
+            for (int i = 0; i < values.size() + shiftAmount; i++) {
+                values.set(i, values.get(i - shiftAmount));
             }
 
         }
