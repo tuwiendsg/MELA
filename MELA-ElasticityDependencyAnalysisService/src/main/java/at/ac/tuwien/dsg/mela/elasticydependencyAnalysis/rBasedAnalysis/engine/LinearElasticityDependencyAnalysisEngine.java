@@ -46,7 +46,7 @@ import static scala.tools.scalap.scalax.rules.scalasig.NoSymbol.parent;
  */
 @Component
 public class LinearElasticityDependencyAnalysisEngine {
-    
+
     @Autowired
     private LinearCorrelationAnalysisEngine analysisEngine;
 
@@ -444,7 +444,7 @@ public class LinearElasticityDependencyAnalysisEngine {
 //        List<MonitoredElementElasticityDependency> dependencyQueue = new ArrayList<MonitoredElementElasticityDependency>();
         queue.add(service);
 
-//        List<Thread> processingThreads = new ArrayList<Thread>();
+        List<Thread> processingThreads = new ArrayList<Thread>();
         while (!queue.isEmpty()) {
 
             final MonitoredElement parent = queue.remove(0);
@@ -489,47 +489,47 @@ public class LinearElasticityDependencyAnalysisEngine {
                     otherVars.addAll(elementVariables.subList(i + 1, elementVariables.size()));
                 }
 
-//                Thread t = new Thread() {
-//
-//                        @Override
-//                    public void run() {
-                try {
-                    //remove from children metrics present in composition rules as sources for the elementVar
-                    if (compositionRulesDependentMetrics.containsKey((Metric) elementVar.getMetaData(Metric.class.getName()))) {
-                        List<Metric> sources = compositionRulesDependentMetrics.get((Metric) elementVar.getMetaData(Metric.class.getName()));
+                Thread t = new Thread() {
 
-                        Iterator<Variable> it = otherVars.iterator();
-                        while (it.hasNext()) {
-                            Variable v = it.next();
-                            if (sources.contains((Metric) v.getMetaData(Metric.class.getName()))) {
-                                it.remove();
+                    @Override
+                    public void run() {
+                        try {
+                            //remove from children metrics present in composition rules as sources for the elementVar
+                            if (compositionRulesDependentMetrics.containsKey((Metric) elementVar.getMetaData(Metric.class.getName()))) {
+                                List<Metric> sources = compositionRulesDependentMetrics.get((Metric) elementVar.getMetaData(Metric.class.getName()));
+
+                                Iterator<Variable> it = otherVars.iterator();
+                                while (it.hasNext()) {
+                                    Variable v = it.next();
+                                    if (sources.contains((Metric) v.getMetaData(Metric.class.getName()))) {
+                                        it.remove();
+                                    }
+                                }
+
                             }
+                            LinearCorrelation correlation = analysisEngine.evaluateLinearCorrelation(elementVar, otherVars);
+                            if (correlation.getAdjustedRSquared() < Double.POSITIVE_INFINITY) {
+                                corelations.add(correlation);
+                            }
+                            //System.out.println(correlation);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-
                     }
-                    LinearCorrelation correlation = analysisEngine.evaluateLinearCorrelation(elementVar, otherVars);
-                    if (correlation.getAdjustedRSquared() < Double.POSITIVE_INFINITY) {
-                        corelations.add(correlation);
-                    }
-                    //System.out.println(correlation);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-//                    }
 
-//                };
-//                t.setDaemon(true);
-//                processingThreads.add(t);
-//                t.start();
+                };
+                t.setDaemon(true);
+                processingThreads.add(t);
+                t.start();
             }
         }
-//        for (Thread t : processingThreads) {
-//            try {
-//                t.join();
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(LinearElasticityDependencyAnalysisEngine.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
+        for (Thread t : processingThreads) {
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(LinearElasticityDependencyAnalysisEngine.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
 
         return corelations;
 
