@@ -221,7 +221,6 @@ public class LinearCorrelationAnalysisEngine {
             }
         }
         
-        final Map<Variable, Integer> lagMap = new ConcurrentHashMap<>();
 
         //for each dependent variable, I compute time lag with respect to dependent
         //then i shift it with this lag such that linear modelling is more accurate

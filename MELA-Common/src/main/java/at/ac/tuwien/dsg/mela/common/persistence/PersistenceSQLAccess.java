@@ -456,7 +456,7 @@ public class PersistenceSQLAccess {
     }
 
     public ConfigurationXMLRepresentation getLatestConfiguration(String serviceID) {
-        String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration) AND monSeqID=?";
+        String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration where monSeqID=?)";
         ConfigurationXMLRepresentation configurationXMLRepresentation = null;
         try {
             RowMapper<String> rowMapper = new RowMapper<String>() {
