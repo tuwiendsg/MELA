@@ -155,47 +155,72 @@ public class PersistenceSQLAccess {
     public void writeElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
 
         //delete previous entry
-        String sql = "DELETE FROM ElasticitySpace WHERE monseqid=?";
-        jdbcTemplate.update(sql, elasticitySpace.getService().getId());
+        String sql = "DELETE FROM ElasticitySpace WHERE monseqid=? and startTimestampID=? and endTimestampID=?";
+        jdbcTemplate.update(sql, elasticitySpace.getService().getId(), elasticitySpace.getStartTimestampID(), elasticitySpace.getEndTimestampID());
 
         //add new entry
-        sql = "INSERT INTO ElasticitySpace (monSeqID, timestampID, elasticitySpace) "
+        sql = "INSERT INTO ElasticitySpace (monSeqID, startTimestampID, endTimestampID, elasticitySpace) "
                 + "VALUES "
                 + "( (SELECT ID FROM MonitoringSeq WHERE id='"
-                + monitoringSequenceID + "')" + ", ? " + ", ? )";
+                + monitoringSequenceID + "')" + ", ? , ? " + ", ? )";
 
-        jdbcTemplate.update(sql, elasticitySpace.getTimestampID(), elasticitySpace);
+        jdbcTemplate.update(sql, elasticitySpace.getStartTimestampID(), elasticitySpace.getEndTimestampID(), elasticitySpace);
 
     }
 
-    public void writeElasticityPathway(String timestamp, LightweightEncounterRateElasticityPathway elasticityPathway, String monitoringSequenceID) {
-        String sql = "insert into ElasticitySpace (monSeqID, timestampID, elasticitySpace) " + "VALUES " + "( (select ID from MonitoringSeq where id='"
-                + monitoringSequenceID + "')" + ", ? " + ", ? )";
-
-        jdbcTemplate.update(sql, monitoringSequenceID);
-
-        sql = "insert into ElasticityPathway (monSeqID, timestampID, elasticityPathway) " + "VALUES "
-                + "( (select ID from MonitoringSeq where id='" + monitoringSequenceID + "')"
-                + ", (select ID from Timestamp where monseqid=(select ID from MonitoringSeq where ID='" + monitoringSequenceID + "')"
-                + " AND timestamp= ? )" + ", ?)";
-
-        jdbcTemplate.update(sql, timestamp, elasticityPathway);
-    }
-
+//    public void writeElasticityPathway(String timestamp, LightweightEncounterRateElasticityPathway elasticityPathway, String monitoringSequenceID) {
+//        String sql = "insert into ElasticitySpace (monSeqID, timestampID, elasticitySpace) " + "VALUES " + "( (select ID from MonitoringSeq where id='"
+//                + monitoringSequenceID + "')" + ", ? " + ", ? )";
+//
+//        jdbcTemplate.update(sql, monitoringSequenceID);
+//
+//        sql = "insert into ElasticityPathway (monSeqID, timestampID, elasticityPathway) " + "VALUES "
+//                + "( (select ID from MonitoringSeq where id='" + monitoringSequenceID + "')"
+//                + ", (select ID from Timestamp where monseqid=(select ID from MonitoringSeq where ID='" + monitoringSequenceID + "')"
+//                + " AND timestamp= ? )" + ", ?)";
+//
+//        jdbcTemplate.update(sql, timestamp, elasticityPathway);
+//    }
     public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID) {
-        String sql = "SELECT timestampID, elasticitySpace from ElasticitySpace where monSeqID=?;";
+        String sql = "SELECT startTimestampID, endTimestampID, elasticitySpace from ElasticitySpace where monSeqID=? and ID=(SELECT MAX(ID) from ElasticitySpace where monSeqID=?);";
         RowMapper<ElasticitySpace> rowMapper = new RowMapper<ElasticitySpace>() {
             public ElasticitySpace mapRow(ResultSet rs, int rowNum) throws SQLException {
-                int timestamp = rs.getInt(1);
-                ElasticitySpace space = (ElasticitySpace) rs.getObject(2);
-                space.setTimestampID(timestamp);
+                int startTimestamp = rs.getInt(1);
+                int endTimestamp = rs.getInt(2);
+                ElasticitySpace space = (ElasticitySpace) rs.getObject(3);
+                space.setStartTimestampID(startTimestamp);
+                space.setEndTimestampID(endTimestamp);
                 return space;
 
             }
         };
 
         //get last space
-        List<ElasticitySpace> space = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
+        List<ElasticitySpace> space = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, monitoringSequenceID);
+        if (space.isEmpty()) {
+            return null;
+        } else {
+            return space.get(0);
+        }
+    }
+
+    public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID, int startTimestampID, int endTimestampID) {
+        String sql = "SELECT startTimestampID, endTimestampID, elasticitySpace from ElasticitySpace where monSeqID=? and "
+                + "ID=(SELECT MAX(ID) from ElasticitySpace where monSeqID=? and startTimestampID=? and endTimestampID=?);";
+        RowMapper<ElasticitySpace> rowMapper = new RowMapper<ElasticitySpace>() {
+            public ElasticitySpace mapRow(ResultSet rs, int rowNum) throws SQLException {
+                int startTimestamp = rs.getInt(1);
+                int endTimestamp = rs.getInt(2);
+                ElasticitySpace space = (ElasticitySpace) rs.getObject(3);
+                space.setStartTimestampID(startTimestamp);
+                space.setEndTimestampID(endTimestamp);
+                return space;
+
+            }
+        };
+
+        //get last space
+        List<ElasticitySpace> space = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, monitoringSequenceID, startTimestampID, endTimestampID);
         if (space.isEmpty()) {
             return null;
         } else {
@@ -363,18 +388,21 @@ public class PersistenceSQLAccess {
 
     }
 
-    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(String startTime, String endTime, String monitoringSequenceID) {
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(int startTimestampID, int endTimestampID, String monitoringSequenceID) {
 
-        String sql = "SELECT timestampID, data from AggregatedData where " + " timestampID >= (select ID from Timestamp where timestamp = ? ) "
-                + "AND timestampID <= (select ID from Timestamp where timestamp = ? ) AND monSeqID=?;";
+        String sql = "SELECT timestampID, data from AggregatedData where " + " timestampID >= ? "
+                + "AND timestampID <=  ? AND monSeqID=?;";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
-                return (ServiceMonitoringSnapshot) rs.getObject(1);
+                int sTimestamp = rs.getInt(1);
+                ServiceMonitoringSnapshot monitoringSnapshot = (ServiceMonitoringSnapshot) rs.getObject(2);
+                monitoringSnapshot.setTimestampID(sTimestamp);
+                return monitoringSnapshot;
             }
         };
 
-        return jdbcTemplate.query(sql, rowMapper, startTime, endTime, monitoringSequenceID);
+        return jdbcTemplate.query(sql, rowMapper, startTimestampID, endTimestampID, monitoringSequenceID);
 
     }
 
@@ -383,7 +411,6 @@ public class PersistenceSQLAccess {
      */
     public ServiceMonitoringSnapshot extractLatestMonitoringData(String monitoringSequenceID) {
         String sql = "SELECT timestampID, data from AggregatedData where " + "ID = (SELECT MAX(ID) from AggregatedData where monSeqID=?);";
-
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {

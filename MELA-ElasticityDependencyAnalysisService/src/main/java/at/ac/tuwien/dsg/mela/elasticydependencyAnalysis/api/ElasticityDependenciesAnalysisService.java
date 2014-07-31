@@ -92,6 +92,24 @@ public class ElasticityDependenciesAnalysisService {
     }
 
     @GET
+    @Path("/{serviceID}/csv/time/elasticitydependencies/{startTime}/{endTime}")
+    @Produces("text/csv")
+    public Response getElasticityDependenciesAsCSVBetweenTime(@PathParam("serviceID") String serviceID, @PathParam("startTime") int startTime,
+            @PathParam("endTime") int endTime) {
+
+        Logger.getLogger(ElasticityDependenciesAnalysisService.class.getName()).log(Level.INFO, "Requested dependencies as CSV for " + serviceID);
+
+        MonitoredElement element = new MonitoredElement(serviceID);
+        element.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+
+        String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesAsCSVBetweenTimeIntervals(element, startTime, endTime);
+
+        Response response = Response.status(200).header("Content-Disposition", "attachment; filename=" + serviceID + "_complete_deps_" + startTime + "_" + endTime + "_.csv").entity(jsonString).build();
+        return response;
+
+    }
+
+    @GET
     @Path("/{serviceID}/xml/elasticitymetrics/elasticitydependencies")
     @Produces("application/xml")
     public ServiceElasticityDependencies getElasticityDependenciesBetweenElMetricsAsXML(@PathParam("serviceID") String serviceID) {
@@ -128,6 +146,23 @@ public class ElasticityDependenciesAnalysisService {
         String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesBetweenElMetricsAsCSV(element);
 
         Response response = Response.status(200).header("Content-Disposition", "attachment; filename=" + serviceID + "_el_metrics_deps.csv").entity(jsonString).build();
+        return response;
+
+    }
+
+    @GET
+    @Path("/{serviceID}/csv/time/elasticitymetrics/elasticitydependencies/{startTime}/{endTime}")
+    @Produces("text/csv")
+    public Response getElasticityDependenciesBetweenElMetricsAsCSVBetweenTime(@PathParam("serviceID") String serviceID, @PathParam("startTime") int startTime,
+            @PathParam("endTime") int endTime) {
+        Logger.getLogger(ElasticityDependenciesAnalysisService.class.getName()).log(Level.INFO, "Requested dependencies as CSV for " + serviceID);
+
+        MonitoredElement element = new MonitoredElement(serviceID);
+        element.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+
+        String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesBetweenElMetricsAsCSVBetweenTimeIntervals(element, startTime, endTime);
+
+        Response response = Response.status(200).header("Content-Disposition", "attachment; filename=" + serviceID + "_el_metrics_deps_" + startTime + "_" + endTime + "_.csv").entity(jsonString).build();
         return response;
 
     }

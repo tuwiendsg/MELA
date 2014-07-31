@@ -281,9 +281,9 @@ public class ElasticityAnalysisManager {
         return snapshots;
     }
 
-    public MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String serviceID, String startTimestamp, String endTimestamp) {
+    public MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String serviceID, int startTimestampID, int endTimestampID) {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringDataByTimeInterval(startTimestamp, endTimestamp, serviceID)) {
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, serviceID)) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
         MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
@@ -511,90 +511,90 @@ public class ElasticityAnalysisManager {
     }
 
     private ElasticitySpace extractAndUpdateElasticitySpace(String serviceID) {
-        //note persistenceDelegate.extractMonitoringData returns max 1000 rows
+//        //note persistenceDelegate.extractMonitoringData returns max 1000 rows
+//
+//        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+//
+//        if (cfg == null) {
+//            return new ElasticitySpace(new MonitoredElement());
+//        }
 
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
-
-        if (cfg == null) {
-            return new ElasticitySpace(new MonitoredElement());
-        }
-
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
-
-        //if space == null, compute it 
-        if (space == null) {
-            //if space is null, compute it from all aggregated monitored data recorded so far
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceDelegate.extractMonitoringData(cfg.getServiceConfiguration().getId());
-
-            //clean by removing all metric values which are below zero, meaning the units are not running yet
-            if (dataFromTimestamp != null) {
-                dataFromTimestamp = cleanMonData(dataFromTimestamp);
-            }
-
-            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(cfg.getServiceConfiguration());
-            fct.setRequirements(cfg.getRequirements());
-            fct.trainElasticitySpace(dataFromTimestamp);
-            space = fct.getElasticitySpace();
-
-            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-            space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-
-        }
-
-        //if space is not null, update it with new data
-        List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
-
-        //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
-        do {
-            dataFromTimestamp = persistenceDelegate.extractMonitoringData(space.getTimestampID(), cfg.getServiceConfiguration().getId());
-
-            //clean by removing all metric values which are below zero, meaning the units are not running yet
-            if (dataFromTimestamp != null) {
-                dataFromTimestamp = cleanMonData(dataFromTimestamp);
-            }
-
-            //check if new data has been collected between elasticity space querries
-            if (!dataFromTimestamp.isEmpty()) {
-                ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(cfg.getServiceConfiguration());
-                fct.setRequirements(cfg.getRequirements());
-                fct.trainElasticitySpace(space, dataFromTimestamp, cfg.getRequirements());
-                //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-                space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-
-            }
-
-        } while (!dataFromTimestamp.isEmpty());
-
-        //persist cached space
-        persistenceDelegate.writeElasticitySpace(space, cfg.getServiceConfiguration().getId());
-
-        return space;
+//        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
+//        //if space == null, compute it 
+//        if (space == null) {
+//            //if space is null, compute it from all aggregated monitored data recorded so far
+//            List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceDelegate.extractMonitoringData(cfg.getServiceConfiguration().getId());
+//
+//            //clean by removing all metric values which are below zero, meaning the units are not running yet
+//            if (dataFromTimestamp != null) {
+//                dataFromTimestamp = cleanMonData(dataFromTimestamp);
+//            }
+//
+//            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(cfg.getServiceConfiguration());
+//            fct.setRequirements(cfg.getRequirements());
+//            fct.trainElasticitySpace(dataFromTimestamp);
+//            space = fct.getElasticitySpace();
+//
+//            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+//            space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+//
+//        }
+//
+//        //if space is not null, update it with new data
+//        List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
+//
+//        //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
+//        do {
+//            dataFromTimestamp = persistenceDelegate.extractMonitoringData(space.getTimestampID(), cfg.getServiceConfiguration().getId());
+//
+//            //clean by removing all metric values which are below zero, meaning the units are not running yet
+//            if (dataFromTimestamp != null) {
+//                dataFromTimestamp = cleanMonData(dataFromTimestamp);
+//            }
+//
+//            //check if new data has been collected between elasticity space querries
+//            if (!dataFromTimestamp.isEmpty()) {
+//                ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(cfg.getServiceConfiguration());
+//                fct.setRequirements(cfg.getRequirements());
+//                fct.trainElasticitySpace(space, dataFromTimestamp, cfg.getRequirements());
+//                //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+//                space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+//
+//            }
+//
+//        } while (!dataFromTimestamp.isEmpty());
+//
+//        //persist cached space
+//        persistenceDelegate.writeElasticitySpace(space, cfg.getServiceConfiguration().getId());
+//
+//        return space;
+        return persistenceDelegate.extractLatestElasticitySpace(serviceID);
     }
 
-    /**
-     * Careful, modifies the supplied snapshots in place
-     *
-     * @param snapshots snapshots to be cleansed by the UNSTABLE_METRIC_VALUE
-     * @return snapshots
-     */
-    private List<ServiceMonitoringSnapshot> cleanMonData(List<ServiceMonitoringSnapshot> snapshots) {
-
-        for (ServiceMonitoringSnapshot monitoringSnapshot : snapshots) {
-            for (Map<MonitoredElement, MonitoredElementMonitoringSnapshot> map : monitoringSnapshot.getMonitoredData().values()) {
-                for (MonitoredElementMonitoringSnapshot elementMonitoringSnapshot : map.values()) {
-                    Iterator<Metric> it = elementMonitoringSnapshot.getMetrics().iterator();
-                    while (it.hasNext()) {
-                        Metric m = it.next();
-                        if (elementMonitoringSnapshot.getMetricValue(m).toString().contains(UNSTABLE_METRIC_VALUE)) {
-                            elementMonitoringSnapshot.getMonitoredData().remove(m);
-                        }
-                    }
-                }
-            }
-        }
-
-        return snapshots;
-    }
+//    /**
+//     * Careful, modifies the supplied snapshots in place
+//     *
+//     * @param snapshots snapshots to be cleansed by the UNSTABLE_METRIC_VALUE
+//     * @return snapshots
+//     */
+//    private List<ServiceMonitoringSnapshot> cleanMonData(List<ServiceMonitoringSnapshot> snapshots) {
+//
+//        for (ServiceMonitoringSnapshot monitoringSnapshot : snapshots) {
+//            for (Map<MonitoredElement, MonitoredElementMonitoringSnapshot> map : monitoringSnapshot.getMonitoredData().values()) {
+//                for (MonitoredElementMonitoringSnapshot elementMonitoringSnapshot : map.values()) {
+//                    Iterator<Metric> it = elementMonitoringSnapshot.getMetrics().iterator();
+//                    while (it.hasNext()) {
+//                        Metric m = it.next();
+//                        if (elementMonitoringSnapshot.getMetricValue(m).toString().contains(UNSTABLE_METRIC_VALUE)) {
+//                            elementMonitoringSnapshot.getMonitoredData().remove(m);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        return snapshots;
+//    }
 
     public String getAllManagedServicesIDs() {
 

@@ -51,7 +51,8 @@ public class ElasticitySpace implements Serializable {
 
     //used to referenciate the timestamp at which this space was computed
     //used in space caching
-    private int timestampID;
+    private int endTimestampID;
+    private int startTimestampID;
 
     {
         spaceEntries = new ArrayList<ElasticitySpaceEntry>();
@@ -72,6 +73,10 @@ public class ElasticitySpace implements Serializable {
                 monitoringData.put(element, new HashMap<Metric, List<MetricValue>>());
             }
         }
+    }
+
+    public ElasticitySpace() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public ElasticitySpaceBoundary getElasticitySpaceBoundary() {
@@ -105,12 +110,20 @@ public class ElasticitySpace implements Serializable {
         spaceEntries.add(new ElasticitySpaceEntry(analysisReport, serviceMonitoringSnapshot));
     }
 
-    public int getTimestampID() {
-        return timestampID;
+    public int getEndTimestampID() {
+        return endTimestampID;
     }
 
-    public void setTimestampID(int timestampID) {
-        this.timestampID = timestampID;
+    public void setEndTimestampID(int endTimestampID) {
+        this.endTimestampID = endTimestampID;
+    }
+
+    public int getStartTimestampID() {
+        return startTimestampID;
+    }
+
+    public void setStartTimestampID(int startTimestampID) {
+        this.startTimestampID = startTimestampID;
     }
 
     public List<ElasticitySpaceEntry> getSpaceEntries() {
@@ -218,5 +231,35 @@ public class ElasticitySpace implements Serializable {
             queue.addAll(element.getContainedElements());
             monitoringData.put(element, new HashMap<Metric, List<MetricValue>>());
         }
+    }
+
+    public ElasticitySpace withSpaceEntries(final List<ElasticitySpaceEntry> spaceEntries) {
+        this.spaceEntries = spaceEntries;
+        return this;
+    }
+
+    public ElasticitySpace withElasticitySpaceBoundary(final ElasticitySpaceBoundary elasticitySpaceBoundary) {
+        this.elasticitySpaceBoundary = elasticitySpaceBoundary;
+        return this;
+    }
+
+    public ElasticitySpace withService(final MonitoredElement service) {
+        this.service = service;
+        return this;
+    }
+
+    public ElasticitySpace withMonitoringData(final Map<MonitoredElement, Map<Metric, List<MetricValue>>> monitoringData) {
+        this.monitoringData = monitoringData;
+        return this;
+    }
+
+    public ElasticitySpace withEndTimestampID(final int endTimestampID) {
+        this.endTimestampID = endTimestampID;
+        return this;
+    }
+
+    public ElasticitySpace withStartTimestampID(final int startTimestampID) {
+        this.startTimestampID = startTimestampID;
+        return this;
     }
 }

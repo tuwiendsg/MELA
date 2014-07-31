@@ -37,6 +37,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -108,7 +109,8 @@ public class PersistenceDelegate {
             space = fct.getElasticitySpace();
 
             //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-            space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+            space.setStartTimestampID(dataFromTimestamp.get(0).getTimestampID());
+            space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
 
             //persist cached space
             this.writeElasticitySpace(space, monitoringSequenceID);
@@ -125,7 +127,8 @@ public class PersistenceDelegate {
 
             //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
             do {
-                dataFromTimestamp = this.extractMonitoringData(space.getTimestampID(), monitoringSequenceID);
+                //gets data after the supplied timestamp
+                dataFromTimestamp = this.extractMonitoringData(space.getEndTimestampID(), monitoringSequenceID);
 
                 if (dataFromTimestamp != null) {
 
@@ -146,7 +149,7 @@ public class PersistenceDelegate {
                     fct.setRequirements(requirements);
                     fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
                     //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-                    space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+                    space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
 
                 }
 
@@ -159,15 +162,87 @@ public class PersistenceDelegate {
         return space;
     }
 
+    public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID, final int startTimestampID, final int endTimestampID) {
+
+        List<Integer> ids = persistenceSQLAccess.getTimestampIDs(monitoringSequenceID);
+
+       
+
+        int currentStart = 0;
+        int currentEnd = 0;
+
+        //check if required time exists
+        if (ids.size() <= startTimestampID) {
+            log.error("Service " + monitoringSequenceID + " has only " + ids.size() + " timestamps, but you requested to start from " + startTimestampID);
+            return null;
+        } else {
+            currentStart = ids.get(startTimestampID);
+        }
+
+        //check if required time exists
+        if (ids.size() <= endTimestampID) {
+            log.error("Service " + monitoringSequenceID + " has only " + ids.size() + " timestamps, but you requested up to  " + endTimestampID + ". Returning up to size - 1.");
+            currentEnd = ids.get(ids.size() - 1);
+        } else {
+            currentEnd = ids.get(endTimestampID);
+        }
+        
+         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID, currentStart, currentEnd);
+
+        //update space with new data
+        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration(monitoringSequenceID);
+
+        if (cfg == null) {
+            log.error("Retrieved empty configuration.");
+            return null;
+        } else if (cfg.getRequirements() == null) {
+            log.error("Retrieved configuration does not contain Requirements.");
+            return null;
+        } else if (cfg.getServiceConfiguration() == null) {
+            log.error("Retrieved configuration does not contain Service Configuration.");
+            return null;
+        }
+        Requirements requirements = cfg.getRequirements();
+        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
+
+        //if space == null, compute it 
+        if (space == null) {
+
+            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+            fct.setRequirements(requirements);
+            List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<>();
+
+            
+            do {
+                dataFromTimestamp = this.extractMonitoringDataByTimeInterval(currentStart, currentEnd, monitoringSequenceID);
+                fct.trainElasticitySpace(dataFromTimestamp);
+                currentStart += 1000; //advance start timestamp with 1000, as we read max 1000 records at once
+            } while (dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID() < currentEnd);
+
+            space = fct.getElasticitySpace();
+
+            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+            space.setStartTimestampID(ids.get(startTimestampID));
+            space.setEndTimestampID(currentEnd);
+
+            //check how much data we actually extracted, as the extraction limits data to 1000
+            //persist cached space
+            this.writeElasticitySpace(space, monitoringSequenceID);
+
+        }
+        return space;
+
+    }
+
     public List<ServiceMonitoringSnapshot> extractLastXMonitoringDataSnapshots(int x, String monitoringSequenceID) {
 
         return persistenceSQLAccess.extractLastXMonitoringDataSnapshots(x, monitoringSequenceID);
 
     }
 
-    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(String startTime, String endTime, String monitoringSequenceID) {
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(int startTimestampID, int endTimestampID, String monitoringSequenceID) {
 
-        return persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTime, endTime, monitoringSequenceID);
+        return persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, monitoringSequenceID);
     }
 
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int timestamp, String monitoringSequenceID) {
@@ -220,13 +295,42 @@ public class PersistenceDelegate {
         }
     }
 
+    public ServiceElasticityDependencies extractLatestElasticityDependencies(String monitoringSequenceID, int startTimestampID, int endTimestampID) {
+
+        JdbcTemplate jdbcTemplate = persistenceSQLAccess.getJdbcTemplate();
+        String sql = "SELECT elasticityDependency from ElasticityDependency where monSeqID=? "
+                + "and ID=(SELECT MAX(ID) from ElasticityDependency where monSeqID=? and startTimestampID=? and endTimestampID=?);";
+
+        RowMapper<ServiceElasticityDependencies> rowMapper = new RowMapper<ServiceElasticityDependencies>() {
+            public ServiceElasticityDependencies mapRow(ResultSet rs, int rowNum) throws SQLException {
+                ServiceElasticityDependencies dependencies = null;
+                try {
+                    Reader repr = rs.getClob(1).getCharacterStream();
+                    JAXBContext context = JAXBContext.newInstance(ServiceElasticityDependencies.class);
+                    dependencies = (ServiceElasticityDependencies) context.createUnmarshaller().unmarshal(repr);
+
+                } catch (JAXBException ex) {
+                    java.util.logging.Logger.getLogger(PersistenceSQLAccess.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                }
+                return dependencies;
+            }
+        };
+
+        List<ServiceElasticityDependencies> dependencies = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, monitoringSequenceID, startTimestampID, startTimestampID);
+        if (dependencies.isEmpty()) {
+            return null;
+        } else {
+            return dependencies.get(0);
+        }
+    }
+
     public void writeElasticityDependencies(String monitoringSequenceID, final ServiceElasticityDependencies dependencies) {
 
         JdbcTemplate jdbcTemplate = persistenceSQLAccess.getJdbcTemplate();
 
-        String sql = "insert into ElasticityDependency (monSeqID, timestampID, elasticityDependency) " + "VALUES "
+        String sql = "insert into ElasticityDependency (monSeqID, startTimestampID, endTimestampID, elasticityDependency) " + "VALUES "
                 + "( (select ID from MonitoringSeq where id='" + monitoringSequenceID + "')"
-                + ", ? , ?)";
+                + ", ? , ? , ?)";
 
         try {
             JAXBContext context = JAXBContext.newInstance(ServiceElasticityDependencies.class);
@@ -236,8 +340,9 @@ public class PersistenceDelegate {
 
             PreparedStatementSetter preparedStatementSetter = new PreparedStatementSetter() {
                 public void setValues(PreparedStatement ps) throws SQLException {
-                    ps.setString(1, "" + dependencies.getTimestampID());
-                    lobHandler.getLobCreator().setClobAsString(ps, 2, stringWriter.getBuffer().toString());
+                    ps.setString(1, "" + dependencies.getStartTimestampID());
+                    ps.setString(2, "" + dependencies.getEndTimestampID());
+                    lobHandler.getLobCreator().setClobAsString(ps, 3, stringWriter.getBuffer().toString());
                 }
             };
 

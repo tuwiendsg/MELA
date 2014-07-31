@@ -30,8 +30,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "ServiceElasticityDependencies")
 public class ServiceElasticityDependencies {
 
-    @XmlAttribute(name = "TimestampID", required = true)
-    private int timestampID;
+    //IDs of the timestamp between which the dependencies are computed
+    @XmlAttribute(name = "StartTimestampID", required = true)
+    private int startTimestampID;
+
+    @XmlAttribute(name = "EndTimestampID", required = true)
+    private int endTimestampID;
 
     @XmlElement(name = "MonitoredElementElasticityDependency", required = true)
     private Collection<MonitoredElementElasticityDependency> elasticityDependencies;
@@ -44,12 +48,35 @@ public class ServiceElasticityDependencies {
         this.elasticityDependencies = elasticityDependencies;
     }
 
-    public int getTimestampID() {
-        return timestampID;
+    public int getStartTimestampID() {
+        return startTimestampID;
     }
 
-    public void setTimestampID(int timestampID) {
-        this.timestampID = timestampID;
+    public void setStartTimestampID(int startTimestampID) {
+        this.startTimestampID = startTimestampID;
+    }
+
+    public int getEndTimestampID() {
+        return endTimestampID;
+    }
+
+    public void setEndTimestampID(int endTimestampID) {
+        this.endTimestampID = endTimestampID;
+    }
+
+    public ServiceElasticityDependencies withStartTimestampID(final int startTimestampID) {
+        this.startTimestampID = startTimestampID;
+        return this;
+    }
+
+    public ServiceElasticityDependencies withEndTimestampID(final int endTimestampID) {
+        this.endTimestampID = endTimestampID;
+        return this;
+    }
+
+    public ServiceElasticityDependencies withElasticityDependencies(final Collection<MonitoredElementElasticityDependency> elasticityDependencies) {
+        this.elasticityDependencies = elasticityDependencies;
+        return this;
     }
 
 }

@@ -28,6 +28,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
@@ -89,7 +90,8 @@ public class PersistenceDelegate {
             space = fct.getElasticitySpace();
 
             //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-            space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+            space.setStartTimestampID(dataFromTimestamp.get(0).getTimestampID());
+            space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
 
             //persist cached space
             this.writeElasticitySpace(space, monitoringSequenceID);
@@ -104,9 +106,12 @@ public class PersistenceDelegate {
 
             Integer lastTimestampID = (monitoringSnapshot == null) ? Integer.MAX_VALUE : monitoringSnapshot.getTimestampID();
 
+            boolean spaceUpdated = false;
+            
             //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
             do {
-                dataFromTimestamp = this.extractMonitoringData(space.getTimestampID(), monitoringSequenceID);
+                //gets data after the supplied timestamp
+                dataFromTimestamp = this.extractMonitoringData(space.getEndTimestampID(), monitoringSequenceID);
 
                 if (dataFromTimestamp != null) {
 
@@ -127,17 +132,68 @@ public class PersistenceDelegate {
                     fct.setRequirements(requirements);
                     fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
                     //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-                    space.setTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-
+                    space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+                    spaceUpdated = true;
                 }
 
             } while (!dataFromTimestamp.isEmpty());
 
             //persist cached space
-            this.writeElasticitySpace(space, monitoringSequenceID);
+            if(spaceUpdated){
+                this.writeElasticitySpace(space, monitoringSequenceID);
+            }
         }
 
         return space;
+    }
+
+    public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID, final int startTimestampID, final int endTimestampID) {
+
+        ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID);
+
+        //update space with new data
+        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration(monitoringSequenceID);
+
+        if (cfg == null) {
+            log.error("Retrieved empty configuration.");
+            return null;
+        } else if (cfg.getRequirements() == null) {
+            log.error("Retrieved configuration does not contain Requirements.");
+            return null;
+        } else if (cfg.getServiceConfiguration() == null) {
+            log.error("Retrieved configuration does not contain Service Configuration.");
+            return null;
+        }
+        Requirements requirements = cfg.getRequirements();
+        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
+
+        //if space == null, compute it 
+        if (space == null) {
+
+            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+            fct.setRequirements(requirements);
+            List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<ServiceMonitoringSnapshot>();
+
+            int currentStart = startTimestampID;
+            do {
+                dataFromTimestamp = this.extractMonitoringDataByTimeInterval(currentStart, endTimestampID, monitoringSequenceID);
+                fct.trainElasticitySpace(dataFromTimestamp);
+                currentStart += 1000; //advance start timestamp with 1000, as we read max 1000 records at once
+            } while (dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID() < endTimestampID);
+
+            space = fct.getElasticitySpace();
+
+            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+            space.setStartTimestampID(startTimestampID);
+            space.setEndTimestampID(endTimestampID);
+
+            //check how much data we actually extracted, as the extraction limits data to 1000
+            //persist cached space
+            this.writeElasticitySpace(space, monitoringSequenceID);
+
+        }
+        return space;
+
     }
 
     public List<ServiceMonitoringSnapshot> extractLastXMonitoringDataSnapshots(int x, String monitoringSequenceID) {
@@ -146,9 +202,9 @@ public class PersistenceDelegate {
 
     }
 
-    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(String startTime, String endTime, String monitoringSequenceID) {
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(int startTimestampID, int endTimestampID, String monitoringSequenceID) {
 
-        return persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTime, endTime, monitoringSequenceID);
+        return persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, monitoringSequenceID);
     }
 
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int timestamp, String monitoringSequenceID) {
