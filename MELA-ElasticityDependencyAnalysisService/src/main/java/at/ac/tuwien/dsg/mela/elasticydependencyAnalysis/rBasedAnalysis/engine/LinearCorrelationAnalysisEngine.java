@@ -45,9 +45,9 @@ public class LinearCorrelationAnalysisEngine {
 
         { // log
             if (dependent.getMetaData().containsKey(Metric.class.getName()) && dependent.getMetaData().containsKey(MonitoredElement.class.getName())) {
-                String predictorsNames = dependent.getMetaData(Metric.class.getName()).toString() + ":" + dependent.getMetaData(MonitoredElement.class.getName()).toString() + " <- ";
+                String predictorsNames = ((Metric)dependent.getMetaData(Metric.class.getName())).getName() + ":" + ((MonitoredElement)dependent.getMetaData(MonitoredElement.class.getName())).getName() + " <- ";
                 for (Variable v : predictors) {
-                    predictorsNames += v.getMetaData(Metric.class.getName()).toString() + ":" + v.getMetaData(MonitoredElement.class.getName()).toString() + " ";
+                    predictorsNames += ((Metric)v.getMetaData(Metric.class.getName())).getName() + ":" + ((MonitoredElement)v.getMetaData(MonitoredElement.class.getName())).getName() + " ";
                 }
                 log.info("Evaluating " + predictorsNames);
             }
@@ -209,9 +209,9 @@ public class LinearCorrelationAnalysisEngine {
                         e.printStackTrace();
                         log.error(e.getMessage(), e);
                         lagCaller.stopStreamConsumers();
-                        log.error("Start Logging code which generated previous error -------------");
-                        log.error(lagRCode.getCode().toString());
-                        log.error("End logging code which generated previous error -------------");
+                        //log.error("Start Logging code which generated previous error -------------");
+                        //log.error(lagRCode.getCode().toString());
+                        //log.error("End logging code which generated previous error -------------");
                     }
 
                 }
@@ -291,10 +291,10 @@ public class LinearCorrelationAnalysisEngine {
                         e.printStackTrace();
                         log.error(e.getMessage(), e);
                         lagCaller.stopStreamConsumers();
-                        log.error("Start Logging code which generated previous error -------------");
+                        //log.error("Start Logging code which generated previous error -------------");
                         log.info(lagRCode.getCode().toString());
 
-                        log.error("End logging code which generated previous error -------------");
+                        //log.error("End logging code which generated previous error -------------");
                     }
 
                 }
