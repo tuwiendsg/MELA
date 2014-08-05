@@ -43,20 +43,21 @@ public class LinearCorrelationAnalysisEngine {
 
     public LinearCorrelation evaluateLinearCorrelation(final Variable dependent, final List<Variable> predictors) {
 
-        { // log
-            if (dependent.getMetaData().containsKey(Metric.class.getName()) && dependent.getMetaData().containsKey(MonitoredElement.class.getName())) {
-                String predictorsNames = ((Metric)dependent.getMetaData(Metric.class.getName())).getName() + ":" + ((MonitoredElement)dependent.getMetaData(MonitoredElement.class.getName())).getName() + " <- ";
-                for (Variable v : predictors) {
-                    predictorsNames += ((Metric)v.getMetaData(Metric.class.getName())).getName() + ":" + ((MonitoredElement)v.getMetaData(MonitoredElement.class.getName())).getName() + " ";
-                }
-                log.info("Evaluating " + predictorsNames);
-            }
-        }
         //in the case no predictor is left (purged by previous recursive calls)
         if (predictors.isEmpty()) {
             LinearCorrelation correlation = new LinearCorrelation(dependent);
             correlation.setAdjustedRSquared(Double.POSITIVE_INFINITY);
             return correlation;
+        }
+
+        { // log
+            if (dependent.getMetaData().containsKey(Metric.class.getName()) && dependent.getMetaData().containsKey(MonitoredElement.class.getName())) {
+                String predictorsNames = ((Metric) dependent.getMetaData(Metric.class.getName())).getName() + ":" + ((MonitoredElement) dependent.getMetaData(MonitoredElement.class.getName())).getId() + " <- ";
+                for (Variable v : predictors) {
+                    predictorsNames += ((Metric) v.getMetaData(Metric.class.getName())).getName() + ":" + ((MonitoredElement) v.getMetaData(MonitoredElement.class.getName())).getId() + ", ";
+                }
+                log.info("Evaluating " + predictorsNames);
+            }
         }
 
         // As function uses R, this is sample R output, explaining a bit why
@@ -117,6 +118,9 @@ public class LinearCorrelationAnalysisEngine {
                     lagCaller.setRscriptExecutable(Globals.Rscript_current);
 
                     RCode lagRCode = new RCode();
+
+                    String evaluationCommand = "";
+
                     try {
 
                         lagCaller.setRCode(lagRCode);
@@ -132,6 +136,8 @@ public class LinearCorrelationAnalysisEngine {
                         lagRCode.addDoubleArray(v.getId(), vDataAsDoubleArray);
 
                         lagRCode.addRCode("outLiers <- boxplot(" + v.getId() + ",plot=FALSE)$out");
+
+                        evaluationCommand = "outLiers <- boxplot(" + v.getId() + ",plot=FALSE)$out";
 
                         lagCaller.runAndReturnResult("outLiers");
 
@@ -194,20 +200,21 @@ public class LinearCorrelationAnalysisEngine {
                             }
                         }
 
-                        {
-
-                            double[] dataAfter = new double[v.getValues().size()];
-                            for (int i = 0; i < v.getValues().size(); i++) {
-                                dataAfter[i] = data.get(i);
-                            }
-                            rCode.addDoubleArray("AFTER_" + v.getId(), dataAfter);
-
-                        }
+//                        {
+//
+//                            double[] dataAfter = new double[v.getValues().size()];
+//                            for (int i = 0; i < v.getValues().size(); i++) {
+//                                dataAfter[i] = data.get(i);
+//                            }
+//                            rCode.addDoubleArray("AFTER_" + v.getId(), dataAfter);
+//
+//                        }
 //                        log.info(lagRCode.getCode().toString());
-
                     } catch (Exception e) {
-                        e.printStackTrace();
+
+                        log.error(evaluationCommand);
                         log.error(e.getMessage(), e);
+
                         lagCaller.stopStreamConsumers();
                         //log.error("Start Logging code which generated previous error -------------");
                         //log.error(lagRCode.getCode().toString());
@@ -249,6 +256,8 @@ public class LinearCorrelationAnalysisEngine {
                     Globals.detect_current_rscript();
                     lagCaller.setRscriptExecutable(Globals.Rscript_current);
 
+                    String evaluationCommand = "";
+
                     RCode lagRCode = new RCode();
                     try {
 
@@ -274,6 +283,8 @@ public class LinearCorrelationAnalysisEngine {
                         lagRCode.addRCode("res <- ccf(" + dependent.getId() + "," + predictor.getId() + ",plot = FALSE)");
                         lagRCode.addRCode("lag <- res$lag[which.max(res$acf)]");
 
+                        evaluationCommand = "res <- ccf(" + dependent.getId() + "," + predictor.getId() + ",plot = FALSE)";
+
                         lagCaller.runAndReturnResult("lag");
 
                         int lags[] = lagCaller.getParser().getAsIntArray("lag");
@@ -288,7 +299,8 @@ public class LinearCorrelationAnalysisEngine {
                         //revert lag to make more sense when computing dependent from coefficient
 //                        lagMap.put(predictor, -1 * lag);
                     } catch (Exception e) {
-                        e.printStackTrace();
+
+                        log.error(evaluationCommand);
                         log.error(e.getMessage(), e);
                         lagCaller.stopStreamConsumers();
                         //log.error("Start Logging code which generated previous error -------------");
@@ -352,7 +364,33 @@ public class LinearCorrelationAnalysisEngine {
         rCode.addRCode("res <- lm(" + dependent.getId() + "~" + predictorNames + ")");
 
 //        log.info(rCode.getCode().toString());
-        caller.runAndReturnResult("res");
+        try {
+            caller.runAndReturnResult("res");
+
+        } catch (Exception e) {
+
+            log.error("res <- lm(" + dependent.getId() + "~" + predictorNames + ")");
+            log.error(e.getMessage(), e);
+
+            //if error, something wrong with result. So, means some metric has invalid values at one point. 
+            //As I do not know which, I go through each combination of predictors, and test if I can get non-null dependencies
+            for (Variable v : predictors) {
+                List<Variable> otherPredictors = new ArrayList<>();
+                for (Variable p : predictors) {
+                    if (p.equals(v)) {
+                        continue;
+                    }
+                    otherPredictors.add(p);
+                }
+
+                LinearCorrelation correlation = evaluateLinearCorrelation(dependent, otherPredictors);
+                if (correlation != null) {
+                    return correlation;
+                }
+
+            }
+
+        }
 
         //will contain all removed predictors
         //predictors are removed if their coeff is NaN or if their predicted error > estimated/10

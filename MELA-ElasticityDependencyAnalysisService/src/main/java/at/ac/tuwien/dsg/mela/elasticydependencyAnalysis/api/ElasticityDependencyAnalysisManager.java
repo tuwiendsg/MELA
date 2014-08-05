@@ -720,9 +720,8 @@ public class ElasticityDependencyAnalysisManager {
 
             final List<LinearCorrelation> corelations = Collections.synchronizedList(new ArrayList<LinearCorrelation>());
 
-            Logger
-                    .getLogger(ElasticityDependencyAnalysisManager.class
-                            .getName()).log(Level.INFO, "Analyzing el dependencies between el metrics");
+            Logger.getLogger(ElasticityDependencyAnalysisManager.class
+                    .getName()).log(Level.INFO, "Analyzing el dependencies between el metrics");
 
             List<LinearCorrelation> crossLayerCorelations = linearElasticityDependencyAnalysisEngine.analyzeElasticityDependenciesBetweenMetrics(behavior);
 

@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import static scala.tools.scalap.scalax.rules.scalasig.NoSymbol.parent;
 
 /**
  * First, it computes the ElasticityBehavior, which transform all metric values
@@ -49,6 +49,9 @@ public class LinearElasticityDependencyAnalysisEngine {
 
     @Autowired
     private LinearCorrelationAnalysisEngine analysisEngine;
+    
+    static final org.slf4j.Logger log = LoggerFactory.getLogger(LinearElasticityDependencyAnalysisEngine.class);
+
 
     /**
      *
@@ -303,6 +306,11 @@ public class LinearElasticityDependencyAnalysisEngine {
             for (int index = 0; index < siblings.size(); index++) {
 //               
                 final MonitoredElement element = siblings.get(index);
+                
+                if(! monitoringData.containsKey(element)){
+                    log.warn("Element " + element.getId() + " has no monitoring data. Skipping relationship analysis");
+                    continue;
+                }
 
                 Thread elementDependencyAnalysisThread = new Thread() {
 //
