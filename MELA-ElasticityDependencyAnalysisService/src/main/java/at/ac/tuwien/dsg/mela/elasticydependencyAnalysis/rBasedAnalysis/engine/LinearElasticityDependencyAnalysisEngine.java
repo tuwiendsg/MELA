@@ -240,6 +240,7 @@ public class LinearElasticityDependencyAnalysisEngine {
                                 LinearCorrelation correlation = analysisEngine.evaluateLinearCorrelation(elementVar, childrenVariables);
 
                                 if (correlation.getAdjustedRSquared() < Double.POSITIVE_INFINITY) {
+                                    
                                     corelations.add(correlation);
                                 }
                                 //System.out.println(correlation);
@@ -396,6 +397,7 @@ public class LinearElasticityDependencyAnalysisEngine {
                                             }
                                             LinearCorrelation correlation = analysisEngine.evaluateLinearCorrelation(elementVar, siblingVariables);
                                             if (correlation.getAdjustedRSquared() < Double.POSITIVE_INFINITY) {
+                                                
                                                 corelations.add(correlation);
                                             }
                                             //System.out.println(correlation);
@@ -611,6 +613,7 @@ public class LinearElasticityDependencyAnalysisEngine {
 
             LinearCorrelation correlation = analysisEngine.evaluateLinearCorrelation(aVar, list);
             if (correlation.getAdjustedRSquared() < Double.POSITIVE_INFINITY) {
+                
                 corelations.add(correlation);
             }
             //System.out.println(correlation);
@@ -676,6 +679,7 @@ public class LinearElasticityDependencyAnalysisEngine {
 
                         LinearCorrelation correlation = analysisEngine.evaluateLinearCorrelation(elementVar, otherVars);
                         if (correlation.getAdjustedRSquared() < Double.POSITIVE_INFINITY) {
+                            
                             corelations.add(correlation);
                         }
                         //System.out.println(correlation);

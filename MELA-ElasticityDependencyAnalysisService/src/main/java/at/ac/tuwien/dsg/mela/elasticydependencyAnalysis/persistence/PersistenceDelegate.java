@@ -166,8 +166,6 @@ public class PersistenceDelegate {
 
         List<Integer> ids = persistenceSQLAccess.getTimestampIDs(monitoringSequenceID);
 
-       
-
         int currentStart = 0;
         int currentEnd = 0;
 
@@ -186,8 +184,8 @@ public class PersistenceDelegate {
         } else {
             currentEnd = ids.get(endTimestampID);
         }
-        
-         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID, currentStart, currentEnd);
+
+        ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID, currentStart, currentEnd);
 
         //update space with new data
         ConfigurationXMLRepresentation cfg = this.getLatestConfiguration(monitoringSequenceID);
@@ -212,7 +210,6 @@ public class PersistenceDelegate {
             fct.setRequirements(requirements);
             List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<>();
 
-            
             do {
                 dataFromTimestamp = this.extractMonitoringDataByTimeInterval(currentStart, currentEnd, monitoringSequenceID);
                 fct.trainElasticitySpace(dataFromTimestamp);
@@ -298,7 +295,7 @@ public class PersistenceDelegate {
     public ServiceElasticityDependencies extractLatestElasticityDependencies(String monitoringSequenceID, int startTimestampID, int endTimestampID) {
 
         JdbcTemplate jdbcTemplate = persistenceSQLAccess.getJdbcTemplate();
-        String sql = "SELECT elasticityDependency from ElasticityDependency where monSeqID=? "
+        String sql = "SELECT ElasticityDependency from ElasticityDependency where monSeqID=? "
                 + "and ID=(SELECT MAX(ID) from ElasticityDependency where monSeqID=? and startTimestampID=? and endTimestampID=?);";
 
         RowMapper<ServiceElasticityDependencies> rowMapper = new RowMapper<ServiceElasticityDependencies>() {
@@ -316,7 +313,7 @@ public class PersistenceDelegate {
             }
         };
 
-        List<ServiceElasticityDependencies> dependencies = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, monitoringSequenceID, startTimestampID, startTimestampID);
+        List<ServiceElasticityDependencies> dependencies = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, monitoringSequenceID, startTimestampID, endTimestampID);
         if (dependencies.isEmpty()) {
             return null;
         } else {
@@ -351,6 +348,10 @@ public class PersistenceDelegate {
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
         }
+    }
+
+    public List<String> getMonitoringSequencesIDs() {
+        return persistenceSQLAccess.getMonitoringSequencesIDs();
     }
 
 }

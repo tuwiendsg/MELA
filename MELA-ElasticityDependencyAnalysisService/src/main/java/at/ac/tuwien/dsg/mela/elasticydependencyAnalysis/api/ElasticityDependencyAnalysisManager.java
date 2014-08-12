@@ -33,6 +33,7 @@ import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.persistence.PersistenceD
 import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.concept.LinearCorrelation;
 import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.concept.LinearCorrelation.Coefficient;
 import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.concept.Variable;
+import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.engine.LinearCorrelationStatisticsComputationEngine;
 import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.engine.LinearElasticityDependencyAnalysisEngine;
 import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.utils.converters.Converter;
 import java.io.BufferedWriter;
@@ -126,9 +127,13 @@ public class ElasticityDependencyAnalysisManager {
                     secondaryHeaderLine += "," + coefficient.getMetric().getName() + " filtered" + "," + coefficient.getMetric().getName() + " original";
                 }
 
-                dependencyDescription += " and adjustedR " + dependencyElement.getAdjustedR();
-                //add to dependencyDescription fake columns for the computed column and each coeff recorded value
+                dependencyDescription += " and";
+                //write in the name also quality statistics
+                for (String statistic : dependencyElement.getStatistics().keySet()) {
+                    dependencyDescription += " " + statistic + "=" + dependencyElement.getStatistic(statistic);
+                }
 
+                //add to dependencyDescription fake columns for the computed column and each coeff recorded value
                 //column for computed
                 dependencyDescription += ",,,,";
                 for (int i = 0; i < dependencyElement.getCoefficients().size(); i++) {
@@ -214,12 +219,12 @@ public class ElasticityDependencyAnalysisManager {
      * @param monitoredElement
      * @return JSON repr of el dependencies
      */
-    public String analyzeElasticityDependenciesJSON(MonitoredElement monitoredElement) {
-        return elasticityDependenciesTOJSON(analyzeElasticityDependencies(monitoredElement));
+    public String analyzeElasticityDependenciesJSON(MonitoredElement monitoredElement, Integer startTimestampID, Integer endTimestampID) {
+        return elasticityDependenciesTOJSON(analyzeElasticityDependencies(monitoredElement, startTimestampID, endTimestampID));
     }
 
-    public String analyzeElasticityDependenciesBetweenElMetricsJSON(MonitoredElement monitoredElement) {
-        return elasticityDependenciesTOJSON(analyzeElasticityDependenciesBetweenElasticityMetrics(monitoredElement));
+    public String analyzeElasticityDependenciesBetweenElMetricsJSON(MonitoredElement monitoredElement, Integer startTimestampID, Integer endTimestampID) {
+        return elasticityDependenciesTOJSON(analyzeElasticityDependenciesBetweenElasticityMetrics(monitoredElement, startTimestampID, endTimestampID));
     }
 
     public String
@@ -230,8 +235,7 @@ public class ElasticityDependencyAnalysisManager {
             ).log(org.apache.log4j.Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
 
-            elSpaceJSON.put(
-                    "dependencies", "empty");
+            elSpaceJSON.put("dependencies", "empty");
             return elSpaceJSON.toJSONString();
         }
 
@@ -250,7 +254,15 @@ public class ElasticityDependencyAnalysisManager {
                     JSONObject childJSON = new JSONObject();
                     childJSON.put("toParentName", coefficient.getMonitoredElement().getId());
                     childJSON.put("toMetric", coefficient.getMetric().getName());
-                    childJSON.put("confidence", dependencyElement.getAdjustedR());
+
+                    JSONArray statistics = new JSONArray();
+                    //write in the name also quality statistics
+                    for (String statistic : dependencyElement.getStatistics().keySet()) {
+                        JSONObject statisticJSON = new JSONObject();
+                        statisticJSON.put(statistic, dependencyElement.getStatistic(statistic));
+                        statistics.add(statisticJSON);
+                    }
+                    childJSON.put("statistics", statistics);
                     childJSON.put("stdError", coefficient.getStdError());
                     childJSON.put("coefficient", coefficient.getCoefficient());
                     childJSON.put("lag", coefficient.getLag());
@@ -389,12 +401,15 @@ public class ElasticityDependencyAnalysisManager {
                                     .getName());
                             MonitoredElement element = (MonitoredElement) vDependent.getMetaData(MonitoredElement.class.getName());
 
-                            ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept, adjustedSquare);
+                            Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
+
+                            ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept);
+                            dependencyElement.withStatistic(ElasticityDependencyElement.ADJUSTED_R, c.getAdjustedRSquared());
 
                             {
                                 List<MetricValue> values = new ArrayList<>();
                                 //as values stored in corelation are percentage of upper boundary, convert them back
-                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
+
                                 for (Double v : vDependent.getValues()) {
                                     values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
                                 }
@@ -414,9 +429,9 @@ public class ElasticityDependencyAnalysisManager {
 
                                 {
                                     List<MetricValue> values = new ArrayList<>();
-                                    Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
+                                    Double upperBoundaryForPredictorMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
                                     for (Double v : variable.getValues()) {
-                                        values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
+                                        values.add(new MetricValue(v / 100 * upperBoundaryForPredictorMetric));
                                     }
                                     elasticityDependencyCoefficient.setMetricValues(values);
                                 }
@@ -424,6 +439,7 @@ public class ElasticityDependencyAnalysisManager {
                                 dependencyElement.addCoefficient(elasticityDependencyCoefficient);
                             }
 
+                            dependencyElement = LinearCorrelationStatisticsComputationEngine.enrichWithEstimationErrorStatistics(dependencyElement);
                             if (dependencies.containsKey(element)) {
                                 dependencies.get(element).addElement(dependencyElement);
                             } else {
@@ -467,8 +483,15 @@ public class ElasticityDependencyAnalysisManager {
         }
     }
 
-    public ServiceElasticityDependencies analyzeElasticityDependencies(MonitoredElement monitoredElement, int startTimestampID, int endTimestampID) {
+    public ServiceElasticityDependencies analyzeElasticityDependencies(MonitoredElement monitoredElement, Integer startTimestampID, Integer endTimestampID) {
         //PersistenceSQLAccess persistenceDelegate = new PersistenceSQLAccess("mela", "mela", "localhost", Configuration.getDataServicePort(), monitoredElement.getId());
+
+        if (startTimestampID == null) {
+            startTimestampID = 0;
+        }
+        if (endTimestampID == null) {
+            return analyzeElasticityDependencies(monitoredElement);
+        }
 
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(monitoredElement.getId());
         CompositionRulesConfiguration compositionRulesConfiguration = cfg.getCompositionRulesConfiguration();
@@ -584,13 +607,15 @@ public class ElasticityDependencyAnalysisManager {
                             Metric metric = (Metric) vDependent.getMetaData(Metric.class
                                     .getName());
                             MonitoredElement element = (MonitoredElement) vDependent.getMetaData(MonitoredElement.class.getName());
+                            Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
 
-                            ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept, adjustedSquare);
+                            ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept);
+                            dependencyElement.withStatistic(ElasticityDependencyElement.ADJUSTED_R, c.getAdjustedRSquared());
 
                             {
                                 List<MetricValue> values = new ArrayList<>();
                                 //as values stored in corelation are percentage of upper boundary, convert them back
-                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
+                                // Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
                                 for (Double v : vDependent.getValues()) {
                                     values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
                                 }
@@ -610,9 +635,9 @@ public class ElasticityDependencyAnalysisManager {
 
                                 {
                                     List<MetricValue> values = new ArrayList<>();
-                                    Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
+                                    Double upperBoundaryForPredictorMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
                                     for (Double v : variable.getValues()) {
-                                        values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
+                                        values.add(new MetricValue(v / 100 * upperBoundaryForPredictorMetric));
                                     }
                                     elasticityDependencyCoefficient.setMetricValues(values);
                                 }
@@ -620,6 +645,7 @@ public class ElasticityDependencyAnalysisManager {
                                 dependencyElement.addCoefficient(elasticityDependencyCoefficient);
                             }
 
+                            dependencyElement = LinearCorrelationStatisticsComputationEngine.enrichWithEstimationErrorStatistics(dependencyElement);
                             if (dependencies.containsKey(element)) {
                                 dependencies.get(element).addElement(dependencyElement);
                             } else {
@@ -761,11 +787,14 @@ public class ElasticityDependencyAnalysisManager {
 //                                columns.add(column);
                             }
 
-                            ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept, adjustedSquare);
+                            Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
+
+                            ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept);
+                            dependencyElement.withStatistic(ElasticityDependencyElement.ADJUSTED_R, c.getAdjustedRSquared());
 
                             {
                                 List<MetricValue> values = new ArrayList<>();
-                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
+
                                 for (Double v : vDependent.getValues()) {
                                     values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
                                 }
@@ -825,9 +854,9 @@ public class ElasticityDependencyAnalysisManager {
                                 MonitoredElement predictorElement = (MonitoredElement) variable.getMetaData(MonitoredElement.class.getName());
 
                                 List<MetricValue> values = new ArrayList<>();
-                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
+                                Double upperBoundaryForPredictorMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
                                 for (Double v : variable.getValues()) {
-                                    values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
+                                    values.add(new MetricValue(v / 100 * upperBoundaryForPredictorMetric));
                                 }
 
                                 ElasticityDependencyCoefficient elasticityDependencyCoefficient = new ElasticityDependencyCoefficient(predictorElement, predictorMetric, coeff, stdError, coefficient.getLag());
@@ -836,6 +865,7 @@ public class ElasticityDependencyAnalysisManager {
                                 dependencyElement.addCoefficient(elasticityDependencyCoefficient);
 
                             }
+                            dependencyElement = LinearCorrelationStatisticsComputationEngine.enrichWithEstimationErrorStatistics(dependencyElement);
 
                             if (dependencies.containsKey(element)) {
                                 dependencies.get(element).addElement(dependencyElement);
@@ -845,6 +875,7 @@ public class ElasticityDependencyAnalysisManager {
                                 dependencies.put(element, dependency);
                             }
                         }
+
                     }
 
                 };
@@ -875,7 +906,14 @@ public class ElasticityDependencyAnalysisManager {
         }
     }
 
-    public ServiceElasticityDependencies analyzeElasticityDependenciesBetweenElasticityMetrics(MonitoredElement monitoredElement, int startTimestampID, int endTimestampID) {
+    public ServiceElasticityDependencies analyzeElasticityDependenciesBetweenElasticityMetrics(MonitoredElement monitoredElement, Integer startTimestampID, Integer endTimestampID) {
+        if (startTimestampID == null) {
+            startTimestampID = 0;
+        }
+        if (endTimestampID == null) {
+            return analyzeElasticityDependenciesBetweenElasticityMetrics(monitoredElement);
+        }
+
         //PersistenceSQLAccess persistenceDelegate = new PersistenceSQLAccess("mela", "mela", "localhost", Configuration.getDataServicePort(), monitoredElement.getId());
         ElasticitySpace elasticitySpace = persistenceDelegate.extractLatestElasticitySpace(monitoredElement.getId(), startTimestampID, endTimestampID);
 
@@ -974,11 +1012,13 @@ public class ElasticityDependencyAnalysisManager {
 //                                columns.add(column);
                             }
 
-                            ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept, adjustedSquare);
+                            Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
 
+                            ElasticityDependencyElement dependencyElement = new ElasticityDependencyElement(element, metric, intercept);
+                            dependencyElement.withStatistic(ElasticityDependencyElement.ADJUSTED_R, c.getAdjustedRSquared());
                             {
                                 List<MetricValue> values = new ArrayList<>();
-                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(element, metric)[1].getValueRepresentation());
+
                                 for (Double v : vDependent.getValues()) {
                                     values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
                                 }
@@ -1038,9 +1078,9 @@ public class ElasticityDependencyAnalysisManager {
                                 MonitoredElement predictorElement = (MonitoredElement) variable.getMetaData(MonitoredElement.class.getName());
 
                                 List<MetricValue> values = new ArrayList<>();
-                                Double upperBoundaryForMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
+                                Double upperBoundaryForPredictorMetric = Double.parseDouble(elasticitySpace.getSpaceBoundaryForMetric(predictorElement, predictorMetric)[1].getValueRepresentation());
                                 for (Double v : variable.getValues()) {
-                                    values.add(new MetricValue(v / 100 * upperBoundaryForMetric));
+                                    values.add(new MetricValue(v / 100 * upperBoundaryForPredictorMetric));
                                 }
 
                                 ElasticityDependencyCoefficient elasticityDependencyCoefficient = new ElasticityDependencyCoefficient(predictorElement, predictorMetric, coeff, stdError, coefficient.getLag());
@@ -1050,6 +1090,7 @@ public class ElasticityDependencyAnalysisManager {
 
                             }
 
+                            dependencyElement = LinearCorrelationStatisticsComputationEngine.enrichWithEstimationErrorStatistics(dependencyElement);
                             if (dependencies.containsKey(element)) {
                                 dependencies.get(element).addElement(dependencyElement);
                             } else {
@@ -1082,7 +1123,7 @@ public class ElasticityDependencyAnalysisManager {
             determinedDependencies.setStartTimestampID(elasticitySpace.getStartTimestampID());
             determinedDependencies.setEndTimestampID(elasticitySpace.getEndTimestampID());
 
-            //TODO: also persist this el dependencies between el metrics
+            //we do not save these, as we save only the complete deps. To also save these, need to save them in some other place 
 //            persistenceDelegate.writeElasticityDependencies(monitoredElement.getId(), determinedDependencies);
             return determinedDependencies;
         }
@@ -1271,7 +1312,7 @@ public class ElasticityDependencyAnalysisManager {
 //                            dependencyElement.addCoefficient(elasticityDependencyCoefficient);
 //                        }
 //
-//                        if (dependencies.containsKey(element)) {
+//                        dependencyElement = LinearCorrelationStatisticsComputationEngine.enrichWithEstimationErrorStatistics(dependencyElement);if (dependencies.containsKey(element)) {
 //                            dependencies.get(element).addElement(dependencyElement);
 //                        } else {
 //                            MonitoredElementElasticityDependency dependency = new MonitoredElementElasticityDependency(element);
@@ -1459,7 +1500,7 @@ public class ElasticityDependencyAnalysisManager {
 //                            dependencyElement.addCoefficient(elasticityDependencyCoefficient);
 //                        }
 //
-//                        if (dependencies.containsKey(element)) {
+//                        dependencyElement = LinearCorrelationStatisticsComputationEngine.enrichWithEstimationErrorStatistics(dependencyElement);if (dependencies.containsKey(element)) {
 //                            dependencies.get(element).addElement(dependencyElement);
 //                        } else {
 //                            MonitoredElementElasticityDependency dependency = new MonitoredElementElasticityDependency(element);
@@ -1505,6 +1546,18 @@ public class ElasticityDependencyAnalysisManager {
 
         return asJSON;
 
+    }
+
+    public String getAllManagedServicesIDs() {
+
+        JSONArray array = new JSONArray();
+
+        for (String s : persistenceDelegate.getMonitoringSequencesIDs()) {
+            JSONObject o = new JSONObject();
+            o.put("id", s);
+            array.add(o);
+        }
+        return array.toJSONString();
     }
 
 }

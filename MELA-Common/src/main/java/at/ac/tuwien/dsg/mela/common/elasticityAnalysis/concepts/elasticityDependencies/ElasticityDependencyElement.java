@@ -15,6 +15,7 @@
  */
 package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies;
 
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.xmlAdapters.ElasticityDependencyStatisticsXMLAdapter;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
@@ -22,10 +23,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  *
@@ -43,7 +47,7 @@ public class ElasticityDependencyElement implements Serializable {
 
     @XmlElement(name = "DependentMetric", required = true)
     private Metric dependentMetric;
-    
+
     @XmlElement(name = "MetricValue", required = true)
     private List<MetricValue> dependentMetricValues;
 
@@ -57,24 +61,27 @@ public class ElasticityDependencyElement implements Serializable {
     @XmlElement(name = "Interceptor", required = true)
     private Double interceptor;
 
-    /**
-     * Can be used as an indicator about the confidence of the dependency
-     */
-    @XmlElement(name = "AdjustedR", required = true)
-    private Double adjustedR;
+    public static final String ADJUSTED_R = "adjustedR";
+    public static final String ESTIMATION_ERROR_MIN = "minEstimationError";
+    public static final String ESTIMATION_ERROR_MAX = "maxEstimationError";
+    public static final String ESTIMATION_ERROR_AVERAGE = "avgEstimationError";
+    public static final String ESTIMATION_ERROR_STD_DEVIATION = "absoluteStandardDeviation";
+
+    @XmlJavaTypeAdapter(ElasticityDependencyStatisticsXMLAdapter.class)
+    private Map<String, Double> statistics;
 
     {
+        statistics = new ConcurrentHashMap<String, Double>();
         coefficients = new ArrayList<ElasticityDependencyCoefficient>();
     }
 
     public ElasticityDependencyElement() {
     }
 
-    public ElasticityDependencyElement(MonitoredElement monitoredElement, Metric dependentMetric, Double interceptor, Double adjustedR) {
+    public ElasticityDependencyElement(MonitoredElement monitoredElement, Metric dependentMetric, Double interceptor) {
         this.monitoredElement = monitoredElement;
         this.dependentMetric = dependentMetric;
         this.interceptor = interceptor;
-        this.adjustedR = adjustedR;
     }
 
     public List<MetricValue> getDependentMetricValues() {
@@ -84,8 +91,6 @@ public class ElasticityDependencyElement implements Serializable {
     public void setDependentMetricValues(List<MetricValue> dependentMetricValues) {
         this.dependentMetricValues = dependentMetricValues;
     }
-    
-    
 
     public void addCoefficient(ElasticityDependencyCoefficient element) {
         coefficients.add(element);
@@ -119,12 +124,12 @@ public class ElasticityDependencyElement implements Serializable {
         this.dependentMetric = dependentMetric;
     }
 
-    public Double getAdjustedR() {
-        return adjustedR;
+    public double getStatistic(String statistic) {
+        return statistics.get(statistic);
     }
 
-    public void setAdjustedR(Double adjustedR) {
-        this.adjustedR = adjustedR;
+    public void setStatistic(String statistic, Double value) {
+        this.statistics.put(statistic, value);
     }
 
     public int hashCode() {
@@ -166,6 +171,11 @@ public class ElasticityDependencyElement implements Serializable {
         return this;
     }
 
+    public ElasticityDependencyElement withDependentMetricValues(final List<MetricValue> dependentMetricValues) {
+        this.dependentMetricValues = dependentMetricValues;
+        return this;
+    }
+
     public ElasticityDependencyElement withCoefficients(final Collection<ElasticityDependencyCoefficient> coefficients) {
         this.coefficients = coefficients;
         return this;
@@ -176,9 +186,17 @@ public class ElasticityDependencyElement implements Serializable {
         return this;
     }
 
-    public ElasticityDependencyElement withAdjustedR(final Double adjustedR) {
-        this.adjustedR = adjustedR;
+    public ElasticityDependencyElement withStatistic(String statistic, final Double value) {
+        this.statistics.put(statistic, value);
         return this;
     }
 
+    public Map<String, Double> getStatistics() {
+        return statistics;
     }
+
+    public void setStatistics(Map<String, Double> statistics) {
+        this.statistics = statistics;
+    }
+
+}

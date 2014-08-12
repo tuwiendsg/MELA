@@ -60,7 +60,7 @@ public class ElasticityDependenciesAnalysisService {
     }
 
     @GET
-    @Path("/{serviceID}/elasticitydependencies")
+    @Path("/{serviceID}/json/elasticitydependencies")
     @Produces("application/json")
     public String getElasticityDependenciesAsJSON(@PathParam("serviceID") String serviceID) {
         Logger.getLogger(ElasticityDependenciesAnalysisService.class.getName()).log(Level.INFO, "Requested analysis for " + serviceID);
@@ -68,7 +68,23 @@ public class ElasticityDependenciesAnalysisService {
         MonitoredElement element = new MonitoredElement(serviceID);
         element.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
 
-        String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesJSON(element);
+        String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesJSON(element, null, null);
+
+        return jsonString;
+
+    }
+
+    @GET
+    @Path("/{serviceID}/json/time/elasticitydependencies/{startTime}/{endTime}")
+    @Produces("application/json")
+    public String getElasticityDependenciesAsJSONBetweenTime(@PathParam("serviceID") String serviceID, @PathParam("startTime") Integer startTime,
+            @PathParam("endTime") Integer endTime) {
+        Logger.getLogger(ElasticityDependenciesAnalysisService.class.getName()).log(Level.INFO, "Requested analysis for " + serviceID);
+
+        MonitoredElement element = new MonitoredElement(serviceID);
+        element.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+
+        String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesJSON(element, startTime, endTime);
 
         return jsonString;
 
@@ -120,7 +136,7 @@ public class ElasticityDependenciesAnalysisService {
     }
 
     @GET
-    @Path("/{serviceID}/elasticitymetrics/elasticitydependencies")
+    @Path("/{serviceID}/json/elasticitymetrics/elasticitydependencies")
     @Produces("application/json")
     public String getElasticityDependenciesBetweenElMetricsAsJSON(@PathParam("serviceID") String serviceID) {
         Logger.getLogger(ElasticityDependenciesAnalysisService.class.getName()).log(Level.INFO, "Requested analysis for " + serviceID);
@@ -128,7 +144,23 @@ public class ElasticityDependenciesAnalysisService {
         MonitoredElement element = new MonitoredElement(serviceID);
         element.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
 
-        String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesBetweenElMetricsJSON(element);
+        String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesBetweenElMetricsJSON(element, null, null);
+
+        return jsonString;
+
+    }
+
+    @GET
+    @Path("/{serviceID}/json/time/elasticitymetrics/elasticitydependencies/{startTime}/{endTime}")
+    @Produces("application/json")
+    public String getElasticityDependenciesBetweenElMetricsAsJSON(@PathParam("serviceID") String serviceID, @PathParam("startTime") Integer startTime,
+            @PathParam("endTime") Integer endTime) {
+        Logger.getLogger(ElasticityDependenciesAnalysisService.class.getName()).log(Level.INFO, "Requested analysis for " + serviceID);
+
+        MonitoredElement element = new MonitoredElement(serviceID);
+        element.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+
+        String jsonString = elasticityDependencyAnalysisManager.analyzeElasticityDependenciesBetweenElMetricsJSON(element, startTime, endTime);
 
         return jsonString;
 
@@ -174,6 +206,13 @@ public class ElasticityDependenciesAnalysisService {
         MonitoredElement element = new MonitoredElement(serviceID);
         element.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
         return elasticityDependencyAnalysisManager.getServiceStructureAndMetricsAsJSON(element);
+    }
+    
+     @GET
+    @Path("/elasticservices")
+    @Produces("application/json")
+    public String getServices() {
+        return elasticityDependencyAnalysisManager.getAllManagedServicesIDs();
     }
 
 }

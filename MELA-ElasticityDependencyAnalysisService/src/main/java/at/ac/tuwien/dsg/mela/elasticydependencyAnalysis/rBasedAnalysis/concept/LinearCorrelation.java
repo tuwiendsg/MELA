@@ -17,6 +17,8 @@ package at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.concept;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -24,14 +26,21 @@ import java.util.List;
  */
 public class LinearCorrelation {
 
+    public static final String ADJUSTED_R = "adjustedR";
+    public static final String ESTIMATION_ERROR_MIN = "minEstimationError";
+    public static final String ESTIMATION_ERROR_MAX = "maxEstimationError";
+    public static final String ESTIMATION_ERROR_AVERAGE = "avgEstimationError";
+    public static final String ESTIMATION_ERROR_STD_DEVIATION = "absoluteStandardDeviation";
+
     private Variable dependent;
     private double intercept;
 
     private List<Coefficient> predictors;
 
-    private double adjustedRSquared;
+    private Map<String, Double> statistics;
 
     {
+        statistics = new ConcurrentHashMap<>();
         predictors = new ArrayList<Coefficient>();
     }
 
@@ -51,11 +60,19 @@ public class LinearCorrelation {
     }
 
     public double getAdjustedRSquared() {
-        return adjustedRSquared;
+        return statistics.get(ADJUSTED_R);
     }
 
     public void setAdjustedRSquared(double adjustedRSquared) {
-        this.adjustedRSquared = adjustedRSquared;
+        this.statistics.put(ADJUSTED_R, adjustedRSquared);
+    }
+
+    public double getStatistic(String statistic) {
+        return statistics.get(statistic);
+    }
+
+    public void setStatistic(String statistic, Double value) {
+        this.statistics.put(statistic, value);
     }
 
     public static class Coefficient {
@@ -160,12 +177,12 @@ public class LinearCorrelation {
      * @return
      */
     public boolean existsCorrelation() {
-        return this.adjustedRSquared < Double.POSITIVE_INFINITY;
+        return this.getAdjustedRSquared() < Double.POSITIVE_INFINITY;
     }
 
     @Override
     public String toString() {
-        String description = "LinearCorrelation {RSquared= " + adjustedRSquared + ":    " + dependent.getId() + " = " + intercept + " ";
+        String description = "LinearCorrelation {RSquared= " + this.getAdjustedRSquared() + ":    " + dependent.getId() + " = " + intercept + " ";
         for (Coefficient c : predictors) {
             description += "+ " + c.coefficient + "*" + c.variable.getId();
         }
@@ -189,8 +206,16 @@ public class LinearCorrelation {
     }
 
     public LinearCorrelation withAdjustedRSquared(final double adjustedRSquared) {
-        this.adjustedRSquared = adjustedRSquared;
+        this.setAdjustedRSquared(adjustedRSquared);
         return this;
     }
+    
+    
+    public LinearCorrelation withStatistic(final String statisticName, final double value) {
+        this.setStatistic(statisticName, value);
+        return this;
+    }
+    
+    
 
 }

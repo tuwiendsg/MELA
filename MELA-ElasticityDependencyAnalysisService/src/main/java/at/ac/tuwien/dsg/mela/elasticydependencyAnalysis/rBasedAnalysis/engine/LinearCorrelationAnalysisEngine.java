@@ -486,6 +486,7 @@ public class LinearCorrelationAnalysisEngine {
                     double[] adjustedR = caller.getParser().getAsDoubleArray("adj_r_squared");
                     correlation.setAdjustedRSquared(adjustedR[0]);
                 }
+                
                 return correlation;
 
             }

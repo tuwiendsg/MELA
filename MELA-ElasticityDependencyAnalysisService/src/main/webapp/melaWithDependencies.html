@@ -331,7 +331,7 @@
                                     }
                                 }
 //                                if(hasComplexChildren){
-                                d.y = 0.9 * d.depth * depth;
+                                d.y = 0.85 * d.depth * depth;
 //                                    if(d.y == 0){
 //                                        d.y = 0.9*d.depth* depth;
 //                                        d.x = d.x + 50;
@@ -423,20 +423,15 @@
 
 
                 nodeEnter.append("text")
-                        .attr("x", function(d) {
-                             if (d.type == "SERVICE") {
-                                return d.value ? 40 : 60;
+                        .attr("dx", function(d) {
+                            if (d.type == "SERVICE") {
+                                return d.value ? 40 : 8;
                             } else {
                                 return d.value ? 40 : -8;
                             }
                         })
                         .attr("y", function(d) {
-                             if (d.type == "SERVICE") {
-                               return d.value ? -20 : -25;
-                            } else {
-                                return d.value ? -10 : -5;
-                            }
-                            
+                            return d.value ? -10 : -5;
                         })
                         .attr("text-anchor", function(d) {
                             return  d.ip || d.children ? "end" : "start";
@@ -821,13 +816,55 @@
                         root = new_root;
                         var nodes = tree.nodes(new_root).reverse();
                         update(nodes, root);
-                         loadingSpinner.stop();
-                        d3.select("#A").remove();
                     }
                 }
             }
 
- 
+
+            function refreshElasticityDependencies() {
+                //if we don't have monitoring data yet, schedule for later
+                if (root == null) {
+                    setTimeout(refreshElasticityDependencies, 5000);
+                    return;
+                }
+
+
+                reqMetricCompositionRulesObj = null;
+
+
+                if (window.XMLHttpRequest) {
+                    reqMetricCompositionRulesObj = new XMLHttpRequest();
+                } else {
+                    reqMetricCompositionRulesObj = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+
+                rootElement = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><MonitoredElement id=\"" + root.name + "\" level=\SERVICE\"/>";
+                if (vars [2]) {
+                    reqMetricCompositionRulesObj.open("GET", "./REST_WS/" + vars[0] + "/json/time/elasticitydependencies/" + vars[1] + "/" + vars [2], true);
+                } else {
+                    reqMetricCompositionRulesObj.open("GET", "./REST_WS/" + vars[0] + "/json/elasticitydependencies", true);
+                }
+                reqMetricCompositionRulesObj.onreadystatechange = processCompositionMetricsResponse;
+                reqMetricCompositionRulesObj.send(null);
+
+
+            }
+
+            function processCompositionMetricsResponse() {
+
+                if (reqMetricCompositionRulesObj.readyState == 4) {
+                    elasticityDepencies = JSON.parse(reqMetricCompositionRulesObj.responseText)
+
+                    if (elasticityDepencies) {
+                        loadingSpinner.stop();
+                        d3.select("#A").remove();
+                    }
+
+                    vis.selectAll("path.metricLink").remove();
+
+                    highlightElasticityDependencies(elasticityDepencies);
+                }
+            }
 
             function drawSpinner(spinnerContainer) {
                 var target = document.getElementById(spinnerContainer);
@@ -839,7 +876,7 @@
 
 
             refreshMonitoringData();
-           
+            refreshElasticityDependencies();
 
         </script>
     </body>
