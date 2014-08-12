@@ -64,23 +64,33 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
 
     @XmlElement(name = "MonitoredElementSnapshot")
     private ArrayList<MonitoredElementMonitoringSnapshot> children;
+    
+    private int hashCode;
 
     {
         monitoredData = new LinkedHashMap<Metric, MetricValue>();
         executingActions = new ArrayList<Action>();
         children = new ArrayList<MonitoredElementMonitoringSnapshot>();
     }
+    
+    @Override
+    public int hashCode() {
+        return hashCode;
+    }
 
     public MonitoredElementMonitoringSnapshot(MonitoredElement MonitoredElement, HashMap<Metric, MetricValue> monitoredData) {
         this.monitoredElement = MonitoredElement;
         this.monitoredData = monitoredData;
+        hashCode = super.hashCode() + monitoredElement.hashCode() + monitoredData.hashCode();
     }
 
     public MonitoredElementMonitoringSnapshot(MonitoredElement MonitoredElement) {
         this.monitoredElement = MonitoredElement;
+        hashCode = super.hashCode() + monitoredElement.hashCode();
     }
 
     public MonitoredElementMonitoringSnapshot() {
+        hashCode = super.hashCode();
     }
 
     /**
@@ -88,6 +98,10 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
      */
     public synchronized void putMetric(Metric metric, MetricValue metricValue) {
         monitoredData.put(metric, metricValue);
+    }
+    
+    public synchronized Map<Metric,MetricValue> getMonitoredData() {
+        return monitoredData.clone();
     }
 
     public synchronized Collection<Metric> getMetrics() {
