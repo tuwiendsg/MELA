@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main">
+  <copy todir="/home/daniel-tuwien/Documents/TUW_GIT/MELA/MELA-Extensions/MELA-ElasticityDependencyAnalysis/MELA-ElasticityDependencyAnalysisService/target/config">
+    <fileset includes="**/*" dir="/home/daniel-tuwien/Documents/TUW_GIT/MELA/MELA-Extensions/MELA-ElasticityDependencyAnalysis/MELA-ElasticityDependencyAnalysisService/config"/>
+  </copy>
+  <copy file="/home/daniel-tuwien/Documents/TUW_GIT/MELA/MELA-Extensions/MELA-ElasticityDependencyAnalysis/MELA-ElasticityDependencyAnalysisService/mela-elasticity-analysis-service" tofile="/home/daniel-tuwien/Documents/TUW_GIT/MELA/MELA-Extensions/MELA-ElasticityDependencyAnalysis/MELA-ElasticityDependencyAnalysisService/target/mela-elasticity-analysis-service"/>
+</target>
+</project>

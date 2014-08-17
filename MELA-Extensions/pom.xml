@@ -1,0 +1,24 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+        <groupId>at.ac.tuwien.mela</groupId>
+        <artifactId>MELA-Pom</artifactId>
+        <version>3.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>MELA-Extensions-Pom</artifactId>
+    <name>MELA-Extensions</name>
+    <description>Additional MELA analysis services, integrated with Spring </description>
+ 
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>MELA-SpaceAndPathwayAnalysisService</module>
+        <module>MELA-ElasticityDependencyAnalysis</module>
+    </modules>
+ 
+     
+
+</project>
