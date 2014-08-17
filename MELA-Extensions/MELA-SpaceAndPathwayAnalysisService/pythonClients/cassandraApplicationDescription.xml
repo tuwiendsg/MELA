@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CloudService id="CloudService">
+	<ServiceTopology id="MainTopology">
+		<Relationship>
+			<Master>YCSBClient</Master>
+			<Slave>CassandraNode</Slave>
+		</Relationship>
+		<ServiceUnit id="YCSBClient" />
+		<ServiceUnit id="CassandraNode" >
+		<SYBLDirective Constraints="Co1:CONSTRAINT cpuUsage &lt; 70 % ; Co2: CONSTRAINT cpuUsage &gt; 35 %;"/></ServiceUnit>
+	</ServiceTopology>
+</CloudService>
+
+
+

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><CompositionRulesConfiguration TargetServiceID="CloudService">
+    <MetricsCompositionRules>
+        <CompositionRule TargetMonitoredElementLevel="VM">
+            <ResultingMetric type="RESOURCE" measurementUnit="no" name="numberOfVMs"/>
+            <Operation value="1" type="SET_VALUE"/>
+        </CompositionRule>
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>LoadBalancerServiceUnit</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="no" name="numberOfClients"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                <ReferenceMetric type="RESOURCE" measurementUnit="" name="activeConnections"/>
+            </Operation>
+        </CompositionRule>
+          <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <TargetMonitoredElementID>DataNodeServiceUnit</TargetMonitoredElementID>
+            <ResultingMetric type="RESOURCE" measurementUnit="%" name="cpuUsage"/>
+            <Operation value="100" type="ADD">
+                <Operation value="-1" type="MUL">
+                    <Operation MetricSourceMonitoredElementLevel="VM" type="AVG">
+                        <ReferenceMetric type="RESOURCE" measurementUnit="%" name="cpu_idle"/>
+                    </Operation>
+                </Operation>
+            </Operation>
+        </CompositionRule>
+      </MetricsCompositionRules>
+</CompositionRulesConfiguration>

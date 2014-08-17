@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:amq="http://activemq.apache.org/schema/core"
+       xmlns:mela="http://www.infosys.tuwien.ac.at/schema/mela"
+       xmlns:jms="http://www.springframework.org/schema/jms"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:cxf="http://cxf.apache.org/core"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+       http://www.infosys.tuwien.ac.at/schema/mela http://www.infosys.tuwien.ac.at/schema/mela/spring-mela.xsd
+       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+       http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd
+ http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+
+
+    <!-- MELA properties -->
+    <context:property-placeholder location="file:./config/mela-data-service.properties"/>
+
+    <import resource="file:./config/dataSources.xml" />
+    
+    <import resource="classpath:META-INF/cxf/cxf.xml"/>
+
+     
+    <!-- database related configuration -->
+
+    <!--<jdbc:embedded-database id="dataSource" type="HSQL"/>-->
+
+    <!-- this configures a standalone HSQLDB server instance that is started during application startup -->
+    <bean id="database" class="at.ac.tuwien.dsg.mela.dataservice.spring.HsqlServerBean" lazy-init="false">
+        <property name="serverProperties">
+            <props>
+                <prop key="server.port">9001</prop>
+                <prop key="server.database.0">${dataservice.configuration.databasePath}/mela</prop>
+                <prop key="server.dbname.0">mela</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="melaDBConnector" class="org.springframework.jdbc.datasource.DriverManagerDataSource" depends-on="database">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:hsql://localhost:9001/mela"/>
+        <property name="username" value="SA"/>
+        <property name="password" value=""/>
+    </bean>
+
+
+    <jdbc:initialize-database data-source="melaDBConnector" enabled="#{!${dataservice.operationmode.continuous}}">
+        <jdbc:script location="classpath*:sql/schema.sql"/>
+    </jdbc:initialize-database>
+
+    <jdbc:initialize-database data-source="melaDBConnector" enabled="${dataservice.operationmode.continuous}">
+        <jdbc:script location="classpath*:sql/schema-continous.sql"/>
+    </jdbc:initialize-database>
+
+    <!--     JMS stuff 
+    -->    
+    <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="tcp://localhost:9124"/>
+    </bean>
+
+    <amq:broker useJmx="true" persistent="false">
+        <amq:transportConnectors>
+            <amq:transportConnector uri="tcp://localhost:9124"/>
+        </amq:transportConnectors>
+    </amq:broker>
+
+    <jms:listener-container container-type="default" connection-factory="jmsFactory" acknowledge="auto">
+        <jms:listener destination="MELADataService.Config" ref="commandConsumer"/>
+    </jms:listener-container>
+ 
+ 
+     
+  
+    <!-- Adds annotated spring beans -->
+    <context:component-scan base-package="at.ac.tuwien.dsg"/>
+ 
+
+    
+    <jaxrs:server id="customerService" address="/">
+        <jaxrs:serviceBeans>
+            <ref bean="configurationService"/>
+            <bean id="swaggerResourceJSON" class="com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:features>
+            <cxf:logging/>
+        </jaxrs:features>
+        <jaxrs:providers>
+            <bean class="com.wordnik.swagger.jaxrs.listing.ResourceListingProvider"/>
+            <bean class="com.wordnik.swagger.jaxrs.listing.ApiDeclarationProvider"/>
+        </jaxrs:providers>
+    </jaxrs:server>
+
+    <bean id="swaggerConfig" class="com.wordnik.swagger.jaxrs.config.BeanConfig">
+        <property name="resourcePackage" value="at.ac.tuwien.dsg.mela.analysisservice.api"/>
+        <property name="version" value="0.1.0"/>
+        <property name="basePath" value="http://localhost:8081/REST_WS"/>
+        <property name="title" value="MELA Elasticity Analysis Service"/>
+        <property name="description" value="A service for dsicovering dependencies in cloud services" />
+        <property name="contact" value="d.moldovan@dsg.tuwien.ac.at"/>
+        <property name="license" value="Apache 2.0 License"/>
+        <property name="licenseUrl" value="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+        <property name="scan" value="true"/>
+    </bean>
+
+
+
+</beans>

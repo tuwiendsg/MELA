@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Configuration>
+    <ServiceStructure id="DaasService_1" level="SERVICE">
+        <MonitoredElement>
+            <MonitoredElement id="EventProcessingTopology" level="SERVICE_TOPOLOGY">
+                <MonitoredElement id="LoadBalancerUnit" level="SERVICE_UNIT">
+                    <MonitoredElement id="109.231.122.242" level="VM"/>
+                </MonitoredElement>
+                <MonitoredElement id="EventProcessingUnit" level="SERVICE_UNIT">
+                    <MonitoredElement id="109.231.122.80" level="VM"/>
+                </MonitoredElement>
+            </MonitoredElement>
+            <MonitoredElement id="DataEndTopology" level="SERVICE_TOPOLOGY">
+                <MonitoredElement id="DataControllerUnit" level="SERVICE_UNIT">
+                    <MonitoredElement id="10.99.0.9" level="VM"/>
+                </MonitoredElement>
+                <MonitoredElement id="DataNodeUnit" level="SERVICE_UNIT">
+                    <MonitoredElement id="10.99.0.33" level="VM"/>
+                </MonitoredElement>
+            </MonitoredElement>
+        </MonitoredElement>
+    </ServiceStructure>
+    <CompositionRulesConfiguration TargetServiceID="DaasService_1">
+        <MetricsCompositionRules>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="connectionRate" measurementUnit="conn/s" type="RESOURCE"/>
+                <Operation type="SUM" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="connectionRate" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="cpuUsage" measurementUnit="%" type="RESOURCE"/>
+                <Operation type="ADD" value="100">
+                    <Operation type="MUL" value="-1">
+                        <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                            <ReferenceMetric name="cpu_idle" measurementUnit="%" type="RESOURCE"/>
+                        </Operation>
+                    </Operation>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="cpuUsage" measurementUnit="%" type="RESOURCE"/>
+                <Operation type="ADD" value="100">
+                    <Operation type="MUL" value="-1">
+                        <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                            <ReferenceMetric name="cpu_idle" measurementUnit="%" type="RESOURCE"/>
+                        </Operation>
+                    </Operation>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="responseTime" measurementUnit="ms" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="responseTime" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="latency" measurementUnit="ms" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                        <ReferenceMetric name="read_latency" type="RESOURCE"/>
+                    </Operation>
+                    <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                        <ReferenceMetric name="write_latency" type="RESOURCE"/>
+                    </Operation>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="latency" measurementUnit="ms" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                        <ReferenceMetric name="read_latency" type="RESOURCE"/>
+                    </Operation>
+                    <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                        <ReferenceMetric name="write_latency" type="RESOURCE"/>
+                    </Operation>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="throughput" measurementUnit="operations/s" type="RESOURCE"/>
+                <Operation type="SUM" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="throughput" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="avgThroughput" measurementUnit="operations/s" type="QUALITY"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="throughput" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="pendingRequests" measurementUnit="count" type="QUALITY"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="pendingRequests" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="VM">
+                <ResultingMetric name="numberOfVMs" measurementUnit="ms" type="RESOURCE"/>
+                <Operation type="SET_VALUE" value="1"/>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="numberOfVMs" measurementUnit="ms" type="RESOURCE"/>
+                <Operation type="SUM" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="numberOfVMs" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="cost" measurementUnit="$" type="RESOURCE"/>
+                <Operation type="MUL" value="0.12" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                    <ReferenceMetric name="numberOfVMs" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+                <ResultingMetric name="latency" measurementUnit="ms" type="QUALITY"/>
+                <Operation type="KEEP" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                    <ReferenceMetric name="latency" measurementUnit="ms" type="QUALITY"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+                <ResultingMetric name="cpuUsage" measurementUnit="%" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                    <ReferenceMetric name="cpuUsage" measurementUnit="%" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+                <ResultingMetric name="responseTime" measurementUnit="ms" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                    <ReferenceMetric name="responseTime" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+                <ResultingMetric name="throughput" measurementUnit="operations/s" type="RESOURCE"/>
+                <Operation type="SUM" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                    <ReferenceMetric name="throughput" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+                <ResultingMetric name="pendingRequests" measurementUnit="count" type="RESOURCE"/>
+                <Operation type="SUM" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                    <ReferenceMetric name="pendingRequests" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+                <ResultingMetric name="avgThroughput" measurementUnit="operations/s" type="RESOURCE"/>
+                <Operation type="SUM" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                    <ReferenceMetric name="avgThroughput" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+                <ResultingMetric name="cost" measurementUnit="$/h" type="RESOURCE"/>
+                <Operation type="SUM" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                    <ReferenceMetric name="cost" type="COST"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE">
+                <ResultingMetric name="cost" measurementUnit="$/1000ops" type="COST"/>
+                <Operation type="MUL">
+                    <Operation type="DIV">
+                        <Operation type="SUM" MetricSourceMonitoredElementLevel="SERVICE_TOPOLOGY">
+                            <ReferenceMetric name="cost" measurementUnit="$/h" type="COST"/>
+                        </Operation>
+                        <Operation type="KEEP" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                            <ReferenceMetric name="throughput" measurementUnit="operations/s" type="RESOURCE"/>
+                        </Operation>
+                    </Operation>
+                    <Operation type="DIV" MetricSourceMonitoredElementLevel="SERVICE_UNIT">
+                        <Operation type="SET_VALUE" value="1000"/>
+                        <Operation type="SET_VALUE" value="360"/>
+                    </Operation>
+                </Operation>
+            </CompositionRule>
+        </MetricsCompositionRules>
+        <HistoricalMetricsCompositionRules>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <TargetMonitoredElementID>LoadBalancerUnit</TargetMonitoredElementID>
+                <ResultingMetric name="connectionRate" measurementUnit="conn/s" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="connectionRate" measurementUnit="conn/s" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <TargetMonitoredElementID>EventProcessingUnit</TargetMonitoredElementID>
+                <ResultingMetric name="throughput" measurementUnit="operations/s" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="throughput" measurementUnit="operations/s" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <TargetMonitoredElementID>EventProcessingUnit</TargetMonitoredElementID>
+                <ResultingMetric name="responseTime" measurementUnit="ms" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="responseTime" measurementUnit="ms" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <TargetMonitoredElementID>EventProcessingUnit</TargetMonitoredElementID>
+                <ResultingMetric name="pendingRequests" measurementUnit="conn/s" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="responseTime" measurementUnit="conn/s" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="cpu_idle" measurementUnit="%" type="RESOURCE"/>
+                <Operation type="AVG" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="cpu_idle" measurementUnit="%" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+            <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+                <ResultingMetric name="numberOfVMs" measurementUnit="no" type="RESOURCE"/>
+                <Operation type="KEEP_LAST" MetricSourceMonitoredElementLevel="VM">
+                    <ReferenceMetric name="numberOfVMs" type="RESOURCE"/>
+                </Operation>
+            </CompositionRule>
+        </HistoricalMetricsCompositionRules>
+    </CompositionRulesConfiguration>
+    <Requirements TargetServiceID="DaasService_1" Name="bc9aee4e-4577-4231-b532-daebfcddfb3f">
+        <Requirement ID="EventProcessingTopology" TargetServiceLevel="SERVICE_TOPOLOGY">
+            <TargetMetric name="responseTime" type="RESOURCE"/>
+            <Condition Type="LESS_THAN">
+                <MetricValue ValueType="NUMERIC">
+                    <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">200.0</Value>
+                </MetricValue>
+            </Condition>
+            <TargetMonitoredElementID>EventProcessingTopology</TargetMonitoredElementID>
+        </Requirement>
+        <Requirement ID="DataEndTopology" TargetServiceLevel="SERVICE_TOPOLOGY">
+            <TargetMetric name="cpuUsage" type="RESOURCE"/>
+            <Condition Type="LESS_THAN">
+                <MetricValue ValueType="NUMERIC">
+                    <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">80.0</Value>
+                </MetricValue>
+            </Condition>
+            <TargetMonitoredElementID>DataEndTopology</TargetMonitoredElementID>
+        </Requirement>
+    </Requirements>
+</Configuration>

@@ -1,0 +1,24 @@
+Connect to the ComotVM hosting MELA and rSYBL:
+ - ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -i ~/.ssh/dmoldovan.pem  ubuntu@128.130.172.216
+
+to start MELA (from the 10.99.0.35 COMOTVM):
+./MELA/MELA-DataService/target/mela-data-service start
+and then
+./MELA/MELA-AnalysisService/target/mela-analysis-service start
+
+to start rSYBL service:
+./apache-tomcat-7.0.52/bin/catalina.sh start
+
+To stop them: the same, but with stop :)
+
+rSYBL allready has metric configuration rules defined for the DaaS.
+
+You have python clients to submit service structure, composition rules, and  requirements in "mela_clients" for MELA, and in "rSYBL_clients" for rSYBL. The DaaS structure si embedded in the lient example xmls.
+
+I would recommend starting and interract with MELA,a nd after everything goes fine, then submit to rSYBL which also controls things (notice the a bit different formats we are using for service structure and requirements).
+
+
+#curl version of clients instead of python clients
+curl http://128.130.172.216:8080/MELA/REST_WS/servicedescription -H "Content-Type: application/xml" -X PUT --data @./serviceDescription.xml
+curl http://128.130.172.216:8080/MELA/REST_WS/metricscompositionrules -H "Content-Type: application/xml" -X PUT --data @./compositionRules.xml
+curl http://128.130.172.216:8080/MELA/REST_WS/servicerequirements -H "Content-Type: application/xml" -X PUT --data @./requirements.xml

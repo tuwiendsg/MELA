@@ -1,0 +1,11 @@
+<MonitoredElement id="CloudService" level="SERVICE">
+   <MonitoredElement id="MyTopology" level="SERVICE_TOPOLOGY">
+        <MonitoredElement id="DataNode" level="SERVICE_UNIT">
+             <MonitoredElement id="10.99.0.28" level="VM"/>
+        </MonitoredElement>
+        <MonitoredElement id="BussinessNode" level="SERVICE_UNIT">
+             <MonitoredElement id="10.99.0.16" level="VM"/>
+ <MonitoredElement id="10.99.0.30" level="VM"/>
+        </MonitoredElement>     
+  </MonitoredElement>
+</MonitoredElement>
