@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<project name="maven-antrun-" default="main"  >
-<target name="main">
-  <copy todir="/home/daniel-tuwien/Documents/TUW_GIT/MELA/MELA-Extensions/MELA-SpaceAndPathwayAnalysisService/target/config">
-    <fileset dir="/home/daniel-tuwien/Documents/TUW_GIT/MELA/MELA-Extensions/MELA-SpaceAndPathwayAnalysisService/config" includes="**/*"/>
-  </copy>
-  <copy file="/home/daniel-tuwien/Documents/TUW_GIT/MELA/MELA-Extensions/MELA-SpaceAndPathwayAnalysisService/mela-space-and-pathway-analysis-service" tofile="/home/daniel-tuwien/Documents/TUW_GIT/MELA/MELA-Extensions/MELA-SpaceAndPathwayAnalysisService/target/mela-space-and-pathway-analysis-service"/>
-</target>
-</project>
