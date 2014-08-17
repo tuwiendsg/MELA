@@ -115,13 +115,12 @@
 
                     <p> Note: From here onwards we will refer to services and cloud applications with the same "services" term.  </p>
 
-                    <p> MELA contains a core component called MELA Service and a lightweight component called Data Collector node.
-                        The Data Collector node is a customizable component that gathers data from existing monitoring solutions (e.g., <a href="http://ganglia.sourceforge.net/">Ganglia</a> or <a href="http://www.nagios.org/">Nagios</a>),
-                        data associated with a dependency model level or monitored element (e.g., responseTime for a particular service unit), 
-                        and sends it for processing and analysis to the MELA Service. 
+                    <p> MELA contains a core component called MELA Data Service, and additional extensions: Elasticity Pathway and Space Analysis Service.
+                        The MELA Data Service gathers and structures data from existing monitoring solutions (e.g., <a href="http://ganglia.sourceforge.net/">Ganglia</a> or <a href="https://github.com/CELAR/cloud-ms/tree/master/JCatascopia-Agent/">JCatascopia</a>),
+                        data associated with a dependency model level or monitored element (e.g., responseTime for a particular service unit), which is then processed by the extension services.
 
                         </br></br>
-                        In order to analyze the elastic behavior of cloud services, MELA uses the concept of elasticity boundary.
+                        In order to analyze the elastic behavior of cloud services, MELA Elasticity Pathway and Space Analysis Service uses the concept of elasticity boundary.
                         An elasticity boundary describes the upper and lower allowed values over a set of metrics for a cloud service. 
                         Another MELA core concept is elasticity space. An elasticity space is determined via an elasticity space function 
                         and captures all runtime metrics described in the user-defined elasticity boundary when a monitored element is in elastic behavior. 
@@ -132,14 +131,14 @@
 
                         </br></br> Monitoring data is usually associated with a single level, e.g., virtual infrastructure, service topology or service unit. 
                         An important MELA feature is the linking of these levels, which implies a configuration by supplying the (i) service structure, (ii) metric composition rules, and (iii) service elasticity requirements.
-                        </br></br> As output, MELA provides a multi-level monitoring snapshot in which monitoring information is represented at the service topology and unit levels, not only at the VM level. 
-                        Moreover, as a result of elasticity analysis, MELA provides in real-time the elasticity space of the service with determined elasticity boundaries, and the elasticity pathway. 
+                        </br></br> As output, MELA Data Service provides a multi-level monitoring snapshot in which monitoring information is represented at the service topology and unit levels, not only at the VM level. 
+                        Moreover, as a result of elasticity analysis, MELA Elasticity Pathway and Space Analysis Service provides in real-time the elasticity space of the service with determined elasticity boundaries, and the elasticity pathway. 
 
 
                     </p>
                     <center>
                         <figure>
-                            <img src="images/system.png" alt="MELA Overview" />
+                            <img src="images/system.png" alt="MELA Overview" width="50%"/>
                             <figcaption>Figure 1: MELA overview</figcaption>
                         </figure>
                     </center>
@@ -150,7 +149,7 @@
                     <h1>
                         <a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>MELA service service specific configuration</h1>
 
-                    <p> MELA must be configured for each individual service it monitors and analyzes.
+                    <p> MELA Data Service must be configured for each individual service it monitors and analyzes.
                         A RESTful APi is provided, and thus all MELA configurations can be done through service calls. <p>  
                     </p>
 
@@ -163,7 +162,7 @@
                         The model can represent cloud services composed of other services (service topologies) deployed in federated cloud environments or in different availability zones 
                         (virtual clusters). 
                         </br></br>
-                        Based on the dependency model, MELA builds composite monitoring snapshots which aggregate monitoring metrics bottom-up,
+                        Based on the dependency model, MELA Data Service builds composite monitoring snapshots which aggregate monitoring metrics bottom-up,
                         creating based on lower level metrics higher level ones which can be targeted by user-defined elasticity requirements. 
                         At different levels we allow the association of different elasticity space and pathway functions, enabling multi-level custom analysis of cloud service behavior.
                         Using the dependency model we combine monitoring snapshots, elasticity spaces and pathways from one level and propagate them to the other levels, 

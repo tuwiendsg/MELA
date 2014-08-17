@@ -110,48 +110,43 @@
  
                     <p>The latest MELA prototype is available on GitHub </a href="https://github.com/tuwiendsg/MELA/">here</a></p>   
 
-                    <p>The “MELA” directory contains a MELA Maven "pom" project. The project has a set of Maven modules: MELA-AnalysisService, MELA-DataService, MELA-Common and MELA-DataCollector. 
-                        MELA-DataService is responsible of collecting monitoring information from existing monitoring systems, and storing it in a local monitoring repository. </p>
+                    <p>The “MELA” directory contains a MELA Maven "pom" project. The project has a set of Maven modules: MELA-Core, containing MELA-Common and MELA-DataService, and MELA-Extensions, containing MELA Elasticity Space and Pathway Analysis service. 
+                        MELA DataService is a Web Application, responsible of collecting monitoring information from existing monitoring systems, structuring and aggregating it, and storing it in a local monitoring repository. </p>
 
-                    <p>The MELA-AnalysisService is a Web Application queries monitoring data from the MELA-DataService, structures and analyzes it. MELA-Common contains the common data model used by the other two modules.
-                        MELA- DataCollector currently contains scripts for installing Ganglia and configuring it to work with MELA automatic structure detection. </p>
+                    <p>The MELA Elasticity Space and Pathway Analysis is a Web Application which queries monitoring data stored by MELA DataService in the MELA-Data Repository, and analyzes it. MELA-Common contains the common data model used by the other two modules.
 
-                    <p>MELA-DataCollector compiles and packages using Maven in a “tar.gz” archive, containing scripts for installing Ganglia, and configuring it for supporting automatic service structure detection.
-                        MELA-Common compiles in jar.</p>
-
-                    <p>MELA-AnalysisService and MELA-DataService have two maven profiles: the standard profile compiles them in shaded .jar files. The “Release” profile also produces for each project a “tar.gz” archive containing the jars, necessary configuration files, and scripts for running them.
+                    <p>MELA Elasticity Space and Pathway Analysis and MELA DataService have two maven profiles: the standard profile compiles them in shaded .jar files. The “Release” profile also produces for each project a “tar.gz” archive containing the jars, necessary configuration files, and scripts for running them.
                         To compile the modules using Maven, from the MELA main directory, running "mvn clean install" or "mvn clean package" will compile all MELA Modules.  Running "mvn clean install –P Release” or "mvn clean package –P Release” activates the Release profile which also produces the project’s “ tar.gz”  distribution.</p>
 
                     <h2>Prerequisites</h2>
-                    <p>In the current prorotype, MELA-DataService can collect monitoring information from one or more <a href=http://sourceforge.net/apps/trac/ganglia/wiki">Ganglia Monitoring System</a>
-                        clusters. This means Ganglia should be installed on any VM from which MELA will collect data, and that MELA can collect data from separate Ganglia clusters. </p>
+                    <p>In the current prototype, MELA-DataService can collect monitoring information from one or more <a href="http://sourceforge.net/apps/trac/ganglia/wiki">Ganglia Monitoring System</a>
+                        clusters, or <a href="https://github.com/CELAR/cloud-ms/tree/master/JCatascopia-Agent">JCatascopia</a> instances. This means Ganglia/JCatascopia should be installed on any VM from which MELA will collect data, and that MELA can collect data from separate Ganglia clusters. </p>
 
                     <p>On Ubuntu Ganglia can be installed via apt-get by `sudo apt-get install ganglia-monitor gmond`</p>
 
-                    <p>Note: By default, Ganglia data collection interval might be too large. If data collection must perform more often, please configure Ganglia accordingly following the instructions [here](http://sourceforge.net/apps/trac/ganglia/wiki/Gmond%203.1.x%20General%20Configuration#collection_group). Basically, set ` collect_every`, and `time_threshold` for each collection group to smaller values.
+                    <p>Note: By default, Ganglia data collection interval might be too large. If data collection must perform more often, please configure Ganglia accordingly by setting ` collect_every`, and `time_threshold` for each collection group to smaller values.
                     </p>
 
                     <h2>Running MELA</h2>
 
-                            <p>Both MELA-DataService and MELA-AnalysisService must run for obtaining the complete system functionality. MELA-DataService can also run standalone, during which it will collect data. MELA-AnalysisService just processes already collected data and provides services for setting the monitored service structure, metric composition rules 
-                                )), and service requirements, which affect the way MELA-DataService structures collected data.</p>
-                            <h3> MELA-DataService</h3>
+                            <p>MELA-DataService provides data collection and structuring functionality, and can be run standalone. MELA Elasticity Space and Pathway Analysis service must be run in conjunction with MELA-DataService, as it analyzes data stored by the data service.                             <h3> MELA-DataService</h3>
 
                             <h4> Configuration</h4>
                             <ul>
                                 <li> Configure if required the options presented in "./config/mela-data-service.properties" </li>
                                 <li> Configure the data sources from which data is to be collected in "./config/dataSources.xml" </li>
-                                <li> If necessary the default metric composition rules, service structure and service requirements can be configured by modifying the files in "./config/default"</li>
                             </ul>
                             <h4>Compile and Run</h4>
-                            <ul>
-                                <li>If compiled with "mvn clean package -P Release", extract the "tar.gz", perform necessary configurations, 
-                                    and start the MELA-DataService using the provided script by executing "mela-data-service start".
-                                    With "mela-data-service stop" the MELA-DataService can be shut down. </li>
-                                <li> If compiled with the standard profile, run from the target directory the MELA-DataService as any simple
-                                    jar with "java -DLOG_DIR=dir_to_store_logs -jar ./MELA-DataService" </li>
+                           <ul>
+                                <li> If compiled with "mvn clean package -P Release", extract the "tar.gz", perform necessary configurations, and start the MELA-DataService using the provided script by executing "mela-data-service start". With "mela-data-service stop" the MELA-DataService can be shut down. </li>
+                                <li> If compiled with the standard profile, run from the target directory the MELA-DataService as any simple jar with "java -DLOG_DIR=dir_to_store_logs -jar ./MELA-DataService ", as it is packaged with an embedded Apache Tomcat 7.</li>
                             </ul>
-                            <h3> MELA-AnalysisService</h3>
+                            As MELA-DataService is packaged with an embedded Apache Tomcat 7, it will try to start on a standard HTTP 8080 port. If that port is occupied, change the "mela-data-service" script to include in the java -jar ./MELA-DataService -httpPort=port", or add "-httpPort=port" if running from command line.
+
+                            <ul><li> Open MELA at http://IP:PORT/MELA</li>
+                                </li> MELA RESTful API is located at http://IP:PORT/MELA/REST_WS. Test if the API works by invoking http://IP:PORT/MELA/REST_WS/monitoringdataJSON </li>
+                            </ul>
+                            <h3> MELA-Elasticity Space and Pathway Analysis</h3>
 
                             <h4> Configuration</h4>
 
@@ -159,10 +154,10 @@
 
                             <h4> Compile and Run</h4>
                             <ul>
-                                <li> If compiled with "mvn clean package -P Release", extract the "tar.gz", perform necessary configurations, and start the MELA-AnalysisService using the provided script by executing "mela-analysis-service start". With "mela-analysis-service stop" the MELA-AnalysisService can be shut down. </li>
+                                <li> If compiled with "mvn clean package -P Release", extract the "tar.gz", perform necessary configurations, and start the MELA-AnalysisService using the provided script by executing "/mela-space-and-pathway-analysis-service start". With "/mela-space-and-pathway-analysis-service stop" the MELA-AnalysisService can be shut down. </li>
                                 <li> If compiled with the standard profile, run from the target directory the MELA-AnalysisService as any simple jar with "java -DLOG_DIR=dir_to_store_logs -jar ./MELA-AnalysisService ", as it is packaged with an embedded Apache Tomcat 7.</li>
                             </ul>
-                            As MELA-AnalysisService is packaged with an embedded Apache Tomcat 7, it will try to start on a standard HTTP 8080 port. If that port is occupied, change the "mela-analysis-service" script to include in the java -jar ./MELA-AnalysisService -httpPort=port", or add "-httpPort=port" if running from command line.
+                            As MELA-AnalysisService is packaged with an embedded Apache Tomcat 7, it will try to start on a standard HTTP 8080 port. If that port is occupied, change the "/mela-space-and-pathway-analysis-service" script to include in the java -jar ./MELA-AnalysisService -httpPort=port", or add "-httpPort=port" if running from command line.
 
                             <ul><li> Open MELA at http://IP:PORT/MELA</li>
                                 </li> MELA RESTful API is located at http://IP:PORT/MELA/REST_WS. Test if the API works by invoking http://IP:PORT/MELA/REST_WS/monitoringdataJSON </li>
