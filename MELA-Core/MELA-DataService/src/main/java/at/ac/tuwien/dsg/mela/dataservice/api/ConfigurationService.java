@@ -87,7 +87,7 @@ public class ConfigurationService {
      * @param element the service topology to be monitored
      */
     @PUT
-    @Path("/servicedescription")
+    @Path("/service")
     @Consumes("application/xml")
     public void putServiceDescription(MonitoredElement element) {
         if (element != null) {
@@ -113,7 +113,7 @@ public class ConfigurationService {
      * elasticity signature needs to be recomputed
      */
     @POST
-    @Path("/{serviceID}/servicedescription")
+    @Path("/{serviceID}/structure")
     @Consumes("application/xml")
     public void updateServiceDescription(MonitoredElement element) {
         if (element != null) {
@@ -128,7 +128,7 @@ public class ConfigurationService {
      * or obtained from metric composition
      */
     @PUT
-    @Path("/{serviceID}/servicerequirements")
+    @Path("/{serviceID}/requirements")
     @Consumes("application/xml")
     public void putServiceRequirements(Requirements requirements) {
         if (requirements != null) {
@@ -181,7 +181,7 @@ public class ConfigurationService {
      * [vmCount]","type":"metric"}],"type":"VM"}],"type":"SERVICE_UNIT"}
      */
     @GET
-    @Path("/{serviceID}/monitoringdataJSON")
+    @Path("/{serviceID}/monitoringdata/json")
     @Produces("application/json")
     public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
         return collectionService.getLatestMonitoringDataINJSON(serviceID);
@@ -192,21 +192,21 @@ public class ConfigurationService {
      * running service units
      */
     @GET
-    @Path("/{serviceID}/servicestructure")
+    @Path("/{serviceID}/structure")
     @Produces("application/xml")
     public MonitoredElement getLatestServiceStructure(@PathParam("serviceID") String serviceID) {
         return collectionService.getLatestServiceStructure(serviceID);
     }
 
     @GET
-    @Path("/{serviceID}/monitoringdataXML")
+    @Path("/{serviceID}/monitoringdata/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID) {
         return collectionService.getLatestMonitoringDataInXML(serviceID);
     }
 
     @POST
-    @Path("/{serviceID}/monitoringdataXML")
+    @Path("/{serviceID}/monitoringdata/xml")
     @Consumes("application/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
@@ -214,14 +214,14 @@ public class ConfigurationService {
     }
 
     @GET
-    @Path("/{serviceID}/historicalmonitoringdataXML/all")
+    @Path("/{serviceID}/historicalmonitoringdata/all/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(@PathParam("serviceID") String serviceID) {
         return collectionService.getAllAggregatedMonitoringData(serviceID);
     }
 
     @GET
-    @Path("/{serviceID}/historicalmonitoringdataXML/ininterval")
+    @Path("/{serviceID}/historicalmonitoringdata/ininterval/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@PathParam("serviceID") String serviceID, @QueryParam("startTimestamp") int startTimestamp,
             @QueryParam("endTimestamp") int endTimestamp) {
@@ -229,50 +229,52 @@ public class ConfigurationService {
     }
 
     @GET
-    @Path("/{serviceID}/historicalmonitoringdataXML/lastX")
+    @Path("/{serviceID}/historicalmonitoringdata/lastX/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@PathParam("serviceID") String serviceID, @QueryParam("count") int count) {
         return collectionService.getLastXAggregatedMonitoringData(serviceID, count);
     }
 
     @GET
-    @Path("/{serviceID}/metriccompositionrules")
+    @Path("/{serviceID}/metriccompositionrules/json")
     @Produces("application/json")
     public String getMetricCompositionRules(@PathParam("serviceID") String serviceID) {
         return collectionService.getMetricCompositionRules(serviceID);
     }
 
     @GET
-    @Path("/{serviceID}/metriccompositionrulesxml")
+    @Path("/{serviceID}/metriccompositionrules/xml")
     @Produces("application/xml")
     public CompositionRulesConfiguration getMetricCompositionRulesXML(@PathParam("serviceID") String serviceID) {
         return collectionService.getMetricCompositionRulesXML(serviceID);
     }
 
-    @POST
-    @Path("/{serviceID}/addexecutingactions")
-    public void addExecutingAction(@PathParam("serviceID") String serviceID, Action action) {
+    @PUT
+    @Path("/{serviceID}/{targetEntityID}/executingaction/{action}")
+    public void addExecutingAction(@PathParam("serviceID") String serviceID, @PathParam("targetEntityID") String targetEntityID, @PathParam("action") String action
+    ) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(action);
+        actions.add(new Action(targetEntityID, action));
         collectionService.addExecutingActions(serviceID, actions);
     }
 
-    @POST
-    @Path("/{serviceID}/removeexecutingactions")
-    public void removeExecutingAction(@PathParam("serviceID") String serviceID, Action action) {
+    @DELETE
+    @Path("/{serviceID}/{targetEntityID}/executingaction/{action}")
+    public void removeExecutingAction(@PathParam("serviceID") String serviceID, @PathParam("targetEntityID") String targetEntityID, @PathParam("action") String action
+    ) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(action);
+        actions.add(new Action(targetEntityID, action));
         collectionService.removeExecutingActions(serviceID, actions);
     }
 
     @GET
-    @Path("/{serviceID}/metricsGreaterThanZero")
+    @Path("/{serviceID}/metricsGreaterEqualThanZero")
     public String testIfAllVMsReportMEtricsGreaterThanZero(@PathParam("serviceID") String serviceID) {
         return "" + collectionService.testIfAllVMsReportMEtricsGreaterThanZero(serviceID);
     }
 
     @GET
-    @Path("/elasticservices")
+    @Path("/services")
     @Produces("application/json")
     public String getServices() {
         return collectionService.getAllManagedServicesIDs();
