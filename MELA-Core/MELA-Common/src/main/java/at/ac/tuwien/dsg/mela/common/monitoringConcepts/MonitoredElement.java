@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts;
 
+import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
 import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
@@ -49,12 +50,20 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
     @XmlElement(name = "Relationship", required = false)
     private Collection<Relationship> relationships;
-    
+
+    /**
+     * Represent the configuration of the cloud offered services hosting this
+     * monitored element (if any): I.E. VM + OS + Monitoring
+     */
+    @XmlElement(name = "UsedCloudOfferedServiceCfg", required = false)
+    private List<UsedCloudOfferedService> cloudOfferedServices;
+
     public static final long serialVersionUID = -4788504262348634847L;
 
     {
         relationships = new ArrayList<Relationship>();
         containedElements = new ArrayList<MonitoredElement>();
+        cloudOfferedServices = new ArrayList<UsedCloudOfferedService>();
     }
 
     public MonitoredElement() {
@@ -62,6 +71,14 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
     public MonitoredElement(String id) {
         this.id = id;
+    }
+
+    public List<UsedCloudOfferedService> getCloudOfferedServices() {
+        return cloudOfferedServices;
+    }
+
+    public void setCloudOfferedServices(List<UsedCloudOfferedService> cloudOfferedServices) {
+        this.cloudOfferedServices = cloudOfferedServices;
     }
 
     public String getName() {
@@ -103,6 +120,14 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         containedElements.remove(MonitoredElement);
     }
 
+    public void addUsedCloudOfferedService(UsedCloudOfferedService offeredService) {
+        cloudOfferedServices.add(offeredService);
+    }
+
+    public void removeUsedCloudOfferedService(UsedCloudOfferedService offeredService) {
+        cloudOfferedServices.remove(offeredService);
+    }
+
     public MonitoredElementLevel getLevel() {
         return level;
     }
@@ -121,6 +146,15 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
     public Collection<Relationship> getRelationships() {
         return relationships;
+    }
+    public Collection<Relationship> getRelationships(Relationship.RelationshipType relationshipType) {
+        Collection<Relationship> rels = new ArrayList<Relationship>();
+        for(Relationship r: relationships){
+            if(r.getType().equals(relationshipType)){
+                rels.add(r);
+            }
+        }
+        return rels;
     }
 
     public void setRelationships(Collection<Relationship> relationships) {
@@ -146,6 +180,7 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         SERVICE_TOPOLOGY,
         @XmlEnumValue("SERVICE_UNIT")
         SERVICE_UNIT,
+        //TODO: rename from VM to CloudOfferedService, introduce category and subcategory, etc. 
         @XmlEnumValue("VM")
         VM,
         @XmlEnumValue("VIRTUAL_CLUSTER")
@@ -252,6 +287,8 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
             elements.add(el.clone());
 //            }
         }
+        
+        newMonitoredElement.cloudOfferedServices = cloudOfferedServices;
         newMonitoredElement.containedElements = elements;
         return newMonitoredElement;
 

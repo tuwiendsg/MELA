@@ -17,7 +17,7 @@
                         <directory>${project.basedir}</directory>
                         <outputDirectory>/</outputDirectory>
                         <includes>
-                                <include>mela-space-and-pathway-analysis-service</include>
+                                <include>mela-cost-eval-service</include>
                         </includes>
                         <fileMode>0755</fileMode>
                         <lineEnding>unix</lineEnding>
@@ -35,7 +35,7 @@
                         <directory>${project.build.directory}</directory>
                         <outputDirectory>/</outputDirectory>
                         <includes>
-                                <include>MELA-SpaceAndPathwayAnalysisService-*.jar</include>
+                                <include>MELA-AnalysisService-*.jar</include>
                         </includes>
                 </fileSet>
 

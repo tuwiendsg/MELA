@@ -274,7 +274,7 @@ public class ConfigurationService {
     }
 
     @GET
-    @Path("/services")
+    @Path("/elasticservices")
     @Produces("application/json")
     public String getServices() {
         return collectionService.getAllManagedServicesIDs();

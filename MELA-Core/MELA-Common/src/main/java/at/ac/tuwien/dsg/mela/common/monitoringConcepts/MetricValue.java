@@ -29,7 +29,6 @@ import org.apache.log4j.Logger;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
-
 //TODO: I should embed the XML operation processing engine also in requirements, to be able to say
 // requiremment: cost < reqsNumber / 1000 * 0.01 (e.g., if I charge 0.01$ per 1000 requests, I want to have profit)
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -130,11 +129,36 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         }
     }
 
-    public void divide(int size) {
+    public void divide(double size) {
         if (value instanceof Number) {
             double oldVal = ((Number) value).doubleValue();
             this.value = oldVal / size;
 
+        }
+    }
+
+    public void multiply(double size) {
+        if (value instanceof Number) {
+            double oldVal = ((Number) value).doubleValue();
+            this.value = oldVal * size;
+        }
+    }
+
+    public void divide(MetricValue metricValue) {
+        if (value instanceof Number && metricValue.getValue() instanceof Number) {
+            double oldVal = ((Number) value).doubleValue();
+            double metricValueVal = ((Number) metricValue.getValue()).doubleValue();
+
+            this.value = oldVal / metricValueVal;
+        }
+    }
+
+    public void multiply(MetricValue metricValue) {
+        if (value instanceof Number && metricValue.getValue() instanceof Number) {
+            double oldVal = ((Number) value).doubleValue();
+            double metricValueVal = ((Number) metricValue.getValue()).doubleValue();
+
+            this.value = oldVal * metricValueVal;
         }
     }
 

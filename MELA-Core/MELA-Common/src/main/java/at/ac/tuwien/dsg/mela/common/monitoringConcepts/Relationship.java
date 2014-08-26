@@ -29,7 +29,8 @@ public class Relationship {
     public enum RelationshipType {
 
         ConnectedTo("CONNECT_TO"),
-        HostedOn("HOSTED_ON");
+        HostedOn("HOSTED_ON"),
+        InConjunctionWith("IN_CONJUNCTION_WITH");
 
         private String type;
 

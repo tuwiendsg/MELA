@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:amq="http://activemq.apache.org/schema/core"
+       xmlns:mela="http://www.infosys.tuwien.ac.at/schema/mela"
+       xmlns:jms="http://www.springframework.org/schema/jms"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+       http://www.infosys.tuwien.ac.at/schema/mela http://www.infosys.tuwien.ac.at/schema/mela/spring-mela.xsd
+       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+       http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd">
+
+    <bean id="melaDBConnector" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:hsql://128.130.172.214:9001/mela"/>
+        <property name="username" value="SA"/>
+        <property name="password" value=""/>
+    </bean>
+</beans>
