@@ -188,7 +188,7 @@ public class CompositionOperation {
                 if (elementMonitoringSnapshot.containsMetric(referenceMetric)) {
                     valuesToBeProcessed.add(elementMonitoringSnapshot.getValueForMetric(referenceMetric).clone());
                 } else {
-                    Logger.getRootLogger().log(Level.WARN, "Metric " + referenceMetric + " not found in " + MonitoredElement.getId());
+                   // Logger.getRootLogger().log(Level.WARN, "Metric " + referenceMetric + " not found in " + MonitoredElement.getId());
 //                    return null;
                 }
             } else {

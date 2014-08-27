@@ -66,8 +66,6 @@ public class CostEvalManager {
      */
     private static final String UNSTABLE_METRIC_VALUE = "-1";
 
-   
-
 //    private Requirements requirements;
 //
 //    private CompositionRulesConfiguration compositionRulesConfiguration;
@@ -93,6 +91,9 @@ public class CostEvalManager {
     {
         serviceUnits = new ArrayList<ServiceUnit>();
     }
+
+    //in future cost casching should be done using persistence
+    ServiceMonitoringSnapshot completeCost;
 
     @PostConstruct
     public void init() {
@@ -176,51 +177,30 @@ public class CostEvalManager {
         }
 
     }
-
-    public MonitoredElementMonitoringSnapshot getTotalServiceCostXML(String serviceID) {
-        List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(serviceID);
-        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.enrichWithCost(serviceUnits, allMonData);;
-        MonitoredElementMonitoringSnapshot serviceSnapshot = completeCostSnapshot.getMonitoredData(new MonitoredElement(serviceID).withLevel(MonitoredElement.MonitoredElementLevel.SERVICE));
-        return serviceSnapshot;
-    }
-
-    public String getTotalServiceCostJSON(String serviceID) {
-        List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(serviceID);
-        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.enrichWithCost(serviceUnits, allMonData);;
-        MonitoredElementMonitoringSnapshot serviceSnapshot = completeCostSnapshot.getMonitoredData(new MonitoredElement(serviceID).withLevel(MonitoredElement.MonitoredElementLevel.SERVICE));
-        MetricValue value = serviceSnapshot.getMetricValue(new Metric("total_cost", "costUnits", Metric.MetricType.COST));
-        JSONObject jSONObject = new JSONObject();
-        jSONObject.put(value.getValueRepresentation(), "costUnits");
-
-        return jSONObject.toJSONString();
-    }
-    
-    
-    
-
-    public boolean testIfAllVMsReportMEtricsGreaterThanZero(String serviceID) {
-        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
-        if (cxmlr != null) {
-//            MonitoredElement element = cxmlr.getServiceConfiguration();
-            ServiceMonitoringSnapshot data = persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId());
-            if (data == null) {
-                log.error("Monitoring Data not found for " + serviceID);
-                throw new RuntimeException("Monitoring Data not found for " + serviceID);
-            }
-            for (MonitoredElementMonitoringSnapshot childSnapshot : data.getMonitoredData(MonitoredElement.MonitoredElementLevel.VM).values()) {
-                for (MetricValue metricValue : childSnapshot.getMonitoredData().values()) {
-                    if (metricValue.getValueType().equals(MetricValue.ValueType.NUMERIC)) {
-                        if (metricValue.compareTo(new MetricValue(0)) < 0) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        } else {
-            return true;
-        }
-        return true;
-    }
+//
+//    public boolean testIfAllVMsReportMEtricsGreaterThanZero(String serviceID) {
+//        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
+//        if (cxmlr != null) {
+////            MonitoredElement element = cxmlr.getServiceConfiguration();
+//            ServiceMonitoringSnapshot data = persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId());
+//            if (data == null) {
+//                log.error("Monitoring Data not found for " + serviceID);
+//                throw new RuntimeException("Monitoring Data not found for " + serviceID);
+//            }
+//            for (MonitoredElementMonitoringSnapshot childSnapshot : data.getMonitoredData(MonitoredElement.MonitoredElementLevel.VM).values()) {
+//                for (MetricValue metricValue : childSnapshot.getMonitoredData().values()) {
+//                    if (metricValue.getValueType().equals(MetricValue.ValueType.NUMERIC)) {
+//                        if (metricValue.compareTo(new MetricValue(0)) < 0) {
+//                            return false;
+//                        }
+//                    }
+//                }
+//            }
+//        } else {
+//            return true;
+//        }
+//        return true;
+//    }
 
     public CompositionRulesConfiguration getCompositionRulesConfiguration(String serviceID) {
 
@@ -233,26 +213,25 @@ public class CostEvalManager {
 
     }
 
-    public AnalysisReport analyzeLatestMonitoringData(String serviceID) {
-        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
-        if (cxmlr != null) {
-            return instantMonitoringDataAnalysisEngine.analyzeRequirements(persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId()), cxmlr.getRequirements());
-        } else {
-            return new AnalysisReport(new ServiceMonitoringSnapshot(), new Requirements());
-        }
-
-    }
-
-    public Collection<Metric> getAvailableMetricsForMonitoredElement(String serviceID, MonitoredElement monitoredElement) {
-        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
-
-        if (cxmlr != null) {
-            return persistenceDelegate.getAvailableMetrics(monitoredElement, cxmlr.getServiceConfiguration().getId());
-        } else {
-            return new ArrayList<Metric>();
-        }
-    }
-
+//    public AnalysisReport analyzeLatestMonitoringData(String serviceID) {
+//        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
+//        if (cxmlr != null) {
+//            return instantMonitoringDataAnalysisEngine.analyzeRequirements(persistenceDelegate.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId()), cxmlr.getRequirements());
+//        } else {
+//            return new AnalysisReport(new ServiceMonitoringSnapshot(), new Requirements());
+//        }
+//
+//    }
+//
+//    public Collection<Metric> getAvailableMetricsForMonitoredElement(String serviceID, MonitoredElement monitoredElement) {
+//        ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
+//
+//        if (cxmlr != null) {
+//            return persistenceDelegate.getAvailableMetrics(monitoredElement, cxmlr.getServiceConfiguration().getId());
+//        } else {
+//            return new ArrayList<Metric>();
+//        }
+//    }
     public MonitoredElementMonitoringSnapshot getLatestMonitoringData(String serviceID) {
         ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
 
@@ -284,36 +263,35 @@ public class CostEvalManager {
         }
     }
 
-    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(String serviceID) {
-        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringData(serviceID)) {
-            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
-        }
-        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
-        snapshots.setChildren(elementMonitoringSnapshots);
-        return snapshots;
-    }
-
-    public MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String serviceID, int startTimestampID, int endTimestampID) {
-        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, serviceID)) {
-            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
-        }
-        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
-        snapshots.setChildren(elementMonitoringSnapshots);
-        return snapshots;
-    }
-
-    public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(String serviceID, int count) {
-        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractLastXMonitoringDataSnapshots(count, serviceID)) {
-            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
-        }
-        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
-        snapshots.setChildren(elementMonitoringSnapshots);
-        return snapshots;
-    }
-
+//    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(String serviceID) {
+//        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+//        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringData(serviceID)) {
+//            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
+//        }
+//        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+//        snapshots.setChildren(elementMonitoringSnapshots);
+//        return snapshots;
+//    }
+//
+//    public MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String serviceID, int startTimestampID, int endTimestampID) {
+//        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+//        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, serviceID)) {
+//            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
+//        }
+//        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+//        snapshots.setChildren(elementMonitoringSnapshots);
+//        return snapshots;
+//    }
+//
+//    public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(String serviceID, int count) {
+//        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+//        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractLastXMonitoringDataSnapshots(count, serviceID)) {
+//            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
+//        }
+//        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+//        snapshots.setChildren(elementMonitoringSnapshots);
+//        return snapshots;
+//    }
     // uses a lot of memory (all directly in memory)
     public String getElasticityPathway(String serviceID, MonitoredElement element) {
 //        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
@@ -423,7 +401,7 @@ public class CostEvalManager {
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (cfg == null ||  cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
+        if (cfg == null || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
             log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElSpace");
@@ -486,7 +464,24 @@ public class CostEvalManager {
             return "{nothing}";
         }
 
+        //TODO: compute cost as we go to avoid memory overflows
         List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(serviceID);
+
+        if (!allMonData.isEmpty()) {
+
+            //as I extract 1000 entries at a time to avoid memory overflow, I need to read the rest
+            //TODO: compute cost as we go to avoid memory overflows
+            do {
+                int timestampID = allMonData.get(allMonData.size() - 1).getTimestampID();
+                List<ServiceMonitoringSnapshot> restOfData = persistenceDelegate.extractMonitoringData(timestampID, serviceID);
+                if (restOfData.isEmpty()) {
+                    break;
+                } else {
+                    allMonData.addAll(restOfData);
+                }
+            } while (true);
+        }
+
         ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getLastMonSnapshotEnrichedWithCost(serviceUnits, allMonData);
         if (completeCostSnapshot == null) {
             return "{nothing}";
@@ -498,9 +493,65 @@ public class CostEvalManager {
         log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return converted;
     }
-    
 
-    
+    public MonitoredElementMonitoringSnapshot getTotalServiceCostXML(String serviceID) {
+        //TODO: compute cost as we go to avoid memory overflows
+        List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(serviceID);
+
+        if (!allMonData.isEmpty()) {
+
+            //as I extract 1000 entries at a time to avoid memory overflow, I need to read the rest
+            //TODO: compute cost as we go to avoid memory overflows
+            do {
+                int timestampID = allMonData.get(allMonData.size() - 1).getTimestampID();
+                List<ServiceMonitoringSnapshot> restOfData = persistenceDelegate.extractMonitoringData(timestampID, serviceID);
+                if (restOfData.isEmpty()) {
+                    break;
+                } else {
+                    allMonData.addAll(restOfData);
+                }
+            } while (true);
+        }
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getTotalCost(serviceUnits, allMonData);;
+        MonitoredElementMonitoringSnapshot serviceSnapshot = completeCostSnapshot.getMonitoredData(new MonitoredElement(serviceID).withLevel(MonitoredElement.MonitoredElementLevel.SERVICE));
+        return serviceSnapshot;
+    }
+
+    public String getTotalServiceCostJSON(String serviceID) {
+        //TODO: compute cost as we go to avoid memory overflows
+        List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(serviceID);
+
+//        if (!allMonData.isEmpty()) {
+//
+//            //as I extract 1000 entries at a time to avoid memory overflow, I need to read the rest
+//            //TODO: compute cost as we go to avoid memory overflows
+//            do {
+//                int timestampID = allMonData.get(allMonData.size() - 1).getTimestampID();
+//                List<ServiceMonitoringSnapshot> restOfData = persistenceDelegate.extractMonitoringData(timestampID, serviceID);
+//                if (restOfData.isEmpty()) {
+//                    break;
+//                } else {
+//                    allMonData.addAll(restOfData);
+//                }
+//            } while (true);
+//        }
+//        if ((completeCost == null) || (allMonData.get(allMonData.size() - 1).getTimestampID() > completeCost.getTimestampID())) {
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getTotalCost(serviceUnits, allMonData);;
+        completeCostSnapshot.setTimestamp(allMonData.get(allMonData.size() - 1).getTimestamp());
+        completeCostSnapshot.setTimestampID(allMonData.get(allMonData.size() - 1).getTimestampID());
+        completeCost = completeCostSnapshot;
+//        }
+
+        if (completeCost == null) {
+            return "{nothing}";
+        }
+
+        String converted = jsonConverter.convertMonitoringSnapshot(completeCost);
+
+        Date after = new Date();
+        return converted;
+    }
+
     public MonitoredElement getLatestServiceStructure(String serviceID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);

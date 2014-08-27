@@ -24,29 +24,35 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionO
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperationType;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Relationship;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Quality;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Resource;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
-import com.google.common.util.concurrent.Monitor;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Relationship;
+import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Quality;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Resource;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 /**
  *
@@ -72,22 +78,273 @@ public class CostEvalEngine {
      * @return a ServiceMonitoringSnapshot containing complete cost aggregated
      * over time
      */
-    public ServiceMonitoringSnapshot enrichWithCost(List<ServiceUnit> cloudOfferedServices, List<ServiceMonitoringSnapshot> monData) {
+    public ServiceMonitoringSnapshot getTotalCost(List<ServiceUnit> cloudOfferedServices, List<ServiceMonitoringSnapshot> monData) {
 
         //udpates monData in place
-        CompositionRulesConfiguration compositionRulesConfiguration = enrichMonSnapshotsWithCost(cloudOfferedServices, monData);
+        final CompositionRulesConfiguration compositionRulesConfiguration = enrichMonSnapshotsWithCostAtServiceCfgLevel(cloudOfferedServices, monData);
 
-        for (ServiceMonitoringSnapshot monitoringSnapshot : monData) {
-            //compute cost for each service unit, topology and service for each snapshot
-            monitoringSnapshot = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(
-                    compositionRulesConfiguration, monitoringSnapshot);
+        //SUM UP all COST metrics captured in Historical Composition Rules
+        //ServiceMonitoringSnapshot complete = instantMonitoringDataEnrichmentEngine.aggregateMonitoringDataOverTime(compositionRulesConfiguration, monData);
+        //split rules per level
+        final Map<MonitoredElement.MonitoredElementLevel, List<CompositionRule>> rules = new HashMap<MonitoredElement.MonitoredElementLevel, List<CompositionRule>>();
+
+        rules.put(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT, new ArrayList<CompositionRule>());
+        rules.put(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY, new ArrayList<CompositionRule>());
+        rules.put(MonitoredElement.MonitoredElementLevel.SERVICE, new ArrayList<CompositionRule>());
+
+        for (CompositionRule rule : compositionRulesConfiguration.getHistoricMetricCompositionRules().getCompositionRules()) {
+            rules.get(rule.getTargetMonitoredElementLevel()).add(rule);
         }
 
-        ServiceMonitoringSnapshot complete = instantMonitoringDataEnrichmentEngine.aggregateMonitoringDataOverTime(compositionRulesConfiguration, monData);
-        complete.setTimestamp(monData.get(monData.size() - 1).getTimestamp());
-        complete.setTimestampID(monData.get(monData.size() - 1).getTimestampID());
+        final Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, ConcurrentHashMap<Metric, List<MetricValue>>>> valuesToAggregate;
+        valuesToAggregate = new ConcurrentHashMap<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, ConcurrentHashMap<Metric, List<MetricValue>>>>();
+        valuesToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT, new ConcurrentHashMap<MonitoredElement, ConcurrentHashMap<Metric, List<MetricValue>>>());
+        valuesToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY, new ConcurrentHashMap<MonitoredElement, ConcurrentHashMap<Metric, List<MetricValue>>>());
+        valuesToAggregate.put(MonitoredElement.MonitoredElementLevel.SERVICE, new ConcurrentHashMap<MonitoredElement, ConcurrentHashMap<Metric, List<MetricValue>>>());
 
-        return complete;
+        //as enrichMonSnapshotsWithCost enriches only VM level
+        //go trough mon snapshots, extract mon data according to the rules
+        //multithreaded collects data from history
+        List<Thread> threads = new ArrayList<Thread>();
+
+        final Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters = new HashMap<MonitoredElement.MonitoredElementLevel, List<MetricFilter>>();
+
+        //clear out data not belonging to cost rules
+        for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
+            // go trough each CompositionOperation and extract the source
+            // metrics
+
+            List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+            queue.add(compositionRule.getOperation());
+
+            while (!queue.isEmpty()) {
+                CompositionOperation operation = queue.remove(0);
+                queue.addAll(operation.getSubOperations());
+                Metric targetMetric = operation.getTargetMetric();
+                // metric can be null if a composition rule artificially creates
+                // a metric using SET_VALUE
+                if (targetMetric != null) {
+                    MetricFilter metricFilter = new MetricFilter();
+                    metricFilter.setId(targetMetric.getName() + "_Filter");
+                    metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+                    Collection<Metric> metrics = new ArrayList<Metric>();
+                    metrics.add(new Metric(targetMetric.getName()));
+                    metricFilter.setMetrics(metrics);
+
+                    if (metricFilters.containsKey(metricFilter.getLevel())) {
+                        List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
+                        if (!list.contains(metricFilter)) {
+                            list.add(metricFilter);
+                        }
+                    } else {
+                        List<MetricFilter> list = new ArrayList<MetricFilter>();
+                        list.add(metricFilter);
+                        metricFilters.put(metricFilter.getLevel(), list);
+                    }
+
+                }
+            }
+        }
+
+        for (final ServiceMonitoringSnapshot ms : monData) {
+
+//            Thread t = new Thread() {
+//
+//                @Override
+//                public void run() {
+            log.info("Snapshot " + ms.getTimestampID());
+
+            //remove from snapshot all metrics which are not used in aggregation
+//                    ms.applyMetricFilters(metricFilters);
+            //compute cost for each service unit, topology and service for each snapshot
+            ServiceMonitoringSnapshot monitoringSnapshot = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(
+                    compositionRulesConfiguration, ms);
+
+            for (MonitoredElement.MonitoredElementLevel level : monitoringSnapshot.getMonitoredData().keySet()) {
+
+                Map<MonitoredElement, ConcurrentHashMap<Metric, List<MetricValue>>> dataToAggregateOnLevel = valuesToAggregate.get(level);
+
+                //we do not process VM.
+                if (level.equals(MonitoredElement.MonitoredElementLevel.VM)) {
+                    continue;
+                }
+
+                Map<MonitoredElement, MonitoredElementMonitoringSnapshot> levelData = monitoringSnapshot.getMonitoredData(level);
+                for (MonitoredElement element : levelData.keySet()) {
+                    //avoid destroyng source elements
+                    element = element.clone();
+
+                    MonitoredElementMonitoringSnapshot elementSnapshot = levelData.get(element);
+
+                    ConcurrentHashMap<Metric, List<MetricValue>> elementMetrics = null;
+                    if (dataToAggregateOnLevel.containsKey(element)) {
+                        elementMetrics = dataToAggregateOnLevel.get(element);
+                    } else {
+                        //remove all VM children
+                        Iterator<MonitoredElement> it = element.getContainedElements().iterator();
+                        while (it.hasNext()) {
+                            if (it.next().getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
+                                it.remove();
+                            }
+
+                        }
+                        elementMetrics = new ConcurrentHashMap<Metric, List<MetricValue>>();
+
+                        dataToAggregateOnLevel.put(element, elementMetrics);
+                    }
+                    //take from each rule the target metric and SUM it 
+                    for (CompositionRule rule : rules.get(level)) {
+                        if (elementMetrics.containsKey(rule.getResultingMetric())) {
+                            List<MetricValue> values = elementMetrics.get(rule.getResultingMetric());
+                            if (elementSnapshot.containsMetric(rule.getResultingMetric())) {
+                                values.add(elementSnapshot.getMetricValue(rule.getResultingMetric()));
+                            }
+                        } else {
+                            List<MetricValue> values = Collections.synchronizedList(new ArrayList<MetricValue>());
+                            elementMetrics.put(rule.getResultingMetric(), values);
+                        }
+
+                    }
+
+                }
+
+            }
+
+//                }
+//            };
+//
+//            threads.add(t);
+//            t.setDaemon(true);
+//            t.start();
+            //limit the nr of threads to 1000, to avoid overflooding the CPU and actually reducing execution time
+            if (threads.size() > 1000) {
+                Iterator<Thread> it = threads.iterator();
+                while (it.hasNext()) {
+                    try {
+                        it.next().join();
+                    } catch (InterruptedException ex) {
+                        log.warn(ex.getMessage(), ex);
+                    }
+                    it.remove();
+                }
+            }
+
+        }
+
+//         //take from each rule the target metric and SUM it 
+//                    for (CompositionRule rule : rules.get(level)) {
+//                        MetricValue summedSoFar = null;
+//                        if (elementMetrics.containsKey(rule.getResultingMetric())) {
+//                            summedSoFar = elementMetrics.get(rule.getResultingMetric());
+//                            elementMetrics.getMonitoredData().put(rule.getResultingMetric(), summedSoFar);
+//                        } else {
+//                            summedSoFar = new MetricValue(0.0d);
+//                        }
+//
+//                        if (elementSnapshot.getMonitoredData().containsKey(rule.getResultingMetric())) {
+//                            summedSoFar.sum(elementSnapshot.getMonitoredData().get(rule.getResultingMetric()));
+//                        }
+//                    }
+//
+//                }
+//    
+//    
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                log.warn(ex.getMessage(), ex);
+            }
+        }
+
+        final Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> summedValues;
+        summedValues = new EnumMap<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>>(MonitoredElement.MonitoredElementLevel.class);
+        summedValues.put(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT, new LinkedHashMap<MonitoredElement, MonitoredElementMonitoringSnapshot>());
+        summedValues.put(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY, new LinkedHashMap<MonitoredElement, MonitoredElementMonitoringSnapshot>());
+        summedValues.put(MonitoredElement.MonitoredElementLevel.SERVICE, new LinkedHashMap<MonitoredElement, MonitoredElementMonitoringSnapshot>());
+
+        for (MonitoredElement.MonitoredElementLevel level : valuesToAggregate.keySet()) {
+
+            for (MonitoredElement element : valuesToAggregate.get(level).keySet()) {
+                ConcurrentHashMap<Metric, List<MetricValue>> metricsToSumUp = valuesToAggregate.get(level).get(element);
+                MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(element);
+
+                summedValues.get(level).put(element, elementMonitoringSnapshot);
+
+                for (Metric m : metricsToSumUp.keySet()) {
+
+                    List<MetricValue> values = metricsToSumUp.get(m);
+
+                    Iterator<MetricValue> iterator = values.iterator();
+                    if (iterator.hasNext()) {
+                        MetricValue sum = iterator.next();
+                        while (iterator.hasNext()) {
+                            sum.sum(iterator.next());
+                        }
+                        elementMonitoringSnapshot.putMetric(m, sum);
+                    }
+
+                }
+
+            }
+        }
+
+        //all PERIODIC metrics must be averaged out over billing period.
+        //For example, Cost of 0.1 monitored every second for 1 hour and summed should be divided to 3600
+        //check amount of time in millis between two measurement units
+        Long previousTimestamp = Long.parseLong(monData.get(0).getTimestamp());
+        Long last = Long.parseLong(monData.get(monData.size() - 1).getTimestamp());
+
+        //convert to seconds
+        Long timeIntervalInMillis = (last - previousTimestamp) / 1000;
+
+        for (MonitoredElement.MonitoredElementLevel level : summedValues.keySet()) {
+
+            for (MonitoredElement element : summedValues.get(level).keySet()) {
+
+                MonitoredElementMonitoringSnapshot monitoringSnapshot = summedValues.get(level).get(element);
+
+                for (CompositionRule rule : rules.get(level)) {
+                    //if rule is periodic, i.e.. has /s /m /h
+                    if (rule.getResultingMetric().getMeasurementUnit().contains("/")) {
+
+                        String timePeriod = rule.getResultingMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+                        if (monitoringSnapshot.containsMetric(rule.getResultingMetric())) {
+
+                            long periodsBetweenPrevAndCurrentTimestamp = 0;
+
+                            //must standardise these somehow
+                            if (timePeriod.equals("s")) {
+                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
+                            } else if (timePeriod.equals("m")) {
+                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
+                            } else if (timePeriod.equals("h")) {
+                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 3600;
+                            } else if (timePeriod.equals("d")) {
+                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
+                            }
+
+                            MetricValue value = monitoringSnapshot.getMetricValue(rule.getResultingMetric());
+                            if (periodsBetweenPrevAndCurrentTimestamp > 0) {
+                                value.divide(periodsBetweenPrevAndCurrentTimestamp);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+        }
+
+        ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot();
+
+        monitoringSnapshot.setMonitoredData(summedValues);
+
+        //try to compute total cost etc
+        monitoringSnapshot = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, monitoringSnapshot);
+
+        return monitoringSnapshot;
+
     }
 
     /**
@@ -105,15 +362,18 @@ public class CostEvalEngine {
     public ServiceMonitoringSnapshot getLastMonSnapshotEnrichedWithCost(List<ServiceUnit> cloudOfferedServices, List<ServiceMonitoringSnapshot> monData) {
 
         //udpates monData in place
-        CompositionRulesConfiguration cfg = enrichMonSnapshotsWithCost(cloudOfferedServices, monData);
+        CompositionRulesConfiguration cfg = enrichMonSnapshotsWithCostAtServiceCfgLevel(cloudOfferedServices, monData);
 
         return instantMonitoringDataEnrichmentEngine.enrichMonitoringData(cfg, monData.get(monData.size() - 1));
 
     }
 
     /**
-     * Enriches supplied monitoring snapshots with cost for each VM, so it works
-     * DIRECTLY on the monData
+     * Enriches supplied monitoring snapshots with cost for each
+     * ConfiguredServiceUnit, so it works DIRECTLY on the monData
+     *
+     * IT JUST ADDS cost for each UsedCloudOfferedServiceCfg, so an additional
+     * aggregation is needed to build unit, topology service
      *
      * @param cloudOfferedServices contains pricing scheme
      * @param monData contains mon data and mon structure monData the huge chunk
@@ -123,7 +383,7 @@ public class CostEvalEngine {
      * @return a ServiceMonitoringSnapshot containing complete cost aggregated
      * over time
      */
-    public CompositionRulesConfiguration enrichMonSnapshotsWithCost(List<ServiceUnit> cloudOfferedServices, List<ServiceMonitoringSnapshot> monData) {
+    public CompositionRulesConfiguration enrichMonSnapshotsWithCostAtServiceCfgLevel(List<ServiceUnit> cloudOfferedServices, List<ServiceMonitoringSnapshot> monData) {
 
         List<Metric> createdMetrics = new ArrayList<Metric>();
 
@@ -323,7 +583,7 @@ public class CostEvalEngine {
                                                 MetricValue costValue = value.clone();
                                                 costValue.multiply(element.getCostForCostMetricValue(value));
 
-                                                Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnit", Metric.MetricType.COST);
+                                                Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
 
                                                 if (!createdMetrics.contains(cost)) {
                                                     createdMetrics.add(cost);
@@ -371,7 +631,7 @@ public class CostEvalEngine {
                                                     //enrich Monitoring Snapshot with COST 
                                                     MetricValue costValue = usageSoFarForMetric.clone();
                                                     costValue.multiply(element.getCostForCostMetricValue(value));
-                                                    Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnit", Metric.MetricType.COST);
+                                                    Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
 
                                                     if (!createdMetrics.contains(cost)) {
                                                         createdMetrics.add(cost);
@@ -395,7 +655,7 @@ public class CostEvalEngine {
                                                     usageSoFarForMetric.setValue(average.getValue());
                                                     MetricValue costValue = usageSoFarForMetric.clone();
                                                     costValue.multiply(element.getCostForCostMetricValue(value));
-                                                    Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnit", Metric.MetricType.COST);
+                                                    Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
 
                                                     if (!createdMetrics.contains(cost)) {
                                                         createdMetrics.add(cost);
@@ -448,7 +708,7 @@ public class CostEvalEngine {
 
                                             MetricValue totalCostFromCreation = new MetricValue(costPeriodsFromCreation * element.getCostForCostMetricValue(new MetricValue(costPeriodsFromCreation)));
 
-                                            Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnit", Metric.MetricType.COST);
+                                            Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits/" + timePeriod, Metric.MetricType.COST);
 
                                             if (!createdMetrics.contains(cost)) {
                                                 createdMetrics.add(cost);
@@ -470,48 +730,111 @@ public class CostEvalEngine {
                 for (Metric created : createdMetrics) {
                     //service unit rules
                     if (level.equals(MonitoredElement.MonitoredElementLevel.VM)) {
-                        CompositionRule compositionRule = new CompositionRule();
-                        compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
-                        compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
-                        CompositionOperation compositionOperation = new CompositionOperation();
-                        compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.VM);
-                        compositionOperation.setTargetMetric(created);
-                        compositionOperation.setOperationType(CompositionOperationType.SUM);
-                        compositionRule.setOperation(compositionOperation);
 
-                        costCompositionRules.addCompositionRule(compositionRule);
-                        historicalCostCompositionRules.addCompositionRule(compositionRule);
+                        //instant snapshot composition rule 
+                        {
+                            CompositionRule compositionRule = new CompositionRule();
+                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+                            CompositionOperation compositionOperation = new CompositionOperation();
+                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.VM);
+                            compositionOperation.setTargetMetric(created);
+                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+                            compositionRule.setOperation(compositionOperation);
+
+                            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+                                costCompositionRules.addCompositionRule(compositionRule);
+                            }
+                        }
+
+                        //historical composition rule
+                        {
+                            CompositionRule compositionRule = new CompositionRule();
+                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+                            CompositionOperation compositionOperation = new CompositionOperation();
+                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+                            compositionOperation.setTargetMetric(created);
+                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+                            compositionRule.setOperation(compositionOperation);
+
+                            if (!historicalCostCompositionRules.getCompositionRules().contains(compositionRule)) {
+                                historicalCostCompositionRules.addCompositionRule(compositionRule);
+                            }
+                        }
 
                     }
                     //service topology rules
                     if (level.equals(MonitoredElement.MonitoredElementLevel.VM) || level.equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
-                        CompositionRule compositionRule = new CompositionRule();
-                        compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
-                        compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
-                        CompositionOperation compositionOperation = new CompositionOperation();
-                        compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
-                        compositionOperation.setTargetMetric(created);
-                        compositionOperation.setOperationType(CompositionOperationType.SUM);
-                        compositionRule.setOperation(compositionOperation);
+                        //instant snapshot composition rule 
+                        {
+                            CompositionRule compositionRule = new CompositionRule();
+                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+                            CompositionOperation compositionOperation = new CompositionOperation();
+                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+                            compositionOperation.setTargetMetric(created);
+                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+                            compositionRule.setOperation(compositionOperation);
 
-                        costCompositionRules.addCompositionRule(compositionRule);
-                        historicalCostCompositionRules.addCompositionRule(compositionRule);
+                            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+                                costCompositionRules.addCompositionRule(compositionRule);
+                            }
+                        }
+                        //historical composition rule
+                        {
+                            CompositionRule compositionRule = new CompositionRule();
+                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+                            CompositionOperation compositionOperation = new CompositionOperation();
+                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+                            compositionOperation.setTargetMetric(created);
+                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+                            compositionRule.setOperation(compositionOperation);
+
+                            if (!historicalCostCompositionRules.getCompositionRules().contains(compositionRule)) {
+                                historicalCostCompositionRules.addCompositionRule(compositionRule);
+                            }
+
+                        }
 
                     }
                     //service rules
                     if (level.equals(MonitoredElement.MonitoredElementLevel.VM) || level.equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
                             || level.equals(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)) {
-                        CompositionRule compositionRule = new CompositionRule();
-                        compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
-                        compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
-                        CompositionOperation compositionOperation = new CompositionOperation();
-                        compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
-                        compositionOperation.setTargetMetric(created);
-                        compositionOperation.setOperationType(CompositionOperationType.SUM);
-                        compositionRule.setOperation(compositionOperation);
 
-                        costCompositionRules.addCompositionRule(compositionRule);
-                        historicalCostCompositionRules.addCompositionRule(compositionRule);
+                        //instant snapshot composition rule 
+                        {
+                            CompositionRule compositionRule = new CompositionRule();
+                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+                            CompositionOperation compositionOperation = new CompositionOperation();
+                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+                            compositionOperation.setTargetMetric(created);
+                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+                            compositionRule.setOperation(compositionOperation);
+
+                            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+                                costCompositionRules.addCompositionRule(compositionRule);
+                            }
+                        }
+                        //historical composition rule
+                        {
+
+                            CompositionRule compositionRule = new CompositionRule();
+                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+                            CompositionOperation compositionOperation = new CompositionOperation();
+                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+                            compositionOperation.setTargetMetric(created);
+                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+                            compositionRule.setOperation(compositionOperation);
+
+                            if (!historicalCostCompositionRules.getCompositionRules().contains(compositionRule)) {
+                                historicalCostCompositionRules.addCompositionRule(compositionRule);
+                            }
+
+                        }
 
                     }
 
@@ -550,10 +873,12 @@ public class CostEvalEngine {
                 compositionOperation.addCompositionOperation(subOperation);
             }
 
-            costCompositionRules.addCompositionRule(compositionRule);
-            historicalCostCompositionRules.addCompositionRule(compositionRule);
+            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+                costCompositionRules.addCompositionRule(compositionRule);
+            }
 
         }
+
         //service topology rules
         {
             CompositionRule compositionRule = new CompositionRule();
@@ -583,10 +908,12 @@ public class CostEvalEngine {
                 compositionOperation.addCompositionOperation(subOperation);
             }
 
-            costCompositionRules.addCompositionRule(compositionRule);
-            historicalCostCompositionRules.addCompositionRule(compositionRule);
+            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+                costCompositionRules.addCompositionRule(compositionRule);
+            }
 
         }
+
         //service rules
         {
             CompositionRule compositionRule = new CompositionRule();
@@ -596,7 +923,7 @@ public class CostEvalEngine {
             CompositionOperation compositionOperation = new CompositionOperation();
             compositionOperation.setOperationType(CompositionOperationType.SUM);
             compositionRule.setOperation(compositionOperation);
-            
+
             {
 
                 CompositionOperation subOperation = new CompositionOperation();
@@ -616,13 +943,54 @@ public class CostEvalEngine {
                 compositionOperation.addCompositionOperation(subOperation);
             }
 
-            costCompositionRules.addCompositionRule(compositionRule);
-            historicalCostCompositionRules.addCompositionRule(compositionRule);
+            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+                costCompositionRules.addCompositionRule(compositionRule);
+            }
 
         }
 
+//        {
+//            CompositionRule compositionRule = new CompositionRule();
+//            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//            compositionRule.setResultingMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//            CompositionOperation compositionOperation = new CompositionOperation();
+//            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//            compositionOperation.setTargetMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//            compositionRule.setOperation(compositionOperation);
+//
+//            historicalCostCompositionRules.addCompositionRule(compositionRule);
+//        }
+//
+//        {
+//            CompositionRule compositionRule = new CompositionRule();
+//            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//            compositionRule.setResultingMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//            CompositionOperation compositionOperation = new CompositionOperation();
+//            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//            compositionOperation.setTargetMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//            compositionRule.setOperation(compositionOperation);
+//
+//            historicalCostCompositionRules.addCompositionRule(compositionRule);
+//        }
+//
+//        {
+//            CompositionRule compositionRule = new CompositionRule();
+//            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+//            compositionRule.setResultingMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//            CompositionOperation compositionOperation = new CompositionOperation();
+//            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+//            compositionOperation.setTargetMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//            compositionRule.setOperation(compositionOperation);
+//
+//            historicalCostCompositionRules.addCompositionRule(compositionRule);
+//        }
         CompositionRulesConfiguration compositionRulesConfiguration = new CompositionRulesConfiguration();
+
         compositionRulesConfiguration.setHistoricDataAggregationRules(historicalCostCompositionRules);
+
         compositionRulesConfiguration.setMetricCompositionRules(costCompositionRules);
 
         return compositionRulesConfiguration;
