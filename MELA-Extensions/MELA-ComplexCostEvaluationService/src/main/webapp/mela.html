@@ -43,7 +43,7 @@
     <body>
         <div id="A"></div>
         <div id="chart"></div>
- 
+
 
         <script src="./spin.js" type="text/javascript"></script>
         <script type="text/javascript">
@@ -411,7 +411,11 @@
                         .attr("stroke-width", 1)
                         .attr("fill", function(d) {
                             if (d.type == "metric") {
-                                return "gray";
+                                if (d.name.indexOf(' cost_')  > -1) {
+                                    return "orange"
+                                } else {
+                                    return "gray";
+                                }
                             } else
                                 return "red";
                         });
@@ -464,7 +468,11 @@
                         })
                         .style("fill", function(d) {
                             if (d.type == "metric") {
-                                return "gray";
+                                if (d.name.indexOf(' cost_')  > -1) {
+                                    return "orange"
+                                } else {
+                                    return "gray";
+                                }
                             } else {
                                 if (d.attention) {
                                     return "#D13F31";
@@ -1269,7 +1277,7 @@
                 }
 
                 reqMonitoringDataObject.onreadystatechange = processMonitoringDataResponse;
-                reqMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/monitoringdataJSON", true);
+                reqMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/monitoringdata/json", true);
                 reqMonitoringDataObject.send(null);
 
             }
@@ -1358,7 +1366,7 @@
 
             drawSpinner('A');
 
-            refreshMetricsCompositionRules();
+//            refreshMetricsCompositionRules();
             refreshMonitoringData();
 
         </script>

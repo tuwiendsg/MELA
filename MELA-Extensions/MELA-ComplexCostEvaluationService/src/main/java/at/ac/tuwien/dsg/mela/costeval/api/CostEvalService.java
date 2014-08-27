@@ -21,11 +21,6 @@ package at.ac.tuwien.dsg.mela.costeval.api;
 
 import at.ac.tuwien.dsg.mela.costeval.control.CostEvalManager;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
-
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Action;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
@@ -33,22 +28,14 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
-import javax.xml.bind.JAXBContext;
-import java.io.InputStream;
-
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
+import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -146,7 +133,7 @@ public class CostEvalService {
      * [vmCount]","type":"metric"}],"type":"VM"}],"type":"SERVICE_UNIT"}
      */
     @GET
-    @Path("/{serviceID}/monitoringdataJSON")
+    @Path("/{serviceID}/monitoringdata/json")
     @Produces("application/json")
     public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getLatestMonitoringDataEnrichedWithCostINJSON(serviceID);
@@ -230,15 +217,15 @@ public class CostEvalService {
     @PUT
     @Path("/cloudofferedservice/pricingscheme")
     @Consumes("application/xml")
-    public void putPricingScheme(List<ServiceUnit> serviceUnits) {
-        costEvalManager.setServiceUnits(serviceUnits);
+    public void putPricingScheme(CloudServicesSpecification cloudServicesSpecification) {
+        costEvalManager.setServiceUnits(cloudServicesSpecification.getServiceUnits());
     }
 
     @GET
     @Path("/cloudofferedservice/pricingscheme")
     @Produces("application/xml")
-    public List<ServiceUnit> getPricingScheme() {
-        return costEvalManager.getServiceUnits();
+    public CloudServicesSpecification getPricingScheme() {
+        return new CloudServicesSpecification().withServiceUnits(costEvalManager.getServiceUnits());
     }
 
     @DELETE

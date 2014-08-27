@@ -66,8 +66,7 @@ public class CostEvalManager {
      */
     private static final String UNSTABLE_METRIC_VALUE = "-1";
 
-    @Value("${analysisservice.elasticityanalysis:true}")
-    private boolean elasticityAnalysisEnabled;
+   
 
 //    private Requirements requirements;
 //
@@ -381,7 +380,7 @@ public class CostEvalManager {
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (cfg == null || !elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
+        if (cfg == null || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
             log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             return elasticityPathwayXML;
         }
@@ -424,7 +423,7 @@ public class CostEvalManager {
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (cfg == null || !elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
+        if (cfg == null ||  cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
             log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElSpace");
@@ -488,7 +487,7 @@ public class CostEvalManager {
         }
 
         List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(serviceID);
-        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.enrichWithCost(serviceUnits, allMonData);
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getLastMonSnapshotEnrichedWithCost(serviceUnits, allMonData);
         if (completeCostSnapshot == null) {
             return "{nothing}";
         }

@@ -19,7 +19,7 @@
 
     <jaxrs:server id="customerService" address="/">
         <jaxrs:serviceBeans>
-            <ref bean="elasticityAnalysisService"/>
+            <ref bean="costEvalService"/>
             <bean id="swaggerResourceJSON" class="com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON"/>
         </jaxrs:serviceBeans>
         <jaxrs:features>

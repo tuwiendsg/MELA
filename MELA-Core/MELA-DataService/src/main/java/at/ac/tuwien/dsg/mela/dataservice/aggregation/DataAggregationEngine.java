@@ -232,7 +232,7 @@ public class DataAggregationEngine {
                             Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>> vmDataToAggregate = dataToAggregate.get(MonitoredElement.MonitoredElementLevel.VM);
 
                             // for each child apply aggregation rule
-                            if (vmDataToAggregate != null || vmDataToAggregate.containsKey(child)) {
+                            if (vmDataToAggregate != null && vmDataToAggregate.containsKey(child)) {
                                 List<MonitoredElementMonitoringSnapshot> childData = vmDataToAggregate.get(child);
 
                                 // for each metric extract list of values to be aggregated
