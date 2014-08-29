@@ -71,6 +71,7 @@ public class DataCollectionService {
     private XmlConverter xmlConverter;
 
     static final Logger log = LoggerFactory.getLogger(DataCollectionService.class);
+    static final Logger performanceLog = LoggerFactory.getLogger("PerformanceLogger");
 
 //    @Value("#{${dataaccess.automaticstructuredetection} ? @autoUnguidedStructureDetectionDataAccess : @defaultDataAccess}")
 //    private AbstractDataAccess dataAccess;
@@ -118,6 +119,10 @@ public class DataCollectionService {
 
     {
         historicalMonitoringDatas = new ConcurrentHashMap<String, List<ServiceMonitoringSnapshot>>();
+    }
+
+    {
+        performanceLog.info("VMs DataAggregation TimestampPersistence AggregatedDataPersistence Complete");
     }
     // used if someone wants freshest data
     // private ServiceMonitoringSnapshot latestMonitoringData;
@@ -606,8 +611,11 @@ public class DataCollectionService {
                             Date beforeAggregation = new Date();
                             ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(serviceID, dataToAggregate);
                             Date afterAggregation = new Date();
+                            
+                            String perfReport = ""+ latestMonitoringData.getMonitoredData(MonitoredElement.MonitoredElementLevel.VM).keySet().size();
 
                             log.debug("Data aggregation time time in ms:  " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime());
+                            perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
 
                             if (actionsInExecution.containsKey(serviceID)) {
                                 latestMonitoringData.setExecutingActions(actionsInExecution.get(serviceID));
@@ -625,7 +633,7 @@ public class DataCollectionService {
                             Date afterTimestamp = new Date();
 
                             log.debug("Timestamp persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
-
+                            perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
                             //add same timestamp on all mon data
                             //this is something as a short-hand solution
                             {
@@ -640,7 +648,7 @@ public class DataCollectionService {
                             persistenceSQLAccess.writeMonitoringData(timestamp, latestMonitoringData, serviceConfiguration.getId());
                             Date afterMonData = new Date();
                             log.debug("Aggregated monitoring data persistence time in ms:  " + new Date(afterMonData.getTime() - beforeMonData.getTime()).getTime());
-
+                            perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
 //                            //temporarily due to performance reasons, raw data is not stored anymore (takes too long to store raw data)
 //                            Date beforeRawData = new Date();
 //                            // write monitoring data directly collected
@@ -661,7 +669,9 @@ public class DataCollectionService {
                             log.debug("Complete data monitoring/aggregating/persisting cycle time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
                             // elasticitySpaceFunction.trainElasticitySpace(latestMonitoringData);
 //                                }
-
+                            perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
+                            performanceLog.info(perfReport);
+//                            
                         } else {
                             // stop the monitoring if the data replay is done
                             // this.cancel();
