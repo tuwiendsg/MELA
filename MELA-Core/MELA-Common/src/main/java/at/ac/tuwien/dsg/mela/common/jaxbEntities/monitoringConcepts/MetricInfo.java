@@ -31,11 +31,10 @@ public class MetricInfo {
 
     @XmlAttribute(name = "Name", required = true)
     private String name;
-    
-    
+
     /**
-     * float, double, int, long, or if left empty is is "text"
-     * Type means primitive type
+     * float, double, int, long, or if left empty is is "text" Type means
+     * primitive type
      */
     @XmlAttribute(name = "Value", required = true)
     private String value;
@@ -43,6 +42,12 @@ public class MetricInfo {
     private String type;
     @XmlAttribute(name = "Units")
     private String units;
+
+    @XmlAttribute(name = "MonitoredElementLevel")
+    private String monitoredElementLevel;
+
+    @XmlAttribute(name = "MonitoredElementID")
+    private String monitoredElementID;
 
     private Object convertedValue;
 
@@ -52,6 +57,22 @@ public class MetricInfo {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getMonitoredElementLevel() {
+        return monitoredElementLevel;
+    }
+
+    public void setMonitoredElementLevel(String monitoredElementLevel) {
+        this.monitoredElementLevel = monitoredElementLevel;
+    }
+
+    public String getMonitoredElementID() {
+        return monitoredElementID;
+    }
+
+    public void setMonitoredElementID(String monitoredElementID) {
+        this.monitoredElementID = monitoredElementID;
     }
 
     /**
@@ -137,4 +158,48 @@ public class MetricInfo {
                 + ", units='" + units + '\''
                 + "}";
     }
+
+    public MetricInfo withName(final String name) {
+        this.name = name;
+        return this;
+    }
+
+    public MetricInfo withValue(final String value) {
+        this.value = value;
+        return this;
+    }
+
+    public MetricInfo withType(final String type) {
+        this.type = type;
+        return this;
+    }
+
+    public MetricInfo withUnits(final String units) {
+        this.units = units;
+        return this;
+    }
+
+    public MetricInfo withConvertedValue(final Object convertedValue) {
+        this.convertedValue = convertedValue;
+        return this;
+    }
+
+    public MetricInfo withMonitoredElementLevel(final String monitoredElementLevel) {
+        this.monitoredElementLevel = monitoredElementLevel;
+        return this;
+    }
+
+    public MetricInfo withMonitoredElementID(final String monitoredElementID) {
+        this.monitoredElementID = monitoredElementID;
+        return this;
+    }
+
+    public boolean hasMonitoredElementID() {
+        return monitoredElementID != null && monitoredElementID.length() > 0;
+    }
+
+    public boolean hasMonitoredElementLevel() {
+        return monitoredElementLevel != null && monitoredElementLevel.length() > 0;
+    }
+
 }

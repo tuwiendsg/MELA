@@ -43,7 +43,6 @@ import org.springframework.stereotype.Service;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
-
 @Service("defaultDataAccess")
 public class DataAccessWithManualStructureManagement extends AbstractDataAccess {
 
@@ -148,8 +147,51 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
                     Metric metric = new Metric();
                     metric.setName(metricInfo.getName());
                     metric.setMeasurementUnit(metricInfo.getUnits());
-                    MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
-                    monitoredMetricValues.put(metric, metricValue);
+
+                    //if metric states it is for a specific Level and Element, put it there
+                    if (metricInfo.hasMonitoredElementLevel()) {
+                        metric.setMonitoredElementLevel(metricInfo.getMonitoredElementLevel());
+                        if (metricInfo.hasMonitoredElementID()) {
+                            metric.setMonitoredElementID(metricInfo.getMonitoredElementID());
+
+                            MonitoredElementLevel level = null;
+                            switch (metric.getMonitoredElementLevel()) {
+                                case "VM":
+                                    level = MonitoredElementLevel.VM;
+                                    break;
+
+                                case "SERVICE_UNIT":
+                                    level = MonitoredElementLevel.SERVICE_UNIT;
+                                    break;
+
+                                case "SERVICE_TOPOLOGY":
+                                    level = MonitoredElementLevel.SERVICE_TOPOLOGY;
+                                    break;
+
+                                case "SERVICE":
+                                    level = MonitoredElementLevel.SERVICE;
+                                    break;
+
+                            }
+                            MonitoredElement element = new MonitoredElement(metric.getMonitoredElementID()).withLevel(level);
+                            if (elements.containsKey(element)) {
+                                MonitoredElement structureElement = elements.get(element);
+
+                                HashMap<Metric, MetricValue> elementValues = new LinkedHashMap<Metric, MetricValue>();
+                                MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                                elementValues.put(metric, metricValue);
+
+                                MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureElement, elementValues);
+                                // if data exists, it updates it, otherwise creates entry
+                                serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
+                            }
+
+                        }
+                    } else {
+                        //else put it in the generic VM metrics
+                        MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                        monitoredMetricValues.put(metric, metricValue);
+                    }
                 }
                 MonitoredElement monitoredElement = elementData.getMonitoredElement();
 
@@ -157,7 +199,7 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
                     // get the monitored element from the supplied service
                     // structure, where is connected with service units
                     MonitoredElement structureElement = elements.get(monitoredElement);
-                    
+
 //                    //set monitoring source on the metric
 //                    for (Metric metric : monitoredMetricValues.keySet()) {
 //                        metric.setMonitoredElement(structureElement);

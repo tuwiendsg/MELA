@@ -34,19 +34,17 @@ import java.util.*;
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  */
- 
 @Service("autoUnguidedStructureDetectionDataAccess")
 public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAccess {
 
     static final Logger log = LoggerFactory.getLogger(DataAccessWithUnguidedAutoStructureDetection.class);
 
     public DataAccessWithUnguidedAutoStructureDetection() {
- 
+
     }
 
     /**
-     * @param m the root element of the Service Structure
-     *          hierarchy
+     * @param m the root element of the Service Structure hierarchy
      * @return ServiceMonitoringSnapshot containing the monitored data organized
      * both in tree and by level Searches in the Ganglia HOSTS monitoring for
      * MonitoredElement ID, and if it finds such ID searches it in the supplied
@@ -58,9 +56,9 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
     public synchronized ServiceMonitoringSnapshot getStructuredMonitoredData(MonitoredElement m) {
 
         if (m == null) {
- 
+
             log.warn("No supplied service configuration");
- 
+
             return new ServiceMonitoringSnapshot();
         }
 
@@ -103,7 +101,6 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
 //            if(processedElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
 //                vms.put(processedElement, processedElement);
 //            }
- 
             for (MonitoredElement child : processedElement.getContainedElements()) // add empty monitoring data
             // for each serviceStructure element, to serve as a place where
             // in the future composite metrics can be added
@@ -112,7 +109,7 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
                 element.addChild(monitoredElementMonitoringSnapshot);
                 serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
                 bfsTraversalQueue.add(monitoredElementMonitoringSnapshot);
- 
+
             }
 
         }
@@ -133,8 +130,50 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
                     Metric metric = new Metric();
                     metric.setName(metricInfo.getName());
                     metric.setMeasurementUnit(metricInfo.getUnits());
-                    MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
-                    monitoredMetricValues.put(metric, metricValue);
+                    //if metric states it is for a specific Level and Element, put it there
+                    if (metricInfo.hasMonitoredElementLevel()) {
+                        metric.setMonitoredElementLevel(metricInfo.getMonitoredElementLevel());
+                        if (metricInfo.hasMonitoredElementID()) {
+                            metric.setMonitoredElementID(metricInfo.getMonitoredElementID());
+
+                            MonitoredElementLevel level = null;
+                            switch (metric.getMonitoredElementLevel()) {
+                                case "VM":
+                                    level = MonitoredElementLevel.VM;
+                                    break;
+
+                                case "SERVICE_UNIT":
+                                    level = MonitoredElementLevel.SERVICE_UNIT;
+                                    break;
+
+                                case "SERVICE_TOPOLOGY":
+                                    level = MonitoredElementLevel.SERVICE_TOPOLOGY;
+                                    break;
+
+                                case "SERVICE":
+                                    level = MonitoredElementLevel.SERVICE;
+                                    break;
+
+                            }
+                            MonitoredElement element = new MonitoredElement(metric.getMonitoredElementID()).withLevel(level);
+                            if (elements.containsKey(element)) {
+                                MonitoredElement structureElement = elements.get(element);
+
+                                HashMap<Metric, MetricValue> elementValues = new LinkedHashMap<Metric, MetricValue>();
+                                MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                                elementValues.put(metric, metricValue);
+
+                                MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureElement, elementValues);
+                                // if data exists, it updates it, otherwise creates entry
+                                serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
+                            }
+
+                        }
+                    } else {
+                        //else put it in the generic VM metrics
+                        MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                        monitoredMetricValues.put(metric, metricValue);
+                    }
                 }
                 MonitoredElement monitoredElement = elementData.getMonitoredElement();
 

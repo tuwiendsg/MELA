@@ -51,6 +51,8 @@ import org.apache.log4j.Logger;
 public class GangliaDataSource extends AbstractPollingDataSource {
 
     public static final String DEFAULT_HOST = "localhost";
+    public static final String SERVICE_UNIT_ID_MARKER = "MonitoredElementID";
+    public static final String SERVICE_UNIT_LEVEL_MARKER = "MonitoredElementLEVEL";
 
     public static final int DEFAULT_PORT = 8649;
 
@@ -135,6 +137,19 @@ public class GangliaDataSource extends AbstractPollingDataSource {
                         metricInfo.setType(gangliaMetricInfo.type);
                         metricInfo.setUnits(gangliaMetricInfo.units);
                         metricInfo.setValue(gangliaMetricInfo.value);
+
+                        //process ganglia extra data, and if we find SERVICE_UNIT_ID, use it
+                        for (GangliaExtraDataInfo extraDataInfo : gangliaMetricInfo.gangliaExtraDataInfoCollection) {
+                            for (GangliaExtraElementInfo elementInfo : extraDataInfo.getGangliaExtraElementInfo()) {
+                                if (elementInfo.getName().toLowerCase().equals(SERVICE_UNIT_ID_MARKER.toLowerCase())) {
+                                    metricInfo.setMonitoredElementID(elementInfo.getValue());
+                                }
+                                if (elementInfo.getName().toLowerCase().equals(SERVICE_UNIT_LEVEL_MARKER.toLowerCase())) {
+                                    metricInfo.setMonitoredElementLevel(elementInfo.getValue());
+                                }
+                            }
+                        }
+
                         elementData.addMetric(metricInfo);
                     }
 

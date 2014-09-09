@@ -36,10 +36,14 @@ public class Metric implements Serializable {
     private String measurementUnit;
     @XmlAttribute(name = "type", required = true)
     private MetricType type = MetricType.RESOURCE;
+    @XmlAttribute(name = "MonitoredElementLevel")
+    private String monitoredElementLevel;
+
+    @XmlAttribute(name = "MonitoredElementID")
+    private String monitoredElementID;
 
 //    @XmlElement(name = "MonitoredElement", required = false)
 //    private MonitoredElement monitoredElement;
-
     public Metric(String name, String measurementUnit) {
         this.name = name;
         this.measurementUnit = measurementUnit;
@@ -49,6 +53,32 @@ public class Metric implements Serializable {
         this.name = name;
         this.measurementUnit = measurementUnit;
         this.type = type;
+    }
+
+    public Metric(String name, String measurementUnit, String monitoredElementLevel, String monitoredElementID, MetricType type) {
+        this.name = name;
+        this.measurementUnit = measurementUnit;
+        this.monitoredElementLevel = monitoredElementLevel;
+        this.monitoredElementID = monitoredElementID;
+        this.type = type;
+    }
+
+    public Metric withMonitoredElementLevel(final String monitoredElementLevel) {
+        this.monitoredElementLevel = monitoredElementLevel;
+        return this;
+    }
+
+    public Metric withMonitoredElementID(final String monitoredElementID) {
+        this.monitoredElementID = monitoredElementID;
+        return this;
+    }
+
+    public boolean hasMonitoredElementID() {
+        return monitoredElementID != null && monitoredElementID.length() > 0;
+    }
+
+    public boolean hasMonitoredElementLevel() {
+        return monitoredElementLevel != null && monitoredElementLevel.length() > 0;
     }
 
     public Metric(String name) {
@@ -98,7 +128,6 @@ public class Metric implements Serializable {
 //    }
 //    
 //    
-
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -123,7 +152,7 @@ public class Metric implements Serializable {
     }
 
     public Metric clone() {
-        return new Metric(name, measurementUnit);
+        return new Metric(name, measurementUnit, monitoredElementLevel, monitoredElementID, type);
     }
     public static final String PERCENTAGE = "%";
     public static final String EURO = "euro";
@@ -152,4 +181,36 @@ public class Metric implements Serializable {
         @XmlEnumValue("ELASTICITY")
         ELASTICITY
     }
+
+    public Metric withName(final String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Metric withMeasurementUnit(final String measurementUnit) {
+        this.measurementUnit = measurementUnit;
+        return this;
+    }
+
+    public Metric withType(final MetricType type) {
+        this.type = type;
+        return this;
+    }
+
+    public String getMonitoredElementLevel() {
+        return monitoredElementLevel;
+    }
+
+    public void setMonitoredElementLevel(String monitoredElementLevel) {
+        this.monitoredElementLevel = monitoredElementLevel;
+    }
+
+    public String getMonitoredElementID() {
+        return monitoredElementID;
+    }
+
+    public void setMonitoredElementID(String monitoredElementID) {
+        this.monitoredElementID = monitoredElementID;
+    }
+
 }
