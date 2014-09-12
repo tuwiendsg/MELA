@@ -255,6 +255,12 @@
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
+                        <configuration>
+                            <excludeResources>true</excludeResources>
+                            <excludes> 
+                                <exclude>/at/ac/tuwien/dsg/mela/dataservice/spring/*.*</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
