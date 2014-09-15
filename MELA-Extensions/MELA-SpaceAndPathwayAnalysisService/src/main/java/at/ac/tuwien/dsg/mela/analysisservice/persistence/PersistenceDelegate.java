@@ -58,7 +58,7 @@ public class PersistenceDelegate {
         }
     }
 
-    public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID) {
+    public ElasticitySpace updateAndGetElasticitySpace(String monitoringSequenceID) {
 
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID);
 
@@ -107,7 +107,7 @@ public class PersistenceDelegate {
             Integer lastTimestampID = (monitoringSnapshot == null) ? Integer.MAX_VALUE : monitoringSnapshot.getTimestampID();
 
             boolean spaceUpdated = false;
-            
+
             //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
             do {
                 //gets data after the supplied timestamp
@@ -139,12 +139,17 @@ public class PersistenceDelegate {
             } while (!dataFromTimestamp.isEmpty());
 
             //persist cached space
-            if(spaceUpdated){
+            if (spaceUpdated) {
                 this.writeElasticitySpace(space, monitoringSequenceID);
             }
         }
 
         return space;
+    }
+
+    public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID) {
+
+        return persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID);
     }
 
     public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID, final int startTimestampID, final int endTimestampID) {
