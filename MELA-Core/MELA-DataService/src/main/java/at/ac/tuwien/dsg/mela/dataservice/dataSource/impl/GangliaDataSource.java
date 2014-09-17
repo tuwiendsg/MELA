@@ -43,6 +43,8 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import java.io.PrintWriter;
+import java.net.Socket;
 import org.apache.log4j.Logger;
 
 /**
@@ -62,21 +64,20 @@ public class GangliaDataSource extends AbstractPollingDataSource {
 
     public MonitoringData getMonitoringData() throws DataAccessException {
 
-        // todo: configure dinamically port and IP
-        // todo DO NOT RELY ON TELNET being present on the machine, instead use a socket connection
-        String cmd = "telnet " + hostname + " " + port;
         String content = "";
 
         try {
-            Process p = Runtime.getRuntime().exec(cmd);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            Socket socket = new Socket(hostname, port);
+
+//            Process p = Runtime.getRuntime().exec(cmd);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String line = null;
 
             while ((line = reader.readLine()) != null) {
 
                 //if ganglia does not respond
                 if (line.contains("Unable to connect")) {
-                    Logger.getLogger(this.getClass()).log(Level.WARN, "Unable to execute " + cmd);
+                    Logger.getLogger(this.getClass()).log(Level.WARN, "Unable to connect to " + socket.toString());
                     return null;
                 }
                 if (line.contains("<") || line.endsWith("]>")) {
@@ -84,14 +85,13 @@ public class GangliaDataSource extends AbstractPollingDataSource {
                 }
             }
 
-            p.getInputStream().close();
-            p.getErrorStream().close();
-            p.getOutputStream().close();
-            p.destroy();
+//            socket.getInputStream().close();
+//            socket.getOutputStream().close();
+            socket.close();
 
             //if ganglia does not respond
             if (content.length() == 0) {
-                Logger.getLogger(this.getClass()).log(Level.WARN, "" + "Unable to execute " + cmd);
+                Logger.getLogger(this.getClass()).log(Level.WARN, "" + "Unable to connect to " + socket.toString());
                 return new MonitoringData();
             }
         } catch (Exception ex) {
