@@ -414,6 +414,11 @@ public class CostEvalEngine {
 
                 Map<MonitoredElement, MonitoredElementMonitoringSnapshot> vmsData = monitoringSnapshot.getMonitoredData(level);
 
+                if (vmsData == null) {
+                    log.error("No monitoring data for service" + monitoringSnapshot.getMonitoredService() + " at level " + level.toString() + " timestamp " + monitoringSnapshot.getTimestampID());
+                    continue;
+                }
+
                 for (MonitoredElement monitoredElement : vmsData.keySet()) {
 
                     for (UsedCloudOfferedService service : monitoredElement.getCloudOfferedServices()) {

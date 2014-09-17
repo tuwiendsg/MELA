@@ -152,6 +152,7 @@ public class ElasticityAnalysisManager {
                     @Override
                     public void run() {
                         persistenceDelegate.updateAndGetElasticitySpace(serviceConfiguration.getId());
+                        Runtime.getRuntime().gc();
                     }
 
                 };
