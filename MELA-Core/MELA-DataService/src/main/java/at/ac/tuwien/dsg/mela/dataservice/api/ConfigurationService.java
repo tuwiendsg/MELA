@@ -75,9 +75,10 @@ public class ConfigurationService {
     @PUT
     @Path("/{serviceID}/metricscompositionrules")
     @Consumes("application/xml")
-    public void putCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration) {
+    public void putCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration, @PathParam("serviceID") String serviceID) {
         if (compositionRulesConfiguration != null) {
-            collectionService.setCompositionRulesConfiguration(compositionRulesConfiguration.getTargetServiceID(), compositionRulesConfiguration);
+            compositionRulesConfiguration.setTargetServiceID(serviceID);
+            collectionService.setCompositionRulesConfiguration(serviceID, compositionRulesConfiguration);
         } else {
             log.warn("supplied compositionRulesConfiguration is null");
         }
@@ -130,9 +131,10 @@ public class ConfigurationService {
     @PUT
     @Path("/{serviceID}/requirements")
     @Consumes("application/xml")
-    public void putServiceRequirements(Requirements requirements) {
+    public void putServiceRequirements(Requirements requirements, @PathParam("serviceID") String serviceID) {
         if (requirements != null) {
-            collectionService.addRequirements(requirements.getTargetServiceID(), requirements);
+            requirements.setTargetServiceID(serviceID);
+            collectionService.addRequirements(serviceID, requirements);
         } else {
             log.warn("supplied service requirements are null");
         }

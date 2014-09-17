@@ -41,14 +41,13 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
 import javax.xml.bind.JAXBContext;
-import java.io.InputStream;
 
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import org.slf4j.LoggerFactory;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -58,6 +57,8 @@ import java.util.List;
 @Path("/")
 @Api(value = "/", description = "The ElasticityAnalysisService is the entry point for all elasticity related monitoring data")
 public class ElasticityAnalysisService {
+
+    static final org.slf4j.Logger log = LoggerFactory.getLogger(ElasticityAnalysisService.class);
 
     @Autowired
     private ElasticityAnalysisManager systemControl;
@@ -133,21 +134,6 @@ public class ElasticityAnalysisService {
     }
 
     /**
-     * @param compositionRulesConfiguration the metric composition rules, both
-     * the HISTORICAL and MULTI_LEVEL rules
-     */
-    @PUT
-    @Path("/{serviceID}/metricscompositionrules")
-    @Consumes("application/xml")
-    public void putCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration) {
-        if (compositionRulesConfiguration != null) {
-            systemControl.setCompositionRulesConfiguration(compositionRulesConfiguration);
-        } else {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "supplied compositionRulesConfiguration is null");
-        }
-    }
-
-    /**
      * @param element the service topology to be monitored
      */
     @PUT
@@ -157,7 +143,7 @@ public class ElasticityAnalysisService {
         if (element != null) {
             systemControl.setServiceConfiguration(element);
         } else {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "supplied service description is null");
+            log.warn("supplied service description is null");
         }
     }
 
@@ -173,7 +159,19 @@ public class ElasticityAnalysisService {
         if (element != null) {
             systemControl.updateServiceConfiguration(element);
         } else {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "supplied service description is null");
+            log.warn("supplied service description is null");
+        }
+    }
+
+    @PUT
+    @Path("/{serviceID}/metricscompositionrules")
+    @Consumes("application/xml")
+    public void putCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration, @PathParam("serviceID") String serviceID) {
+        if (compositionRulesConfiguration != null) {
+            compositionRulesConfiguration.setTargetServiceID(serviceID);
+            systemControl.setCompositionRulesConfiguration(compositionRulesConfiguration);
+        } else {
+            log.warn("supplied compositionRulesConfiguration is null");
         }
     }
 
@@ -182,13 +180,14 @@ public class ElasticityAnalysisService {
      * or obtained from metric composition
      */
     @PUT
-    @Path("/{serviceID}/servicerequirements")
+    @Path("/{serviceID}/requirements")
     @Consumes("application/xml")
-    public void putServiceRequirements(Requirements requirements) {
+    public void putServiceRequirements(Requirements requirements, @PathParam("serviceID") String serviceID) {
         if (requirements != null) {
+            requirements.setTargetServiceID(serviceID);
             systemControl.setRequirements(requirements);
         } else {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "supplied service requirements are null");
+            log.warn("supplied service requirements are null");
         }
     }
 
@@ -214,7 +213,7 @@ public class ElasticityAnalysisService {
 
             return systemControl.getAvailableMetricsForMonitoredElement(serviceID, monitoredElement);
         } catch (Exception ex) {
-            Logger.getLogger(ElasticityAnalysisService.class.getName()).log(Level.ERROR, null, ex);
+            log.error(ex.getMessage(), ex);
             return new ArrayList<Metric>();
         }
 
@@ -329,7 +328,7 @@ public class ElasticityAnalysisService {
     public void removeExecutingAction(@PathParam("serviceID") String serviceID, Action action) {
         systemControl.removeExecutingAction(serviceID, action.getTargetEntityID(), action.getAction());
     }
-    
+
     @GET
     @Path("/{serviceID}/metricsGreaterThanZero")
     public String testIfAllVMsReportMEtricsGreaterThanZero(@PathParam("serviceID") String serviceID) {
