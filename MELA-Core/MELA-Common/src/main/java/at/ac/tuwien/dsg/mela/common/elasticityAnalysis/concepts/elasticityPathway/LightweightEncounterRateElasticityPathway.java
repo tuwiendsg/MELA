@@ -179,4 +179,26 @@ public class LightweightEncounterRateElasticityPathway implements Serializable {
             classifiedSituation.put(metric, value.clone());
         }
     }
+
+    public LightweightEncounterRateElasticityPathway withCellsSize(final int cellsSize) {
+        this.cellsSize = cellsSize;
+        return this;
+    }
+
+    public LightweightEncounterRateElasticityPathway withUpperNormalizationValue(final int upperNormalizationValue) {
+        this.upperNormalizationValue = upperNormalizationValue;
+        return this;
+    }
+
+    public LightweightEncounterRateElasticityPathway withSizeOfDataToClassify(final int sizeOfDataToClassify) {
+        this.sizeOfDataToClassify = sizeOfDataToClassify;
+        return this;
+    }
+
+    public LightweightEncounterRateElasticityPathway withSom(final SOM2 som) {
+        this.som = som;
+        return this;
+    }
+    
+    
 }

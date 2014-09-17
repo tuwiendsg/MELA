@@ -258,4 +258,31 @@ public class Neuron implements Serializable { //implements Iterable<Neuron> {
         }
         return true;
     }
+
+    public Neuron withWeights(final List<Double> weights) {
+        this.weights = weights;
+        return this;
+    }
+
+    public Neuron withMappedWeights(final AtomicInteger mappedWeights) {
+        this.mappedWeights = mappedWeights;
+        return this;
+    }
+
+    public Neuron withUsageLevel(final NeuronUsageLevel usageLevel) {
+        this.usageLevel = usageLevel;
+        return this;
+    }
+
+    public Neuron withDf(final DecimalFormat df) {
+        this.df = df;
+        return this;
+    }
+
+    public Neuron withUsagePercentage(final Double usagePercentage) {
+        this.usagePercentage = usagePercentage;
+        return this;
+    }
+    
+    
 }

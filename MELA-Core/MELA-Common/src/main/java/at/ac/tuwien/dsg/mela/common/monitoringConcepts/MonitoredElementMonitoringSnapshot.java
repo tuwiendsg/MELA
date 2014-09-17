@@ -47,8 +47,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MonitoredElementSnapshot")
 public class MonitoredElementMonitoringSnapshot implements Serializable, Iterable<MonitoredElementMonitoringSnapshot> {
-    
-    
+
     public static final long serialVersionUID = 7251370466732547372l;
 
     @XmlElement(name = "MonitoredElement", required = false)
@@ -67,7 +66,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
 
     @XmlElement(name = "MonitoredElementSnapshot")
     private ArrayList<MonitoredElementMonitoringSnapshot> children;
-    
+
     private int hashCode;
 
     {
@@ -75,7 +74,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
         executingActions = new ArrayList<Action>();
         children = new ArrayList<MonitoredElementMonitoringSnapshot>();
     }
-    
+
     @Override
     public int hashCode() {
         return hashCode;
@@ -102,7 +101,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     public synchronized void putMetric(Metric metric, MetricValue metricValue) {
         monitoredData.put(metric, metricValue);
     }
-    
+
     public synchronized Collection<Metric> getMetrics() {
         return monitoredData.keySet();
     }
@@ -204,8 +203,6 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
         public MyIterator() {
         }
 
-        
-        
         public MyIterator(MonitoredElementMonitoringSnapshot root) {
             toProcess.add(root);
         }
@@ -227,4 +224,35 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
+
+    public MonitoredElementMonitoringSnapshot withMonitoredElement(final MonitoredElement monitoredElement) {
+        this.monitoredElement = monitoredElement;
+        return this;
+    }
+
+    public MonitoredElementMonitoringSnapshot withTimestamp(final String timestamp) {
+        this.timestamp = timestamp;
+        return this;
+    }
+
+    public MonitoredElementMonitoringSnapshot withMonitoredData(final HashMap<Metric, MetricValue> monitoredData) {
+        this.monitoredData = monitoredData;
+        return this;
+    }
+
+    public MonitoredElementMonitoringSnapshot withExecutingActions(final List<Action> executingActions) {
+        this.executingActions = executingActions;
+        return this;
+    }
+
+    public MonitoredElementMonitoringSnapshot withChildren(final ArrayList<MonitoredElementMonitoringSnapshot> children) {
+        this.children = children;
+        return this;
+    }
+
+    public MonitoredElementMonitoringSnapshot withHashCode(final int hashCode) {
+        this.hashCode = hashCode;
+        return this;
+    }
+
 }

@@ -25,8 +25,8 @@ import java.util.List;
 import javax.xml.bind.annotation.*;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
- * Used to marshall in XML Maps
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at * Used to
+ * marshall in XML Maps
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MonitoredEntry")
@@ -42,4 +42,10 @@ public class MonitoredEntries {
     void addEntry(MonitoredEntry entry) {
         entries.add(entry);
     }
+
+    public MonitoredEntries withEntries(final List<MonitoredEntry> entries) {
+        this.entries = entries;
+        return this;
+    }
+
 }

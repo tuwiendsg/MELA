@@ -13,6 +13,8 @@ import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
@@ -50,7 +52,7 @@ public class CostCompositionTest extends TestCase {
         element.addUsedCloudOfferedService(cfg);
 
         String rSYBL_BASE_IP = "localhost";
-        Integer rSYBL_BASE_PORT = 8080;
+        Integer rSYBL_BASE_PORT = 8081;
         String rSYBL_BASE_URL = "/MELA/REST_WS";
         DefaultHttpClient httpClient = new DefaultHttpClient();
         HttpHost endpoint = new HttpHost(rSYBL_BASE_IP, rSYBL_BASE_PORT);
@@ -72,7 +74,7 @@ public class CostCompositionTest extends TestCase {
             cloudServicesSpecification.addServiceUnit(unit);
 
         }
-        
+
         {
             ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.medium");
 
@@ -88,8 +90,8 @@ public class CostCompositionTest extends TestCase {
             cloudServicesSpecification.addServiceUnit(unit);
 
         }
-        
-         {
+
+        {
             ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.large");
 
             //VM COST
@@ -111,8 +113,8 @@ public class CostCompositionTest extends TestCase {
             {
                 CostFunction cost = new CostFunction();
                 CostElement costElement = new CostElement("dataTransferCost", new Metric("dataTransfer", "MB/s", Metric.MetricType.COST), CostElement.Type.USAGE);
-                costElement.addCostInterval(new MetricValue(1024), 0.01/1024);
-                costElement.addCostInterval(new MetricValue(10*1024*1024), 0.01/1024);
+                costElement.addCostInterval(new MetricValue(1024), 0.01 / 1024);
+                costElement.addCostInterval(new MetricValue(10 * 1024 * 1024), 0.01 / 1024);
                 cost.addCostElement(costElement);
                 unit.addCostFunction(cost);
             }
@@ -131,6 +133,11 @@ public class CostCompositionTest extends TestCase {
 
                 marshaller.marshal(cloudServicesSpecification, sw);
                 log.info(sw.toString());
+
+                BufferedWriter writer = new BufferedWriter(new FileWriter("./cloud_pricing_scheme.xml"));
+                marshaller.marshal(cloudServicesSpecification, writer);
+                writer.flush();
+                writer.close();
 
                 URI putDeploymentStructureURL = UriBuilder.fromPath(rSYBL_BASE_URL + "/cloudofferedservice/pricingscheme").build();
                 HttpPut putDeployment = new HttpPut(putDeploymentStructureURL);

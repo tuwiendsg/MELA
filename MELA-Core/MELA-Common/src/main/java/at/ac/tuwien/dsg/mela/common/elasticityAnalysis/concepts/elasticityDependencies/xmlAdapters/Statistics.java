@@ -33,4 +33,11 @@ public class Statistics {
     void addEntry(Statistic entry) {
         entries.add(entry);
     }
+
+    public Statistics withEntries(final List<Statistic> entries) {
+        this.entries = entries;
+        return this;
+    }
+    
+    
 }

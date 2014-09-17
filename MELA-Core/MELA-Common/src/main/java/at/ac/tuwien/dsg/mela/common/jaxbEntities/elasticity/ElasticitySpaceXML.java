@@ -36,10 +36,10 @@ public class ElasticitySpaceXML {
 
     @XmlElement(name = "MonitoredElement")
     private MonitoredElement element;
-    
+
     @XmlElement(name = "ElasticitySpaceDimension")
     private Collection<ElasticitySpaceDimensionXML> dimensions;
-    
+
     {
         dimensions = new ArrayList<ElasticitySpaceDimensionXML>();
     }
@@ -51,12 +51,11 @@ public class ElasticitySpaceXML {
     public void setDimensions(Collection<ElasticitySpaceDimensionXML> dimensions) {
         this.dimensions = dimensions;
     }
-    
-    
+
     public void addDimensions(Collection<ElasticitySpaceDimensionXML> dimensions) {
         this.dimensions.addAll(dimensions);
     }
-    
+
     public void addDimension(ElasticitySpaceDimensionXML dimension) {
         this.dimensions.add(dimension);
     }
@@ -68,6 +67,15 @@ public class ElasticitySpaceXML {
     public void setElement(MonitoredElement element) {
         this.element = element;
     }
-    
-    
+
+    public ElasticitySpaceXML withElement(final MonitoredElement element) {
+        this.element = element;
+        return this;
+    }
+
+    public ElasticitySpaceXML withDimensions(final Collection<ElasticitySpaceDimensionXML> dimensions) {
+        this.dimensions = dimensions;
+        return this;
+    }
+
 }

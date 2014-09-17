@@ -35,7 +35,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
 public class InMemoryEncounterRateElasticityPathway {
@@ -93,7 +93,6 @@ public class InMemoryEncounterRateElasticityPathway {
         //computes neuron usage statistics per entire map
         som.updateMapUsage();
 
-
         //classify all entries
         for (SignatureEntry signatureEntry : mapped) {
 
@@ -112,7 +111,6 @@ public class InMemoryEncounterRateElasticityPathway {
             Neuron neuron = som.classifySituation(new Neuron(values));
             signatureEntry.mappedNeuron = neuron;
         }
-
 
         //classify entries by encounterRate? Nooo? Yes? Who Knows? I mean, we need to be carefull not to lose monitoring information
         //we might need two things to do: 1 to say in 1 chart this metric point is usual, this not
@@ -140,7 +138,6 @@ public class InMemoryEncounterRateElasticityPathway {
 //                    break;
 //            }
 //        }
-
         //returning all, such that I can sort them after occurrence and say this pair of values has been encountered 70%
         return mapped;
 
@@ -197,7 +194,6 @@ public class InMemoryEncounterRateElasticityPathway {
         //computes neuron usage statistics per entire map
         som.updateMapUsage();
 
-
         //classify all entries
         for (SignatureEntry signatureEntry : mapped) {
 
@@ -232,7 +228,6 @@ public class InMemoryEncounterRateElasticityPathway {
             }
         });
 
-
         return neurons;
 
     }
@@ -257,5 +252,17 @@ public class InMemoryEncounterRateElasticityPathway {
         private void addEntry(Metric metric, MetricValue value) {
             classifiedSituation.put(metric, value.clone());
         }
+        
+
+    }
+
+    public InMemoryEncounterRateElasticityPathway withCellsSize(final int cellsSize) {
+        this.cellsSize = cellsSize;
+        return this;
+    }
+
+    public InMemoryEncounterRateElasticityPathway withUpperNormalizationValue(final int upperNormalizationValue) {
+        this.upperNormalizationValue = upperNormalizationValue;
+        return this;
     }
 }

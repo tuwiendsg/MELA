@@ -40,7 +40,7 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathwa
 import org.springframework.stereotype.Component;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  */
 @Component
 public class CsvConverter {
@@ -108,7 +108,6 @@ public class CsvConverter {
                 line += "\t" + value;
             }
 
-
             //for each metric write the encounter categories
             for (Double value : neuron.getWeights()) {
                 switch (neuron.getUsageLevel()) {
@@ -131,7 +130,6 @@ public class CsvConverter {
 
         bufferedWriter.flush();
         bufferedWriter.close();
-
 
     }
 
@@ -198,7 +196,6 @@ public class CsvConverter {
                 line += "\t" + signatureEntry.getClassifiedSituation().get(metric).getValueRepresentation();
             }
 
-
             //for each metric write the encounter categories
             for (Metric metric : signatureEntry.getClassifiedSituation().keySet()) {
                 switch (neuron.getUsageLevel()) {
@@ -222,15 +219,14 @@ public class CsvConverter {
         bufferedWriter.flush();
         bufferedWriter.close();
 
-
     }
 
     /**
      * Metric, Boundary UP, BOUNDARY LOW for all metrics, then if elastic or not
      * boolean, if elastic = 1, else -1 , elastic =
      *
-     * @param space           the elasticity space from which we extract the info for the
-     *                        service element
+     * @param space the elasticity space from which we extract the info for the
+     * service element
      * @param destinationFile the file in which we write the space
      */
     public void writeElasticitySpaceToCSV(MonitoredElement MonitoredElement, ElasticitySpace space, List<Metric> metricsToWrite, String destinationFile) throws IOException {
@@ -275,7 +271,6 @@ public class CsvConverter {
 
             bufferedWriter.write(line);
             bufferedWriter.newLine();
-
 
         }
 
@@ -332,7 +327,6 @@ public class CsvConverter {
 
                 bufferedWriter.write(line);
                 bufferedWriter.newLine();
-
 
             }
 

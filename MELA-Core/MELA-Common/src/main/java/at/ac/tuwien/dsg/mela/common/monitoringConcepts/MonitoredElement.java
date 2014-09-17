@@ -147,10 +147,11 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
     public Collection<Relationship> getRelationships() {
         return relationships;
     }
+
     public Collection<Relationship> getRelationships(Relationship.RelationshipType relationshipType) {
         Collection<Relationship> rels = new ArrayList<Relationship>();
-        for(Relationship r: relationships){
-            if(r.getType().equals(relationshipType)){
+        for (Relationship r : relationships) {
+            if (r.getType().equals(relationshipType)) {
                 rels.add(r);
             }
         }
@@ -287,7 +288,7 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
             elements.add(el.clone());
 //            }
         }
-        
+
         newMonitoredElement.cloudOfferedServices = cloudOfferedServices;
         newMonitoredElement.containedElements = elements;
         return newMonitoredElement;
@@ -304,4 +305,20 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
                 //                + "containedElements=" + containedElements
                 + '}';
     }
+
+    public MonitoredElement withContainedElements(final Collection<MonitoredElement> containedElements) {
+        this.containedElements = containedElements;
+        return this;
+    }
+
+    public MonitoredElement withRelationships(final Collection<Relationship> relationships) {
+        this.relationships = relationships;
+        return this;
+    }
+
+    public MonitoredElement withCloudOfferedServices(final List<UsedCloudOfferedService> cloudOfferedServices) {
+        this.cloudOfferedServices = cloudOfferedServices;
+        return this;
+    }
+
 }

@@ -564,4 +564,36 @@ public class CompositionOperation {
 
         return result;
     }
+
+    public CompositionOperation withOperationType(final CompositionOperationType operationType) {
+        this.operationType = operationType;
+        return this;
+    }
+
+    public CompositionOperation withValue(final String value) {
+        this.value = value;
+        return this;
+    }
+
+    public CompositionOperation withReferenceMetric(final Metric referenceMetric) {
+        this.referenceMetric = referenceMetric;
+        return this;
+    }
+
+    public CompositionOperation withMetricSourceMonitoredElementLevel(final MonitoredElement.MonitoredElementLevel metricSourceMonitoredElementLevel) {
+        this.metricSourceMonitoredElementLevel = metricSourceMonitoredElementLevel;
+        return this;
+    }
+
+    public CompositionOperation withMetricSourceMonitoredElementIDs(final ArrayList<String> metricSourceMonitoredElementIDs) {
+        this.metricSourceMonitoredElementIDs = metricSourceMonitoredElementIDs;
+        return this;
+    }
+
+    public CompositionOperation withSubOperations(final ArrayList<CompositionOperation> subOperations) {
+        this.subOperations = subOperations;
+        return this;
+    }
+    
+    
 }

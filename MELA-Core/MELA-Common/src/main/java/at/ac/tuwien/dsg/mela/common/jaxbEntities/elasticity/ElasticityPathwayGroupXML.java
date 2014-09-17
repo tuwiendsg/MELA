@@ -28,104 +28,112 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 
 /**
- * 
+ *
  * @Author Daniel Moldovan
  * @E-mail: d.moldovan@dsg.tuwien.ac.at
- * 
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "ElasticityPathwayGroup")
 public class ElasticityPathwayGroupXML {
 
-	@XmlElement(name = "EncounterRate")
-	private Double encounterRate;
+    @XmlElement(name = "EncounterRate")
+    private Double encounterRate;
 
-	@XmlElement(name = "Entry")
-	private Collection<ElasticityPathwayGroupEntryXML> entries;
+    @XmlElement(name = "Entry")
+    private Collection<ElasticityPathwayGroupEntryXML> entries;
 
-	{
-		entries = new ArrayList<ElasticityPathwayGroupEntryXML>();
-	}
+    {
+        entries = new ArrayList<ElasticityPathwayGroupEntryXML>();
+    }
 
-	public ElasticityPathwayGroupXML() {
-	}
+    public ElasticityPathwayGroupXML() {
+    }
 
-	public Double getEncounterRate() {
-		return encounterRate;
-	}
+    public Double getEncounterRate() {
+        return encounterRate;
+    }
 
-	public ElasticityPathwayGroupXML(Double encounterRate, Collection<ElasticityPathwayGroupEntryXML> entries) {
-		super();
-		this.encounterRate = encounterRate;
-		this.entries = entries;
-	}
+    public ElasticityPathwayGroupXML(Double encounterRate, Collection<ElasticityPathwayGroupEntryXML> entries) {
+        super();
+        this.encounterRate = encounterRate;
+        this.entries = entries;
+    }
 
-	public void setEncounterRate(Double encounterRate) {
-		this.encounterRate = encounterRate;
-	}
+    public void setEncounterRate(Double encounterRate) {
+        this.encounterRate = encounterRate;
+    }
 
-	public Collection<ElasticityPathwayGroupEntryXML> getEntries() {
-		return entries;
-	}
+    public Collection<ElasticityPathwayGroupEntryXML> getEntries() {
+        return entries;
+    }
 
-	public void setEntries(Collection<ElasticityPathwayGroupEntryXML> entries) {
-		this.entries = entries;
-	}
-	
-	public void addEntries(Collection<ElasticityPathwayGroupEntryXML> entries) {
-		this.entries.addAll(entries);
-	}
-	
-	public void addEntry(ElasticityPathwayGroupEntryXML entrie) {
-		this.entries.add(entrie);
-	}
-	
-	
-	public void removeEntries(Collection<ElasticityPathwayGroupEntryXML> entries) {
-		this.entries.removeAll(entries);
-	}
-	
-	public void removeEntry(ElasticityPathwayGroupEntryXML entry) {
-		this.entries.remove(entry);
-	}
+    public void setEntries(Collection<ElasticityPathwayGroupEntryXML> entries) {
+        this.entries = entries;
+    }
 
-	@XmlAccessorType(XmlAccessType.FIELD)
-	@XmlRootElement(name = "ElasticityPathwayGroupEntry")
-	public static class ElasticityPathwayGroupEntryXML {
-		@XmlElement(name = "Metric")
-		public Metric metric;
+    public void addEntries(Collection<ElasticityPathwayGroupEntryXML> entries) {
+        this.entries.addAll(entries);
+    }
 
-		@XmlElement(name = "MetricValue")
-		public MetricValue metricValue;
+    public void addEntry(ElasticityPathwayGroupEntryXML entrie) {
+        this.entries.add(entrie);
+    }
 
-		
-		
-		public ElasticityPathwayGroupEntryXML() {
-			super();
-		}
+    public void removeEntries(Collection<ElasticityPathwayGroupEntryXML> entries) {
+        this.entries.removeAll(entries);
+    }
 
-		public ElasticityPathwayGroupEntryXML(Metric metric, MetricValue metricValue) {
-			super();
-			this.metric = metric;
-			this.metricValue = metricValue;
-		}
+    public void removeEntry(ElasticityPathwayGroupEntryXML entry) {
+        this.entries.remove(entry);
+    }
 
-		public Metric getMetric() {
-			return metric;
-		}
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlRootElement(name = "ElasticityPathwayGroupEntry")
+    public static class ElasticityPathwayGroupEntryXML {
 
-		public void setMetric(Metric metric) {
-			this.metric = metric;
-		}
+        @XmlElement(name = "Metric")
+        public Metric metric;
 
-		public MetricValue getMetricValue() {
-			return metricValue;
-		}
+        @XmlElement(name = "MetricValue")
+        public MetricValue metricValue;
 
-		public void setMetricValue(MetricValue metricValue) {
-			this.metricValue = metricValue;
-		}
+        public ElasticityPathwayGroupEntryXML() {
+            super();
+        }
 
-	}
+        public ElasticityPathwayGroupEntryXML(Metric metric, MetricValue metricValue) {
+            super();
+            this.metric = metric;
+            this.metricValue = metricValue;
+        }
+
+        public Metric getMetric() {
+            return metric;
+        }
+
+        public void setMetric(Metric metric) {
+            this.metric = metric;
+        }
+
+        public MetricValue getMetricValue() {
+            return metricValue;
+        }
+
+        public void setMetricValue(MetricValue metricValue) {
+            this.metricValue = metricValue;
+        }
+
+    }
+
+    public ElasticityPathwayGroupXML withEncounterRate(final Double encounterRate) {
+        this.encounterRate = encounterRate;
+        return this;
+    }
+
+    public ElasticityPathwayGroupXML withEntries(final Collection<ElasticityPathwayGroupEntryXML> entries) {
+        this.entries = entries;
+        return this;
+    }
 
 }

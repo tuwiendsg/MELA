@@ -28,94 +28,105 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 
 /**
- * 
+ *
  * @Author Daniel Moldovan
  * @E-mail: d.moldovan@dsg.tuwien.ac.at
- * 
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "ElasticityPathway")
 public class ElasticityPathwayXML {
 
-	@XmlElement(name = "MonitoredElement")
-	private MonitoredElement element;
+    @XmlElement(name = "MonitoredElement")
+    private MonitoredElement element;
 
-	@XmlElement(name = "Metrics")
-	private Collection<Metric> metrics;
-	
-	@XmlElement(name = "EncounterGroup")
-	private Collection<ElasticityPathwayGroupXML> groups;
-	 
-	 
-	
-	{
-		metrics = new ArrayList<Metric>();
-		groups = new ArrayList<ElasticityPathwayGroupXML>();
-	}
+    @XmlElement(name = "Metrics")
+    private Collection<Metric> metrics;
 
-	public ElasticityPathwayXML() {
-	}
+    @XmlElement(name = "EncounterGroup")
+    private Collection<ElasticityPathwayGroupXML> groups;
 
-	public ElasticityPathwayXML(Collection<Metric> metrics) {
-		this.metrics = metrics;
-	}
+    {
+        metrics = new ArrayList<Metric>();
+        groups = new ArrayList<ElasticityPathwayGroupXML>();
+    }
 
-	public MonitoredElement getElement() {
-		return element;
-	}
+    public ElasticityPathwayXML() {
+    }
 
-	public void setElement(MonitoredElement element) {
-		this.element = element;
-	}
+    public ElasticityPathwayXML(Collection<Metric> metrics) {
+        this.metrics = metrics;
+    }
 
-	public Collection<Metric> getMetrics() {
-		return metrics;
-	}
+    public MonitoredElement getElement() {
+        return element;
+    }
 
-	public void setMetrics(Collection<Metric> metric) {
-		this.metrics = metric;
-	}
+    public void setElement(MonitoredElement element) {
+        this.element = element;
+    }
 
-	public void addMetrics(Collection<Metric> metric) {
-		this.metrics.addAll(metric);
-	}
+    public Collection<Metric> getMetrics() {
+        return metrics;
+    }
 
-	public void addMetric(Metric metric) {
-		this.metrics.add(metric);
-	}
+    public void setMetrics(Collection<Metric> metric) {
+        this.metrics = metric;
+    }
 
-	public void removeMetrics(Collection<Metric> metric) {
-		this.metrics.removeAll(metric);
-	}
+    public void addMetrics(Collection<Metric> metric) {
+        this.metrics.addAll(metric);
+    }
 
-	public void removeMetric(Metric metric) {
-		this.metrics.remove(metric);
-	}
+    public void addMetric(Metric metric) {
+        this.metrics.add(metric);
+    }
 
-	public Collection<ElasticityPathwayGroupXML> getGroups() {
-		return groups;
-	}
+    public void removeMetrics(Collection<Metric> metric) {
+        this.metrics.removeAll(metric);
+    }
 
-	public void setGroups(Collection<ElasticityPathwayGroupXML> groups) {
-		this.groups = groups;
-	}
-	
-	public void addGroups(Collection<ElasticityPathwayGroupXML> groups) {
-		this.groups.addAll(groups);
-	}
-	
-	public void addGroup(ElasticityPathwayGroupXML group) {
-		this.groups.add(group);
-	}
-	
-	public void removeGroups(Collection<ElasticityPathwayGroupXML> groups) {
-		this.groups.removeAll(groups);
-	}
-	
-	public void removeGroup(ElasticityPathwayGroupXML group) {
-		this.groups.remove(group);
-	}
-	
-	
+    public void removeMetric(Metric metric) {
+        this.metrics.remove(metric);
+    }
+
+    public Collection<ElasticityPathwayGroupXML> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Collection<ElasticityPathwayGroupXML> groups) {
+        this.groups = groups;
+    }
+
+    public void addGroups(Collection<ElasticityPathwayGroupXML> groups) {
+        this.groups.addAll(groups);
+    }
+
+    public void addGroup(ElasticityPathwayGroupXML group) {
+        this.groups.add(group);
+    }
+
+    public void removeGroups(Collection<ElasticityPathwayGroupXML> groups) {
+        this.groups.removeAll(groups);
+    }
+
+    public void removeGroup(ElasticityPathwayGroupXML group) {
+        this.groups.remove(group);
+    }
+
+    public ElasticityPathwayXML withElement(final MonitoredElement element) {
+        this.element = element;
+        return this;
+    }
+
+    public ElasticityPathwayXML withMetrics(final Collection<Metric> metrics) {
+        this.metrics = metrics;
+        return this;
+    }
+
+    public ElasticityPathwayXML withGroups(final Collection<ElasticityPathwayGroupXML> groups) {
+        this.groups = groups;
+        return this;
+    }
 
 }

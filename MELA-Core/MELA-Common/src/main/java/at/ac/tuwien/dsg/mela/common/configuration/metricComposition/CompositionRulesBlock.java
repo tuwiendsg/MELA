@@ -79,4 +79,11 @@ public class CompositionRulesBlock implements Serializable {
         }
         return true;
     }
+
+    public CompositionRulesBlock withCompositionRules(final ArrayList<CompositionRule> compositionRules) {
+        this.compositionRules = compositionRules;
+        return this;
+    }
+    
+    
 }

@@ -22,8 +22,8 @@ package at.ac.tuwien.dsg.mela.common.monitoringConcepts;
 import javax.xml.bind.annotation.*;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
- * Used to marshall in XML Maps
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at * Used to
+ * marshall in XML Maps
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MonitoredEntry")
@@ -57,4 +57,15 @@ public class MonitoredEntry {
     public void setValue(MetricValue value) {
         this.value = value;
     }
+
+    public MonitoredEntry withMetric(final Metric metric) {
+        this.metric = metric;
+        return this;
+    }
+
+    public MonitoredEntry withValue(final MetricValue value) {
+        this.value = value;
+        return this;
+    }
+
 }

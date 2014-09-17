@@ -81,8 +81,21 @@ public class ConfigurationXMLRepresentation implements Serializable {
 
     public ConfigurationXMLRepresentation() {
 
- 
     }
 
- 
+    public ConfigurationXMLRepresentation withServiceConfiguration(final MonitoredElement serviceConfiguration) {
+        this.serviceConfiguration = serviceConfiguration;
+        return this;
+    }
+
+    public ConfigurationXMLRepresentation withCompositionRulesConfiguration(final CompositionRulesConfiguration compositionRulesConfiguration) {
+        this.compositionRulesConfiguration = compositionRulesConfiguration;
+        return this;
+    }
+
+    public ConfigurationXMLRepresentation withRequirements(final Requirements requirements) {
+        this.requirements = requirements;
+        return this;
+    }
+
 }

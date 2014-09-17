@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -19,17 +21,14 @@ package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathw
 
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.SOMStrategy;
 
-
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
-
- **/
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ *
+ */
 public class SimpleSOMStrategy extends SOMStrategy {
 
-
     public SimpleSOMStrategy() {
-        super(1d,1d,2,0.7);
+        super(1d, 1d, 2, 0.7);
     }
 
     /**
@@ -38,33 +37,32 @@ public class SimpleSOMStrategy extends SOMStrategy {
      * @param neighboursCount
      * @return
      */
-    public Double getDistanceRestraintFactor(int distanceLevel, int neighboursCount){
+    public Double getDistanceRestraintFactor(int distanceLevel, int neighboursCount) {
 //        if(distanceLevel < 1){
 //            Logger.getLogger(this.getClass()).log(Level.ERROR,"Distance level < 1");
 //            System.exit(1);
 //        }
-        if(neighboursCount < 1){
+        if (neighboursCount < 1) {
             neighboursCount = 1;
         }
         //very simple implementation
 //        return (distanceLevel==1)? 1 : distanceRestraintFactor/distanceLevel;
-        return (distanceLevel==1)? 1 : distanceRestraintFactor/distanceLevel/neighboursCount;
+        return (distanceLevel == 1) ? 1 : distanceRestraintFactor / distanceLevel / neighboursCount;
     }
 
     /**
      *
-     * @param distanceLevel  > 0
+     * @param distanceLevel > 0
      * @return
      */
-    public Double geLearningRestraintFactor(int distanceLevel){
+    public Double geLearningRestraintFactor(int distanceLevel) {
 //        //very simple implementation
 //        if(distanceLevel < 1){
 //            Logger.getLogger(this.getClass()).log(Level.ERROR,"Distance level < 1");
 //            System.exit(1);
 //        }
 //        return (distanceLevel <= neighbourhoodSize)? 1d : 0d;
-        return  distanceRestraintFactor / distanceLevel;
+        return distanceRestraintFactor / distanceLevel;
     }
-
 
 }

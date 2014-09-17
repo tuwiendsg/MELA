@@ -67,4 +67,21 @@ public class CompositionRulesConfiguration implements Serializable{
     public void setHistoricDataAggregationRules(CompositionRulesBlock historicDataAggregationRules) {
         this.historicDataAggregationRules = historicDataAggregationRules;
     }
+
+    public CompositionRulesConfiguration withTargetServiceID(final String targetServiceID) {
+        this.targetServiceID = targetServiceID;
+        return this;
+    }
+
+    public CompositionRulesConfiguration withMetricCompositionRules(final CompositionRulesBlock metricCompositionRules) {
+        this.metricCompositionRules = metricCompositionRules;
+        return this;
+    }
+
+    public CompositionRulesConfiguration withHistoricDataAggregationRules(final CompositionRulesBlock historicDataAggregationRules) {
+        this.historicDataAggregationRules = historicDataAggregationRules;
+        return this;
+    }
+    
+    
 }

@@ -23,7 +23,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -58,7 +58,6 @@ public class Action implements Serializable {
     public void setAction(String action) {
         this.action = action;
     }
-    
 
     @Override
     public int hashCode() {
@@ -85,7 +84,15 @@ public class Action implements Serializable {
         }
         return true;
     }
-    
-    
-    
+
+    public Action withTargetEntityID(final String targetEntityID) {
+        this.targetEntityID = targetEntityID;
+        return this;
+    }
+
+    public Action withAction(final String action) {
+        this.action = action;
+        return this;
+    }
+
 }

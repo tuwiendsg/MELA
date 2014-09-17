@@ -22,7 +22,7 @@ package at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathw
 import java.io.Serializable;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
 public enum NeuronUsageLevel implements Serializable {
@@ -34,7 +34,7 @@ public enum NeuronUsageLevel implements Serializable {
 //    NEVER;
 
     DOMINANT,
-    NEUTRAL ,
+    NEUTRAL,
     RARE;
 
     private Double usagePercentage;
@@ -64,4 +64,5 @@ public enum NeuronUsageLevel implements Serializable {
     public void incrementUsage() {
         this.usageCount++;
     }
+
 }

@@ -150,4 +150,8 @@ public class ElasticityDependencyCoefficient implements Serializable {
         return this;
     }
 
+    
+    
+    
+
 }

@@ -98,4 +98,16 @@ public class MonitoredElementElasticityDependency {
         return true;
     }
 
+    public MonitoredElementElasticityDependency withMonitoredElement(final MonitoredElement monitoredElement) {
+        this.monitoredElement = monitoredElement;
+        return this;
+    }
+
+    public MonitoredElementElasticityDependency withContainedElements(final Collection<ElasticityDependencyElement> containedElements) {
+        this.containedElements = containedElements;
+        return this;
+    }
+    
+    
+
 }

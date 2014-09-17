@@ -602,5 +602,15 @@ public class PersistenceSQLAccess {
             return strings;
         }
     }
+ 
+    public PersistenceSQLAccess withDataSource(final DataSource dataSource) {
+        this.dataSource = dataSource;
+        return this;
+    }
+
+    public PersistenceSQLAccess withJdbcTemplate(final JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+        return this;
+    }
 
 }

@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Technische Universitaet Wien (TUW), 
- * Distributed Systems Group E184
+ * Copyright 2013 Technische Universitaet Wien (TUW), Distributed Systems Group
+ * E184
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -60,5 +60,14 @@ public class PropertyEntry {
         this.value = value;
     }
 
-    
+    public PropertyEntry withMetric(final Metric metric) {
+        this.metric = metric;
+        return this;
+    }
+
+    public PropertyEntry withValue(final MetricValue value) {
+        this.value = value;
+        return this;
+    }
+
 }

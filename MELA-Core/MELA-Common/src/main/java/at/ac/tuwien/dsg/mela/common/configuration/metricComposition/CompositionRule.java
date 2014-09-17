@@ -182,9 +182,31 @@ public class CompositionRule implements Serializable {
             }
         }
     }
+    
+    
 //    
 //    //used in historical data aggregation
 //     public MetricValue apply(List<MetricValue> values) {
 //         return this.operation.apply(values);
 //     }
+
+    public CompositionRule withTargetMonitoredElementLevel(final MonitoredElement.MonitoredElementLevel targetMonitoredElementLevel) {
+        this.targetMonitoredElementLevel = targetMonitoredElementLevel;
+        return this;
+    }
+
+    public CompositionRule withTargetMonitoredElementIDs(final ArrayList<String> targetMonitoredElementIDs) {
+        this.targetMonitoredElementIDs = targetMonitoredElementIDs;
+        return this;
+    }
+
+    public CompositionRule withResultingMetric(final Metric resultingMetric) {
+        this.resultingMetric = resultingMetric;
+        return this;
+    }
+
+    public CompositionRule withOperation(final CompositionOperation operation) {
+        this.operation = operation;
+        return this;
+    }
 }

@@ -211,4 +211,15 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
     public String toString() {
         return "" + value;
     }
+
+    public MetricValue withValue(final Object value) {
+        this.value = value;
+        return this;
+    }
+
+    public MetricValue withValueType(final ValueType valueType) {
+        this.valueType = valueType;
+        return this;
+    }
+
 }

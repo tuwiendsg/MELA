@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -27,13 +29,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
-
- **/
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ *
+ */
 public class SOM implements Iterable<Neuron>, Serializable {
+
     //    private Neuron root;
     //    private int initialSize;
     protected int maxNeighboursNo = 4;
@@ -41,13 +42,12 @@ public class SOM implements Iterable<Neuron>, Serializable {
     protected int weightsNo;
     protected int minWeightValue;
     protected int maxWeightValue;
-    protected transient Random random  = new Random();
+    protected transient Random random = new Random();
     protected SOMStrategy strategy;
     protected Neuron[][] neurons;
     protected Double toleranceRange;
     protected final AtomicInteger numberOfMappedSituations = new AtomicInteger(0);
     protected transient DecimalFormat decimalFormat = new DecimalFormat("#.###");
- 
 
     protected SOM() {
     }
@@ -64,12 +64,11 @@ public class SOM implements Iterable<Neuron>, Serializable {
         ArrayList<String> generatedWords = new ArrayList<String>();
         int sumPerCell = maxWeightValue / elementsNo;
 
-
         neurons = new Neuron[elementsNo][elementsNo];
 
         for (int i = 0; i < elementsNo; i++) {
             neurons[i] = new Neuron[elementsNo];
-            int sumPerCurrentCell = i*sumPerCell;
+            int sumPerCurrentCell = i * sumPerCell;
 
             for (int j = 0; j < elementsNo; j++) {
                 String generatedWord = "";
@@ -77,26 +76,26 @@ public class SOM implements Iterable<Neuron>, Serializable {
                 Neuron newNeuron = new Neuron();
                 ArrayList<Double> weights = new ArrayList<Double>();
                 do {
-                   //generate elementsNo elements that sum up to sumPerCurrentCell
+                    //generate elementsNo elements that sum up to sumPerCurrentCell
 
-                    ArrayList<Double> sumElements =  new ArrayList<Double>();
-                    int remaining  = sumPerCurrentCell;
+                    ArrayList<Double> sumElements = new ArrayList<Double>();
+                    int remaining = sumPerCurrentCell;
 
-                    for(int k = 0; k < weightsNo-1; k++){
-                        if(remaining>0){
+                    for (int k = 0; k < weightsNo - 1; k++) {
+                        if (remaining > 0) {
                             int sumElement = random.nextInt(remaining);
-                            sumElements.add((double)sumElement);
+                            sumElements.add((double) sumElement);
                             remaining -= sumElement;
-                        }else{
+                        } else {
                             sumElements.add(0d);
                         }
                     }
-                    sumElements.add((double)remaining);
+                    sumElements.add((double) remaining);
 
                     weights.clear();
                     for (int k = 0; k < weightsNo; k++) {
 
-                    weights.add(0d);
+                        weights.add(0d);
 //                    weights.add((double)i);
 //                        weights.add(sumElements.remove(random.nextInt(sumElements.size())));
 //                        weights.add((double) random.nextInt(maxWeightValue) + minWeightValue);
@@ -117,9 +116,7 @@ public class SOM implements Iterable<Neuron>, Serializable {
 //            middle.getWeights().add((double)maxWeightValue);
 //        }
 
-
     }
-
 
     public SOM(ArrayList<ArrayList<Double>> initialValues, SOMStrategy strategy) {
         this.elementsNo = new Double(Math.sqrt(initialValues.size())).intValue();
@@ -167,11 +164,9 @@ public class SOM implements Iterable<Neuron>, Serializable {
 //        }
 //        root.setWeights(weights);
 //    }
-
 //    public Neuron getRoot() {
 //        return root;
 //    }
-
     public ArrayList<Double> getWeightsMean() {
         ArrayList<Double> weightsMean = new ArrayList<Double>();
         int nodesCount = 0;
@@ -189,14 +184,12 @@ public class SOM implements Iterable<Neuron>, Serializable {
             }
         }
 
-
         for (int i = 0; i < weightsNo; i++) {
             weightsMean.set(i, weightsMean.get(i) / nodesCount);
         }
 
         return weightsMean;
     }
-
 
     public Double getWeightsMeanAsSingleValue() {
         ArrayList<Double> weightsMean = new ArrayList<Double>();
@@ -220,10 +213,8 @@ public class SOM implements Iterable<Neuron>, Serializable {
             value += weightsMean.get(i) / nodesCount;
         }
 
-
         return value;
     }
-
 
     public ArrayList<Double> getStandardVariance(final ArrayList<Double> weightsMean) {
         ArrayList<Double> weightsStandardVariance = new ArrayList<Double>();
@@ -251,7 +242,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
         return weightsStandardVariance;
     }
 
-
 //    //actually computes Average Absolute Deviation
 //    public Double getStandardVarianceAsSingleValue() {
 //        ArrayList<Double> weightsMean = getWeightsMean();
@@ -275,14 +265,11 @@ public class SOM implements Iterable<Neuron>, Serializable {
 //
 //        return weightsStandardDeviation;
 //    }
-
-
     //computes Standard standard deviation
     public Double getStandardVarianceAsSingleValue() {
         ArrayList<Double> weightsMean = getWeightsMean();
         Double weightsStandardVariance = 0d;
         int nodesCount = 0;
-
 
         for (int row = 0; row < elementsNo; row++) {
             for (int column = 0; column < elementsNo; column++) {
@@ -327,9 +314,9 @@ public class SOM implements Iterable<Neuron>, Serializable {
 //
 //        return rareSituations;
 //        }
-
     /**
-     * @return nodes mapping situations which have mapped situations deviation > 80% std deviation
+     * @return nodes mapping situations which have mapped situations deviation >
+     * 80% std deviation
      */
     public List<Neuron> getAlmostRareSituations() {
 
@@ -375,8 +362,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
         return rareSituations;
     }
 
-
-
     public List<Neuron> getRareSituations() {
 
         ArrayList<Neuron> rareSituations = new ArrayList<Neuron>();
@@ -406,7 +391,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
         variance /= encounteredSituationsPerNeuron.size();
 
         Integer stdDeviation = new Double(Math.sqrt(variance)).intValue();
-
 
         for (Neuron neuron : this) {
             int mappedSituations = neuron.getMappedWeights();
@@ -449,10 +433,8 @@ public class SOM implements Iterable<Neuron>, Serializable {
 
         Integer stdDeviation = variance.intValue();//new Double(Math.sqrt(variance)).intValue();
 
-        return new Integer[]{mean,stdDeviation};
+        return new Integer[]{mean, stdDeviation};
     }
-
-
 
     //in order to retrain the map, it clears the previous mapped values
     //or just to remove values used in training
@@ -461,9 +443,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
             neuron.setMappedWeights(0);
         }
     }
-
-
-
 
     public List<Neuron> getDominantSituations() {
 
@@ -492,7 +471,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
 
         Integer stdDeviation = new Double(Math.sqrt(variance)).intValue();
 
-
         for (Neuron neuron : this) {
             Integer distanceFromMean = neuron.getMappedWeights() - mean;
             if (distanceFromMean >= stdDeviation) {
@@ -502,7 +480,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
 
         return rareSituations;
     }
-
 
     /**
      *
@@ -530,14 +507,13 @@ public class SOM implements Iterable<Neuron>, Serializable {
             }
         }
 
- 
         updateNeuron(closestI, closestJ, newData, strategy);
         return neurons[closestI][closestJ];
     }
 
-
     /**
      * Does not classify new situations
+     *
      * @param newData
      * @return neuron on which the new data has been mapped to
      */
@@ -564,54 +540,52 @@ public class SOM implements Iterable<Neuron>, Serializable {
         return neurons[closestI][closestJ];
     }
 
-
     public void updateNeuron(int row, int column, Neuron neuron, SOMStrategy strategy) {
         final Neuron source = neurons[row][column];
         source.updateNeuron(neuron);
         updateNeuron(row, column, neuron, strategy, 1);
         Integer[] usageMeanAndStdDev = getUsageMeanAndStdDeviation();
 //        source.updateUsageLevel(usageMeanAndStdDev[0],usageMeanAndStdDev[1]);
-        final Integer averageUsageLevel = usageMeanAndStdDev [ 0 ];
-        final Integer standardDeviation = usageMeanAndStdDev [ 1 ];
+        final Integer averageUsageLevel = usageMeanAndStdDev[ 0];
+        final Integer standardDeviation = usageMeanAndStdDev[ 1];
 //        Thread t = new Thread(){
 //            @Override
 //            public void run() {
-                int mappedSituations = source.getMappedWeights();
+        int mappedSituations = source.getMappedWeights();
 
-                Integer partialDeviation = new Double(standardDeviation * toleranceRange).intValue();
+        Integer partialDeviation = new Double(standardDeviation * toleranceRange).intValue();
 
-                if (mappedSituations > 0) {
-                    Integer distanceFromMean = mappedSituations - averageUsageLevel;
+        if (mappedSituations > 0) {
+            Integer distanceFromMean = mappedSituations - averageUsageLevel;
 
-                    //if more usage than average
-                    if (distanceFromMean >= 0) {
-                        if (distanceFromMean > standardDeviation) {
-                            source.setUsageLevel(NeuronUsageLevel.RARE);
-                        } else if (distanceFromMean >= partialDeviation && distanceFromMean <= standardDeviation) {
-                            source.setUsageLevel(NeuronUsageLevel.RARE);
-                        } else{
-                            source.setUsageLevel(NeuronUsageLevel.NEUTRAL);
-                        }
-                    } else {
-                        //if less usage than average
-                        Integer distanceAbsValue = Math.abs(distanceFromMean);
-                        if (distanceAbsValue > standardDeviation) {
-                            source.setUsageLevel(NeuronUsageLevel.RARE);
-                        } else if (distanceAbsValue >= partialDeviation && Math.abs(distanceFromMean) <= standardDeviation) {
-                            source.setUsageLevel(NeuronUsageLevel.RARE);
-                        } else{
-                            source.setUsageLevel(NeuronUsageLevel.NEUTRAL);
-                        }
-                    }
-                } else {
+            //if more usage than average
+            if (distanceFromMean >= 0) {
+                if (distanceFromMean > standardDeviation) {
                     source.setUsageLevel(NeuronUsageLevel.RARE);
+                } else if (distanceFromMean >= partialDeviation && distanceFromMean <= standardDeviation) {
+                    source.setUsageLevel(NeuronUsageLevel.RARE);
+                } else {
+                    source.setUsageLevel(NeuronUsageLevel.NEUTRAL);
                 }
+            } else {
+                //if less usage than average
+                Integer distanceAbsValue = Math.abs(distanceFromMean);
+                if (distanceAbsValue > standardDeviation) {
+                    source.setUsageLevel(NeuronUsageLevel.RARE);
+                } else if (distanceAbsValue >= partialDeviation && Math.abs(distanceFromMean) <= standardDeviation) {
+                    source.setUsageLevel(NeuronUsageLevel.RARE);
+                } else {
+                    source.setUsageLevel(NeuronUsageLevel.NEUTRAL);
+                }
+            }
+        } else {
+            source.setUsageLevel(NeuronUsageLevel.RARE);
+        }
 //            }
 //        };
 //        t.setDaemon(true);
 //        t.start();
     }
-
 
     protected void updateNeuron(int row, int column, Neuron neuron, SOMStrategy strategy, int level) {
         Neuron source = neurons[row][column];
@@ -625,17 +599,15 @@ public class SOM implements Iterable<Neuron>, Serializable {
             Double oldVal = weights.get(i);
             //to analzye best values for distanceRestraintFactor
             //check if the two neurons have same cardinality
-            if(neuronWeights.size()>i){
+            if (neuronWeights.size() > i) {
                 Double newVal = oldVal + distanceRestraintFactor * learningFactor * (neuronWeights.get(i) - oldVal);
                 newVal = Double.parseDouble(decimalFormat.format(newVal));
                 weights.set(i, newVal);
             }
         }
 
-
         if (level < strategy.getNeighbourhoodSize()) {
             level++;
-
 
             //update neighbours if needed
             {
@@ -646,7 +618,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
                     updateNeuron(leftNeighbourI, leftNeighbourJ, neuron, strategy, level);
                 }
             }
-
 
             {
                 int rightNeighbourI = row;
@@ -660,7 +631,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
             {
                 int topNeighbourI = row - 1;
                 int topNeighbourJ = column;
-
 
                 if (topNeighbourI >= 0 && topNeighbourJ >= 0 && topNeighbourI < elementsNo && topNeighbourJ < elementsNo) {
                     updateNeuron(topNeighbourI, topNeighbourJ, neuron, strategy, level);
@@ -678,7 +648,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
 
     }
 
-
     public Iterator<Neuron> iterator() {
         return new SOMIterator(this);
     }
@@ -688,17 +657,14 @@ public class SOM implements Iterable<Neuron>, Serializable {
         private int currentRow = 0;
         private int currentColumn = 0;
 
-
         private SOMIterator(SOM som) {
 
         }
 
-        
         public boolean hasNext() {
             return currentRow != elementsNo && currentColumn != elementsNo;
         }
 
-        
         public Neuron next() {
             if (!hasNext()) {
                 return null;
@@ -719,7 +685,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
         /**
          * NOT SUPPORTED
          */
-        
         public void remove() {
             throw new UnsupportedOperationException("Not supported");
         }
@@ -734,8 +699,8 @@ public class SOM implements Iterable<Neuron>, Serializable {
 
                 description += "[ ";
 
-                for(Double weight : neurons[row][column].getWeights()){
-                    description += myFormatter.format(weight) + ", " ;
+                for (Double weight : neurons[row][column].getWeights()) {
+                    description += myFormatter.format(weight) + ", ";
                 }
                 description += " ]";
             }
@@ -745,7 +710,6 @@ public class SOM implements Iterable<Neuron>, Serializable {
         return description;
 
     }
-
 
     public String toStringUsageLevels() {
         String description = "";
@@ -761,9 +725,8 @@ public class SOM implements Iterable<Neuron>, Serializable {
 
     }
 
-
-    public Neuron[][] cloneNeurons(){
-        Neuron[][]  clones = new Neuron[elementsNo][elementsNo];
+    public Neuron[][] cloneNeurons() {
+        Neuron[][] clones = new Neuron[elementsNo][elementsNo];
 
         for (int i = 0; i < elementsNo; i++) {
             clones[i] = new Neuron[elementsNo];
@@ -771,7 +734,7 @@ public class SOM implements Iterable<Neuron>, Serializable {
                 Neuron clone = new Neuron();
                 Neuron source = neurons[i][j];
                 ArrayList<Double> clonedWeights = new ArrayList<Double>();
-                for(Double aDouble : source.getWeights()){
+                for (Double aDouble : source.getWeights()) {
                     clonedWeights.add(new Double(aDouble.doubleValue()));
                 }
                 clone.setWeights(clonedWeights);
@@ -781,13 +744,12 @@ public class SOM implements Iterable<Neuron>, Serializable {
         return clones;
     }
 
-
     /**
      *
      * @param clone the SOM to be filled with data from this source
      */
-    public void clone(SOM clone){
-        Neuron[][]  clones = new Neuron[elementsNo][elementsNo];
+    public void clone(SOM clone) {
+        Neuron[][] clones = new Neuron[elementsNo][elementsNo];
 
         for (int i = 0; i < elementsNo; i++) {
             clones[i] = new Neuron[elementsNo];
@@ -795,7 +757,7 @@ public class SOM implements Iterable<Neuron>, Serializable {
                 Neuron neuronClone = new Neuron();
                 Neuron source = neurons[i][j];
                 ArrayList<Double> clonedWeights = new ArrayList<Double>();
-                for(Double aDouble : source.getWeights()){
+                for (Double aDouble : source.getWeights()) {
                     clonedWeights.add(new Double(aDouble.doubleValue()));
                 }
                 neuronClone.setWeights(clonedWeights);
@@ -803,16 +765,65 @@ public class SOM implements Iterable<Neuron>, Serializable {
             }
         }
 
-
         clone.elementsNo = elementsNo;
-        clone.maxNeighboursNo  = maxNeighboursNo;
+        clone.maxNeighboursNo = maxNeighboursNo;
         clone.maxWeightValue = maxWeightValue;
         clone.minWeightValue = minWeightValue;
         clone.random = random;
         clone.strategy = strategy;
-        clone.neurons =clones;
-        clone.weightsNo=weightsNo;
+        clone.neurons = clones;
+        clone.weightsNo = weightsNo;
     }
 
+    public SOM withMaxNeighboursNo(final int maxNeighboursNo) {
+        this.maxNeighboursNo = maxNeighboursNo;
+        return this;
+    }
+
+    public SOM withElementsNo(final int elementsNo) {
+        this.elementsNo = elementsNo;
+        return this;
+    }
+
+    public SOM withWeightsNo(final int weightsNo) {
+        this.weightsNo = weightsNo;
+        return this;
+    }
+
+    public SOM withMinWeightValue(final int minWeightValue) {
+        this.minWeightValue = minWeightValue;
+        return this;
+    }
+
+    public SOM withMaxWeightValue(final int maxWeightValue) {
+        this.maxWeightValue = maxWeightValue;
+        return this;
+    }
+
+    public SOM withRandom(final Random random) {
+        this.random = random;
+        return this;
+    }
+
+    public SOM withStrategy(final SOMStrategy strategy) {
+        this.strategy = strategy;
+        return this;
+    }
+
+    public SOM withNeurons(final Neuron[][] neurons) {
+        this.neurons = neurons;
+        return this;
+    }
+
+    public SOM withToleranceRange(final Double toleranceRange) {
+        this.toleranceRange = toleranceRange;
+        return this;
+    }
+ 
+
+    public SOM withDecimalFormat(final DecimalFormat decimalFormat) {
+        this.decimalFormat = decimalFormat;
+        return this;
+    }
 
 }

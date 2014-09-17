@@ -1,11 +1,13 @@
 /**
- * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group E184
+ * Copyright 2013 Technische Universitat Wien (TUW), Distributed Systems Group
+ * E184
  *
- * This work was partially supported by the European Commission in terms of the CELAR FP7 project (FP7-ICT-2011-8 \#317790)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at
+ * This work was partially supported by the European Commission in terms of the
+ * CELAR FP7 project (FP7-ICT-2011-8 \#317790)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -25,17 +27,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Author: Daniel Moldovan 
- * E-Mail: d.moldovan@dsg.tuwien.ac.at 
-
- * 
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ *
  * FILTERS will be applied SEQUENTIALLY
  */
-
-
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MetricFilter")
-public class MetricFilter  {
+public class MetricFilter {
+
     @XmlAttribute(name = "id", required = true)
     private String id;
 
@@ -98,14 +97,24 @@ public class MetricFilter  {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         MetricFilter that = (MetricFilter) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (level != that.level) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) {
+            return false;
+        }
+        if (level != that.level) {
+            return false;
+        }
+        if (name != null ? !name.equals(that.name) : that.name != null) {
+            return false;
+        }
 
         return true;
     }
@@ -117,4 +126,30 @@ public class MetricFilter  {
         result = 31 * result + (level != null ? level.hashCode() : 0);
         return result;
     }
+
+    public MetricFilter withId(final String id) {
+        this.id = id;
+        return this;
+    }
+
+    public MetricFilter withName(final String name) {
+        this.name = name;
+        return this;
+    }
+
+    public MetricFilter withLevel(final MonitoredElement.MonitoredElementLevel level) {
+        this.level = level;
+        return this;
+    }
+
+    public MetricFilter withTargetMonitoredElementIDs(final Collection<String> targetMonitoredElementIDs) {
+        this.targetMonitoredElementIDs = targetMonitoredElementIDs;
+        return this;
+    }
+
+    public MetricFilter withMetrics(final Collection<Metric> metrics) {
+        this.metrics = metrics;
+        return this;
+    }
+
 }

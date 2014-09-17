@@ -42,7 +42,7 @@ public class MonitoringData {
     private String source;
     @XmlAttribute(name = "Timestamp")
     private String timestamp;
-    
+
     {
         monitoredElementDatas = new ArrayList<MonitoredElementData>();
     }
@@ -86,4 +86,25 @@ public class MonitoringData {
     public void setSource(String source) {
         this.source = source;
     }
+
+    public MonitoringData withMonitoredElementDatas(final Collection<MonitoredElementData> monitoredElementDatas) {
+        this.monitoredElementDatas = monitoredElementDatas;
+        return this;
+    }
+
+    public MonitoringData withVersion(final String version) {
+        this.version = version;
+        return this;
+    }
+
+    public MonitoringData withSource(final String source) {
+        this.source = source;
+        return this;
+    }
+
+    public MonitoringData withTimestamp(final String timestamp) {
+        this.timestamp = timestamp;
+        return this;
+    }
+
 }

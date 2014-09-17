@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 
-
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
@@ -278,4 +277,20 @@ public class ServiceMonitoringSnapshot implements Serializable {
         monitoredData.get(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next().setExecutingActions(actions);
 
     }
+
+    public ServiceMonitoringSnapshot withTimestamp(final String timestamp) {
+        this.timestamp = timestamp;
+        return this;
+    }
+
+    public ServiceMonitoringSnapshot withTimestampID(final int timestampID) {
+        this.timestampID = timestampID;
+        return this;
+    }
+
+    public ServiceMonitoringSnapshot withMonitoredData(final Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> monitoredData) {
+        this.monitoredData = monitoredData;
+        return this;
+    }
+
 }

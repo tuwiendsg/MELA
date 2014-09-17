@@ -100,4 +100,26 @@ public class ElasticitySpaceDimensionXML {
     public void setLowerBoundary(MetricValue lowerBoundary) {
         this.lowerBoundary = lowerBoundary;
     }
+
+    public ElasticitySpaceDimensionXML withMetric(final Metric metric) {
+        this.metric = metric;
+        return this;
+    }
+
+    public ElasticitySpaceDimensionXML withMetricValues(final Collection<MetricValue> metricValues) {
+        this.metricValues = metricValues;
+        return this;
+    }
+
+    public ElasticitySpaceDimensionXML withUpperBoundary(final MetricValue upperBoundary) {
+        this.upperBoundary = upperBoundary;
+        return this;
+    }
+
+    public ElasticitySpaceDimensionXML withLowerBoundary(final MetricValue lowerBoundary) {
+        this.lowerBoundary = lowerBoundary;
+        return this;
+    }
+    
+    
 }

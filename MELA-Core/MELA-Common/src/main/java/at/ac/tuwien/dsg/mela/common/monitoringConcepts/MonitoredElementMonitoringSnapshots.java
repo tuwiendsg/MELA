@@ -46,7 +46,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MonitoredElementSnapshots")
-public class MonitoredElementMonitoringSnapshots implements Serializable{
+public class MonitoredElementMonitoringSnapshots implements Serializable {
 
     @XmlElement(name = "MonitoredElementSnapshot")
     private Collection<MonitoredElementMonitoringSnapshot> children;
@@ -73,6 +73,11 @@ public class MonitoredElementMonitoringSnapshots implements Serializable{
 
     public synchronized void removeChild(MonitoredElementMonitoringSnapshot child) {
         this.children.remove(child);
+    }
+
+    public MonitoredElementMonitoringSnapshots withChildren(final Collection<MonitoredElementMonitoringSnapshot> children) {
+        this.children = children;
+        return this;
     }
 
 }

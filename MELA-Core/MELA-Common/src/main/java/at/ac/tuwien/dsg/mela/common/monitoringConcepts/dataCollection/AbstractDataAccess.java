@@ -38,7 +38,6 @@ import java.util.*;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
- 
 @Service
 public abstract class AbstractDataAccess {
 
@@ -60,13 +59,13 @@ public abstract class AbstractDataAccess {
     {
         metricFilters = new LinkedHashMap<MonitoredElement.MonitoredElementLevel, List<MetricFilter>>();
         // add default filter to keep the MonitoredElementIDMetric for all
-		// monitored VMs
-		// MetricFilter metricFilter = new MetricFilter();
-		// metricFilter.getMetrics().add(new
-		// Metric(Configuration.getMonitoredElementIDMetricName()));
-		// metricFilter.setLevel(MonitoredElement.MonitoredElementLevel.VM);
-		// addMetricFilter(metricFilter);
-	
+        // monitored VMs
+        // MetricFilter metricFilter = new MetricFilter();
+        // metricFilter.getMetrics().add(new
+        // Metric(Configuration.getMonitoredElementIDMetricName()));
+        // metricFilter.setLevel(MonitoredElement.MonitoredElementLevel.VM);
+        // addMetricFilter(metricFilter);
+
     }
 
     public Collection<MonitoringData> getFreshestMonitoredData() {
@@ -146,10 +145,9 @@ public abstract class AbstractDataAccess {
 
     private Timer createMonitoringTimer(final AbstractDataSource dataSource) {
         Timer timer = new Timer();
- 
+
         if (dataSource instanceof AbstractPollingDataSource) {
             final AbstractPollingDataSource abstractPollingDataSource = (AbstractPollingDataSource) dataSource;
- 
 
             TimerTask dataCollectionTask = new TimerTask() {
                 @Override
@@ -157,24 +155,23 @@ public abstract class AbstractDataAccess {
                     try {
                         // pool data source
                         MonitoringData data = dataSource.getMonitoringData();
-						// replace freshest monitoring data
+                        // replace freshest monitoring data
 
- 
                         freshestMonitoredData.put(abstractPollingDataSource, data);
                     } catch (DataAccessException e) {
                         // TODO Auto-generated catch block
                         log.error("Caught DataAccessException", e);
- 
+
                     }
 
                 }
             };
- 
+
             timer.scheduleAtFixedRate(dataCollectionTask, 0, abstractPollingDataSource.getPollingIntervalMs());
         } else {
             // TODO: needs to be implemented
             log.error("Not supporting yet data source of type " + dataSource.getClass().getName());
- 
+
         }
         return timer;
     }
@@ -225,4 +222,25 @@ public abstract class AbstractDataAccess {
 
         return metrics.values();
     }
+
+    public AbstractDataAccess withMetricFilters(final Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters) {
+        this.metricFilters = metricFilters;
+        return this;
+    }
+
+    public AbstractDataAccess withDataSources(final List<AbstractDataSource> dataSources) {
+        this.dataSources = dataSources;
+        return this;
+    }
+
+    public AbstractDataAccess withDataSourcesPoolingTimers(final Map<AbstractDataSource, Timer> dataSourcesPoolingTimers) {
+        this.dataSourcesPoolingTimers = dataSourcesPoolingTimers;
+        return this;
+    }
+
+    public AbstractDataAccess withFreshestMonitoredData(final Map<AbstractDataSource, MonitoringData> freshestMonitoredData) {
+        this.freshestMonitoredData = freshestMonitoredData;
+        return this;
+    }
+
 }
