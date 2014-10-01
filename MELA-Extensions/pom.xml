@@ -16,7 +16,7 @@
 
     <modules>
         <module>MELA-SpaceAndPathwayAnalysisService</module>
-
+        <module>MELA-ElasticityRelationshipsAnalysis</module>
 	<module>MELA-ComplexCostEvaluationService</module>
     </modules>
  

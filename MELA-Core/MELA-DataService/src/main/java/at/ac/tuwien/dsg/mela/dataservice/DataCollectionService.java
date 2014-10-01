@@ -34,6 +34,7 @@ import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.Event;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter;
@@ -611,8 +612,8 @@ public class DataCollectionService {
                             Date beforeAggregation = new Date();
                             ServiceMonitoringSnapshot latestMonitoringData = getAggregatedMonitoringDataOverTime(serviceID, dataToAggregate);
                             Date afterAggregation = new Date();
-                            
-                            String perfReport = ""+ latestMonitoringData.getMonitoredData(MonitoredElement.MonitoredElementLevel.VM).keySet().size();
+
+                            String perfReport = "" + latestMonitoringData.getMonitoredData(MonitoredElement.MonitoredElementLevel.VM).keySet().size();
 
                             log.debug("Data aggregation time time in ms:  " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime());
                             perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
@@ -852,4 +853,30 @@ public class DataCollectionService {
         }
         return array.toJSONString();
     }
+
+    public String getEvents(String serviceID) {
+
+        JSONArray array = new JSONArray();
+        List<Event> events = persistenceSQLAccess.getUnreadEvents(serviceID);
+
+        for (Event s : events) {
+            JSONObject o = new JSONObject();
+            o.put("event", s.getEvent());
+            array.add(o);
+        }
+        persistenceSQLAccess.markEventsAsRead(serviceID, events);
+
+        return array.toJSONString();
+    }
+
+    public void writeEvents(String serviceID, String event) {
+        String[] events = event.split(",");
+        ArrayList<Event> eventsList = new ArrayList<>();
+        for (String e : events) {
+            Event e1 = new Event().withEvent(event).withServiceID(serviceID);
+            eventsList.add(e1);
+        }
+        persistenceSQLAccess.writeEvents(serviceID, eventsList);
+    }
+
 }

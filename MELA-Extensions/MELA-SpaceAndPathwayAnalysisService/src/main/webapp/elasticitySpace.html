@@ -503,7 +503,7 @@
             }
 
             elasticitySpaceRequest.onreadystatechange = processElasticitySpaceRequestResponse;
-            elasticitySpaceRequest.open("POST", "./REST_WS/" + vars[0] + "/elasticityspace", true);
+            elasticitySpaceRequest.open("POST", "./REST_WS/" + vars[0] + "/elasticityspace/json", true);
             elasticitySpaceRequest.setRequestHeader('Content-type', 'application/xml');
             elasticitySpaceRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
 

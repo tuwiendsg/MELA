@@ -281,4 +281,26 @@ public class ConfigurationService {
     public String getServices() {
         return collectionService.getAllManagedServicesIDs();
     }
+
+    @GET
+    @Path("/{serviceID}/events/json")
+    @Produces("application/json")
+    public String getEvents(@PathParam("serviceID") String serviceID) {
+        return collectionService.getEvents(serviceID);
+    }
+
+    /**
+     * Currently for ease of specification, events are send as one string
+     * separated by ","
+     *
+     * @param serviceID
+     * @param events
+     */
+    @POST
+    @Path("/{serviceID}/events")
+    @Consumes("text/plain")
+    public void writeEvents(@PathParam("serviceID") String serviceID, String event) {
+        collectionService.writeEvents(serviceID, event);
+    }
+
 }

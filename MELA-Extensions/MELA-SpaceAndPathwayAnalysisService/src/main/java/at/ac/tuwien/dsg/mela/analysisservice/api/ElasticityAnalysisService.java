@@ -33,8 +33,6 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +45,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitorin
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -67,7 +66,7 @@ public class ElasticityAnalysisService {
     }
 
     @POST
-    @Path("/{serviceID}/elasticitypathway")
+    @Path("/{serviceID}/elasticitypathway/json")
     @Consumes("application/xml")
     @Produces("application/json")
     @ApiOperation(value = "Retrieve elasticity pathway",
@@ -83,7 +82,7 @@ public class ElasticityAnalysisService {
     }
 
     @POST
-    @Path("/{serviceID}/elasticitypathwayxml")
+    @Path("/{serviceID}/elasticitypathway/xml")
     @Consumes("application/xml")
     @Produces("application/xml")
     public ElasticityPathwayXML getElasticityPathwayInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
@@ -98,7 +97,7 @@ public class ElasticityAnalysisService {
      * @return the elasticity space in JSON
      */
     @POST
-    @Path("/{serviceID}/elasticityspace")
+    @Path("/{serviceID}/elasticityspace/json")
     @Consumes("application/xml")
     @Produces("application/json")
     public String getLatestElasticitySpaceInJSON(@PathParam("serviceID") String serviceID, MonitoredElement element) {
@@ -112,7 +111,7 @@ public class ElasticityAnalysisService {
      * @return the elasticity space in XML WITH historical monitoring data
      */
     @POST
-    @Path("/{serviceID}/elasticityspacecompletexml")
+    @Path("/{serviceID}/elasticityspace/complete/xml")
     @Consumes("application/xml")
     @Produces("application/xml")
     public ElasticitySpaceXML getLatestElasticitySpaceInXMLComplete(@PathParam("serviceID") String serviceID, MonitoredElement element) {
@@ -126,18 +125,40 @@ public class ElasticityAnalysisService {
      * @return the elasticity space in XML WITH historical monitoring data
      */
     @POST
-    @Path("/{serviceID}/elasticityspacexml")
+    @Path("/{serviceID}/elasticityspace/xml")
     @Consumes("application/xml")
     @Produces("application/xml")
     public ElasticitySpaceXML getLatestElasticitySpaceInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
         return systemControl.getElasticitySpaceXML(serviceID, element);
     }
 
+    
+   /**
+    * All API below is here for legacy purposes and mimics the DataService API. 
+    */
+    
+    
+    /**
+     * @param compositionRulesConfiguration the metric composition rules, both
+     * the HISTORICAL and MULTI_LEVEL rules
+     */
+    @PUT
+    @Path("/{serviceID}/metricscompositionrules")
+    @Consumes("application/xml")
+    public void putCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration, @PathParam("serviceID") String serviceID) {
+        if (compositionRulesConfiguration != null) {
+            compositionRulesConfiguration.setTargetServiceID(serviceID);
+            systemControl.setCompositionRulesConfiguration(compositionRulesConfiguration);
+        } else {
+            log.warn("supplied compositionRulesConfiguration is null");
+        }
+    }
+
     /**
      * @param element the service topology to be monitored
      */
     @PUT
-    @Path("/servicedescription")
+    @Path("/service")
     @Consumes("application/xml")
     public void putServiceDescription(MonitoredElement element) {
         if (element != null) {
@@ -148,30 +169,28 @@ public class ElasticityAnalysisService {
     }
 
     /**
+     * @param serviceID the service to be removed
+     */
+    @DELETE
+    @Path("/{serviceID}")
+    @Consumes("application/xml")
+    public void removeServiceDescription(@PathParam("serviceID") String serviceID) {
+//        systemControl.removeService(serviceID);
+    }
+
+    /**
      * @param element refreshes the VM's attached to each Service Unit. For a
      * structural update, use "PUT servicedescription", as in such a case the
      * elasticity signature needs to be recomputed
      */
     @POST
-    @Path("/{serviceID}/servicedescription")
+    @Path("/{serviceID}/structure")
     @Consumes("application/xml")
     public void updateServiceDescription(MonitoredElement element) {
         if (element != null) {
             systemControl.updateServiceConfiguration(element);
         } else {
             log.warn("supplied service description is null");
-        }
-    }
-
-    @PUT
-    @Path("/{serviceID}/metricscompositionrules")
-    @Consumes("application/xml")
-    public void putCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration, @PathParam("serviceID") String serviceID) {
-        if (compositionRulesConfiguration != null) {
-            compositionRulesConfiguration.setTargetServiceID(serviceID);
-            systemControl.setCompositionRulesConfiguration(compositionRulesConfiguration);
-        } else {
-            log.warn("supplied compositionRulesConfiguration is null");
         }
     }
 
@@ -191,6 +210,8 @@ public class ElasticityAnalysisService {
         }
     }
 
+    
+    
     /**
      * Method used to list for a particular service unit ID what are the
      * available metrics that can be monitored directly
@@ -218,14 +239,6 @@ public class ElasticityAnalysisService {
         }
 
     }
-//
-//    @GET
-//    @Path("/unitBehavingNormally")
-//    @Produces("application/xml")
-//    public Boolean testIfAllVMsHaveJoined(@QueryParam("monitoredElementID") String monitoredElementID) {
-//        MonitoredElement element = new MonitoredElement(monitoredElementID);
-//        return systemControl.testIfAllVMsReportMEtricsGreaterThanZero(element);
-//    }
 
     /**
      * Method for retrieving an easy to display JSON string of the latest
@@ -242,7 +255,7 @@ public class ElasticityAnalysisService {
      * [vmCount]","type":"metric"}],"type":"VM"}],"type":"SERVICE_UNIT"}
      */
     @GET
-    @Path("/{serviceID}/monitoringdataJSON")
+    @Path("/{serviceID}/monitoringdata/json")
     @Produces("application/json")
     public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
         return systemControl.getLatestMonitoringDataINJSON(serviceID);
@@ -253,21 +266,21 @@ public class ElasticityAnalysisService {
      * running service units
      */
     @GET
-    @Path("/{serviceID}/servicestructure")
+    @Path("/{serviceID}/structure")
     @Produces("application/xml")
     public MonitoredElement getLatestServiceStructure(@PathParam("serviceID") String serviceID) {
         return systemControl.getLatestServiceStructure(serviceID);
     }
 
     @GET
-    @Path("/{serviceID}/monitoringdataXML")
+    @Path("/{serviceID}/monitoringdata/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID) {
         return systemControl.getLatestMonitoringData(serviceID);
     }
 
     @POST
-    @Path("/{serviceID}/monitoringdataXML")
+    @Path("/{serviceID}/monitoringdata/xml")
     @Consumes("application/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
@@ -275,14 +288,14 @@ public class ElasticityAnalysisService {
     }
 
     @GET
-    @Path("/{serviceID}/historicalmonitoringdataXML/all")
+    @Path("/{serviceID}/historicalmonitoringdata/all/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(@PathParam("serviceID") String serviceID) {
         return systemControl.getAllAggregatedMonitoringData(serviceID);
     }
 
     @GET
-    @Path("/{serviceID}/historicalmonitoringdataXML/ininterval")
+    @Path("/{serviceID}/historicalmonitoringdata/ininterval/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@PathParam("serviceID") String serviceID, @QueryParam("startTimestamp") int startTimestamp,
             @QueryParam("endTimestamp") int endTimestamp) {
@@ -290,47 +303,46 @@ public class ElasticityAnalysisService {
     }
 
     @GET
-    @Path("/{serviceID}/historicalmonitoringdataXML/lastX")
+    @Path("/{serviceID}/historicalmonitoringdata/lastX/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@PathParam("serviceID") String serviceID, @QueryParam("count") int count) {
         return systemControl.getLastXAggregatedMonitoringData(serviceID, count);
     }
 
     @GET
-    @Path("/{serviceID}/servicerequirements")
-    @Produces("application/xml")
-    public Requirements getRequirements(@PathParam("serviceID") String serviceID) {
-        return systemControl.getRequirements(serviceID);
-    }
-
-    @GET
-    @Path("/{serviceID}/metriccompositionrules")
+    @Path("/{serviceID}/metriccompositionrules/json")
     @Produces("application/json")
     public String getMetricCompositionRules(@PathParam("serviceID") String serviceID) {
         return systemControl.getMetricCompositionRules(serviceID);
     }
 
     @GET
-    @Path("/{serviceID}/metriccompositionrulesxml")
+    @Path("/{serviceID}/metriccompositionrules/xml")
     @Produces("application/xml")
     public CompositionRulesConfiguration getMetricCompositionRulesXML(@PathParam("serviceID") String serviceID) {
         return systemControl.getCompositionRulesConfiguration(serviceID);
     }
 
-    @POST
-    @Path("/{serviceID}/addexecutingactions")
-    public void addExecutingAction(@PathParam("serviceID") String serviceID, Action action) {
-        systemControl.addExecutingAction(serviceID, action.getTargetEntityID(), action.getAction());
+    @PUT
+    @Path("/{serviceID}/{targetEntityID}/executingaction/{action}")
+    public void addExecutingAction(@PathParam("serviceID") String serviceID, @PathParam("targetEntityID") String targetEntityID, @PathParam("action") String action
+    ) {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new Action(targetEntityID, action));
+        systemControl.addExecutingAction(serviceID, targetEntityID, action);
     }
 
-    @POST
-    @Path("/{serviceID}/removeexecutingactions")
-    public void removeExecutingAction(@PathParam("serviceID") String serviceID, Action action) {
-        systemControl.removeExecutingAction(serviceID, action.getTargetEntityID(), action.getAction());
+    @DELETE
+    @Path("/{serviceID}/{targetEntityID}/executingaction/{action}")
+    public void removeExecutingAction(@PathParam("serviceID") String serviceID, @PathParam("targetEntityID") String targetEntityID, @PathParam("action") String action
+    ) {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new Action(targetEntityID, action));
+        systemControl.removeExecutingAction(serviceID, targetEntityID, action);
     }
 
     @GET
-    @Path("/{serviceID}/metricsGreaterThanZero")
+    @Path("/{serviceID}/metricsGreaterEqualThanZero")
     public String testIfAllVMsReportMEtricsGreaterThanZero(@PathParam("serviceID") String serviceID) {
         return "" + systemControl.testIfAllVMsReportMEtricsGreaterThanZero(serviceID);
     }
@@ -341,4 +353,5 @@ public class ElasticityAnalysisService {
     public String getServices() {
         return systemControl.getAllManagedServicesIDs();
     }
+
 }

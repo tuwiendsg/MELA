@@ -25,6 +25,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot
 
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationUtility;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.Event;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,18 @@ public class PersistenceDelegate {
 
     public List<String> getMonitoringSequencesIDs() {
         return persistenceSQLAccess.getMonitoringSequencesIDs();
+    }
+
+    public List<Event> getUnreadEvents(String serviceID) {
+        return persistenceSQLAccess.getUnreadEvents(serviceID);
+    }
+
+    public void writeEvents(String serviceID, List<Event> events) {
+        persistenceSQLAccess.writeEvents(serviceID, events);
+    }
+
+    public void markEventsAsRead(String serviceID, List<Event> events) {
+        persistenceSQLAccess.markEventsAsRead(serviceID, events);
     }
 
     public MonitoringData getRawMonitoringData(String monitoringSequenceID, String timestampID) {

@@ -1,3 +1,4 @@
+drop table IF EXISTS EVENTS
 drop table IF EXISTS ELASTICITYDEPENDENCY
 drop table IF EXISTS ElasticityPathway
 drop table IF EXISTS ElasticitySpace
@@ -15,4 +16,6 @@ create CACHED table AggregatedData (ID int IDENTITY, monSeqID VARCHAR(200), time
 create CACHED table ElasticitySpace (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200),  startTimestampID int, endTimestampID int, elasticitySpace OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (startTimestampID) REFERENCES Timestamp(ID), FOREIGN KEY (endTimestampID) REFERENCES Timestamp(ID) )
 create CACHED table ElasticityPathway (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticityPathway OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
 create CACHED table ELASTICITYDEPENDENCY (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), startTimestampID int, endTimestampID int, elasticityDependency LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (startTimestampID) REFERENCES Timestamp(ID), FOREIGN KEY (endTimestampID) REFERENCES Timestamp(ID) )
+create CACHED table EVENTS (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), event VARCHAR(200), read boolean)
+
 

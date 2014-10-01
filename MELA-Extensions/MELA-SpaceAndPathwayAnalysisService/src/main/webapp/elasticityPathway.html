@@ -506,7 +506,7 @@
             }
 
             elasticityPathwayRequest.onreadystatechange = processElasticityPathwayRequestResponse;
-            elasticityPathwayRequest.open("POST", "./REST_WS/" + vars[0] + "/elasticitypathway", true);
+            elasticityPathwayRequest.open("POST", "./REST_WS/" + vars[0] + "/elasticitypathway/json", true);
             elasticityPathwayRequest.setRequestHeader('Content-type', 'application/xml');
             elasticityPathwayRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
 

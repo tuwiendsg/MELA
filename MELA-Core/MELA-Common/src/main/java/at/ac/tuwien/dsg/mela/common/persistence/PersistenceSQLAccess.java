@@ -29,6 +29,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -602,7 +603,101 @@ public class PersistenceSQLAccess {
             return strings;
         }
     }
- 
+
+    public List<Event> getEvents(final String serviceID) {
+
+        String sql = "SELECT id, event from Events where monSeqID=?";
+        RowMapper<Event> rowMapper = new RowMapper<Event>() {
+            public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Event event = new Event().withId(rs.getString(1)).withEvent(rs.getString(2)).withServiceID(serviceID);
+                return event;
+            }
+        };
+
+        //get last events
+        List<Event> strings = jdbcTemplate.query(sql, rowMapper, serviceID);
+        if (strings.isEmpty()) {
+            return new ArrayList<Event>();
+        } else {
+            return strings;
+        }
+    }
+
+    public List<Event> getUnreadEvents(final String serviceID) {
+
+        String sql = "SELECT id, event from Events where monSeqID=? and read=FALSE";
+        RowMapper<Event> rowMapper = new RowMapper<Event>() {
+            public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Event event = new Event().withId(rs.getString(1)).withEvent(rs.getString(2)).withServiceID(serviceID);
+                return event;
+            }
+        };
+
+        //get last events
+        List<Event> strings = jdbcTemplate.query(sql, rowMapper, serviceID);
+        if (strings.isEmpty()) {
+            return new ArrayList<Event>();
+        } else {
+            return strings;
+        }
+    }
+
+    public List<Event> getEvents(final String serviceID, String eventID) {
+
+        String sql = "SELECT id, event from Events where monSeqID=? and ID>=?";
+        RowMapper<Event> rowMapper = new RowMapper<Event>() {
+            public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Event event = new Event().withId(rs.getString(1)).withEvent(rs.getString(2)).withServiceID(serviceID);
+                return event;
+            }
+        };
+
+        //get last events
+        List<Event> strings = jdbcTemplate.query(sql, rowMapper, serviceID);
+        if (strings.isEmpty()) {
+            return new ArrayList<Event>();
+        } else {
+            return strings;
+        }
+    }
+
+    public void writeEvents(String serviceID, List<Event> events) {
+        //add new entry
+        String sql = "INSERT INTO Events (monSeqID, event,read) "
+                + "VALUES";
+        for (int i = 0; i < events.size(); i++) {
+            String event = events.get(i).getEvent();
+            sql += " ('" + serviceID + "','" + event + "', FALSE)";
+            if (i < events.size() - 1) {
+                sql += ",";
+            }
+        }
+
+        jdbcTemplate.update(sql);
+    }
+
+    public void markEventsAsRead(String serviceID, List<Event> events) {
+        //add new entry
+//        UPDATE table_name
+//SET column1=value1,column2=value2,...
+//WHERE some_column
+        if (events.size() > 0) {
+            String sql = "UPDATE Events SET read=TRUE where monSeqID=? and ID IN (";
+
+            for (int i = 0; i < events.size(); i++) {
+
+                sql += "" + events.get(i).getId() + "";
+                if (i < events.size() - 1) {
+                    sql += ",";
+                }
+            }
+
+            sql += ")";
+
+            jdbcTemplate.update(sql, serviceID);
+        }
+    }
+
     public PersistenceSQLAccess withDataSource(final DataSource dataSource) {
         this.dataSource = dataSource;
         return this;

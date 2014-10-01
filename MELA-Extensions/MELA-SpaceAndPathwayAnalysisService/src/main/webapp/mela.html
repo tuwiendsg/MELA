@@ -1269,7 +1269,7 @@
                 }
 
                 reqMonitoringDataObject.onreadystatechange = processMonitoringDataResponse;
-                reqMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/monitoringdataJSON", true);
+                reqMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/monitoringdata/json", true);
                 reqMonitoringDataObject.send(null);
 
             }
@@ -1324,7 +1324,7 @@
                 }
 
                 reqMetricCompositionRulesObj.onreadystatechange = processCompositionMetricsResponse;
-                reqMetricCompositionRulesObj.open("GET", "./REST_WS/" + serviceID + "/metriccompositionrules", true);
+                reqMetricCompositionRulesObj.open("GET", "./REST_WS/" + serviceID + "/metriccompositionrules/json", true);
                 reqMetricCompositionRulesObj.send(null);
 
             }
