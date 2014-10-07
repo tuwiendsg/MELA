@@ -44,7 +44,7 @@
 
         var margin = {top: 20, right: 20, bottom: 30, left: 120},
         width = 500 - margin.left - margin.right,
-                height = 270 - margin.top - margin.bottom;
+                height = 500 - margin.top - margin.bottom;
 
         var opts = {
             lines: 20, // The number of lines to draw
@@ -534,8 +534,6 @@
 
             elPthwDiv.selectAll("h2").remove();
             elPthwDiv.selectAll("svg").remove();
-
-            elPthwDiv.append("h2").text("Elasticity Pathway  for " + vars[1]);
 
             elPthwSVG = elPthwDiv.append("svg")
                     .attr("width", window.innerWidth)
