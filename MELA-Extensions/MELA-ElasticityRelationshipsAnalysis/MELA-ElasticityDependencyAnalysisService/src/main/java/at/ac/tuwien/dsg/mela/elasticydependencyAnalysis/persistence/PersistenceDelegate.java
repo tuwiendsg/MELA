@@ -326,8 +326,7 @@ public class PersistenceDelegate {
         JdbcTemplate jdbcTemplate = persistenceSQLAccess.getJdbcTemplate();
 
         String sql = "insert into ElasticityDependency (monSeqID, startTimestampID, endTimestampID, elasticityDependency) " + "VALUES "
-                + "( (select ID from MonitoringSeq where id='" + monitoringSequenceID + "')"
-                + ", ? , ? , ?)";
+                + "('" + monitoringSequenceID + "', ? , ? , ?)";
 
         try {
             JAXBContext context = JAXBContext.newInstance(ServiceElasticityDependencies.class);

@@ -476,7 +476,7 @@ public class ElasticityDependencyAnalysisManager {
 
             determinedDependencies = new ServiceElasticityDependencies();
             determinedDependencies.setElasticityDependencies(dependencies.values());
-            determinedDependencies.setStartTimestampID(0);
+            determinedDependencies.setStartTimestampID(elasticitySpace.getStartTimestampID());
             determinedDependencies.setEndTimestampID(elasticitySpace.getEndTimestampID());
 
             try {
@@ -682,8 +682,8 @@ public class ElasticityDependencyAnalysisManager {
 
             determinedDependencies = new ServiceElasticityDependencies();
             determinedDependencies.setElasticityDependencies(dependencies.values());
-            determinedDependencies.setStartTimestampID(startTimestampID);
-            determinedDependencies.setEndTimestampID(endTimestampID);
+            determinedDependencies.setStartTimestampID(elasticitySpace.getStartTimestampID());
+            determinedDependencies.setEndTimestampID(elasticitySpace.getEndTimestampID());
 
             try {
                 persistenceDelegate.writeElasticityDependencies(monitoredElement.getId(), determinedDependencies);

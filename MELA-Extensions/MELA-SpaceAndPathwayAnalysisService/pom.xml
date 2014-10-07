@@ -92,9 +92,19 @@
             <version>3.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
-
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.4</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.181</version>
+        </dependency>
     </dependencies>
-
+  
     <profiles>
 
         <profile>
@@ -194,7 +204,7 @@
                                     <fileset dir="${basedir}/config" includes="**/*"/>
                                 </copy>
                                 <copy file="${basedir}/mela-space-and-pathway-analysis-service"
-                                      tofile="${basedir}/target/mela-space-and-pathway-analysis-service"/>
+                                  tofile="${basedir}/target/mela-space-and-pathway-analysis-service"/>
                             </target>
                         </configuration>
                         <goals>
