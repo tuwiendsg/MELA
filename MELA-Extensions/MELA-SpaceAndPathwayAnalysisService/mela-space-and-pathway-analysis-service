@@ -16,7 +16,7 @@ DAEMONDIR=./
 DAEMON=MELA-SpaceAndPathwayAnalysisService-3.0-SNAPSHOT-war-exec.jar
 PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-analysis-service.pid
-MELA_HTTP_PORT=8081
+MELA_HTTP_PORT=8181
 LOG_DIR=/tmp/mela
 
 test -x $JAVA -a -f $DAEMONDIR/$DAEMON || echo "test -x $JAVA -a -f $DAEMONDIR/$DAEMON failed"  

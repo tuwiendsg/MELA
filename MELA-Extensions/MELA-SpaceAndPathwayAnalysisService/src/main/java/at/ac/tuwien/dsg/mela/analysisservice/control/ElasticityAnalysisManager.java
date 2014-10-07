@@ -91,34 +91,31 @@ public class ElasticityAnalysisManager {
     @Autowired
     private XmlConverter xmlConverter;
 
-    private Map<MonitoredElement, Timer> elasticitySpaceComputationTimers;
-
-    {
-        elasticitySpaceComputationTimers = new ConcurrentHashMap<>();
-    }
-
+//    private Map<MonitoredElement, Timer> elasticitySpaceComputationTimers;
+//    {
+//        elasticitySpaceComputationTimers = new ConcurrentHashMap<>();
+//    }
     @PostConstruct
     public void init() {
         instantMonitoringDataAnalysisEngine = new InstantMonitoringDataAnalysisEngine();
 
-        //read all existing Service IDs and start monitoring timers for them
-        for (String monSeqID : persistenceDelegate.getMonitoringSequencesIDs()) {
-            ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceDelegate.getLatestConfiguration(monSeqID);
-            final MonitoredElement serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
-            if (!elasticitySpaceComputationTimers.containsKey(serviceConfiguration)) {
-                TimerTask task = new TimerTask() {
-                    @Override
-                    public void run() {
-                        persistenceDelegate.updateAndGetElasticitySpace(serviceConfiguration.getId());
-                    }
-
-                };
-                Timer timer = new Timer(true);
-                timer.schedule(task, 0, 5000);
-                elasticitySpaceComputationTimers.put(serviceConfiguration, timer);
-            }
-        }
-
+//        //read all existing Service IDs and start monitoring timers for them
+//        for (String monSeqID : persistenceDelegate.getMonitoringSequencesIDs()) {
+//            ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceDelegate.getLatestConfiguration(monSeqID);
+//            final MonitoredElement serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
+//            if (!elasticitySpaceComputationTimers.containsKey(serviceConfiguration)) {
+//                TimerTask task = new TimerTask() {
+//                    @Override
+//                    public void run() {
+//                        persistenceDelegate.updateAndGetElasticitySpace(serviceConfiguration.getId());
+//                    }
+//
+//                };
+//                Timer timer = new Timer(true);
+//                timer.schedule(task, 0, 5000);
+//                elasticitySpaceComputationTimers.put(serviceConfiguration, timer);
+//            }
+//        }
         // get latest config
 //        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceDelegate.getLatestConfiguration(serviceID);
 //        persistenceDelegate.setMonitoringId(configurationXMLRepresentation.getServiceConfiguration().getId());
@@ -147,20 +144,20 @@ public class ElasticityAnalysisManager {
         if (serviceConfiguration != null) {
             melaApi.sendServiceStructure(serviceConfiguration);
 
-            if (!elasticitySpaceComputationTimers.containsKey(serviceConfiguration)) {
-                TimerTask task = new TimerTask() {
-                    @Override
-                    public void run() {
-                        persistenceDelegate.updateAndGetElasticitySpace(serviceConfiguration.getId());
-                        Runtime.getRuntime().gc();
-                    }
-
-                };
-                Timer timer = new Timer(true);
-                timer.schedule(task, 0, 5000);
-                elasticitySpaceComputationTimers.put(serviceConfiguration, timer);
-
-            }
+//            if (!elasticitySpaceComputationTimers.containsKey(serviceConfiguration)) {
+//                TimerTask task = new TimerTask() {
+//                    @Override
+//                    public void run() {
+//                        persistenceDelegate.updateAndGetElasticitySpace(serviceConfiguration.getId());
+//                        Runtime.getRuntime().gc();
+//                    }
+//
+//                };
+//                Timer timer = new Timer(true);
+//                timer.schedule(task, 0, 5000);
+//                elasticitySpaceComputationTimers.put(serviceConfiguration, timer);
+//
+//            }
         }
 
     }
@@ -451,10 +448,10 @@ public class ElasticityAnalysisManager {
 
     public String getElasticitySpaceJSON(String serviceID, MonitoredElement element) {
 
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+//        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (cfg == null || !elasticityAnalysisEnabled || cfg.getServiceConfiguration() == null && cfg.getCompositionRulesConfiguration() != null) {
+        if (!elasticityAnalysisEnabled) {
             log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElSpace");
@@ -462,7 +459,7 @@ public class ElasticityAnalysisManager {
         }
 
         Date before = new Date();
-        ElasticitySpace space = extractElasticitySpace(serviceID);
+        ElasticitySpace space = persistenceDelegate.updateAndGetElasticitySpace(serviceID);
 
         String jsonRepr = jsonConverter.convertElasticitySpace(space, element);
 
@@ -483,7 +480,7 @@ public class ElasticityAnalysisManager {
             return new ElasticitySpaceXML();
         }
 
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
+        ElasticitySpace space = persistenceDelegate.updateAndGetElasticitySpace(serviceID);
         ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXMLCompletely(space, element);
         Date after = new Date();
         log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
@@ -501,7 +498,7 @@ public class ElasticityAnalysisManager {
             return new ElasticitySpaceXML();
         }
 
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
+        ElasticitySpace space = persistenceDelegate.updateAndGetElasticitySpace(serviceID);
         ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXML(space, element);
         Date after = new Date();
         log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());

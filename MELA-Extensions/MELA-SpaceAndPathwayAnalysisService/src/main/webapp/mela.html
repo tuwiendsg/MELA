@@ -43,9 +43,14 @@
     <body>
         <div id="A"></div>
         <div id="chart"></div>
- 
+        <div id="mydialog">Please select information to display
+        </div>
 
-        <script src="./spin.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"/>
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+
+        <script src="scripts/spin.js" type="text/javascript"></script>
         <script type="text/javascript">
 
 
@@ -978,7 +983,27 @@
             //open el Space only for non VMs
             function click(d) {
                 if (d.type != "VM") {
-                    var win = window.open("elasticitySpace.html?" + serviceID + "&" + d.name + "&" + d.type, '_blank');
+                    $("#mydialog").dialog({
+                        resizable: false,
+                        width:420,
+                        modal: true,
+                        buttons: {
+                            'Elasticity Space': function() {
+                                //do something
+                                var win = window.open("elasticitySpace.html?" + serviceID + "&" + d.name + "&" + d.type, '_blank');
+                                $(this).dialog('close');
+                            },
+                            'Elasticity Pathway': function() {
+                                var win = window.open("elasticityPathway.html?" + serviceID + "&" + d.name + "&" + d.type, '_blank');
+                                $(this).dialog('close');
+                            }
+//                            ,
+//                            'Cancel': function() {
+//                                $(this).dialog('close');
+//                            }
+                        }
+                    });
+
                     //var win = window.open("elasticityPathway.html?"+ serviceID + "&" + d.name + "&" + d.type, '_blank');
                 }
             }
