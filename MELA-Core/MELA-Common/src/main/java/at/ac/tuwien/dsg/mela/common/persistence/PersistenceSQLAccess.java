@@ -104,12 +104,67 @@ public class PersistenceSQLAccess {
         };
 
         if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, serviceID) == 1) {
-            log.debug("Removing sequenceId from MontoringSeq");
-            String sql = "delete from MonitoringSeq where ID= ?";
-            jdbcTemplate.update(sql, serviceID);
+            {
+                log.debug("Removing EVENTS for " + serviceID);
+                String sql = "delete from EVENTS where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+            {
+                log.debug("Removing ELASTICITYDEPENDENCY for " + serviceID);
+                String sql = "delete from ELASTICITYDEPENDENCY where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing ELASTICITYDEPENDENCY for " + serviceID);
+                String sql = "delete from ELASTICITYDEPENDENCY where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+            {
+                log.debug("Removing ElasticityPathway for " + serviceID);
+                String sql = "delete from ElasticityPathway where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing ElasticitySpace for " + serviceID);
+                String sql = "delete from ElasticitySpace where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing AggregatedData for " + serviceID);
+                String sql = "delete from AggregatedData where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing Configuration for " + serviceID);
+                String sql = "delete from Configuration where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing RawCollectedData for " + serviceID);
+                String sql = "delete from RawCollectedData where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing Timestamp for " + serviceID);
+                String sql = "delete from Timestamp where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing sequenceId from MontoringSeq");
+                String sql = "delete from MonitoringSeq where ID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
         } else {
             log.debug("sequenceId " + serviceID + " not found from in MontoringSeq");
         }
+
     }
 
     public JdbcTemplate getJdbcTemplate() {
