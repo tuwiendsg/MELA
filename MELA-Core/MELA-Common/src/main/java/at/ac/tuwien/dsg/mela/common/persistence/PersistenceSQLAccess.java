@@ -103,10 +103,12 @@ public class PersistenceSQLAccess {
             }
         };
 
-        if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, serviceID) < 1) {
-            log.debug("Removing sequenceId into MontoringSeq");
+        if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, serviceID) == 1) {
+            log.debug("Removing sequenceId from MontoringSeq");
             String sql = "delete from MonitoringSeq where ID= ?";
             jdbcTemplate.update(sql, serviceID);
+        } else {
+            log.debug("sequenceId " + serviceID + " not found from in MontoringSeq");
         }
     }
 
