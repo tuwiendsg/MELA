@@ -443,7 +443,7 @@ public class PersistenceSQLAccess {
      */
     public ServiceMonitoringSnapshot extractLatestMonitoringData(String monitoringSequenceID) {
         String sql = "SELECT AggregatedData.timestampID, timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN timestamp "
-                + "ON AggregatedData.timestampID= timestamp.ID  where " + "ID = (SELECT MAX(ID) from AggregatedData where AggregatedData.monSeqID=?);";
+                + "ON AggregatedData.timestampID= timestamp.ID  where " + "AggregatedData.timestampID = (SELECT MAX(ID) from AggregatedData where AggregatedData.monSeqID=?);";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {

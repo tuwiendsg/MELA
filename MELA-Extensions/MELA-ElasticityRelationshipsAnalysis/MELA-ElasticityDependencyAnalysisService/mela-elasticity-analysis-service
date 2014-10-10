@@ -13,10 +13,10 @@ RUN_MODE="daemons"
 JAVA=/home/daniel-tuwien/jdk1.8.0/bin/java
 NAME=mela-analysis-service
 DAEMONDIR=./
-DAEMON=MELA-ElasticityDependencyAnalysis-3.0-SNAPSHOT-war-exec.jar
+DAEMON=MELA-ElasticityRelationshipsAnalysisService-3.0-SNAPSHOT-war-exec.jar
 PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-elasticity-analysis-service.pid
-MELA_HTTP_PORT=8081
+MELA_HTTP_PORT=8182
 
 LOG_DIR=/tmp/mela
 
