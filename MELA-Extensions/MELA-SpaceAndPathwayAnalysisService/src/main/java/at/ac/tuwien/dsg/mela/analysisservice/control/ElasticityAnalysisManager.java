@@ -128,6 +128,7 @@ public class ElasticityAnalysisManager {
                 //cleanup timers for removed services
                 for (MonitoredElement element : elasticitySpaceComputationTimers.keySet()) {
                     if (!ids.contains(element.getId())) {
+                        log.info("Service " + element.getId() + " was removed. Stopping analytics for it.");
                         elasticitySpaceComputationTimers.remove(element).cancel();
                     }
                 }
@@ -137,9 +138,11 @@ public class ElasticityAnalysisManager {
                     ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceDelegate.getLatestConfiguration(monSeqID);
                     final MonitoredElement serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
                     if (!elasticitySpaceComputationTimers.containsKey(serviceConfiguration)) {
+                        log.info("Service " + serviceConfiguration.getId() + " was detected. Starting analytics for it.");
                         TimerTask task = new TimerTask() {
                             @Override
                             public void run() {
+                                log.info("Computing analytics for " + serviceConfiguration.getId());
                                 persistenceDelegate.updateAndGetElasticitySpace(serviceConfiguration.getId());
                             }
 
