@@ -60,21 +60,21 @@
     </bean>
     
     <!--HyperSQL connector-->
-<!--    <bean id="melaDBConnector" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <bean id="melaDBConnector" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
         <property name="url" value="jdbc:hsqldb:hsql://${dataservice.ip}:9001/mela"/>
         <property name="username" value="SA"/>
         <property name="password" value=""/>
     </bean>
-     -->
+  
      
-      <!--H2 connector-->
-      <bean id="melaDBConnector" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <!--H2 connector-->
+    <!--      <bean id="melaDBConnector" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="org.h2.Driver"/>
-        <!--property name="url" value="jdbc:h2:mem:;TRACE_LEVEL_FIlE=4"/-->
+        property name="url" value="jdbc:h2:mem:;TRACE_LEVEL_FIlE=4"/
         <property name="url" value="jdbc:h2:tcp://${dataservice.ip}:9001/${dataservice.configuration.databasePath};;DB_CLOSE_DELAY=-1"/>
         <property name="username" value="SA"/>
         <property name="password" value=""/>
-    </bean>
+    </bean>-->
      
 </beans>
