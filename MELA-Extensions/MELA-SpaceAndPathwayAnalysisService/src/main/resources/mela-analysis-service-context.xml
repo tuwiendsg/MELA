@@ -58,7 +58,7 @@
     </beans>
     
     
-    <beans profile="MYSQL">
+    <beans >
       
         <bean id="melaDBConnector"  class="org.springframework.jdbc.datasource.DriverManagerDataSource">
             <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
