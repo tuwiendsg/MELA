@@ -400,8 +400,8 @@ public class PersistenceSQLAccess {
      * @return returns maximum count elements
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int startIndex, int count, String monitoringSequenceID) {
-        String sql = "SELECT AggregatedData.timestampID, timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN timestamp "
-                + "ON AggregatedData.timestampID= timestamp.ID  where " + "AggregatedData.ID > (?) AND AggregatedData.ID < (?) AND AggregatedData.monSeqID=(?);";
+        String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + "AggregatedData.ID > (?) AND AggregatedData.ID < (?) AND AggregatedData.monSeqID=(?);";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
@@ -422,7 +422,7 @@ public class PersistenceSQLAccess {
         int maxIimestampID = 0;
         
         {
-            String getMinTimestampIDSQL = "SELECT MIN(id) from timestamp where monSeqID=?;";
+            String getMinTimestampIDSQL = "SELECT MIN(id) from Timestamp where monSeqID=?;";
             RowMapper<Integer> getMinTimestampRowMapper = new RowMapper<Integer>() {
                 public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
                     return rs.getInt(1);
@@ -439,7 +439,7 @@ public class PersistenceSQLAccess {
         }
         
         {
-            String getMaxTimestampIDSQL = "SELECT MAX(id) from timestamp where monSeqID=?;";
+            String getMaxTimestampIDSQL = "SELECT MAX(id) from Timestamp where monSeqID=?;";
             RowMapper<Integer> getMaxTimestampRowMapper = new RowMapper<Integer>() {
                 public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
                     return rs.getInt(1);
@@ -456,8 +456,8 @@ public class PersistenceSQLAccess {
         
         int timestampIDToSelectFrom = (maxIimestampID - x) >= 0 ? maxIimestampID - x : minIimestampID;
         
-        String getLastXAggregatedDataSQL = "SELECT AggregatedData.timestampID, timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN timestamp "
-                + "ON AggregatedData.timestampID= timestamp.ID  where " + "AggregatedData.ID > (?) AND AggregatedData.ID < (?) AND AggregatedData.monSeqID=(?);";
+        String getLastXAggregatedDataSQL = "SELECT AggregatedData.timestampID, Timestamp.Timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + "AggregatedData.ID > (?) AND AggregatedData.ID < (?) AND AggregatedData.monSeqID=(?);";
         
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -476,8 +476,8 @@ public class PersistenceSQLAccess {
     
     public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(int startTimestampID, int endTimestampID, String monitoringSequenceID) {
         
-        String sql = "SELECT AggregatedData.timestampID, timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN timestamp "
-                + "ON AggregatedData.timestampID= timestamp.ID  where " + " AggregatedData.timestampID >= ? "
+        String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " AggregatedData.timestampID >= ? "
                 + "AND AggregatedData.timestampID <=  ? AND AggregatedData.monSeqID=?;";
         
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
@@ -499,8 +499,8 @@ public class PersistenceSQLAccess {
      * @return returns maximum count elements
      */
     public ServiceMonitoringSnapshot extractLatestMonitoringData(String monitoringSequenceID) {
-        String sql = "SELECT AggregatedData.timestampID, timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN timestamp "
-                + "ON AggregatedData.timestampID= timestamp.ID  where " + "AggregatedData.timestampID = (SELECT MAX(ID) from AggregatedData where AggregatedData.monSeqID=?);";
+        String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + "AggregatedData.timestampID = (SELECT MAX(ID) from AggregatedData where AggregatedData.monSeqID=?);";
         
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -523,8 +523,8 @@ public class PersistenceSQLAccess {
     }
     
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int timestamp, String monitoringSequenceID) {
-        String sql = "SELECT AggregatedData.timestampID, timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN timestamp "
-                + "ON AggregatedData.timestampID= timestamp.ID where AggregatedData.monSeqID=? and AggregatedData.timestampID > ? LIMIT 1000;";
+        String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
+                + "ON AggregatedData.timestampID= Timestamp.ID where AggregatedData.monSeqID=? and AggregatedData.timestampID > ? LIMIT 1000;";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
@@ -543,8 +543,8 @@ public class PersistenceSQLAccess {
      * @return returns maximum count elements
      */
     public List<ServiceMonitoringSnapshot> extractMonitoringData(String monitoringSequenceID) {
-        String sql = "SELECT AggregatedData.timestampID, timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN timestamp "
-                + "ON AggregatedData.timestampID= timestamp.ID where AggregatedData.monSeqID=? LIMIT 1000;";
+        String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
+                + "ON AggregatedData.timestampID= Timestamp.ID where AggregatedData.monSeqID=? LIMIT 1000;";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
