@@ -1,3 +1,7 @@
+drop database mela;
+create database mela;
+use mela;
+
 drop table IF EXISTS EVENTS
 drop table IF EXISTS ELASTICITYDEPENDENCY
 drop table IF EXISTS ElasticityPathway
