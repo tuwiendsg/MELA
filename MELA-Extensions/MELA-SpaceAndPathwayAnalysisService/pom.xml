@@ -103,7 +103,16 @@
             <artifactId>h2</artifactId>
             <version>1.4.181</version>
         </dependency>
+        
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.33</version>
+        </dependency>
+
     </dependencies>
+    
+    
   
     <profiles>
 
@@ -204,7 +213,7 @@
                                     <fileset dir="${basedir}/config" includes="**/*"/>
                                 </copy>
                                 <copy file="${basedir}/mela-space-and-pathway-analysis-service"
-                                  tofile="${basedir}/target/mela-space-and-pathway-analysis-service"/>
+                                      tofile="${basedir}/target/mela-space-and-pathway-analysis-service"/>
                             </target>
                         </configuration>
                         <goals>
