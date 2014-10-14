@@ -47,6 +47,15 @@
             <property name="username" value="SA"/>
             <property name="password" value=""/>
         </bean>
+        
+        <jdbc:initialize-database data-source="melaDBConnector" enabled="#{!${dataservice.operationmode.continuous}}">
+            <jdbc:script location="classpath*:sql/schema.sql"/>
+        </jdbc:initialize-database>
+
+        <jdbc:initialize-database data-source="melaDBConnector" enabled="${dataservice.operationmode.continuous}">
+            <jdbc:script location="classpath*:sql/schema-continous.sql"/>
+        </jdbc:initialize-database>
+
     
     </beans>
     
@@ -67,6 +76,16 @@
             <property name="username" value="SA"/>
             <property name="password" value=""/>
         </bean> 
+        
+        <jdbc:initialize-database data-source="melaDBConnector" enabled="#{!${dataservice.operationmode.continuous}}">
+            <jdbc:script location="classpath*:sql/schema.sql"/>
+        </jdbc:initialize-database>
+
+        <jdbc:initialize-database data-source="melaDBConnector" enabled="${dataservice.operationmode.continuous}">
+            <jdbc:script location="classpath*:sql/schema-continous.sql"/>
+        </jdbc:initialize-database>
+
+
     
     </beans>
     
@@ -79,6 +98,16 @@
             <property name="username" value="mela"/>
             <property name="password" value="mela"/>
         </bean>
+        
+             
+        <jdbc:initialize-database data-source="melaDBConnector" enabled="#{!${dataservice.operationmode.continuous}}">
+            <jdbc:script location="classpath*:sql/schema-mysql.sql"/>
+        </jdbc:initialize-database>
+
+        <jdbc:initialize-database data-source="melaDBConnector" enabled="${dataservice.operationmode.continuous}">
+            <jdbc:script location="classpath*:sql/schema-continous-mysql.sql"/>
+        </jdbc:initialize-database>
+
     
     </beans>
     
@@ -86,14 +115,7 @@
    
     <beans>
 
-        <jdbc:initialize-database data-source="melaDBConnector" enabled="#{!${dataservice.operationmode.continuous}}">
-            <jdbc:script location="classpath*:sql/schema.sql"/>
-        </jdbc:initialize-database>
-
-        <jdbc:initialize-database data-source="melaDBConnector" enabled="${dataservice.operationmode.continuous}">
-            <jdbc:script location="classpath*:sql/schema-continous.sql"/>
-        </jdbc:initialize-database>
-
+       
         <!--     JMS stuff 
         -->    
         <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
