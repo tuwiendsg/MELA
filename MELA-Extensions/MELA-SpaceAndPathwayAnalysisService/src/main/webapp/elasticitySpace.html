@@ -530,30 +530,32 @@
 
         function drawElSpace(elSpace, vars) {
 
-            elSpaceDiv.selectAll("h2").remove();
-            elSpaceDiv.selectAll("svg").remove();
- 
+            if (elSpace && elSpace.dimensions) {
 
-            maxColumns = Math.floor(window.innerWidth / (width + 60));
+                elSpaceDiv.selectAll("h2").remove();
+                elSpaceDiv.selectAll("svg").remove();
 
-            elSpaceSVGHeight = Math.ceil(elSpace.dimensions.length / maxColumns) * (height + 120);
 
-            elSpaceSVG = elSpaceDiv.append("svg")
-                    .attr("width", window.innerWidth)
-                    .attr("height", elSpaceSVGHeight)
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                maxColumns = Math.floor(window.innerWidth / (width + 60));
 
-            elSpaceSVG.append("line")
-                    .attr("x1", -margin.left)
-                    .attr("y1", -20)
-                    .attr("x2", window.innerWidth)
-                    .attr("y2", -20)
-                    .attr("stroke-width", 1)
-                    .attr("stroke", "black");
+                elSpaceSVGHeight = Math.ceil(elSpace.dimensions.length / maxColumns) * (height + 120);
 
-            generateElSpaceChart(elSpace, elSpaceSVG, lineThickness, elSpaceColors, -50, 20, width, height, "Time (s)");
+                elSpaceSVG = elSpaceDiv.append("svg")
+                        .attr("width", window.innerWidth)
+                        .attr("height", elSpaceSVGHeight)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+                elSpaceSVG.append("line")
+                        .attr("x1", -margin.left)
+                        .attr("y1", -20)
+                        .attr("x2", window.innerWidth)
+                        .attr("y2", -20)
+                        .attr("stroke-width", 1)
+                        .attr("stroke", "black");
+
+                generateElSpaceChart(elSpace, elSpaceSVG, lineThickness, elSpaceColors, -50, 20, width, height, "Time (s)");
+            }
         }
 
 

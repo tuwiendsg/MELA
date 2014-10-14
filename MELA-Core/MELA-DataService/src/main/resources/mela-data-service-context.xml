@@ -29,97 +29,117 @@
 
     <!-- this configures a standalone HSQLDB server instance that is started during application startup -->
     <!--HyperSQL connector-->
-    <bean id="database" class="at.ac.tuwien.dsg.mela.dataservice.spring.HsqlServerBean" lazy-init="false">
-        <property name="serverProperties">
-            <props>
-                <prop key="server.port">9001</prop>
-                <prop key="server.database.0">${dataservice.configuration.databasePath}/mela</prop>
-                <prop key="server.dbname.0">mela</prop>
-            </props>
-        </property>
-    </bean> 
+    <beans profile="PORTABLE">
+        <bean id="database" class="at.ac.tuwien.dsg.mela.dataservice.spring.HsqlServerBean" lazy-init="false">
+            <property name="serverProperties">
+                <props>
+                    <prop key="server.port">9001</prop>
+                    <prop key="server.database.0">${dataservice.configuration.databasePath}/mela</prop>
+                    <prop key="server.dbname.0">mela</prop>
+                </props>
+            </property>
+        </bean> 
     
-    <!--HyperSQL connector-->
-    <bean id="melaDBConnector" class="org.springframework.jdbc.datasource.DriverManagerDataSource" depends-on="database">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-        <property name="url" value="jdbc:hsqldb:hsql://localhost:9001/mela;hsqldb.cache_rows=100;hsqldb.log_data=false"/>
-        <property name="username" value="SA"/>
-        <property name="password" value=""/>
-    </bean>
+        <!--HyperSQL connector-->
+        <bean id="melaDBConnector" class="org.springframework.jdbc.datasource.DriverManagerDataSource" depends-on="database">
+            <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+            <property name="url" value="jdbc:hsqldb:hsql://localhost:9001/mela;hsqldb.cache_rows=100;hsqldb.log_data=false"/>
+            <property name="username" value="SA"/>
+            <property name="password" value=""/>
+        </bean>
+    
+    </beans>
     
     
-    <!--     H2 connector
-    <bean id = "tcpServer"
-          class="org.h2.tools.Server"
-          factory-method="createTcpServer"
-          init-method="start"
-          destroy-method="stop">
-        <constructor-arg value="-tcp,-tcpAllowOthers,-tcpPort,9001" />
-    </bean>
-     H2 connector
-    <bean id="melaDBConnector" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" depends-on="tcpServer">
-        <property name="driverClassName" value="org.h2.Driver"/>
-        property name="url" value="jdbc:h2:mem:;TRACE_LEVEL_FIlE=4"/
-        <property name="url" value="jdbc:h2:tcp://localhost:9001/${dataservice.configuration.databasePath};;DB_CLOSE_DELAY=-1"/>
-        <property name="username" value="SA"/>
-        <property name="password" value=""/>
-    </bean>-->
+    <beans profile="H2">
+        <!--     H2 connector -->
+        <bean id = "tcpServer"
+              class="org.h2.tools.Server"
+              factory-method="createTcpServer"
+              init-method="start"
+              destroy-method="stop">
+            <constructor-arg value="-tcp,-tcpAllowOthers,-tcpPort,9001" />
+        </bean>
+        <!-- H2 connector-->
+        <bean id="melaDBConnector" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" depends-on="tcpServer">
+            <property name="driverClassName" value="org.h2.Driver"/>
+            <property name="url" value="jdbc:h2:tcp://localhost:9001/${dataservice.configuration.databasePath};;DB_CLOSE_DELAY=-1"/>
+            <property name="username" value="SA"/>
+            <property name="password" value=""/>
+        </bean> 
+    
+    </beans>
+    
+    
+    <beans profile="MYSQL">
+      
+        <bean id="melaDBConnector"  class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+            <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+            <property name="url" value="jdbc:mysql://localhost/mela"/>
+            <property name="username" value="mela"/>
+            <property name="password" value="mela"/>
+        </bean>
+    
+    </beans>
+    
+    
+   
+    <beans>
 
+        <jdbc:initialize-database data-source="melaDBConnector" enabled="#{!${dataservice.operationmode.continuous}}">
+            <jdbc:script location="classpath*:sql/schema.sql"/>
+        </jdbc:initialize-database>
 
-    <jdbc:initialize-database data-source="melaDBConnector" enabled="#{!${dataservice.operationmode.continuous}}">
-        <jdbc:script location="classpath*:sql/schema.sql"/>
-    </jdbc:initialize-database>
+        <jdbc:initialize-database data-source="melaDBConnector" enabled="${dataservice.operationmode.continuous}">
+            <jdbc:script location="classpath*:sql/schema-continous.sql"/>
+        </jdbc:initialize-database>
 
-    <jdbc:initialize-database data-source="melaDBConnector" enabled="${dataservice.operationmode.continuous}">
-        <jdbc:script location="classpath*:sql/schema-continous.sql"/>
-    </jdbc:initialize-database>
+        <!--     JMS stuff 
+        -->    
+        <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+            <property name="brokerURL" value="tcp://localhost:9124"/>
+        </bean>
 
-    <!--     JMS stuff 
-    -->    
-    <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="tcp://localhost:9124"/>
-    </bean>
+        <amq:broker useJmx="true" persistent="false">
+            <amq:transportConnectors>
+                <amq:transportConnector uri="tcp://localhost:9124"/>
+            </amq:transportConnectors>
+        </amq:broker>
 
-    <amq:broker useJmx="true" persistent="false">
-        <amq:transportConnectors>
-            <amq:transportConnector uri="tcp://localhost:9124"/>
-        </amq:transportConnectors>
-    </amq:broker>
-
-    <jms:listener-container container-type="default" connection-factory="jmsFactory" acknowledge="auto">
-        <jms:listener destination="MELADataService.Config" ref="commandConsumer"/>
-    </jms:listener-container>
+        <jms:listener-container container-type="default" connection-factory="jmsFactory" acknowledge="auto">
+            <jms:listener destination="MELADataService.Config" ref="commandConsumer"/>
+        </jms:listener-container>
  
     
-    <!-- Adds annotated spring beans -->
-    <context:component-scan base-package="at.ac.tuwien.dsg"/>
+        <!-- Adds annotated spring beans -->
+        <context:component-scan base-package="at.ac.tuwien.dsg"/>
      
-    <jaxrs:server id="customerService" address="/">
-        <jaxrs:serviceBeans>
-            <ref bean="configurationService"/>
-            <bean id="swaggerResourceJSON" class="com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON"/>
-        </jaxrs:serviceBeans>
-        <jaxrs:features>
-            <cxf:logging/>
-        </jaxrs:features>
-        <jaxrs:providers>
-            <bean class="com.wordnik.swagger.jaxrs.listing.ResourceListingProvider"/>
-            <bean class="com.wordnik.swagger.jaxrs.listing.ApiDeclarationProvider"/>
-        </jaxrs:providers>
-    </jaxrs:server>
+        <jaxrs:server id="customerService" address="/">
+            <jaxrs:serviceBeans>
+                <ref bean="configurationService"/>
+                <bean id="swaggerResourceJSON" class="com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON"/>
+            </jaxrs:serviceBeans>
+            <jaxrs:features>
+                <cxf:logging/>
+            </jaxrs:features>
+            <jaxrs:providers>
+                <bean class="com.wordnik.swagger.jaxrs.listing.ResourceListingProvider"/>
+                <bean class="com.wordnik.swagger.jaxrs.listing.ApiDeclarationProvider"/>
+            </jaxrs:providers>
+        </jaxrs:server>
 
-    <bean id="swaggerConfig" class="com.wordnik.swagger.jaxrs.config.BeanConfig">
-        <property name="resourcePackage" value="at.ac.tuwien.dsg.mela.analysisservice.api"/>
-        <property name="version" value="0.1.0"/>
-        <property name="basePath" value="http://localhost:8081/REST_WS"/>
-        <property name="title" value="MELA Elasticity Analysis Service"/>
-        <property name="description" value="A service for dsicovering dependencies in cloud services" />
-        <property name="contact" value="d.moldovan@dsg.tuwien.ac.at"/>
-        <property name="license" value="Apache 2.0 License"/>
-        <property name="licenseUrl" value="http://www.apache.org/licenses/LICENSE-2.0.html"/>
-        <property name="scan" value="true"/>
-    </bean>
+        <bean id="swaggerConfig" class="com.wordnik.swagger.jaxrs.config.BeanConfig">
+            <property name="resourcePackage" value="at.ac.tuwien.dsg.mela.analysisservice.api"/>
+            <property name="version" value="0.1.0"/>
+            <property name="basePath" value="http://localhost:8081/REST_WS"/>
+            <property name="title" value="MELA Elasticity Analysis Service"/>
+            <property name="description" value="A service for dsicovering dependencies in cloud services" />
+            <property name="contact" value="d.moldovan@dsg.tuwien.ac.at"/>
+            <property name="license" value="Apache 2.0 License"/>
+            <property name="licenseUrl" value="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+            <property name="scan" value="true"/>
+        </bean>
 
 
-
+    </beans>
 </beans>
