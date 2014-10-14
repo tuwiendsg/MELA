@@ -409,12 +409,7 @@ public class PersistenceSQLAccess {
                 + "ON AggregatedData.timestampID= Timestamp.ID  where " + "AggregatedData.ID > (?) AND AggregatedData.ID < (?) AND AggregatedData.monSeqID=(?);";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
-                int sTimestamp = rs.getInt(1);
-                String timestamp = rs.getString(2);
-                ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
-                snapshot.setTimestampID(sTimestamp);
-                snapshot.setTimestamp(timestamp);
-                return snapshot;
+                return retrieveSnapshot(rs);
             }
         };
 
@@ -466,12 +461,7 @@ public class PersistenceSQLAccess {
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
-                int sTimestamp = rs.getInt(1);
-                String timestamp = rs.getString(2);
-                ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
-                snapshot.setTimestampID(sTimestamp);
-                snapshot.setTimestamp(timestamp);
-                return snapshot;
+                return retrieveSnapshot(rs);
             }
         };
 
@@ -487,12 +477,7 @@ public class PersistenceSQLAccess {
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
-                int sTimestamp = rs.getInt(1);
-                String timestamp = rs.getString(2);
-                ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
-                snapshot.setTimestampID(sTimestamp);
-                snapshot.setTimestamp(timestamp);
-                return snapshot;
+                return retrieveSnapshot(rs);
             }
         };
 
@@ -509,33 +494,7 @@ public class PersistenceSQLAccess {
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
-                int sTimestamp = rs.getInt(1);
-                String timestamp = rs.getString(2);
-                Object data = rs.getObject(3);
-
-                //if array of bytes as mysql returns
-                if (data instanceof byte[]) {
-                    try {
-                        ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
-                        ObjectInput in = new ObjectInputStream(bis);
-                        ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) in.readObject();
-                        snapshot.setTimestampID(sTimestamp);
-                        snapshot.setTimestamp(timestamp);
-                        return snapshot;
-                    } catch (ClassNotFoundException ex) {
-                        log.info(ex.getMessage(), ex);
-                        return new ServiceMonitoringSnapshot();
-                    } catch (IOException ex) {
-                        log.info(ex.getMessage(), ex);
-                        return new ServiceMonitoringSnapshot();
-                    }
-                } else {
-                    //can convert and return with H2 and HyperSQL adapters
-                    ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
-                    snapshot.setTimestampID(sTimestamp);
-                    snapshot.setTimestamp(timestamp);
-                    return snapshot;
-                }
+                return retrieveSnapshot(rs);
             }
         };
 
@@ -553,12 +512,7 @@ public class PersistenceSQLAccess {
                 + "ON AggregatedData.timestampID= Timestamp.ID where AggregatedData.monSeqID=? and AggregatedData.timestampID > ? LIMIT 1000;";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
-                int sTimestamp = rs.getInt(1);
-                String timestamp = rs.getString(2);
-                ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
-                snapshot.setTimestampID(sTimestamp);
-                snapshot.setTimestamp(timestamp);
-                return snapshot;
+                return retrieveSnapshot(rs);
             }
         };
 
@@ -573,17 +527,43 @@ public class PersistenceSQLAccess {
                 + "ON AggregatedData.timestampID= Timestamp.ID where AggregatedData.monSeqID=? LIMIT 1000;";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
-                int sTimestamp = rs.getInt(1);
-                String timestamp = rs.getString(2);
-                ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
-                snapshot.setTimestampID(sTimestamp);
-                snapshot.setTimestamp(timestamp);
-                return snapshot;
+                return retrieveSnapshot(rs);
+
             }
         };
 
         return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
 
+    }
+
+    private ServiceMonitoringSnapshot retrieveSnapshot(ResultSet rs) throws SQLException {
+        int sTimestamp = rs.getInt(1);
+        String timestamp = rs.getString(2);
+        Object data = rs.getObject(3);
+
+        //if array of bytes as mysql returns
+        if (data instanceof byte[]) {
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
+                ObjectInput in = new ObjectInputStream(bis);
+                ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) in.readObject();
+                snapshot.setTimestampID(sTimestamp);
+                snapshot.setTimestamp(timestamp);
+                return snapshot;
+            } catch (ClassNotFoundException ex) {
+                log.info(ex.getMessage(), ex);
+                return new ServiceMonitoringSnapshot();
+            } catch (IOException ex) {
+                log.info(ex.getMessage(), ex);
+                return new ServiceMonitoringSnapshot();
+            }
+        } else {
+            //can convert and return with H2 and HyperSQL adapters
+            ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
+            snapshot.setTimestampID(sTimestamp);
+            snapshot.setTimestamp(timestamp);
+            return snapshot;
+        }
     }
 
     public List<Metric> getAvailableMetrics(MonitoredElement monitoredElement, String monitoringSequenceID) {
