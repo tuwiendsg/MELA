@@ -682,7 +682,7 @@ public class PersistenceSQLAccess {
     
     public List<Event> getUnreadEvents(final String serviceID) {
         
-        String sql = "SELECT id, event from Events where monSeqID=? and read='false'";
+        String sql = "SELECT id, event from Events where monSeqID=? and flag='false'";
         RowMapper<Event> rowMapper = new RowMapper<Event>() {
             public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
                 Event event = new Event().withId(rs.getString(1)).withEvent(rs.getString(2)).withServiceID(serviceID);
@@ -720,7 +720,7 @@ public class PersistenceSQLAccess {
     
     public void writeEvents(String serviceID, List<Event> events) {
         //add new entry
-        String sql = "INSERT INTO Events (monSeqID, event, read) "
+        String sql = "INSERT INTO Events (monSeqID, event, flag) "
                 + "VALUES";
         for (int i = 0; i < events.size(); i++) {
             String event = events.get(i).getEvent();
@@ -740,7 +740,7 @@ public class PersistenceSQLAccess {
 //SET column1=value1,column2=value2,...
 //WHERE some_column
         if (events.size() > 0) {
-            String sql = "UPDATE Events SET read='true' where monSeqID=? and ID IN (";
+            String sql = "UPDATE Events SET flag='true' where monSeqID=? and ID IN (";
             
             for (int i = 0; i < events.size(); i++) {
                 
