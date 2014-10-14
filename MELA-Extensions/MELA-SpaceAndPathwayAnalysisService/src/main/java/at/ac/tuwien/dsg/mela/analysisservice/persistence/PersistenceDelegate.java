@@ -125,15 +125,16 @@ public class PersistenceDelegate {
                         }
 
                     }
-                }
-                //check if new data has been collected between elasticity space querries
-                if (!dataFromTimestamp.isEmpty()) {
-                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-                    fct.setRequirements(requirements);
-                    fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
-                    //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-                    space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-                    spaceUpdated = true;
+
+                    //check if new data has been collected between elasticity space querries
+                    if (!dataFromTimestamp.isEmpty()) {
+                        ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+                        fct.setRequirements(requirements);
+                        fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
+                        //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+                        space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+                        spaceUpdated = true;
+                    }
                 }
 
             } while (!dataFromTimestamp.isEmpty());
