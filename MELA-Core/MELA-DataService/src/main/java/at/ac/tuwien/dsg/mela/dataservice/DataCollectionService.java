@@ -39,6 +39,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.XmlConverter;
+import at.ac.tuwien.dsg.mela.common.utils.perfMonitoring.MELAPerfMonitor;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
 
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceDelegate;
@@ -155,6 +156,21 @@ public class DataCollectionService {
 
     {
         actionsInExecution = new ConcurrentHashMap<String, List<Action>>();
+    }
+
+    Timer monitoringMemUsageTimer;
+
+    {
+        monitoringMemUsageTimer = new Timer(true);
+        TimerTask momMemUsageTask = new TimerTask() {
+
+            @Override
+            public void run() {
+                MELAPerfMonitor.logMemoryUsage(performanceLog);
+            }
+        };
+        
+        monitoringMemUsageTimer.scheduleAtFixedRate(momMemUsageTask, 0, 60000);
     }
 
     @Autowired
@@ -423,7 +439,7 @@ public class DataCollectionService {
             Date before = new Date();
             ServiceMonitoringSnapshot monitoredData = dataAccess.getStructuredMonitoredData(serviceConfiguration);
             Date after = new Date();
-            log.debug("Raw monitoring data access time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+            performanceLog.debug("Raw monitoring data access time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
             return monitoredData;
         } else {
             log.warn("Data Access source not set yet on SystemControl");
@@ -591,7 +607,7 @@ public class DataCollectionService {
 
                     if (serviceConfigurations.containsKey(serviceID)) {
                         log.debug("Refreshing data");
-                         ServiceMonitoringSnapshot monitoringData = getRawMonitoringData(serviceID);
+                        ServiceMonitoringSnapshot monitoringData = getRawMonitoringData(serviceID);
 
                         if (monitoringData != null) {
                             List<ServiceMonitoringSnapshot> dataToAggregate = null;
@@ -615,7 +631,7 @@ public class DataCollectionService {
 
                             String perfReport = "" + latestMonitoringData.getMonitoredData(MonitoredElement.MonitoredElementLevel.VM).keySet().size();
 
-                            log.debug("Data aggregation time time in ms:  " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime());
+                            performanceLog.debug("Data aggregation time time in ms:  " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime());
                             perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
 
                             if (actionsInExecution.containsKey(serviceID)) {
@@ -633,7 +649,7 @@ public class DataCollectionService {
                             persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration, serviceConfiguration.getId());
                             Date afterTimestamp = new Date();
 
-                            log.debug("Timestamp persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
+                            performanceLog.debug("Timestamp persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
                             perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
                             //add same timestamp on all mon data
                             //this is something as a short-hand solution
@@ -648,7 +664,7 @@ public class DataCollectionService {
                             // write structured monitoring data
                             persistenceSQLAccess.writeMonitoringData(timestamp, latestMonitoringData, serviceConfiguration.getId());
                             Date afterMonData = new Date();
-                            log.debug("Aggregated monitoring data persistence time in ms:  " + new Date(afterMonData.getTime() - beforeMonData.getTime()).getTime());
+                            performanceLog.debug("Aggregated monitoring data persistence time in ms:  " + new Date(afterMonData.getTime() - beforeMonData.getTime()).getTime());
                             perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
 //                            //temporarily due to performance reasons, raw data is not stored anymore (takes too long to store raw data)
 //                            Date beforeRawData = new Date();
@@ -658,7 +674,7 @@ public class DataCollectionService {
 //                            log.debug("Raw monitoring data persistence time in ms:  " + new Date(afterRawData.getTime() - beforeRawData.getTime()).getTime());
                             Date afterPersisting = new Date();
 
-                            log.debug("Data persistence time in ms:  " + new Date(afterPersisting.getTime() - beforePersisting.getTime()).getTime());
+                            performanceLog.debug("Data persistence time in ms:  " + new Date(afterPersisting.getTime() - beforePersisting.getTime()).getTime());
 
                             // update and store elasticity pathway
                             // LightweightEncounterRateElasticityPathway
@@ -719,7 +735,7 @@ public class DataCollectionService {
         String converted = jsonConverter.convertMonitoringSnapshot(serviceMonitoringSnapshot);
 
         Date after = new Date();
-        log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        performanceLog.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
 
         return converted;
     }
@@ -733,7 +749,7 @@ public class DataCollectionService {
         }
 
         Date after = new Date();
-        log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        performanceLog.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
 
         return serviceMonitoringSnapshot.getMonitoredService();
     }
@@ -743,7 +759,7 @@ public class DataCollectionService {
 
         ServiceMonitoringSnapshot monitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData(serviceID);
         Date after = new Date();
-        log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        performanceLog.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
 
         if (monitoringSnapshot != null && !monitoringSnapshot.getMonitoredData().isEmpty()) {
             return monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next();
