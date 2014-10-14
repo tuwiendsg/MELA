@@ -30,6 +30,10 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot
 
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.Event;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,56 +57,57 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
 @Service
 public class PersistenceSQLAccess {
-    
+
     static final Logger log = LoggerFactory.getLogger(PersistenceSQLAccess.class);
-    
+
     @Value("#{melaDBConnector}")
     private DataSource dataSource;
-    
+
     protected JdbcTemplate jdbcTemplate;
-    
+
     public PersistenceSQLAccess() {
     }
-    
+
     @PostConstruct
     public void init() {
         log.debug("Creating new JdbcTemplate with datasource {}", dataSource);
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
-    
+
     public void writeMonitoringSequenceId(String sequenceId) {
-        
+
         String checkIfExistsSql = "select count(1) from MonitoringSeq where ID=?";
-        
+
         RowMapper<Long> rowMapper = new RowMapper<Long>() {
             public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return rs.getLong(1);
             }
         };
-        
+
         if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, sequenceId) < 1) {
             log.debug("Inserting sequenceId into MontoringSeq");
             String sql = "insert into MonitoringSeq (ID) VALUES (?)";
             jdbcTemplate.update(sql, sequenceId);
-            
+
         }
     }
-    
+
     public void removeMonitoringSequenceId(String serviceID) {
         String checkIfExistsSql = "select count(1) from MonitoringSeq where ID=?";
-        
+
         RowMapper<Long> rowMapper = new RowMapper<Long>() {
             public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return rs.getLong(1);
             }
         };
-        
+
         if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, serviceID) == 1) {
             {
                 log.debug("Removing EVENTS for " + serviceID);
@@ -114,7 +119,7 @@ public class PersistenceSQLAccess {
                 String sql = "delete from ELASTICITYDEPENDENCY where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
-            
+
             {
                 log.debug("Removing ELASTICITYDEPENDENCY for " + serviceID);
                 String sql = "delete from ELASTICITYDEPENDENCY where monSeqID= ?";
@@ -125,37 +130,37 @@ public class PersistenceSQLAccess {
                 String sql = "delete from ElasticityPathway where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
-            
+
             {
                 log.debug("Removing ElasticitySpace for " + serviceID);
                 String sql = "delete from ElasticitySpace where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
-            
+
             {
                 log.debug("Removing AggregatedData for " + serviceID);
                 String sql = "delete from AggregatedData where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
-            
+
             {
                 log.debug("Removing Configuration for " + serviceID);
                 String sql = "delete from Configuration where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
-            
+
             {
                 log.debug("Removing RawCollectedData for " + serviceID);
                 String sql = "delete from RawCollectedData where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
-            
+
             {
                 log.debug("Removing Timestamp for " + serviceID);
                 String sql = "delete from Timestamp where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
-            
+
             {
                 log.debug("Removing sequenceId from MontoringSeq");
                 String sql = "delete from MonitoringSeq where ID= ?";
@@ -164,9 +169,9 @@ public class PersistenceSQLAccess {
         } else {
             log.debug("sequenceId " + serviceID + " not found from in MontoringSeq");
         }
-        
+
     }
-    
+
     public JdbcTemplate getJdbcTemplate() {
         return jdbcTemplate;
     }
@@ -176,7 +181,7 @@ public class PersistenceSQLAccess {
      * data sources
      */
     public void writeRawMonitoringData(String timestamp, Collection<MonitoringData> monitoringData, String monitoringSequenceID) {
-        
+
         String sql = "insert into RawCollectedData (monSeqID, timestampID, metricName, metricUnit, metrictype, value, monitoredElementID, monitoredElementLevel) "
                 + "VALUES "
                 + "( (select ID from MonitoringSeq where id='"
@@ -186,12 +191,12 @@ public class PersistenceSQLAccess {
                 + monitoringSequenceID
                 + "')"
                 + " AND timestamp=? )" + ",?,?,?,?,?,?)";
-        
+
         for (MonitoringData data : monitoringData) {
             // for all monitored metrics insert in the metric values
             for (MonitoredElementData elementData : data.getMonitoredElementDatas()) {
                 MonitoredElement element = elementData.getMonitoredElement();
-                
+
                 for (MetricInfo metricInfo : elementData.getMetrics()) {
                     jdbcTemplate.update(sql, timestamp, metricInfo.getName(),
                             metricInfo.getUnits(), metricInfo.getType(), metricInfo.getValue(),
@@ -199,9 +204,9 @@ public class PersistenceSQLAccess {
                 }
             }
         }
-        
+
     }
-    
+
     public void writeInTimestamp(String timestamp, MonitoredElement serviceStructure, String monitoringSequenceID) {
         String sql = "insert into Timestamp (monSeqID, timestamp, serviceStructure) VALUES ( (SELECT ID from MonitoringSeq where id='" + monitoringSequenceID + "'), ?,?)";
         final StringWriter stringWriter = new StringWriter();
@@ -211,21 +216,21 @@ public class PersistenceSQLAccess {
             jAXBContext.createMarshaller().marshal(serviceStructure, stringWriter);
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
-            
+
         }
-        
+
         jdbcTemplate.update(sql, timestamp, stringWriter.toString());
     }
-    
+
     public void writeMonitoringData(String timestamp, ServiceMonitoringSnapshot monitoringSnapshot, String monitoringSequenceID) {
         // if the firstMonitoringSequenceTimestamp is null, insert new
         // monitoring sequence
         String sql = "INSERT INTO AggregatedData (data, monSeqID, timestampID) "
                 + "VALUES (?, ?, (SELECT ID from Timestamp where timestamp=? AND monSeqID=?))";
-        
+
         jdbcTemplate.update(sql, monitoringSnapshot, monitoringSequenceID, timestamp, monitoringSequenceID);
     }
-    
+
     public void writeElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
 
         //delete previous entry
@@ -237,9 +242,9 @@ public class PersistenceSQLAccess {
                 + "VALUES "
                 + "( (SELECT ID FROM MonitoringSeq WHERE id='"
                 + monitoringSequenceID + "')" + ", ? , ? " + ", ? )";
-        
+
         jdbcTemplate.update(sql, elasticitySpace.getStartTimestampID(), elasticitySpace.getEndTimestampID(), elasticitySpace);
-        
+
     }
 
 //    public void writeElasticityPathway(String timestamp, LightweightEncounterRateElasticityPathway elasticityPathway, String monitoringSequenceID) {
@@ -265,7 +270,7 @@ public class PersistenceSQLAccess {
                 space.setStartTimestampID(startTimestamp);
                 space.setEndTimestampID(endTimestamp);
                 return space;
-                
+
             }
         };
 
@@ -277,7 +282,7 @@ public class PersistenceSQLAccess {
             return space.get(0);
         }
     }
-    
+
     public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID, int startTimestampID, int endTimestampID) {
         String sql = "SELECT startTimestampID, endTimestampID, elasticitySpace from ElasticitySpace where monSeqID=? and "
                 + "ID=(SELECT MAX(ID) from ElasticitySpace where monSeqID=? and startTimestampID=? and endTimestampID=?);";
@@ -289,7 +294,7 @@ public class PersistenceSQLAccess {
                 space.setStartTimestampID(startTimestamp);
                 space.setEndTimestampID(endTimestamp);
                 return space;
-                
+
             }
         };
 
@@ -313,30 +318,30 @@ public class PersistenceSQLAccess {
         RowMapper<Integer> rowMapper = new RowMapper<Integer>() {
             public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
                 Integer id = rs.getInt(1);
-                
+
                 return id;
             }
         };
-        
+
         return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
     }
-    
+
     public MonitoringData getRawMonitoringData(String monitoringSequenceID, String timestampID) {
         MonitoringData monitoringData = new MonitoringData();
-        
+
         String sql = "SELECT timestampID, metricName, metricUnit,metricType, value, monitoredElementID from RAWCOLLECTEDDATA where monSeqID=? and timestampID = ?; ";
-        
+
         final Map<String, MonitoredElementData> retrievedData = new HashMap<String, MonitoredElementData>();
-        
+
         RowMapper<MonitoredElementData> rowMapper = new RowMapper<MonitoredElementData>() {
-            
+
             public MonitoredElementData mapRow(ResultSet resultSet, int rowNum) throws SQLException {
                 String metricName = resultSet.getString("metricName");
                 String metricUnit = resultSet.getString("metricUnit");
                 String metricType = resultSet.getString("metricType");
                 String value = resultSet.getString("value");
                 String monitoredElementID = resultSet.getString("monitoredElementID");
-                
+
                 if (retrievedData.containsKey(monitoredElementID)) {
                     MonitoredElementData monitoredElementData = retrievedData.get(monitoredElementID);
                     MetricInfo info = new MetricInfo();
@@ -345,38 +350,38 @@ public class PersistenceSQLAccess {
                     info.setUnits(metricUnit);
                     info.setType(metricType);
                     monitoredElementData.addMetric(info);
-                    
+
                     return monitoredElementData;
                 } else {
                     MonitoredElement monitoredElement = new MonitoredElement(value);
                     monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.VM);
-                    
+
                     MonitoredElementData monitoredElementData = new MonitoredElementData();
                     monitoredElementData.setMonitoredElement(monitoredElement);
-                    
+
                     MetricInfo info = new MetricInfo();
                     info.setName(metricName);
                     info.setValue(value);
                     info.setUnits(metricUnit);
                     info.setType(metricType);
                     monitoredElementData.addMetric(info);
-                    
+
                     retrievedData.put(monitoredElementID, monitoredElementData);
-                    
+
                     return monitoredElementData;
                 }
-                
+
             }
-            
+
         };
-        
+
         jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, timestampID);
-        
+
         monitoringData.addMonitoredElementDatas(retrievedData.values());
-        
+
         return monitoringData;
     }
-    
+
     public LightweightEncounterRateElasticityPathway extractLatestElasticityPathway(String monitoringSequenceID) {
         String sql = "SELECT elasticityPathway from ElasticityPathway where monSeqID=?;";
         RowMapper<LightweightEncounterRateElasticityPathway> rowMapper = new RowMapper<LightweightEncounterRateElasticityPathway>() {
@@ -384,14 +389,14 @@ public class PersistenceSQLAccess {
                 return (LightweightEncounterRateElasticityPathway) rs.getObject(1);
             }
         };
-        
+
         List<LightweightEncounterRateElasticityPathway> pathways = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
         if (pathways.isEmpty()) {
             return null;
         } else {
             return pathways.get(0);
         }
-        
+
     }
 
     /**
@@ -412,15 +417,15 @@ public class PersistenceSQLAccess {
                 return snapshot;
             }
         };
-        
+
         return jdbcTemplate.query(sql, rowMapper, startIndex, startIndex + count, monitoringSequenceID);
     }
-    
+
     public List<ServiceMonitoringSnapshot> extractLastXMonitoringDataSnapshots(int x, String monitoringSequenceID) {
-        
+
         int minIimestampID = 0;
         int maxIimestampID = 0;
-        
+
         {
             String getMinTimestampIDSQL = "SELECT MIN(id) from Timestamp where monSeqID=?;";
             RowMapper<Integer> getMinTimestampRowMapper = new RowMapper<Integer>() {
@@ -428,16 +433,16 @@ public class PersistenceSQLAccess {
                     return rs.getInt(1);
                 }
             };
-            
+
             List<Integer> ints = jdbcTemplate.query(getMinTimestampIDSQL, getMinTimestampRowMapper, monitoringSequenceID);
             if (ints.isEmpty()) {
                 minIimestampID = 0;
             } else {
                 minIimestampID = ints.get(0);
             }
-            
+
         }
-        
+
         {
             String getMaxTimestampIDSQL = "SELECT MAX(id) from Timestamp where monSeqID=?;";
             RowMapper<Integer> getMaxTimestampRowMapper = new RowMapper<Integer>() {
@@ -445,7 +450,7 @@ public class PersistenceSQLAccess {
                     return rs.getInt(1);
                 }
             };
-            
+
             List<Integer> ints = jdbcTemplate.query(getMaxTimestampIDSQL, getMaxTimestampRowMapper, monitoringSequenceID);
             if (ints.isEmpty()) {
                 maxIimestampID = 0;
@@ -453,12 +458,12 @@ public class PersistenceSQLAccess {
                 maxIimestampID = ints.get(0);
             }
         }
-        
+
         int timestampIDToSelectFrom = (maxIimestampID - x) >= 0 ? maxIimestampID - x : minIimestampID;
-        
+
         String getLastXAggregatedDataSQL = "SELECT AggregatedData.timestampID, Timestamp.Timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
                 + "ON AggregatedData.timestampID= Timestamp.ID  where " + "AggregatedData.ID > (?) AND AggregatedData.ID < (?) AND AggregatedData.monSeqID=(?);";
-        
+
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
@@ -469,17 +474,17 @@ public class PersistenceSQLAccess {
                 return snapshot;
             }
         };
-        
+
         return jdbcTemplate.query(getLastXAggregatedDataSQL, rowMapper, timestampIDToSelectFrom, maxIimestampID, monitoringSequenceID);
-        
+
     }
-    
+
     public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(int startTimestampID, int endTimestampID, String monitoringSequenceID) {
-        
+
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
                 + "ON AggregatedData.timestampID= Timestamp.ID  where " + " AggregatedData.timestampID >= ? "
                 + "AND AggregatedData.timestampID <=  ? AND AggregatedData.monSeqID=?;";
-        
+
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
@@ -490,9 +495,9 @@ public class PersistenceSQLAccess {
                 return snapshot;
             }
         };
-        
+
         return jdbcTemplate.query(sql, rowMapper, startTimestampID, endTimestampID, monitoringSequenceID);
-        
+
     }
 
     /**
@@ -501,27 +506,48 @@ public class PersistenceSQLAccess {
     public ServiceMonitoringSnapshot extractLatestMonitoringData(String monitoringSequenceID) {
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
                 + "ON AggregatedData.timestampID= Timestamp.ID  where " + "AggregatedData.timestampID = (SELECT MAX(ID) from AggregatedData where AggregatedData.monSeqID=?);";
-        
+
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int sTimestamp = rs.getInt(1);
                 String timestamp = rs.getString(2);
-                ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
-                snapshot.setTimestampID(sTimestamp);
-                snapshot.setTimestamp(timestamp);
-                return snapshot;
+                Object data = rs.getObject(3);
+
+                //if array of bytes as mysql returns
+                if (data instanceof byte[]) {
+                    try {
+                        ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
+                        ObjectInput in = new ObjectInputStream(bis);
+                        ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) in.readObject();
+                        snapshot.setTimestampID(sTimestamp);
+                        snapshot.setTimestamp(timestamp);
+                        return snapshot;
+                    } catch (ClassNotFoundException ex) {
+                        log.info(ex.getMessage(), ex);
+                        return new ServiceMonitoringSnapshot();
+                    } catch (IOException ex) {
+                        log.info(ex.getMessage(), ex);
+                        return new ServiceMonitoringSnapshot();
+                    }
+                } else {
+                    //can convert and return with H2 and HyperSQL adapters
+                    ServiceMonitoringSnapshot snapshot = (ServiceMonitoringSnapshot) rs.getObject(3);
+                    snapshot.setTimestampID(sTimestamp);
+                    snapshot.setTimestamp(timestamp);
+                    return snapshot;
+                }
             }
         };
-        
+
         List<ServiceMonitoringSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
         if (snapshots.isEmpty()) {
             return null;
         } else {
             return snapshots.get(0);
         }
-        
+
     }
-    
+
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int timestamp, String monitoringSequenceID) {
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
                 + "ON AggregatedData.timestampID= Timestamp.ID where AggregatedData.monSeqID=? and AggregatedData.timestampID > ? LIMIT 1000;";
@@ -535,7 +561,7 @@ public class PersistenceSQLAccess {
                 return snapshot;
             }
         };
-        
+
         return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, timestamp);
     }
 
@@ -555,16 +581,16 @@ public class PersistenceSQLAccess {
                 return snapshot;
             }
         };
-        
+
         return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
-        
+
     }
-    
+
     public List<Metric> getAvailableMetrics(MonitoredElement monitoredElement, String monitoringSequenceID) {
         String sql = "SELECT metricName, metricUnit, metrictype  from RawCollectedData where "
                 + "timestampID = (SELECT MAX(ID) from Timestamp where monSeqID=?)"
                 + " AND monitoredElementID=? AND monitoredElementLevel=?;";
-        
+
         RowMapper<Metric> rowMapper = new RowMapper<Metric>() {
             public Metric mapRow(ResultSet rs, int rowNum) throws SQLException {
                 String metricName = rs.getString("metricName");
@@ -572,14 +598,14 @@ public class PersistenceSQLAccess {
                 return new Metric(metricName, metricUnit);
             }
         };
-        
+
         return jdbcTemplate.query(sql, rowMapper,
                 monitoringSequenceID,
                 monitoredElement.getId(),
                 monitoredElement.getLevel().toString());
-        
+
     }
-    
+
     public ConfigurationXMLRepresentation getLatestConfiguration(String serviceID) {
         String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration where monSeqID=?)";
         ConfigurationXMLRepresentation configurationXMLRepresentation = null;
@@ -589,23 +615,23 @@ public class PersistenceSQLAccess {
                     return new DefaultLobHandler().getClobAsString(rs, "configuration");
                 }
             };
-            
+
             List<String> configs = jdbcTemplate.query(sql, rowMapper, serviceID);
-            
+
             for (String config : configs) {
                 JAXBContext context = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
                 configurationXMLRepresentation = (ConfigurationXMLRepresentation) context.createUnmarshaller()
                         .unmarshal(new StringReader(config));
             }
-            
+
         } catch (BadSqlGrammarException e) {
             log.error("Cannot load configuration from database: " + e.getMessage());
         } catch (JAXBException e) {
             log.error("Cannot unmarshall configuration in XML object: " + e.getMessage());
         }
-        
+
         return configurationXMLRepresentation;
-        
+
     }
 
     /**
@@ -619,15 +645,15 @@ public class PersistenceSQLAccess {
         try {
             JAXBContext context = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
             context.createMarshaller().marshal(configurationXMLRepresentation, stringWriter);
-            
+
         } catch (JAXBException e) {
             log.warn("Cannot marshal configuration into string: " + e);
             return;
-            
+
         }
-        
+
         String sql = "INSERT INTO Configuration (monSeqID, configuration) " + "VALUES (?, ?)";
-        
+
         jdbcTemplate.execute(sql, new AbstractLobCreatingPreparedStatementCallback(new DefaultLobHandler()) {
             protected void setValues(PreparedStatement ps, LobCreator lobCreator) throws SQLException {
                 ps.setString(1, serviceID);
@@ -638,17 +664,17 @@ public class PersistenceSQLAccess {
 
     // todo recreate persistence context here, invoked if service configuration changes (actually re-instantiates the PersistenceSQLAccess object)
     public void refresh() {
-        
+
     }
-    
+
     public List<String> getMonitoringSequencesIDs() {
-        
+
         String sql = "SELECT ID from MonitoringSeq";
         RowMapper<String> rowMapper = new RowMapper<String>() {
             public String mapRow(ResultSet rs, int rowNum) throws SQLException {
                 String id = rs.getString(1);
                 return id;
-                
+
             }
         };
 
@@ -660,9 +686,9 @@ public class PersistenceSQLAccess {
             return strings;
         }
     }
-    
+
     public List<Event> getEvents(final String serviceID) {
-        
+
         String sql = "SELECT id, event from Events where monSeqID=?";
         RowMapper<Event> rowMapper = new RowMapper<Event>() {
             public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -679,9 +705,9 @@ public class PersistenceSQLAccess {
             return strings;
         }
     }
-    
+
     public List<Event> getUnreadEvents(final String serviceID) {
-        
+
         String sql = "SELECT id, event from Events where monSeqID=? and flag='false'";
         RowMapper<Event> rowMapper = new RowMapper<Event>() {
             public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -698,9 +724,9 @@ public class PersistenceSQLAccess {
             return strings;
         }
     }
-    
+
     public List<Event> getEvents(final String serviceID, String eventID) {
-        
+
         String sql = "SELECT id, event from Events where monSeqID=? and ID>=?";
         RowMapper<Event> rowMapper = new RowMapper<Event>() {
             public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -717,7 +743,7 @@ public class PersistenceSQLAccess {
             return strings;
         }
     }
-    
+
     public void writeEvents(String serviceID, List<Event> events) {
         //add new entry
         String sql = "INSERT INTO Events (monSeqID, event, flag) "
@@ -729,11 +755,11 @@ public class PersistenceSQLAccess {
                 sql += ",";
             }
         }
-        
+
         log.info("Executing " + sql);
         jdbcTemplate.update(sql);
     }
-    
+
     public void markEventsAsRead(String serviceID, List<Event> events) {
         //add new entry
 //        UPDATE table_name
@@ -741,29 +767,29 @@ public class PersistenceSQLAccess {
 //WHERE some_column
         if (events.size() > 0) {
             String sql = "UPDATE Events SET flag='true' where monSeqID=? and ID IN (";
-            
+
             for (int i = 0; i < events.size(); i++) {
-                
+
                 sql += "" + events.get(i).getId() + "";
                 if (i < events.size() - 1) {
                     sql += ",";
                 }
             }
-            
+
             sql += ")";
-            
+
             jdbcTemplate.update(sql, serviceID);
         }
     }
-    
+
     public PersistenceSQLAccess withDataSource(final DataSource dataSource) {
         this.dataSource = dataSource;
         return this;
     }
-    
+
     public PersistenceSQLAccess withJdbcTemplate(final JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         return this;
     }
-    
+
 }
