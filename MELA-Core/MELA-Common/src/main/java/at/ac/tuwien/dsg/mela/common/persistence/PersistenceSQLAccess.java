@@ -482,7 +482,7 @@ public class PersistenceSQLAccess {
      */
     public ServiceMonitoringSnapshot extractLatestMonitoringData(String monitoringSequenceID) {
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
-                + "ON AggregatedData.timestampID= Timestamp.ID  where " + "AggregatedData.timestampID = (SELECT MAX(ID) from AggregatedData where AggregatedData.monSeqID=?);";
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + "AggregatedData.timestampID = (SELECT MAX(timestampID) from AggregatedData where AggregatedData.monSeqID=?);";
         
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
