@@ -107,11 +107,11 @@ public class PersistenceSQLAccess {
                 return rs.getLong(1);
             }
         };
-        
+ 
         if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, serviceID) == 1) {
             {
-                log.debug("Removing EVENTS for " + serviceID);
-                String sql = "delete from EVENTS where monSeqID= ?";
+                log.debug("Removing Events for " + serviceID);
+                String sql = "delete from Events where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
             {
@@ -162,7 +162,7 @@ public class PersistenceSQLAccess {
             }
             
             {
-                log.debug("Removing sequenceId from MontoringSeq");
+                log.debug("Removing sequenceId from MonitoringSeq");
                 String sql = "delete from MonitoringSeq where ID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
