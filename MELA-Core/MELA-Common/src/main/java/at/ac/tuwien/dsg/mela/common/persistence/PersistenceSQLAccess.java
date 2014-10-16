@@ -110,7 +110,7 @@ public class PersistenceSQLAccess {
  
         if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, serviceID) == 1) {
             {
-                log.debug("Removing Events for " + serviceID);
+                log.debug("  Removing Events for " + serviceID);
                 String sql = "delete from Events where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
@@ -234,7 +234,10 @@ public class PersistenceSQLAccess {
     public void writeElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
 
         //delete previous entry
-        String sql = "DELETE FROM ElasticitySpace WHERE monseqid=? and startTimestampID=? and endTimestampID=?";
+//        String sql = "DELETE FROM ElasticitySpace WHERE monseqid=? and startTimestampID=? and endTimestampID=?";
+        
+        //delete all previous spaces.
+        String sql = "DELETE FROM ElasticitySpace WHERE monseqid=?";
         jdbcTemplate.update(sql, elasticitySpace.getService().getId(), elasticitySpace.getStartTimestampID(), elasticitySpace.getEndTimestampID());
 
         //add new entry
