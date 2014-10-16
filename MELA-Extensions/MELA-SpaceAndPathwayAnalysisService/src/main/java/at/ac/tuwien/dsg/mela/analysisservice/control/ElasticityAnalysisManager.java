@@ -562,10 +562,10 @@ public class ElasticityAnalysisManager {
         if (cfg == null) {
             return new MonitoredElement();
         }
-        ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(cfg.getServiceConfiguration().getId());
+
         Date after = new Date();
         log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
-        return serviceMonitoringSnapshot.getMonitoredService();
+        return cfg.getServiceConfiguration();
     }
 
     public String getMetricCompositionRules(String serviceID) {

@@ -169,7 +169,7 @@ public class DataCollectionService {
                 MELAPerfMonitor.logMemoryUsage(performanceLog);
             }
         };
-        
+
         monitoringMemUsageTimer.scheduleAtFixedRate(momMemUsageTask, 0, 60000);
     }
 
@@ -743,15 +743,15 @@ public class DataCollectionService {
     public MonitoredElement getLatestServiceStructure(String serviceID) {
         Date before = new Date();
 
-        ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData(serviceID);
-        if (serviceMonitoringSnapshot == null) {
+        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration(serviceID);
+        if (configurationXMLRepresentation == null) {
             return new MonitoredElement();
         }
 
         Date after = new Date();
         performanceLog.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
 
-        return serviceMonitoringSnapshot.getMonitoredService();
+        return configurationXMLRepresentation.getServiceConfiguration();
     }
 
     public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(String serviceID) {
