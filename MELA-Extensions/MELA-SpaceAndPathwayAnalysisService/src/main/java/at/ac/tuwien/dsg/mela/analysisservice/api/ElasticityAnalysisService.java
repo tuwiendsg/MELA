@@ -89,6 +89,13 @@ public class ElasticityAnalysisService {
         return systemControl.getElasticityPathwayInXML(serviceID, element);
 
     }
+    
+     @GET
+    @Path("/{serviceID}/events/json")
+    @Produces("application/json")
+    public String getEvents(@PathParam("serviceID") String serviceID) {
+        return systemControl.getEvents(serviceID);
+    }
 
     /**
      * @param element the MonitoredElement for which the elasticity space must

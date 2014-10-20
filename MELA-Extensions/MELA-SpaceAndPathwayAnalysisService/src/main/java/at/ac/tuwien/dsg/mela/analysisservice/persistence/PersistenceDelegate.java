@@ -23,6 +23,7 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.Event;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
@@ -237,6 +238,14 @@ public class PersistenceDelegate {
 
     public List<String> getMonitoringSequencesIDs() {
         return persistenceSQLAccess.getMonitoringSequencesIDs();
+    }
+
+    public List<Event> getUnreadEvents(String serviceID) {
+        return persistenceSQLAccess.getUnreadEvents(serviceID);
+    }
+
+    public void markEventsAsRead(String serviceID, List<Event> events) {
+        persistenceSQLAccess.markEventsAsRead(serviceID, events);
     }
 
 }

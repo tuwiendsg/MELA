@@ -34,6 +34,7 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.Event;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
@@ -243,6 +244,21 @@ public class ElasticityAnalysisManager {
             return new Requirements();
         }
 
+    }
+
+    public String getEvents(String serviceID) {
+
+        JSONArray array = new JSONArray();
+        List<Event> events = persistenceDelegate.getUnreadEvents(serviceID);
+
+        for (Event s : events) {
+            JSONObject o = new JSONObject();
+            o.put("event", s.getEvent());
+            array.add(o);
+        }
+        persistenceDelegate.markEventsAsRead(serviceID, events);
+
+        return array.toJSONString();
     }
 
     public boolean testIfAllVMsReportMEtricsGreaterThanZero(String serviceID) {
