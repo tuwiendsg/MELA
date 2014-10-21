@@ -128,14 +128,22 @@
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:noNamespaceSchemaLocation="structure.xsd"
     &lt;MonitoredElement id="DataEndServiceTopology" level="SERVICE_TOPOLOGY"&gt;
-        &lt;MonitoredElement id="DataControllerServiceUnit" level="SERVICE_UNIT"/&gt;
-        &lt;MonitoredElement id="DataNodeServiceUnit" level="SERVICE_UNIT"/&gt;
+        &lt;MonitoredElement id="DataControllerServiceUnit" level="SERVICE_UNIT"&gt;
+            &lt;MonitoredElement id="10.99.0.1" level="VM"/&gt;
+        &lt;/MonitoredElement&gt;
+        &lt;MonitoredElement id="DataNodeServiceUnit" level="SERVICE_UNIT"&gt;
+            &lt;MonitoredElement id="10.99.0.2" level="VM"/&gt;
+        &lt;/MonitoredElement&gt;
     &lt;/MonitoredElement&gt;
     &lt;MonitoredElement id="EventProcessingServiceTopology" level="SERVICE_TOPOLOGY"&gt;
-        &lt;MonitoredElement id="LoadBalancerServiceUnit" level="SERVICE_UNIT"/&gt;
-        &lt;MonitoredElement id="EventProcessingServiceUnit" level="SERVICE_UNIT"/&gt;
+        &lt;MonitoredElement id="LoadBalancerServiceUnit" level="SERVICE_UNIT"&gt;
+            &lt;MonitoredElement id="10.99.0.3" level="VM"/&gt;
+        &lt;/MonitoredElement&gt;
+        &lt;MonitoredElement id="EventProcessingServiceUnit" level="SERVICE_UNIT"&gt;
+            &lt;MonitoredElement id="10.99.0.4" level="VM"/&gt;
+        &lt;/MonitoredElement&gt;
 &lt;/MonitoredElement&gt;
-&lt;/MonitoredElement&gt;'
+&lt;/MonitoredElement&gt;
 </code></pre>
                     <p>The XML schema for writing service structure specifications can be downloaded from <a href="./resources/structure.xsd">here</a></p>     
 
