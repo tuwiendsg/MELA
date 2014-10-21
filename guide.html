@@ -68,14 +68,15 @@
                    <ul>
                         <li><a href="./index.html" id="homenav">Home</a></li>
                         <li><a href="./background.html" id="Background">Background</a>
-                        <li><a href="./guide.html" id="guide">How does MELA work?</a>  
+                        <li><a href="./guide.html" id="guide">Documentation</a>  
                             <ul>
-                                <li><div id="horizontalNavCurrentNav"><a href="./guide.html" >MELA Overview</a></div>
+                                <li><div id="currentNav"><a href="./guide.html" >MELA Overview</a></div></li>
+                                <li><a href="./dataService.html">MELA Data Service</a></li> 
+                                <li><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></li> 
+                                <li><a href="./costEvaluationService.html">MELA Cost Evaluation</a></li>  
                                 <li><a href="./compiling.html">Compiling and deployment</a></li>
-                                <li><a href="./structure.html">Service structure specification</a></li>
-                                <li><a href="./compositionRules.html">Composition rules specification</a></li>
-                                <li><a href="./demos.html">Demos and examples</a></li></li> 
-                                <li><a href="./documentation.html">Other resources</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>  
+                                <li><a href="./others.html">Other resources</a></li>
                             </ul>
                         </li> 
                         <li><a href="./contact.html" id="contactnav">Contact</a></li>
@@ -91,14 +92,15 @@
                     <ul>
                         <li><a href="./index.html" id="homenav">Home</a></li>
                         <li><a href="./background.html" id="Background">Background</a>
-                        <li><a href="./guide.html" id="guide">How does MELA work?</a>  
+                        <li><a href="./guide.html" id="guide">Documentation</a>  
                             <ul>
                                 <li><div id="currentNav"><a href="./guide.html" >MELA Overview</a></div>
+                                <li><a href="./dataService.html">MELA Data Service</a></li> 
+                                <li><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></li> 
+                                <li><a href="./costEvaluationService.html">MELA Cost Evaluation</a></li>  
                                 <li><a href="./compiling.html">Compiling and deployment</a></li>
-                                <li><a href="./structure.html">Service structure specification</a></li>
-                                <li><a href="./compositionRules.html">Composition rules specification</a></li>
-                                <li><a href="./demos.html">Demos and examples</a></li></li> 
-                                <li><a href="./documentation.html">Other resources</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>  
+                                <li><a href="./others.html">Other resources</a></li>
                             </ul>
                         </li> 
                         <li><a href="./contact.html" id="contactnav">Contact</a></li>
@@ -111,15 +113,31 @@
             <div class="inner clearfix">
                 <section id="main-content">
                     <h1>
-                        <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>MELA Overview</h1>
+                        <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>MELA Architecture</h1>
 
-                    <p> Note: From here onwards we will refer to services and cloud applications with the same "services" term.  </p>
+                    <p> Note: From here onwards we will refer to services and cloud services with the same "services" term.  </p>
+                    <p>!!!! UDPATE In general, elastic cloud services can re-configure individual units or the whole service at run-time, due to various elasticity requirements. Such run-time re-configuration can either focus on: (i) vertical scaling, adding/removing resources to existing units; or (ii) horizontal scaling, duplicating units/instantiating more instances of the same type. Due to individual horizontal scaling mechanisms, one service unit could “burst” by a controller, creating a new instance in unused virtual machines along other units, or in new machines. This generates two main issues. First, as units can dynamically appear/disappear on virtual machines, a monitoring system for elastic services must be able to dynamically start/stop collecting metrics on individual virtual machines. Secondly, as virtual machines themselves are created/destroyed dynamically at run-time, if monitoring information is associated only with each virtual machine, it will be lost during scale-in operations which destroy virtual machines. While the first issue can be solved using existing monitoring systems such as <a href="http://ganglia.sourceforge.net/">Ganglia</a> or <a href="https://github.com/CELAR/cloud-ms/tree/master/JCatascopia-Agent/">JCatascopia</a>, for solving the Virtual Machine (VM) volatility issue, we must associate monitoring information with the service structure. Addressing this second issue is the initial objective of MELA. Furthermore, based on monitoring information mapped to the service structure, MELA services provide different analytics.
+</p>  
+ 
+                      <p> To enhance flexibility, we designed MELA as a service-oriented architecture centered around a shared data repository, enabling easy addition/removal of services which operate on the same data. Moreover, the MELA user can choose what services to deploy and run, depending on individual requirements, thus, offering maximum usage flexibility. </p>
 
-                    <p> MELA contains a core component called MELA Data Service, and additional extensions: Elasticity Pathway and Space Analysis Service.
-                        The MELA Data Service gathers and structures data from existing monitoring solutions (e.g., <a href="http://ganglia.sourceforge.net/">Ganglia</a> or <a href="https://github.com/CELAR/cloud-ms/tree/master/JCatascopia-Agent/">JCatascopia</a>),
-                        data associated with a dependency model level or monitored element (e.g., responseTime for a particular service unit), which is then processed by the extension services.
+<p> <center>
+                        <figure>
+                            <img src="images/system.png" alt="MELA Overview" width="100%"/>
+                            <figcaption>MELA overview</figcaption>
+                        </figure>
+                    </center>
+                    </p>
+ 
+<h2><a name="meladataservice" class="anchor" href="#meladataservice"><span class="octicon octicon-link"></span></a>MELA Data Service</h2>
+                   <p>
+                   MELA contains a core service called MELA Data Service, and additional extensions: MELA Elasticity Pathway and Space Analysis Service, and MELA Composable Cost Evaluation Service.
+                        The MELA Data Service gathers and structures data from existing monitoring solutions (e.g., <a href="http://ganglia.sourceforge.net/">Ganglia</a> or <a href="https://github.com/CELAR/cloud-ms/tree/master/JCatascopia-Agent/">JCatascopia</a>), data associated with a dependency model level or monitored element (e.g., responseTime for a particular service unit), which is then processed by the extension services. As monitoring data is usually associated with a single level, e.g., virtual infrastructure, service topology or service unit, an important MELA feature is the linking of these levels, which implies a configuration by supplying the (i) service structure, (ii) metric composition rules, and (iii) service elasticity requirements.
+As output, MELA Data Service provides a multi-level monitoring snapshot in which monitoring information is represented at the service topology and unit levels, not only at the VM level. </p>
 
-                        </br></br>
+
+<h2><a name="melaanalysisservice" class="anchor" href="#melaanalysisservice"><span class="octicon octicon-link"></span></a>MELA Elasticity Pathway and Space Analysis Service</h2>
+<p>
                         In order to analyze the elastic behavior of cloud services, MELA Elasticity Pathway and Space Analysis Service uses the concept of elasticity boundary.
                         An elasticity boundary describes the upper and lower allowed values over a set of metrics for a cloud service. 
                         Another MELA core concept is elasticity space. An elasticity space is determined via an elasticity space function 
@@ -128,23 +146,21 @@
                         its behavior, characteristics called “elasticity pathway”. 
                         An elasticity pathway function is designed to perform a complex evaluation of the cloud service behavior, 
                         extracting characteristics that can be used to predict its behavior.
+</p>
+<p>
+                        Moreover, as a result of elasticity analysis, MELA Elasticity Pathway and Space Analysis Service provides in real-time the elasticity space of the service with determined elasticity boundaries, and the elasticity pathway.  </p>
 
-                        </br></br> Monitoring data is usually associated with a single level, e.g., virtual infrastructure, service topology or service unit. 
-                        An important MELA feature is the linking of these levels, which implies a configuration by supplying the (i) service structure, (ii) metric composition rules, and (iii) service elasticity requirements.
-                        </br></br> As output, MELA Data Service provides a multi-level monitoring snapshot in which monitoring information is represented at the service topology and unit levels, not only at the VM level. 
-                        Moreover, as a result of elasticity analysis, MELA Elasticity Pathway and Space Analysis Service provides in real-time the elasticity space of the service with determined elasticity boundaries, and the elasticity pathway. 
 
+<h2><a name="melacostservice" class="anchor" href="#melacostservice"><span class="octicon octicon-link"></span></a>MELA Composable Cost Evaluation Service</h2>
+<p>
+  What is important from a cost perspective is that usually, different combinations of services have different pricing schemes, and different elastic services could use at run-time different services with specific configurations, influencing the service cost.  Involving different pricing schemes for different combinations of services, cost complexity also depends on the complexity of a cloud service’s deployment structure. Moreover, depending on the level of knowledge and particular interests of the user, some users might be interested in very complex and complete cost evaluation, while others.html might be content with an estimation over cost, even if not completely accurate. </p>
+
+<p>
+To this end, MELA Composable Cost Evaluation Service can capture from simple cost functions, such as fixed cost per used cloud service, to cost per service if used in conjunction with other services, with respect to the service usage so far (usage intervals). Using this cost composition model, the MELA Composable Cost Evaluation service computes in detail the cost for the whole application or individual components, using information about the cloud services used by the application, and structured monitoring information provided by the MELA Data Service.
+</p>
 
                     </p>
-                    <center>
-                        <figure>
-                            <img src="images/system.png" alt="MELA Overview" width="50%"/>
-                            <figcaption>Figure 1: MELA overview</figcaption>
-                        </figure>
-                    </center>
-                    </br></br>
-
-
+                   
 
                     <h1>
                         <a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>MELA service service specific configuration</h1>
@@ -169,15 +185,14 @@
                         obtaining a complete view over the cloud service behavior.
 
                     </p>
-
+<p>
                     <center>
                         <figure>
                             <img src="images/elastic_cloud_service.png" alt="Elastic Cloud Service representation model"  width="50%"/>
                             <figcaption>Figure 2: Elastic Cloud Service representation model</figcaption>
                         </figure>
                     </center>
-                    </br></br>
-
+   </p>
                 </section>
 
 <aside id="sidebar">

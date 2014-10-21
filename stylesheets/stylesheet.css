@@ -280,9 +280,7 @@ aside#sidebar p.repo-owner a {
 #nav li{
     font-family: 'Helvetica', Arial, Verdana, sans serif;
 }
-
-
-
+ 
 #nav li a:link, #nav li a:visited {
     background: url(../images/nav1.png) no-repeat;
     background-size: 100% auto;
@@ -291,6 +289,32 @@ aside#sidebar p.repo-owner a {
     padding: 7% 0px 7% 20%;
     color: #43433e;
     text-decoration: none;
+}
+
+#nav li a:hover, #nav li a:focus {
+    background: url(../images/nav2.png) no-repeat;
+    background-size: 100% auto;
+    color: #000;
+    padding: 7% 7% 7% 20%;
+    margin-top:-10px;
+}
+
+#subnav li a:link, #subnav li a:visited {
+    background: url(../images/subMenu1.png) no-repeat;
+    background-size: 100% auto;
+    font-size: 15px;
+    display: block;
+    padding: 7% 0px 7% 15%;
+    color: #43433e;
+    text-decoration: none;
+}
+
+#subnav li a:hover, #subnav li a:focus {
+    background: url(../images/subMenu2.png) no-repeat;
+    background-size: 100% auto;
+    color: #000;
+    padding: 7% 7% 7% 20%;
+    margin-top:-10px;
 }
 
 #currentNav  {
@@ -302,13 +326,7 @@ aside#sidebar p.repo-owner a {
     text-decoration: none;
 }
 
-#nav li a:hover, #nav li a:focus {
-    background: url(../images/nav2.png) no-repeat;
-    background-size: 100% auto;
-    color: #fff;
-    padding: 7% 7% 7% 20%;
-    margin-top:-10px;
-}
+
 
 #nav{
     width: 270px;
@@ -351,7 +369,7 @@ aside a.button {
     margin-bottom: 20px;
     font-size: 21px;
 }
- 
+
 
 background: url(./images/TU_logo.png) 0 0 no-repeat; background-size:50%
 

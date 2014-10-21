@@ -59,27 +59,28 @@
         <header>
             <div class="inner">
                 <h1>Documentation and Guides</h1>
-                <h2>Service structure specification</h2>
+                <h2>Other resources</h2>
                 <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
             </div>
-        </header>
-    <div id="horizontalNav">
-                   <ul>
+        </header>    <div id="horizontalNav">
+                    <ul>
                         <li><a href="./index.html" id="homenav">Home</a></li>
                         <li><a href="./background.html" id="Background">Background</a>
                         <li><a href="./guide.html" id="guide">How does MELA work?</a>    
                             <ul>
-                                <li><a href="./guide.html" >MELA Overview</a>
+                                 <li><div id="currentNav"><a href="./guide.html" >MELA Overview</a></div></li>
+                                <li><a href="./dataService.html">MELA Data Service</a></li> 
+                                <li><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></li> 
+                                <li><a href="./costEvaluationService.html">MELA Cost Evaluation</a></li>  
                                 <li><a href="./compiling.html">Compiling and deployment</a></li>
-                                <li><div id="horizontalNavCurrentNav"><a href="./structure.html">Service structure specification</a></div></li>
-                                <li><a href="./compositionRules.html">Composition rules specification</a></li>
-                                <li><a href="./demos.html">Demos and examples</a></li>
-                                <li><a href="./documentation.html">Other resources</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>  
+                                <li><a href="./others.html">Other resources</a></li>
                             </ul>
                         </li> 
-                        <li><a href="./contact.html" id="contactnav">Contact and Acknowledgments</a></li>
+                        <li><a href="./contact.html" id="contactnav">Contact</a></li>
                     </ul>
                 </div>
+
         <div id="content-wrapper">
 
             <aside id="navibar">
@@ -90,15 +91,16 @@
                         <li><a href="./background.html" id="Background">Background</a>
                         <li><a href="./guide.html" id="guide">How does MELA work?</a>    
                             <ul>
-                                <li><a href="./guide.html" >MELA Overview</a>
+                                 <li><div id="currentNav"><a href="./guide.html" >MELA Overview</a></div></li>
+                                <li><a href="./dataService.html">MELA Data Service</a></li> 
+                                <li><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></li> 
+                                <li><a href="./costEvaluationService.html">MELA Cost Evaluation</a></li>  
                                 <li><a href="./compiling.html">Compiling and deployment</a></li>
-                                <li><div id="currentNav"><a href="./structure.html">Service structure specification</a></div></li>
-                                <li><a href="./compositionRules.html">Composition rules specification</a></li>
-                                <li><a href="./demos.html">Demos and examples</a></li>
-                                <li><a href="./documentation.html">Other resources</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>  
+                                <li><a href="./others.html">Other resources</a></li>
                             </ul>
                         </li> 
-                        <li><a href="./contact.html" id="contactnav">Contact and Acknowledgments</a></li>
+                        <li><a href="./contact.html" id="contactnav">Contact</a></li>
                     </ul>
 
                 </div>
@@ -108,52 +110,31 @@
             <div class="inner clearfix">
                 <section id="main-content">
 
-                    <p> Note: From here onwards we will refer to services and cloud applications with the same "services" term.  </p>
+                    <h2>MELA paper</h2>
+                    <p><ul> <li>Daniel Moldovan, Georgiana Copil, Hong-Linh Truong, Schahram Dustdar, <a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6753781">MELA: Monitoring and Analyzing Elasticity of Cloud Services</a>, 5'th International Conference on Cloud Computing, CloudCom. Bristol, UK, 2-5 December, 2013, </li>
+                    </ul></p>
 
-                    <center>
-                        <figure>
-                            <img src="images/elastic_cloud_service.png" alt="Elastic Cloud Service representation model"  width="50%"/>
-                            <figcaption>Figure 1: Elastic Cloud Service representation model</figcaption>
-                        </figure>
-                    </center>
-                    </br></br>
-
-                    <p> MELA considers any cloud application as a service, and uses a representational model which divides Cloud Services in Service Topologies, which are composed of Service Units, which run in Virtual Machines members of Virtual Clusters.
-                        In Listing 1 we show an application description example, which describes a CloudService having two topologies, a DataEndServiceTopology and an EventProcessingServiceTopology. The topologies are just logical concepts, and have no physical equivalent. Each topology has Service Units.
-                        The service description must be submitted to MELA issuing a “PUT” request towards the MELA “/servicedescription” service. </p>
+                    <h2>MELA Cloud Com 2013 presentation</h2> 
+                    <p>
+                    <iframe src="http://www.slideshare.net/slideshow/embed_code/28845559" width="100%" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px 1px 0; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="https://www.slideshare.net/moldovanus/mela-monitoring-and-analyzing-elasticity-of-cloud-services" title="MELA: Monitoring and Analyzing Elasticity of Cloud Services -- CloudCom 2013" target="_blank">MELA: Monitoring and Analyzing Elasticity of Cloud Services -- CloudCom 2013</a> </strong> from <strong><a href="http://www.slideshare.net/moldovanus" target="_blank">Daniel Moldovan</a></strong> </div>
 
 
-                    Listing 1: Service Structure Description Example
-                    <pre><code>&lt;MonitoredElement id="CloudService" level="SERVICE"&gt;
-                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:noNamespaceSchemaLocation="structure.xsd"
-    &lt;MonitoredElement id="DataEndServiceTopology" level="SERVICE_TOPOLOGY"&gt;
-        &lt;MonitoredElement id="DataControllerServiceUnit" level="SERVICE_UNIT"&gt;
-            &lt;MonitoredElement id="10.99.0.1" level="VM"/&gt;
-        &lt;/MonitoredElement&gt;
-        &lt;MonitoredElement id="DataNodeServiceUnit" level="SERVICE_UNIT"&gt;
-            &lt;MonitoredElement id="10.99.0.2" level="VM"/&gt;
-        &lt;/MonitoredElement&gt;
-    &lt;/MonitoredElement&gt;
-    &lt;MonitoredElement id="EventProcessingServiceTopology" level="SERVICE_TOPOLOGY"&gt;
-        &lt;MonitoredElement id="LoadBalancerServiceUnit" level="SERVICE_UNIT"&gt;
-            &lt;MonitoredElement id="10.99.0.3" level="VM"/&gt;
-        &lt;/MonitoredElement&gt;
-        &lt;MonitoredElement id="EventProcessingServiceUnit" level="SERVICE_UNIT"&gt;
-            &lt;MonitoredElement id="10.99.0.4" level="VM"/&gt;
-        &lt;/MonitoredElement&gt;
-&lt;/MonitoredElement&gt;
-&lt;/MonitoredElement&gt;
-</code></pre>
-                    <p>The XML schema for writing service structure specifications can be downloaded from <a href="./resources/structure.xsd">here</a></p>     
+                    </p>
 
- For detailed information from deployment to configuring MELA for specific elastic services, check:
-                    <ul><li><a href="./compiling.html">Compiling and deployment</a></li>
-                        <li><a href="./structure.html">Service structure specification</a></li>
-                        <li><a href="./compositionRules.html">Composition rules specification</a></li>
-                    </ul>
+
+
+                    <h2>DaaS Elastic Cloud Service prototype</h2> 
+                    <p>
+                        We have implemented an elastic cloud service used in validating our tools. 
+                        The current prototype is available on GitHub <a href="https://github.com/tuwiendsg/DaaSM2M">here</a>.
+                        Detailed videos explaining how to configure and deploy our prototype are available on the DaaSM2M project  <a href="https://github.com/tuwiendsg/DaaSM2M/wiki">wiki</a>.
+                    </p>
+
+
 
                 </section>
+
+
 <aside id="sidebar">
                     <a href="http://www.tuwien.ac.at/" class="button" style="background: url(./images/TU_logo.png) 0 0 no-repeat; height:70px;  width:300px">
                     </a>
@@ -165,7 +146,6 @@
                         </br> </br><a href="http://www.infosys.tuwien.ac.at/">Distributed Systems Group</a>
                         , <a href="http://www.tuwien.ac.at/">Vienna University of Technology</a>.</p>
                 </aside>
-
 
                 <aside id="sidebar">
                     <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">

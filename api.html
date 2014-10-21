@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+        <!--[if lt IE 9]>
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <title>Mela by tuwiendsg</title>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript">
+
+            $(document).ready(function() {
+                var top = $('#navibar').offset().top - parseFloat($('#navibar').css('marginTop').replace(/auto/, 100));
+                $(window).scroll(function(event) {
+                    // what the y position of the scroll is
+                    var y = $(this).scrollTop();
+
+                    // whether that's below the form
+                    if (y >= top) {
+                        // if so, ad the fixed class
+                        $('#navibar').addClass('fixed');
+                    } else {
+                        // otherwise remove it
+                        $('#navibar').removeClass('fixed');
+                    }
+                });
+            });</script>
+
+        <script>
+            (function(i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                i[r] = i[r] || function() {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+                a = s.createElement(o),
+                        m = s.getElementsByTagName(o)[0];
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+            ga('create', 'UA-43025584-5', 'tuwiendsg.github.io');
+            ga('send', 'pageview');
+
+        </script>
+
+    </head>
+
+    <body>
+        <header>
+            <div class="inner">
+                <h1>Documentation and Guides</h1>
+                <h2>Service structure specification</h2>
+                <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+            </div>
+        </header>
+    <div id="horizontalNav">
+                   <ul>
+                        <li><a href="./index.html" id="homenav">Home</a></li>
+                        <li><a href="./background.html" id="Background">Background</a>
+                        <li><a href="./guide.html" id="guide">How does MELA work?</a>    
+                            <ul>
+                                <li><a href="./guide.html" >MELA Overview</a>
+                                <li><a href="./compiling.html">Compiling and deployment</a></li>
+                                <li><div id="horizontalNavCurrentNav"><a href="./structure.html">Service structure specification</a></div></li>
+                                <li><a href="./compositionRules.html">Composition rules specification</a></li>
+                                <li><a href="./api.html">API</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>
+                                <li><a href="./documentation.html">Other resources</a></li>
+                            </ul>
+                        </li> 
+                        <li><a href="./contact.html" id="contactnav">Contact and Acknowledgments</a></li>
+                    </ul>
+                </div>
+        <div id="content-wrapper">
+
+            <aside id="navibar">
+
+                <div id="nav">
+                    <ul>
+                        <li><a href="./index.html" id="homenav">Home</a></li>
+                        <li><a href="./background.html" id="Background">Background</a>
+                        <li><a href="./guide.html" id="guide">How does MELA work?</a>    
+                            <ul>
+                                <li><a href="./guide.html" >MELA Overview</a>
+                                <li><a href="./compiling.html">Compiling and deployment</a></li>
+                                <li><div id="currentNav"><a href="./structure.html">Service structure specification</a></div></li>
+                                <li><a href="./compositionRules.html">Composition rules specification</a></li>
+                                <li><a href="./api.html">API</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>
+                                <li><a href="./documentation.html">Other resources</a></li>
+                            </ul>
+                        </li> 
+                        <li><a href="./contact.html" id="contactnav">Contact and Acknowledgments</a></li>
+                    </ul>
+
+                </div>
+            </aside>
+
+
+            <div class="inner clearfix">
+                <section id="main-content">
+			<div id="MELADataServiceAPI">
+
+<h2>MELA-DataService RESTful API</h2>
+
+<p>MELA-DataService
+exposes a RESTful API (Table 11), in which the application ID or version is
+marked with the "{serviceID}" parameter. The API enables a user to submit or
+remove an application (1,2), add metrics composition rules (3), application
+requirements (4), and update the application structure after scaling actions
+(5). The updated structure of the application can be retrieved at each given
+time using call 6, and the available monitored metrics for the application\92s
+VMs using call 7. The application structured monitoring data can be retrieved
+either as JSON (8), or as XML (9). If monitoring data is required only for a
+certain application component, it can be retrieved using call (10), by issuing
+a POST containing as argument the monitored element for which data should be
+retrieved. Historical monitoring data can also be retrieved using calls 11-13,
+while 14 and 15 provide methods for accessing the metrics composition rules in
+JSON or XML for the target application. Methods 16-17 let a user add/remove
+executing actions on the application, used for display purposes. Method 18
+allow a user to test if all metrics coming from a service have values &gt;=0,
+indicatingwhetherthe application is operating properly, useful for determining
+after a scale action if the application is stable. Finally, call 19 allows a
+user to list all applications monitored by MELA-DataService. </p>
+
+<table  >
+ <tr  >
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  mso-border-alt:solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:
+  background1;mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+  <p>No.</p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:background1;
+  mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+  style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>Method<o:p></o:p></span></b></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:background1;
+  mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+  style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>URL<o:p></o:p></span></b></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:background1;
+  mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+  style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>Input<o:p></o:p></span></b></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:background1;
+  mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+  style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>Output<o:p></o:p></span></b></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>PUT<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/service<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>DELETE<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>PUT<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/metricscompositionrules<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>4.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>PUT<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/requirements<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>5.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>PUT<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/structure<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>6.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/structure<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>7.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/metrics<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>8.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/monitoringdata/json<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/json<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>9.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/monitoringdata/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'><span
+  style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:10'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>10.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>POST <o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/monitoringdata/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:11'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>11.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/historicalmonitoringdata/all/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:12'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>12.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/historicalmonitoringdata/ininterval/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:13'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>13.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/historicalmonitoringdata/lastX/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:14'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>14.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/metriccompositionrules/json<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/ json<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:15'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>15.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET <o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/metriccompositionrules/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:16'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>16.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>PUT <o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/{targetEntityID}/executingaction/{action}<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:17'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>17.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>DELETE<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/{targetEntityID}/executingaction/{action}<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>application/xml<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:18'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>18.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/{serviceID}/metricsGreaterEqualThanZero<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>Boolean<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+ <tr style='mso-yfti-irow:19;mso-yfti-lastrow:yes'>
+  <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+  <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+  text-indent:-.25in;mso-list:l21 level1 lfo19'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+  style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+  minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+  style='mso-list:Ignore'>19.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+  </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+  </td>
+ 
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>GET<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=288 valign=top style='width:3.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>/services<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+  style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+  </td>
+ 
+  <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+  <p class=MsoNormal style='page-break-after:avoid'><span style='mso-bookmark:
+  _Toc363730159'><span style='font-size:10.0pt'>application/json<o:p></o:p></span></span></p>
+  </td>
+ 
+ </tr>
+</table>
+
+<p class=MsoCaption align=center style='text-align:center'><span style='mso-bookmark:_Toc363730159'>MELA-DataService REST API</span></p>
+
+
+
+
+
+
+
+
+</div>
+
+
+<did id="MelaAnalysisServiceAPI">
+
+
+</div>
+
+                     
+                </section>
+<aside id="sidebar">
+                    <a href="http://www.tuwien.ac.at/" class="button" style="background: url(./images/TU_logo.png) 0 0 no-repeat; height:70px;  width:300px">
+                    </a>
+
+                    <a href="http://www.infosys.tuwien.ac.at/" class="button" style="background: url(./images/dsgComplet.png) 0 0 no-repeat; background-size:100%; width:300px; height:70px">
+                    </a>
+
+                    <p class="repo-owner" style="width:300px"><a href="https://github.com/tuwiendsg/MELA"></a> Maintained and distributed by <a href="http://www.infosys.tuwien.ac.at/staff/dmoldovan/"> Daniel Moldovan </a>
+                        </br> </br><a href="http://www.infosys.tuwien.ac.at/">Distributed Systems Group</a>
+                        , <a href="http://www.tuwien.ac.at/">Vienna University of Technology</a>.</p>
+                </aside>
+
+
+                <aside id="sidebar">
+                    <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+                        <small>Download</small>
+                        .zip file
+                    </a>
+                    <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+                        <small>Download</small>
+                        .tar.gz file
+                    </a>
+
+                    <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+                </aside>
+
+
+
+            </div>
+        </div>
+
+
+    </body>
+</html>

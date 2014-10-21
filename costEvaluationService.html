@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+        <!--[if lt IE 9]>
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <title>Mela by tuwiendsg</title>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript">
+
+            $(document).ready(function() {
+                var top = $('#navibar').offset().top - parseFloat($('#navibar').css('marginTop').replace(/auto/, 100));
+                $(window).scroll(function(event) {
+                    // what the y position of the scroll is
+                    var y = $(this).scrollTop();
+
+                    // whether that's below the form
+                    if (y >= top) {
+                        // if so, ad the fixed class
+                        $('#navibar').addClass('fixed');
+                    } else {
+                        // otherwise remove it
+                        $('#navibar').removeClass('fixed');
+                    }
+                });
+            });</script>
+
+        <script>
+            (function(i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                i[r] = i[r] || function() {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+                a = s.createElement(o),
+                        m = s.getElementsByTagName(o)[0];
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+            ga('create', 'UA-43025584-5', 'tuwiendsg.github.io');
+            ga('send', 'pageview');
+
+        </script>
+
+    </head>
+
+    <body>
+        <header>
+            <div class="inner">
+                <h1>Documentation and Guides</h1>
+                <h2>MELA Composable Cost Evaluation Service</h2>
+                <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+            </div>
+        </header>
+
+
+        <div id="horizontalNav"> 
+            <ul>
+                <li><a href="./index.html" id="homenav">Home</a></li>
+                <li><a href="./background.html" id="Background">Background</a>
+                <li><a href="./guide.html" id="guide">Documentation</a>  
+                    <ul>
+                        <li><a href="./guide.html" >MELA Overview</a> </li>
+                        <li><a href="./dataService.html">MELA Data Service</a></li> 
+                        <li><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></li>
+                        <li><div id="currentNav"><a href="./costEvaluationService.html">MELA Cost Evaluation</a> </div>
+                            <div >
+                                <ul> 
+                                    <li><a href="#introduction">Overview</a></li>  
+                                    <li><a href="#configuration">Service structure specification</a></li>  
+                                    <li><a href="#api">API</a></li>  
+                                </ul>	
+                            </div>
+                        </li> 
+                        <li><a href="./compiling.html">Compiling and deployment</a></li>
+                        <li><a href="./demos.html">Demos and examples</a></li>  
+                        <li><a href="./others.html">Other resources</a></li>
+                    </ul>
+                </li> 
+                <li><a href="./contact.html" id="contactnav">Contact</a></li>
+            </ul>
+
+        </div>
+
+        <div id="content-wrapper">
+
+            <aside id="navibar">
+
+                <div id="nav">
+                    <ul>
+                        <li><a href="./index.html" id="homenav">Home</a></li>
+                        <li><a href="./background.html" id="Background">Background</a>
+                        <li><a href="./guide.html" id="guide">Documentation</a>  
+                            <ul>
+                                <li><a href="./guide.html" >MELA Overview</a> </li>
+                                <li><a href="./dataService.html">MELA Data Service</a></li> 
+                                <li><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></li>
+                                <li><div id="currentNav"><a href="./costEvaluationService.html">MELA Cost Evaluation</a> </div>
+                                    <div id="subnav">
+                                        <ul> 
+                                            <li><a href="#introduction">Overview</a></li>  
+                                            <li><a href="#configuration">Service structure specification</a></li>  
+                                            <li><a href="#api">API</a></li>  
+                                        </ul>	
+                                    </div>
+                                </li> 
+
+                                <li><a href="./compiling.html">Compiling and deployment</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>  
+                                <li><a href="./others.html">Other resources</a></li>
+                            </ul>
+                        </li> 
+                        <li><a href="./contact.html" id="contactnav">Contact</a></li>
+                    </ul>
+
+                </div>
+            </aside>
+
+
+            <div class="inner clearfix">
+                <section id="main-content">
+                    <div>
+                        <h1>  <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Overview</h1>
+
+                        <p>
+                            What is important from a cost perspective is that usually, different combinations of services have different pricing schemes, and different elastic services could use at run-time different services with specific configurations, influencing the service cost.  Involving different pricing schemes for different combinations of services, cost complexity also depends on the complexity of a cloud service’s deployment structure. Moreover, depending on the level of knowledge and particular interests of the user, some users might be interested in very complex and complete cost evaluation, while others.html might be content with an estimation over cost, even if not completely accurate. </p>
+
+                        <p>
+                            To this end, we decided to provide two cost composition mechanisms, one using MELA’s composition rules for directly enriching monitoring information with a service’s cost based on simple cost schemes; and one providing a separate MELA Composable Cost Evaluation Service, using detailed complex cloud pricing schemes. 
+                        </p>
+                        <p>
+                            Cost of using cloud services to run elastic services is, in many cases, complex. Many existing cloud services can be configured and used in association, either mandatory or optional, with other services. For example, considering the <a href="http://aws.amazon.com/ec2/">Amazon EC2</a> IaaS services, a particular virtual machine (VM) service can be instantiated on different “availability regions”, the cost of the VM service depending on the chosen region. Many of the offered VM types can optionally use at run-time the Amazon Elastic Block Store storage service [AmazonEBS], and for additional cost, the VM can be instantiated as EBS Optimized. Moreover, some Amazon VM services, e.g., T2 series (t2.micro, t2.small, t2.medium), can be used only in conjunction with other services, in this case with an EBS storage. Thus, the cost of running T2 instances depends on the type of instance (i.e., instance resources), the availability region where the instance is deployed, and the cost of using the EBS storage. In turn, the cost of using EBS depends on the EBS storage option chosen, from General Purpose EBS at $0.10 per GB-month, to Amazon EBS Magnetic volumes costing $0.05 per GB-monthof provisioned storage and $0.05 per 1 million I/O requests.
+                            Evaluating cost even over a single IaaS service can be complex, due to different possible configurations of that service. For capturing this complexity, we define a <a href="http://link.springer.com/chapter/10.1007/978-3-662-44879-3_7">model</a> for associating pricing schemes to cloud offered services, considering cloud offered services as service units, which can have Mandatory and Optional configuration options with respect to Cost, Quality, and Resources. Each of these entities, i.e., configuration options, or the service unit, can have associated different Cost Functions with different Cost Element instances. A Cost Element describes one unit of the entity’s cost, such as cost per using EBS, or cost per particular availability regions. Cost can be Periodic (e.g., hourly, monthly), or per Usage (e.g., per million I/O), is reported per periodicity or usage Unit(e.g., 1 month, 1 million I/O), over a service Metric (e.g., VM uptime, I/O). Cost can be defined from static cost per period/usage, to cost intervals, such as first million I/O free, next million $0.05. We capture such cost intervals using a costFunction specifying cost over different intervals of measured Units of the cost Metric. Finally, as cost can depend on the mandatory/optional association of the entity with other entities (service units, or quality, cost, resource options), an inAssociationWith property describes if the described cost should be applied when the entity is associated with certain other entities.
+                        </p>
+                        <p>
+                        <center>
+                            <figure>
+                                <img src="images/cloudServiceModel.png" alt="Cloud Service Cost Model" width="100%"/>
+                                <figcaption>Cloud Service Cost Model</figcaption>
+                            </figure>
+                        </center>
+                    </p><p>
+                    Using this model for associating cost to cloud services, we can capture from simple cost functions, such as fixed cost per used cloud service, to cost per service if used in conjunction with other services, with respect to the service usage so far (usage intervals). Using this cost composition model, the MELA Composable Cost Evaluation service computes in detail the cost for the whole service or individual units, using information about the cloud services used by the service, and structured monitoring information provided by the MELA Data Service.
+                </p>
+
+            </div>
+
+            <div>
+                <h1><a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>MELA service service specific configuration</h1>
+
+                <p> To evaluate cost, the service structure submitted to MELA Data Service must
+                    also contain information about the cloud offered services used, e.g., which VM types. Thus, the 
+                    service specification submitted to MELA must also contain at the service, service topology, or unit level
+                    "UsedCloudOfferedServiceCfg" element, indicating the configuration of the offered cloud service used by the monitored elements.
+                </p>
+                  <div>
+                  Listing 1: Service Structure Description Example, with Cloud Offered Services  
+                        <pre><code> &lt;MonitoredElement id="Application" level="SERVICE"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:noNamespaceSchemaLocation="structure.xsd"&gt;
+    &lt;UsedCloudOfferedServiceCfg name="network" id="5"/&gt;
+    &lt;MonitoredElement id="EventProcessingTopology" level="SERVICE_TOPOLOGY"&gt;
+        &lt;MonitoredElement id="LoadBalancerComponent" level="SERVICE_UNIT"&gt;
+            &lt;MonitoredElement id="10.99.0.2" level="VM"&gt;
+                &lt;UsedCloudOfferedServiceCfg name="m1.large" id="3"/&gt;
+            &lt;/MonitoredElement&gt;
+        &lt;/MonitoredElement&gt;
+        ...
+&lt;/MonitoredElement&gt;
+</code></pre>
+                        <p>The XML schema for writing service structure specification with information needed
+                            for evaluating cost can be downloaded from <a href="./resources/structure_cost.xsd">here</a></p>     
+
+                    </div>
+            </div>
+
+            <div>
+                 <h1>  <a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>MELA Composable Cost Evaluation Service RESTful API</h1>
+
+                <p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph;
+                    text-indent:21.3pt'><span style='mso-bookmark:_Toc363730159'>MELA-
+                        ComposableCostEvaluationService exposes a RESTful API, in which the
+                        service ID or version is marked with the '{serviceID}' parameter. The API
+                        enables a user to submit and update the cloud services' pricing scheme used in
+                        cost evaluation (1-4). The evaluated total cost of the service can be
+                        retrieved in JSON, CSV (comma separated values file) and XML, for maximum
+                        flexibility, using calls 5-7. Cost computed over a specified time interval is
+                        provided by calls 8-9, while calls 10-15 retrieve only cost for specified individual
+                        service units. For retrieving the current service monitored
+                        snapshot enriched with evaluated cost rate information a user uses calls 16-17,
+                        while the total cost overlapped over the current service monitored snapshot
+                        is retrieved with calls 18-19.</span></p>
+
+                <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><o:p>&nbsp;</o:p></span></p>
+
+                <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=605
+                       style='margin-left:.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+                       border:none;mso-border-alt:solid windowtext .5pt;mso-yfti-tbllook:1184;
+                       mso-padding-alt:0in 0in 0in 0in'>
+                    <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            mso-border-alt:solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:
+                            background1;mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+                            <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+                                        style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>No.<o:p></o:p></span></b></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border:solid windowtext 1.0pt;
+                        border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+                        solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:background1;
+                        mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+                                    style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>Method<o:p></o:p></span></b></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border:solid windowtext 1.0pt;
+                        border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+                        solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:background1;
+                        mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+                                    style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>URL<o:p></o:p></span></b></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border:solid windowtext 1.0pt;
+                        border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+                        solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:background1;
+                        mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+                                    style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>Input<o:p></o:p></span></b></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border:solid windowtext 1.0pt;
+                        border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+                        solid windowtext .5pt;background:#BFBFBF;mso-background-themecolor:background1;
+                        mso-background-themeshade:191;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><b
+                                    style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt'>Output<o:p></o:p></span></b></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:1'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>PUT<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'><span
+                                            style='mso-spacerun:yes'> </span>/cloudofferedservice/pricingscheme</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:2'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/cloudofferedservice/pricingscheme</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:3'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>DELETE</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{cloudofferedserviceID}/pricingscheme</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:4'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>4.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{cloudofferedserviceID}/pricingscheme</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:5'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>5.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'><span
+                                            style='mso-spacerun:yes'> </span>/{serviceID}/cost/total/xml</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:6'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>6.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'><span
+                                            style='mso-spacerun:yes'> </span>/{serviceID}/cost/total/json</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/json<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:7'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>7.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'><span
+                                            style='mso-spacerun:yes'> </span>/{serviceID}/cost/total/ csv</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/csv<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:8'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>8.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/cost/ininterval/{start}/{end}/xml</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:9'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>9.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/cost/ininterval/{start}/{end}/json<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/json<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:10'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>10.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>POST</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/cost/total/xml</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:11'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>11.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>POST<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/cost/total/json<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/<i style='mso-bidi-font-style:normal'>
+                                        json</i><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:12'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>12.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>POST</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/cost/total/csv</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/csv<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:13'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>13.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>POST</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/cost/ininterval/{start}/{end}/xml</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:14'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>14.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>POST</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/cost/ininterval/{start}/{end}/json</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/<i style='mso-bidi-font-style:normal'>
+                                        json</i><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:15'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>15.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>POST</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/cost/ininterval/{start}/{end}/csv</span></i></span><span
+                                style='mso-bookmark:_Toc363730159'><span style='font-size:10.0pt'><o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/csv<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:16'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>16.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/monitoringdata/cost/rate/json<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/json<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:17'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>17.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/monitoringdata/cost/rate/xml<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:18'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>18.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/monitoringdata/cost/total/json<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>service/json<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                    <tr style='mso-yfti-irow:19;mso-yfti-lastrow:yes'>
+                        <td width=30 valign=top style='width:22.5pt;border:solid windowtext 1.0pt;
+                            border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                            padding:0in 0in 0in 0in'><span style='mso-bookmark:_Toc363730159'></span>
+                            <p class=MsoListParagraph style='margin-left:.25in;mso-add-space:auto;
+                               text-indent:-.25in;mso-list:l7 level1 lfo20'><span style='mso-bookmark:_Toc363730159'><![if !supportLists]><span
+                                        style='font-size:10.0pt;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+                                        minor-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:minor-latin'><span
+                                            style='mso-list:Ignore'>19.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                                            </span></span></span><![endif]></span><span style='mso-bookmark:_Toc363730159'><span
+                                        style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></span></p>
+                        </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=54 valign=top style='width:40.5pt;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>GET<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=294 valign=top style='width:220.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><i
+                                    style='mso-bidi-font-style:normal'><span style='font-size:10.0pt'>/{serviceID}/monitoringdata/cost/
+                                        total /xml<o:p></o:p></span></i></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=102 valign=top style='width:76.5pt;border-top:none;border-left:
+                        none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal><span style='mso-bookmark:_Toc363730159'><span
+                                    style='font-size:10.0pt'>-<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    <td width=125 valign=top style='width:1.3in;border-top:none;border-left:none;
+                        border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                        mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                        mso-border-alt:solid windowtext .5pt;padding:0in 0in 0in 0in'>
+                        <p class=MsoNormal style='page-break-after:avoid'><span style='mso-bookmark:
+                                                                                _Toc363730159'><span style='font-size:10.0pt'>service/xml<o:p></o:p></span></span></p>
+                    </td>
+                    <span style='mso-bookmark:_Toc363730159'></span>
+                    </tr>
+                </table></div>
+
+        </section>
+
+        <aside id="sidebar">
+            <a href="http://www.tuwien.ac.at/" class="button" style="background: url(./images/TU_logo.png) 0 0 no-repeat; height:70px;  width:300px">
+            </a>
+
+            <a href="http://www.infosys.tuwien.ac.at/" class="button" style="background: url(./images/dsgComplet.png) 0 0 no-repeat; background-size:100%; width:300px; height:70px">
+            </a>
+
+            <p class="repo-owner" style="width:300px"><a href="https://github.com/tuwiendsg/MELA"></a> Maintained and distributed by <a href="http://www.infosys.tuwien.ac.at/staff/dmoldovan/"> Daniel Moldovan </a>
+                </br> </br><a href="http://www.infosys.tuwien.ac.at/">Distributed Systems Group</a>
+                , <a href="http://www.tuwien.ac.at/">Vienna University of Technology</a>.</p>
+        </aside>
+
+
+        <aside id="sidebar">
+            <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+                <small>Download</small>
+                .zip file
+            </a>
+            <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+                <small>Download</small>
+                .tar.gz file
+            </a>
+
+            <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+        </aside>
+
+
+
+    </div>
+</div>
+
+
+</body>
+</html>

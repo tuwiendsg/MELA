@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+        <!--[if lt IE 9]>
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <title>Mela by tuwiendsg</title>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript">
+
+            $(document).ready(function() {
+                var top = $('#navibar').offset().top - parseFloat($('#navibar').css('marginTop').replace(/auto/, 100));
+                $(window).scroll(function(event) {
+                    // what the y position of the scroll is
+                    var y = $(this).scrollTop();
+
+                    // whether that's below the form
+                    if (y >= top) {
+                        // if so, ad the fixed class
+                        $('#navibar').addClass('fixed');
+                    } else {
+                        // otherwise remove it
+                        $('#navibar').removeClass('fixed');
+                    }
+                });
+            });</script>
+
+        <script>
+            (function(i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                i[r] = i[r] || function() {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+                a = s.createElement(o),
+                        m = s.getElementsByTagName(o)[0];
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+            ga('create', 'UA-43025584-5', 'tuwiendsg.github.io');
+            ga('send', 'pageview');
+
+        </script>
+
+    </head>
+
+    <body>
+        <header>
+            <div class="inner">
+                <h1>Documentation and Guides</h1>
+                <h2>MELA Space and Pathway Analysis Service</h2>
+                <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+            </div>
+        </header>
+
+
+        <div id="horizontalNav"> 
+            <ul>
+                <li><a href="./index.html" id="homenav">Home</a></li>
+                <li><a href="./background.html" id="Background">Background</a>
+                <li><a href="./guide.html" id="guide">Documentation</a>  
+                    <ul>
+                        <li><a href="./guide.html" >MELA Overview</a> </li>
+                        <li><a href="./dataService.html">MELA Data Service</a></li> 
+                        <li><div id="currentNav"><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></div>
+                            <div>
+                                <ul> 
+                                    <li><a href="#introduction">Overview</a></li>  
+                                    <li><a href="#boundary">Elasticity Boundary</a></li>  
+                                    <li><a href="#space">Elasticity Space</a></li>  
+                                    <li><a href="#pathway">Elasticity Pathway</a></li>  
+                                    <li><a href="#api">API</a></li>  
+                                </ul>	
+                            </div>
+                        </li> 
+
+                        <li><a href="./costEvaluationService.html">MELA Cost Evaluation</a></li>  
+                        <li><a href="./compiling.html">Compiling and deployment</a></li>
+                        <li><a href="./demos.html">Demos and examples</a></li>  
+                        <li><a href="./others.html">Other resources</a></li>
+                    </ul>
+                </li> 
+                <li><a href="./contact.html" id="contactnav">Contact</a></li>
+            </ul>
+
+        </div>
+
+        <div id="content-wrapper">
+
+            <aside id="navibar">
+
+                <div id="nav">
+                    <ul>
+                        <li><a href="./index.html" id="homenav">Home</a></li>
+                        <li><a href="./background.html" id="Background">Background</a>
+                        <li><a href="./guide.html" id="guide">Documentation</a>  
+                            <ul>
+                                <li><a href="./guide.html" >MELA Overview</a> </li>
+                                <li><a href="./dataService.html">MELA Data Service</a></li> 
+                                <li><div id="currentNav"><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></div>
+                                    <div id="subnav">
+                                        <ul> 
+                                            <li><a href="#introduction">Overview</a></li>  
+                                            <li><a href="#boundary">Elasticity Boundary</a></li>  
+                                            <li><a href="#space">Elasticity Space</a></li>  
+                                            <li><a href="#pathway">Elasticity Pathway</a></li>  
+                                            <li><a href="#api">API</a></li>  
+                                        </ul>	
+                                    </div>
+                                </li> 
+
+                                <li><a href="./costEvaluationService.html">MELA Cost Evaluation</a></li>  
+                                <li><a href="./compiling.html">Compiling and deployment</a></li>
+                                <li><a href="./demos.html">Demos and examples</a></li>  
+                                <li><a href="./others.html">Other resources</a></li>
+                            </ul>
+                        </li> 
+                        <li><a href="./contact.html" id="contactnav">Contact</a></li>
+                    </ul>
+
+                </div>
+            </aside>
+
+
+            <div class="inner clearfix">
+                <section id="main-content">
+                    <h1>
+                        <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Overview</h1>
+                    <p>
+
+
+                    <p> While the MELA-DataService provides monitoring snapshots containing
+                        multi-level monitoring data organized after the service structure,such
+                        snapshots do not provide information about the elasticity behavior of the
+                        service in terms of user-defined elasticity requirements fulfillment.
+                    </p>
+
+
+                    <p>Thus, we introduce  the MELA Space and Pathway Analysis Service, which analyzes the elasticity of cloud services,
+                        and determines their elasticity space, elasticity boundaries, and elasticity
+                        pathway. The elasticity space, boundaries, and pathway are determined for each
+                        service unit, complex units, and the whole service, providing
+                        a multi-level view over the service's elasticity. This view is used for analyzing the behavior of the
+                        service, whether or not it behaves within expected boundaries, in order to
+                        know what decisions to take, and in which part of the service these
+                        decisions should be enforced.  </p>
+
+
+                    <h1><a name="boundary" class="anchor" href="#boundary"><span class="octicon octicon-link"></span></a>Elasticity Boundary</h1>
+                    <p>An elasticity  boundary is an upper and lower limit over the service's metric's values in
+                        which user-defined elasticity requirements are fulfilled. Boundaries describe
+                        the upper and lower allowed values over a set of metrics for a unit or the
+                        whole cloud service, and are used in determining what behavioral limits are
+                        to be enforced for the service by elasticity controllers such as <a href="https://github.com/tuwiendsg/rSYBL">rSYBL</a>  </p>
+
+                    <p>
+                        Conceptually, an elasticity boundary is defined as:  elBoundary=〈c_i^u,c_i^l 〉,〈q_j^u,q_j^l 〉,〈r_k^u,r_k^l 〉,
+                        where c_i^u and c_i^l denote the upper bound and the lower bound of cost metric c_i , respectively, 
+                        q_j^u  and q_j^l for quality metric q_j, and  r_k^u  and r_k^l for resource metric r_k. 
+                    </p>
+                    <p>We discriminate
+                        between two types of elasticity boundaries: (i) <b>user-defined elasticity boundary</b> and (ii) <b>evaluated elasticity boundary</b>
+                        In a user-defined elasticity boundary, the boundary metrics and bounds
+                        are specified by user-defined elasticity requirements, indicating the
+                        parameters under which the cloud service is elastic. An evaluated
+                        elasticity boundary is determined from monitoring snapshots, using the
+                        user-defined boundary. </p>
+
+                    <p>Thus, such a
+                        boundary indicates encountered bounds on the monitored metrics not targeted by
+                        user requirements, in which the user requirements were respected. Elasticity controllers such as <a href="https://github.com/tuwiendsg/rSYBL">rSYBL</a> could use the determined
+                        elasticity boundaries to refine its control elasticity mechanism, by adding
+                        beside user-defined requirements the determined boundaries. Thus, even if the
+                        user has limited knowledge, we determine boundaries over the rest of the
+                        service. </p>
+
+                    <h1><a name="space" class="anchor" href="#space"><span class="octicon octicon-link"></span></a>Elasticity Space</h1>
+
+                    <p>Given a set of
+                        monitoring snapshots and a user-defined elasticity boundary, we need to
+                        understand when a monitored element is in elastic behavior, if its behavior
+                        violates the elasticity boundaries, i.e. it fulfills user-defined requirements.
+                    </p>
+
+                    <p>In the current prototype, the elasticity space boundaries are determined for all service units,
+                        complex units, and whole service, and are equal to the maximum and minimum encountered metric values when the elasticity requirements were respected. Thus, starting from supplied user requirements, 
+                        MELA Space and Pathway Analysis Service determines and continuously 
+                        updates requirements for the rest of the service units</p>
+
+                    <p>
+                    <center>
+                        <figure>
+                            <img src="images/elSpaceExample.png" alt="Space and boundary"  width="100%"/>
+                            <figcaption>Example of elasticity space and boundary in time</figcaption>
+                        </figure>
+                    </center>
+                    </p>
+
+                    <h1><a name="pathway" class="anchor" href="#pathway"><span class="octicon octicon-link"></span></a>Elasticity Pathway</h1>
+
+                    <p>While the
+                        elasticity space enables elasticity analysis, it does not provide insight into
+                        relationships between metrics influencing the elastic behavior over time. In
+                        order to characterize the elastic behavior of cloud service from specific
+                        views/perspectives, we define the concept <b style='mso-bidi-font-weight:normal'>elasticity
+                            pathway</b></p>
+
+                    <p>An elasticity
+                        pathway function must describe the evolution of an elastic cloud service
+                        over time. Such a function is necessary for evaluating the historic behavior of
+                        a cloud service, given a certain control strategy, with respect to
+                        user-defined requirements, as to understand if the control strategy was
+                        effective or not. Moreover, such a function gives a foundation for predicting
+                        the behavior of the cloud service, serving as a base for refining control
+                        strategies.</p>
+
+
+                    <p>More concretely, an
+                        elasticity pathway could indicate that the response time of an service and
+                        its CPU usage are high in x% of the encountered situations, indicating there
+                        might be a correlation between them. </p>
+
+                    <p>
+                    <center>
+                        <figure>
+                            <img src="images/pathwayExample.png" alt="Pathway"  width="100%"/>
+                            <figcaption>Example of elasticity pathway</figcaption>
+                        </figure>
+                    </center>
+                    </p>
+
+
+                    <div>
+                        <h1><a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>MELA-DataService RESTful API</h1>
+
+
+                        <p class=MsoCaption align=center style='text-align:center;page-break-after:
+                           avoid'><a name="_Toc383593284"></a><a name="_Toc382232147"><span
+                                    style='mso-bookmark:_Toc383593284'>Table </span></a><!--[if supportFields]><span
+                                    style='mso-bookmark:_Toc382232147'><span style='mso-bookmark:_Toc383593284'></span></span><span
+                                    style='mso-element:field-begin'></span><span style='mso-bookmark:_Toc382232147'><span
+                                    style='mso-bookmark:_Toc383593284'><span style='mso-spacerun:yes'></span>SEQ
+                                    Table \* ARABIC <span style='mso-element:field-separator'></span></span></span><![endif]--><span
+                                style='mso-bookmark:_Toc382232147'><span style='mso-bookmark:_Toc383593284'><span
+                                        style='mso-no-proof:yes'>7</span></span></span><!--[if supportFields]><span
+                                        style='mso-bookmark:_Toc382232147'><span style='mso-bookmark:_Toc383593284'></span></span><span
+                                        style='mso-element:field-end'></span><![endif]--><span style='mso-bookmark:
+                                                                                   _Toc382232147'><span style='mso-bookmark:_Toc383593284'>: MELA-Analysis Service
+                                    API</span></span></p>
+
+                        <table class=Style1 border=1 cellspacing=0 cellpadding=0 style='border-collapse:
+                               collapse;mso-table-layout-alt:fixed;border:none;mso-border-alt:solid windowtext .5pt;
+                               mso-yfti-tbllook:1184;mso-padding-alt:0in 5.4pt 0in 5.4pt'>
+                            <tr style='mso-yfti-irow:-1;mso-yfti-firstrow:yes'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    mso-border-alt:solid windowtext .5pt;background:#D9D9D9;mso-background-themecolor:
+                                    background1;mso-background-themeshade:217;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal style='tab-stops:9.2pt;mso-yfti-cnfc:1'><b
+                                            style='mso-bidi-font-weight:normal'><span style='font-size:11.0pt;mso-bidi-font-size:
+                                                                                  12.0pt;font-family:"Calibri","sans-serif";mso-ascii-theme-font:major-latin;
+                                                                                  mso-hansi-theme-font:major-latin'>#<o:p></o:p></span></b></p>
+                                </td>
+                                <td width=336 colspan=4 valign=top style='width:3.5in;border:solid windowtext 1.0pt;
+                                    border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+                                    solid windowtext .5pt;background:#D9D9D9;mso-background-themecolor:background1;
+                                    mso-background-themeshade:217;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal align=left style='text-align:left;mso-yfti-cnfc:1'><b
+                                            style='mso-bidi-font-weight:normal'><span style='font-family:"Calibri","sans-serif";
+                                                                                  mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>RESTful
+                                                API:<span style='mso-spacerun:yes'> </span></span></b><b style='mso-bidi-font-weight:
+                                                                                                 normal'><span style='font-size:11.0pt;font-family:"Calibri","sans-serif";
+                                                mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/MELA-AnalysisService/REST_WS/</span></b><b
+                                            style='mso-bidi-font-weight:normal'><span style='font-family:"Calibri","sans-serif";
+                                                                                  mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'><o:p></o:p></span></b></p>
+                                </td>
+                                <td width=251 rowspan=2 valign=top style='width:188.6pt;border:solid windowtext 1.0pt;
+                                    border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+                                    solid windowtext .5pt;background:#D9D9D9;mso-background-themecolor:background1;
+                                    mso-background-themeshade:217;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal style='mso-yfti-cnfc:1'><b style='mso-bidi-font-weight:
+                                                                                  normal'><span style='font-family:"Calibri","sans-serif";mso-ascii-theme-font:
+                                                major-latin;mso-hansi-theme-font:major-latin'><span
+                                                    style='mso-spacerun:yes'> </span>Description<o:p></o:p></span></b></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:0'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'><o:p>&nbsp;</o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:11.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'><span
+                                                style='mso-spacerun:yes'></span>Type<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:11.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Resource
+                                            URL<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:11.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Consumes<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:11.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Produces<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:1'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;mso-bidi-font-size:12.0pt;
+                                                             font-family:"Calibri","sans-serif";mso-ascii-theme-font:major-latin;
+                                                             mso-hansi-theme-font:major-latin'>1<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>POST<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/elasticitypathway<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/json<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Returns
+                                            the elasticity pathway for a supplied application component<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:2'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;mso-bidi-font-size:12.0pt;
+                                                             font-family:"Calibri","sans-serif";mso-ascii-theme-font:major-latin;
+                                                             mso-hansi-theme-font:major-latin'>2<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>POST<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/elasticitypathwayxml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Same as
+                                            above, but returns XML<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:3'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;mso-bidi-font-size:12.0pt;
+                                                             font-family:"Calibri","sans-serif";mso-ascii-theme-font:major-latin;
+                                                             mso-hansi-theme-font:major-latin'>3<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>POST<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/elasticityspace<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/json<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Returns
+                                            the elasticity space for a supplied Monitored Element (application component)<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:4'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;mso-bidi-font-size:12.0pt;
+                                                             font-family:"Calibri","sans-serif";mso-ascii-theme-font:major-latin;
+                                                             mso-hansi-theme-font:major-latin'>4<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>POST<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/elasticityspacexml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Same as
+                                            above, but returns XML<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:5'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>5<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>POST<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/elasticityspacecompletexml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Same as
+                                            above, but elasticity space also contains recorded monitored data<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:6'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>6<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>PUT<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/metricscompositionrules<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>-<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Submits
+                                            metric composition rules to MELA, for structuring monitoring information<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:7'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>7<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>PUT<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/
+                                            servicedescription<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>-<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Submits
+                                            the application structure<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:8'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>8<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>POST<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/
+                                            servicedescription<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>-<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Updates
+                                            the application structure after elasticity actions enforcement<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:9'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>9<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>PUT<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/servicerequirements<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>-<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Submits
+                                            the application requirement based on which the elasticity space is determined<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:10'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>10<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>GET<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/metrics<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>String<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Retrieves
+                                            the metrics currently being collected for a Monitored Element ID (application
+                                            component)<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:11'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>14<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>GET<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/servicestructure<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>-<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Retrieves
+                                            latest application structure<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:12'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>17<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>POST<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/addexecutingactions<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>-<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Notifies
+                                            MELA that an elasticity action is being enforced<o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                            <tr style='mso-yfti-irow:13;mso-yfti-lastrow:yes'>
+                                <td width=31 valign=top style='width:23.4pt;border:solid windowtext 1.0pt;
+                                    border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+                                    padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>18<o:p></o:p></span></p>
+                                </td>
+                                <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>POST<o:p></o:p></span></p>
+                                </td>
+                                <td width=132 valign=top style='width:99.0pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>/removeexecutingactions<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>application/xml<o:p></o:p></span></p>
+                                </td>
+                                <td width=78 valign=top style='width:58.5pt;border-top:none;border-left:none;
+                                    border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>-<o:p></o:p></span></p>
+                                </td>
+                                <td width=251 valign=top style='width:188.6pt;border-top:none;border-left:
+                                    none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+                                    mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+                                    mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+                                    <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Calibri","sans-serif";
+                                                             mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Notifies
+                                            MELA that an elasticity action enforcement has completed<span
+                                                style='mso-spacerun:yes'> </span><o:p></o:p></span></p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p class=MsoCaption align=center style='text-align:center'><span style='mso-bookmark:_Toc363730159'>MELA Space and Pathway Analysis Service REST API</span></p>
+
+                    </div>
+
+                </section>
+
+                <aside id="sidebar">
+                    <a href="http://www.tuwien.ac.at/" class="button" style="background: url(./images/TU_logo.png) 0 0 no-repeat; height:70px;  width:300px">
+                    </a>
+
+                    <a href="http://www.infosys.tuwien.ac.at/" class="button" style="background: url(./images/dsgComplet.png) 0 0 no-repeat; background-size:100%; width:300px; height:70px">
+                    </a>
+
+                    <p class="repo-owner" style="width:300px"><a href="https://github.com/tuwiendsg/MELA"></a> Maintained and distributed by <a href="http://www.infosys.tuwien.ac.at/staff/dmoldovan/"> Daniel Moldovan </a>
+                        </br> </br><a href="http://www.infosys.tuwien.ac.at/">Distributed Systems Group</a>
+                        , <a href="http://www.tuwien.ac.at/">Vienna University of Technology</a>.</p>
+                </aside>
+
+
+                <aside id="sidebar">
+                    <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+                        <small>Download</small>
+                        .zip file
+                    </a>
+                    <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+                        <small>Download</small>
+                        .tar.gz file
+                    </a>
+
+                    <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+                </aside>
+
+
+
+            </div>
+        </div>
+
+
+    </body>
+</html>

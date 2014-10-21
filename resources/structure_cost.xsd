@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="Metric" nillable="true" type="xs:anyType"/>
+
+  <xs:element name="MetricValue" type="metricValue"/>
+
+  <xs:element name="MonitoredElement" type="monitoredElement"/>
+
+  <xs:element name="MonitoredElementLevel" type="monitoredElementLevel"/>
+
+  <xs:element name="MonitoredEntry" type="propertyEntry"/>
+
+  <xs:element name="Property" type="propertyEntries"/>
+
+  <xs:element name="Relationship" type="relationship"/>
+
+  <xs:element name="UsedCloudOfferedServiceCfg" type="usedCloudOfferedService"/>
+
+  <xs:element name="ValueType" type="valueType"/>
+
+  <xs:complexType name="monitoredElement">
+    <xs:sequence>
+      <xs:element ref="MonitoredElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="Relationship" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="UsedCloudOfferedServiceCfg" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="level" type="monitoredElementLevel" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="relationship">
+    <xs:sequence>
+      <xs:element name="metric" type="relationshipType" minOccurs="0"/>
+      <xs:element name="From" type="monitoredElement" minOccurs="0"/>
+      <xs:element name="To" type="monitoredElement" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="usedCloudOfferedService">
+    <xs:sequence>
+      <xs:element name="QualityProperties" type="propertyEntries" minOccurs="0"/>
+      <xs:element name="ResourceProperties" type="propertyEntries" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:long" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="propertyEntries">
+    <xs:sequence>
+      <xs:element name="entry" type="propertyEntry" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="propertyEntry">
+    <xs:sequence>
+      <xs:element name="metric" type="metric" minOccurs="0"/>
+      <xs:element name="value" type="metricValue" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="metric">
+    <xs:sequence/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="measurementUnit" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="metricType" use="required"/>
+    <xs:attribute name="MonitoredElementLevel" type="xs:string"/>
+    <xs:attribute name="MonitoredElementID" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="metricValue">
+    <xs:sequence>
+      <xs:element name="Value" type="xs:anyType"/>
+    </xs:sequence>
+    <xs:attribute name="ValueType" type="valueType" use="required"/>
+  </xs:complexType>
+
+  <xs:simpleType name="monitoredElementLevel">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SERVICE"/>
+      <xs:enumeration value="SERVICE_TOPOLOGY"/>
+      <xs:enumeration value="SERVICE_UNIT"/>
+      <xs:enumeration value="VM"/>
+      <xs:enumeration value="VIRTUAL_CLUSTER"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="relationshipType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ConnectedTo"/>
+      <xs:enumeration value="HostedOn"/>
+      <xs:enumeration value="InConjunctionWith"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="metricType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RESOURCE"/>
+      <xs:enumeration value="COST"/>
+      <xs:enumeration value="QUALITY"/>
+      <xs:enumeration value="ELASTICITY"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="valueType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="NUMERIC"/>
+      <xs:enumeration value="TEXT"/>
+      <xs:enumeration value="ENUMERATION"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+
