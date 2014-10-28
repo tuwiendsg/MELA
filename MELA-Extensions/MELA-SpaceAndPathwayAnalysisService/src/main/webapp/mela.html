@@ -48,7 +48,7 @@
         </div>
         <div id="analytics"></div>
 
- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"/>
@@ -851,6 +851,9 @@
                                 case "metric":
                                     position = "start";
                                     break;
+                                case "requirement":
+                                    position = "start";
+                                    break;
                                 default:
                                     position = "end";
                                     break;
@@ -966,13 +969,16 @@
                         });
 
                 nodeUpdate.select("text")
-                       .attr("text-anchor", function(d) {
+                        .attr("text-anchor", function(d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
                                     position = "start";
                                     break;
                                 case "metric":
+                                    position = "start";
+                                    break;
+                                case "requirement":
                                     position = "start";
                                     break;
                                 default:
@@ -1255,7 +1261,7 @@
                                     var thisFrame = document.getElementById(iframeID);
                                     newheight = document.getElementById(iframeID).contentWindow.document.body.scrollHeight;
                                     newwidth = document.getElementById(iframeID).contentWindow.document.body.scrollWidth;
-                                    thisFrame.setAttribute('style', 'width:' + newwidth + 'px; height:' + 2*newheight + 'px');
+                                    thisFrame.setAttribute('style', 'width:' + newwidth + 'px; height:' + 2 * newheight + 'px');
                                 };
 
 
@@ -1603,11 +1609,11 @@
                         } else {
                             var change = -1;
                             updateTextOnNode(root, new_root, change);
-                            if (change == -1) {
+                            //if (change == -1) {
                                 updateText(root);
-                            } else {
-                                update(new_root);
-                            }
+                           // } else {
+                           //     update(new_root);
+                            //}
                         }
 
                     } catch (error) {
@@ -1710,4 +1716,5 @@
         </script>
     </body>
 </html>
+
 
