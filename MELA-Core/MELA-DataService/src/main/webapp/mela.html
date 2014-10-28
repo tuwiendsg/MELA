@@ -1,4 +1,4 @@
-
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -174,7 +174,7 @@
             var octogon = "m 0,-5 6.63341,-7.14443 11.95156,0 6.46184,7.14443 0,8.97271 -6.46184,6.58185 -11.95156,0 -6.63341,-6.58185 z";
             var auxRect = "m -32,5 0,-13.25825 30.14043,0 0,13.25825 z"
 
-            var margin = {top: 10, right: 120, bottom: 20, left: 140},
+            var margin = {top: 10, right: 0, bottom: 20, left: 10},
             width = window.innerWidth,
                     height = window.innerHeight - 100, //850
                     i = 0,
@@ -222,7 +222,7 @@
             var legend = ["legend", "component", "metric"];
             var labels = ["Legend", "Monitored Element", "Metric", "Requirement"];
 
-            var legendleftX = -90;
+            var legendleftX = 0;
             var legendleftY = -25;
 
             var legendRect = vis.selectAll("rect")
@@ -504,9 +504,56 @@
 
 
                 nodeUpdate.select("text")
-                        .attr("text-anchor", "end")
-                        .attr("dy", -5)
-                        .attr("dx", -15)
+                        .attr("text-anchor", function(d) {
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = "start";
+                                    break;
+                                default:
+                                    position = "end";
+                                    break;
+
+                            }
+                            return position;
+
+                        })
+
+                        .attr("dy", function(d) {
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = -25;
+                                    break;
+                                case "VM":
+                                    position = -15;
+                                    break;
+                                default:
+                                    position = -5;
+                                    break;
+
+                            }
+                            return position;
+
+                        })
+                        .attr("dx", function(d) {
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = -10;
+                                    break;
+                                case "VM":
+                                    position = +25;
+                                    break;
+                                default:
+                                    position = -15;
+                                    break;
+                            }
+                            return position;
+
+                        })
+
+
                         .style("font-size", function(d) {
                             return (d.type == "metric") ? 14 : 18;
                         })
@@ -785,15 +832,58 @@
 
 
                 nodeEnter.append("text")
-                        .attr("dx", function(d) {
-                            return d.value ? 40 : -8;
-                        })
-                        .attr("y", function(d) {
-                            return d.value ? -10 : -5;
-                        })
                         .attr("text-anchor", function(d) {
-                            return  d.ip || d.children ? "end" : "start";
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = "start";
+                                    break;
+                                case "metric":
+                                    position = "start";
+                                    break;
+                                default:
+                                    position = "end";
+                                    break;
+
+                            }
+                            return position;
+
                         })
+
+                        .attr("dy", function(d) {
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = -25;
+                                    break;
+                                case "VM":
+                                    position = -15;
+                                    break;
+                                default:
+                                    position = -5;
+                                    break;
+
+                            }
+                            return position;
+
+                        })
+                        .attr("dx", function(d) {
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = -10;
+                                    break;
+                                case "VM":
+                                    position = +25;
+                                    break;
+                                default:
+                                    position = -15;
+                                    break;
+                            }
+                            return position;
+
+                        })
+
                         .style("font-size", function(d) {
                             return (d.type == "metric") ? 14 : 19;
                         })
@@ -867,12 +957,58 @@
                         });
 
                 nodeUpdate.select("text")
-                        .attr("text-anchor", function(d) {
-                            return   d.ip || d.children ? "end" : "start";
+ .attr("text-anchor", function(d) {
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = "start";
+                                    break;
+                                case "metric":
+                                    position = "start";
+                                    break;
+                                default:
+                                    position = "end";
+                                    break;
+
+                            }
+                            return position;
+
                         })
-                        .attr("dy", -5)
-                        .attr("dx", -15)
-                        .style("font-size", function(d) {
+
+                        .attr("dy", function(d) {
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = -25;
+                                    break;
+                                case "VM":
+                                    position = -15;
+                                    break;
+                                default:
+                                    position = -5;
+                                    break;
+
+                            }
+                            return position;
+
+                        })
+                        .attr("dx", function(d) {
+                            var position = 0;
+                            switch (d.type) {
+                                case "SERVICE":
+                                    position = -10;
+                                    break;
+                                case "VM":
+                                    position = +25;
+                                    break;
+                                default:
+                                    position = -15;
+                                    break;
+                            }
+                            return position;
+
+                        })
+                       .style("font-size", function(d) {
                             return (d.type == "metric") ? 14 : 19;
                         })
                         .attr("font-style", function(d) {
@@ -1421,4 +1557,3 @@
         </script>
     </body>
 </html>
-
