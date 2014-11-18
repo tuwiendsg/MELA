@@ -105,14 +105,14 @@ public class ElasticityBehavior {
                 Logger.getLogger(ElasticityBehaviorDimension.class.getName()).log(Level.WARN, "Upper boundary for " + metric + " is not numeric  " + upperBoundaryValue.getValueRepresentation());
                 this.upperBoundary = Double.POSITIVE_INFINITY;
             } else {
-                this.upperBoundary = (Double) upperBoundaryValue.getValue();
+                this.upperBoundary = ((Number) upperBoundaryValue.getValue()).doubleValue();
             }
 
             if (!lowerBoundaryValue.getValueType().equals(MetricValue.ValueType.NUMERIC)) {
                 Logger.getLogger(ElasticityBehaviorDimension.class.getName()).log(Level.WARN, "Lower boundary for " + metric + " is not numeric  " + lowerBoundaryValue.getValueRepresentation());
                 this.lowerBoundary = Double.POSITIVE_INFINITY;
             } else {
-                this.lowerBoundary = (Double) lowerBoundaryValue.getValue();
+                this.lowerBoundary = ((Number)  lowerBoundaryValue.getValue()).doubleValue();
             }
 
             for (MetricValue metricValue : values) {
@@ -123,7 +123,7 @@ public class ElasticityBehavior {
                     break;
                 }
 
-                Double fulfillment = (((Double) metricValue.getValue()) * 100) / upperBoundary;
+                Double fulfillment = ((((Number)  metricValue.getValue()).doubleValue()) * 100) / upperBoundary;
                 boundaryFulfillment.add(fulfillment);
 
             }
