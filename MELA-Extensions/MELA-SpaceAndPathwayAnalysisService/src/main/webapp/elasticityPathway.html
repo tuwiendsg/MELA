@@ -33,7 +33,7 @@
 </style>
 <body>
     <script src="http://d3js.org/d3.v3.js"></script>
-     <script src="scripts/spin.js" type="text/javascript"></script>
+    <script src="scripts/spin.js" type="text/javascript"></script>
     <div id="loadingIcon"></div>
     <script>
 
@@ -531,37 +531,38 @@
 
         function drawElasticityPathway(elPthw, vars) {
 
+            if (elPthw && elPthw.neurons) {
 
-            elPthwDiv.selectAll("h2").remove();
-            elPthwDiv.selectAll("svg").remove();
+                elPthwDiv.selectAll("h2").remove();
+                elPthwDiv.selectAll("svg").remove();
 
-            elPthwSVG = elPthwDiv.append("svg")
-                    .attr("width", window.innerWidth)
-                    .attr("height", window.innerHeight)
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                elPthwSVG = elPthwDiv.append("svg")
+                        .attr("width", window.innerWidth)
+                        .attr("height", window.innerHeight)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            elPthwSVG.append("line")
-                    .attr("x1", -margin.left)
-                    .attr("y1", 0)
-                    .attr("x2", window.innerWidth)
-                    .attr("y2", 0)
-                    .attr("stroke-width", 1)
-                    .attr("stroke", "black");
+                elPthwSVG.append("line")
+                        .attr("x1", -margin.left)
+                        .attr("y1", 0)
+                        .attr("x2", window.innerWidth)
+                        .attr("y2", 0)
+                        .attr("stroke-width", 1)
+                        .attr("stroke", "black");
 
 
-            var elSgnChartWidth = window.innerWidth - 200;
+                var elSgnChartWidth = window.innerWidth - 200;
 
-            if ((elSgnChartWidth / elPthw.neurons.length) > 200 && elPthw.neurons.length > 0) {
-                elSgnChartWidth = elPthw.neurons.length * 200;
+                if ((elSgnChartWidth / elPthw.neurons.length) > 200 && elPthw.neurons.length > 0) {
+                    elSgnChartWidth = elPthw.neurons.length * 200;
+                }
+
+                if ((elSgnChartWidth / elPthw.metricLabels.length) < 200 && elPthw.metricLabels.length > 0) {
+                    elSgnChartWidth = elPthw.metricLabels.length * 200;
+                }
+
+                generateElPathwayChart(elPthw, elPthwSVG, elPathwayColors, 0, 70, elSgnChartWidth, height, "Situations Encounter Rate (%)", "Value");
             }
-
-            if ((elSgnChartWidth / elPthw.metricLabels.length) < 200 && elPthw.metricLabels.length > 0) {
-                elSgnChartWidth = elPthw.metricLabels.length * 200;
-            }
-
-            generateElPathwayChart(elPthw, elPthwSVG, elPathwayColors, 0, 70, elSgnChartWidth, height, "Situations Encounter Rate (%)", "Value");
-
         }
 
 

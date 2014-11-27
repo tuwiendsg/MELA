@@ -24,6 +24,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -42,7 +43,7 @@ import org.apache.log4j.Logger;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Operation")
-public class CompositionOperation {
+public class CompositionOperation implements Serializable{
 
     //TODO: Add source element ID (example, from a topology, I want ResponseTime from only 2 Units, not all)
     @XmlAttribute(name = "type", required = true)
@@ -170,7 +171,7 @@ public class CompositionOperation {
     public MetricValue apply(MonitoredElementMonitoringSnapshot elementMonitoringSnapshot) {
 
         //in case the composition goes bad, this way it will clearly show something wrong 
-       MetricValue result = null;
+        MetricValue result = null;
 
         // operations done on result
         // for example SUM will place the sum on result[0]
@@ -188,7 +189,7 @@ public class CompositionOperation {
                 if (elementMonitoringSnapshot.containsMetric(referenceMetric)) {
                     valuesToBeProcessed.add(elementMonitoringSnapshot.getValueForMetric(referenceMetric).clone());
                 } else {
-                   // Logger.getRootLogger().log(Level.WARN, "Metric " + referenceMetric + " not found in " + MonitoredElement.getId());
+                    // Logger.getRootLogger().log(Level.WARN, "Metric " + referenceMetric + " not found in " + MonitoredElement.getId());
 //                    return null;
                 }
             } else {
@@ -215,7 +216,6 @@ public class CompositionOperation {
         //2'nd step
         //if there are sub/operations to be applied, apply them, and then apply THIS.
         //the idea is to be able to say "for metric Children from Service level, divide with (SUM Cost (Service topology level))
-
         for (CompositionOperation subOperation : this.subOperations) {
             MetricValue subOperationValue = subOperation.apply(elementMonitoringSnapshot);
             if (subOperationValue != null) {
@@ -300,7 +300,8 @@ public class CompositionOperation {
                 break;
             case MAX: {
                 if (!valuesToBeProcessed.isEmpty()) {
-                    Double max = 0.0d;
+                    Double max = (((Number) valuesToBeProcessed.get(0).getValue())
+                            .doubleValue());
                     for (MetricValue metricValue : valuesToBeProcessed) {
                         if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
                             if (max < (((Number) metricValue.getValue())
@@ -318,7 +319,8 @@ public class CompositionOperation {
             break;
             case MIN: {
                 if (!valuesToBeProcessed.isEmpty()) {
-                    Double min = 0.0d;
+                    Double min = (((Number) valuesToBeProcessed.get(0).getValue())
+                            .doubleValue());
                     for (MetricValue metricValue : valuesToBeProcessed) {
                         if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
                             if (min > (((Number) metricValue.getValue())
@@ -477,35 +479,41 @@ public class CompositionOperation {
             case KEEP:
                 break;
             case MAX: {
-                Double max = 0.0d;
-                for (MetricValue metricValue : valuesToBeProcessed) {
-                    if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
-                        if (max < (((Number) metricValue.getValue())
-                                .doubleValue())) {
-                            max = (((Number) metricValue.getValue())
-                                    .doubleValue());
+                if (!valuesToBeProcessed.isEmpty()) {
+                    Double max = (((Number) valuesToBeProcessed.get(0).getValue())
+                            .doubleValue());
+                    for (MetricValue metricValue : valuesToBeProcessed) {
+                        if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
+                            if (max < (((Number) metricValue.getValue())
+                                    .doubleValue())) {
+                                max = (((Number) metricValue.getValue())
+                                        .doubleValue());
+                            }
                         }
                     }
+                    MetricValue metricValue = new MetricValue();
+                    metricValue.setValue(max);
+                    result = metricValue;
                 }
-                MetricValue metricValue = new MetricValue();
-                metricValue.setValue(max);
-                result = metricValue;
             }
             break;
             case MIN: {
-                Double min = 0.0d;
-                for (MetricValue metricValue : valuesToBeProcessed) {
-                    if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
-                        if (min > (((Number) metricValue.getValue())
-                                .doubleValue())) {
-                            min = (((Number) metricValue.getValue())
-                                    .doubleValue());
+                if (!valuesToBeProcessed.isEmpty()) {
+                    Double min = (((Number) valuesToBeProcessed.get(0).getValue())
+                            .doubleValue());
+                    for (MetricValue metricValue : valuesToBeProcessed) {
+                        if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
+                            if (min > (((Number) metricValue.getValue())
+                                    .doubleValue())) {
+                                min = (((Number) metricValue.getValue())
+                                        .doubleValue());
+                            }
                         }
                     }
+                    MetricValue metricValue = new MetricValue();
+                    metricValue.setValue(min);
+                    result = metricValue;
                 }
-                MetricValue metricValue = new MetricValue();
-                metricValue.setValue(min);
-                result = metricValue;
             }
             break;
             case MUL:
@@ -594,6 +602,5 @@ public class CompositionOperation {
         this.subOperations = subOperations;
         return this;
     }
-    
-    
+
 }

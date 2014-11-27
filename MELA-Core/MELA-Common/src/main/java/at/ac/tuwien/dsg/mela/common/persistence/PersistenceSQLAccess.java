@@ -115,14 +115,14 @@ public class PersistenceSQLAccess {
                 jdbcTemplate.update(sql, serviceID);
             }
             {
-                log.debug("Removing ELASTICITYDEPENDENCY for " + serviceID);
-                String sql = "delete from ELASTICITYDEPENDENCY where monSeqID= ?";
+                log.debug("Removing ElasticityDependency for " + serviceID);
+                String sql = "delete from ElasticityDependency where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
 
             {
-                log.debug("Removing ELASTICITYDEPENDENCY for " + serviceID);
-                String sql = "delete from ELASTICITYDEPENDENCY where monSeqID= ?";
+                log.debug("Removing ElasticityDependency for " + serviceID);
+                String sql = "delete from ElasticityDependency where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
             {

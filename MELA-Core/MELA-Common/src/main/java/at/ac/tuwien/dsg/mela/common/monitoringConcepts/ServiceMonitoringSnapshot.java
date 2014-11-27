@@ -35,7 +35,9 @@ import java.util.Map.Entry;
  * to process.
  */
 public class ServiceMonitoringSnapshot implements Serializable {
-
+    //CloudCom experiments
+//    private static final long serialVersionUID = 7738621893115870124l;
+    
     private String timestamp;
 
     private int timestampID;
