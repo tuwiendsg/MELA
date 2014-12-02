@@ -216,10 +216,17 @@ public class CompositionOperation implements Serializable {
 
         //purge everything which is UNDEFINED
         Iterator<MetricValue> metricValuesIterator = valuesToBeProcessed.iterator();
+        boolean flagUndefinedPurged = false;
         while (metricValuesIterator.hasNext()) {
             if (metricValuesIterator.next().isUndefined()) {
                 metricValuesIterator.remove();
+                flagUndefinedPurged = true;
             }
+        }
+        //if I removed all values, add an empty undefined -1 one back to create metric on it
+        //this solve problem with el space
+        if (valuesToBeProcessed.isEmpty() && flagUndefinedPurged) {
+            valuesToBeProcessed.add(new MetricValue(-1));
         }
 
         //2'nd step
