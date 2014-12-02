@@ -379,7 +379,7 @@
                             if (d.attention) {
                                 return d.name + ": " + d.actionName;
                             } else if (d.type == "VM") {
-                                return "VM:" + d.name;
+                                return d.name;
                             } else {
                                 return d.name;
                             }
@@ -575,7 +575,7 @@
                             if (d.attention) {
                                 return d.name + ": " + d.actionName;
                             } else if (d.type == "VM") {
-                                return "VM:" + d.name;
+                                return d.name;
                             } else {
                                 return d.name;
                             }
@@ -633,7 +633,7 @@
                             if (d.attention) {
                                 return d.name + ": " + d.actionName;
                             } else if (d.type == "VM") {
-                                return "VM:" + d.name;
+                                return d.name;
                             } else {
                                 return d.name;
                             }
@@ -907,7 +907,7 @@
                             if (d.attention) {
                                 return d.name + ": " + d.actionName;
                             } else if (d.type == "VM") {
-                                return "VM:" + d.name;
+                                return d.name;
                             } else {
                                 return d.name;
                             }
@@ -1618,6 +1618,7 @@
 
                     } catch (error) {
                         console.log("Error encountered when processing metrics");
+                        window.location.href = "./index.html";
                     }
                     setTimeout(refreshMonitoringData, 5000);
                 }

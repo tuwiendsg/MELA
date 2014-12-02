@@ -26,6 +26,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.Monitore
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -43,7 +44,7 @@ import org.apache.log4j.Logger;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Operation")
-public class CompositionOperation implements Serializable{
+public class CompositionOperation implements Serializable {
 
     //TODO: Add source element ID (example, from a topology, I want ResponseTime from only 2 Units, not all)
     @XmlAttribute(name = "type", required = true)
@@ -210,6 +211,14 @@ public class CompositionOperation implements Serializable{
 //                        return null;
                     }
                 }
+            }
+        }
+
+        //purge everything which is UNDEFINED
+        Iterator<MetricValue> metricValuesIterator = valuesToBeProcessed.iterator();
+        while (metricValuesIterator.hasNext()) {
+            if (metricValuesIterator.next().isUndefined()) {
+                metricValuesIterator.remove();
             }
         }
 

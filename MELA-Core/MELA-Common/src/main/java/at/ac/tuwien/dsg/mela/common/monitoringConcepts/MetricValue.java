@@ -45,6 +45,9 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         TEXT, @XmlEnumValue("ENUMERATION")
         ENUM
     }
+
+    public static final MetricValue UNDEFINED = new MetricValue("NA");
+
     @XmlElement(name = "Value", required = true)
     private Object value;
     @XmlAttribute(name = "ValueType", required = true)
@@ -165,7 +168,7 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
     /**
      * @param o
      * @return Used to compare different metric values. Currently is returns 0
-     * if the values can;t be compared. -1 if this smaller than argument, 1 if
+     * if the values can't be compared. -1 if this smaller than argument, 1 if
      * greater, 0 if equal or can't compare
      */
     public int compareTo(MetricValue o) {
@@ -220,6 +223,10 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
     public MetricValue withValueType(final ValueType valueType) {
         this.valueType = valueType;
         return this;
+    }
+
+    public boolean isUndefined() {
+        return this.value != null && this.value.toString().equals(UNDEFINED.getValue().toString());
     }
 
 }

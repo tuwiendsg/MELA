@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts;
 
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -51,6 +52,12 @@ public class MetricInfo {
 
     private Object convertedValue;
 
+    public static final MetricInfo UNDEFINED = new MetricInfo();
+
+    static {
+        UNDEFINED.value = "-1";
+    }
+
     public String getName() {
         return name;
     }
@@ -81,7 +88,9 @@ public class MetricInfo {
      */
     public Object getConvertedValue() {
 
-        if (type.toLowerCase().contains("float") || type.toLowerCase().contains("double")) {
+        if (value.equals(UNDEFINED.value)) {
+            return MetricValue.UNDEFINED.getValue();
+        } else if (type.toLowerCase().contains("float") || type.toLowerCase().contains("double")) {
             try {
                 if (value == null) {
                     return new Float(0);
