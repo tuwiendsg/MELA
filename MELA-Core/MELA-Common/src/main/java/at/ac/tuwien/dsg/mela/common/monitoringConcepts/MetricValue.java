@@ -46,7 +46,7 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         ENUM
     }
 
-    public static final MetricValue UNDEFINED = new MetricValue("-1");
+    public static final MetricValue UNDEFINED = new MetricValue(-1);
 
     @XmlElement(name = "Value", required = true)
     private Object value;
