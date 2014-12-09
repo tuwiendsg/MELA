@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CloudServices>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m1.small">
+        <CostFunction>
+            <CostElement type="PERIODIC" name="vmCost">
+                <CostMetric type="COST" measurementUnit="vms/m" name="numberOfVMs"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.12</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m1.medium">
+        <CostFunction>
+            <CostElement type="PERIODIC" name="vmCost">
+                <CostMetric type="COST" measurementUnit="vms/m" name="numberOfVMs"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.24</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m1.large">
+        <CostFunction>
+            <CostElement type="PERIODIC" name="vmCost">
+                <CostMetric type="COST" measurementUnit="vms/m" name="numberOfVMs"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.48</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="Network" category="MaaS" name="network">
+        <CostFunction>
+            <CostElement type="USAGE" name="dataTransferCost">
+                <CostMetric type="COST" measurementUnit="MB/s" name="dataTransfer"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:int" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1024</Value>
+                        </metric>
+                        <value>9.765625E-6</value>
+                    </CostIntervalEntry>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:int" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">10485760</Value>
+                        </metric>
+                        <value>9.765625E-6</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+</CloudServices>

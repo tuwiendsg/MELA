@@ -262,9 +262,9 @@ public class ConfigurationService {
     }
 
     @GET
-    @Path("/{serviceID}/metricsGreaterEqualThanZero")
+    @Path("/{serviceID}/healthy")
     public String testIfAllVMsReportMEtricsGreaterThanZero(@PathParam("serviceID") String serviceID) {
-        return "" + collectionService.testIfAllVMsReportMEtricsGreaterThanZero(serviceID);
+        return "" + collectionService.testIfServiceIsHealthy(serviceID);
     }
 
     @GET

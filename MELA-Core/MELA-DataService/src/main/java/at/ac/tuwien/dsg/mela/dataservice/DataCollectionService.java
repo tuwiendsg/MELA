@@ -297,6 +297,10 @@ public class DataCollectionService {
             requirementsConfiguration.remove(serviceID);
         }
 
+        if (actionsInExecution.containsKey(serviceID)) {
+            actionsInExecution.remove(serviceID);
+        }
+
         persistenceSQLAccess.removeMonitoringSequenceId(serviceID);
 
     }
@@ -834,22 +838,46 @@ public class DataCollectionService {
 
     }
 
-    public boolean testIfAllVMsReportMEtricsGreaterThanZero(String serviceID) {
+    public boolean testIfServiceIsHealthy(String serviceID) {
         ConfigurationXMLRepresentation cxmlr = persistenceSQLAccess.getLatestConfiguration(serviceID);
+
         if (cxmlr != null) {
-//            MonitoredElement element = cxmlr.getServiceConfiguration();
+            CompositionRulesConfiguration compositionRulesConfiguration = cxmlr.getCompositionRulesConfiguration();
+            //get rules which create metric at VM level
+            //if only those are prsent on any VM => service not healthy
+            List<String> metricsCreatedAtVMLevel = new ArrayList<>();
+            for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
+                if (compositionRule.getTargetMonitoredElementLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
+                    metricsCreatedAtVMLevel.add(compositionRule.getResultingMetric().getName());
+                }
+            }
+
             ServiceMonitoringSnapshot data = persistenceSQLAccess.extractLatestMonitoringData(cxmlr.getServiceConfiguration().getId());
             if (data == null) {
                 log.error("Monitoring Data not found for " + serviceID);
                 throw new RuntimeException("Monitoring Data not found for " + serviceID);
             }
             for (MonitoredElementMonitoringSnapshot childSnapshot : data.getMonitoredData(MonitoredElement.MonitoredElementLevel.VM).values()) {
-                for (MetricValue metricValue : childSnapshot.getMonitoredData().values()) {
-                    if (metricValue.getValueType().equals(MetricValue.ValueType.NUMERIC)) {
-                        if (metricValue.compareTo(new MetricValue(0)) < 0) {
-                            return false;
+                //check if there is any metric which is NOT artificalially created for VM. if NO, then VM is NOT healthy
+                boolean originalMetricFound = false;
+                for (Metric metric : childSnapshot.getMonitoredData().keySet()) {
+                    if (!metricsCreatedAtVMLevel.contains(metric.getName())) {
+                        originalMetricFound = true;
+                        break;
+                    }
+                }
+
+                if (originalMetricFound) {
+                    //check that all metrics have values >= 0
+                    for (MetricValue metricValue : childSnapshot.getMonitoredData().values()) {
+                        if (metricValue.getValueType().equals(MetricValue.ValueType.NUMERIC)) {
+                            if (metricValue.compareTo(new MetricValue(0)) < 0) {
+                                return false;
+                            }
                         }
                     }
+                } else {
+                    return false;
                 }
             }
         } else {

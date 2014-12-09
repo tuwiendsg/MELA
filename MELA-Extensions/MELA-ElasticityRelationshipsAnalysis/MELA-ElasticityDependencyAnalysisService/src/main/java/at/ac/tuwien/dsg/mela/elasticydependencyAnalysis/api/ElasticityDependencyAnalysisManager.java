@@ -63,7 +63,7 @@ import org.springframework.stereotype.Service;
 public class ElasticityDependencyAnalysisManager {
 
     static final org.slf4j.Logger log = LoggerFactory.getLogger(ElasticityDependencyAnalysisManager.class);
-
+   
     @Autowired
     private PersistenceDelegate persistenceDelegate;
 
@@ -163,8 +163,8 @@ public class ElasticityDependencyAnalysisManager {
 
                         for (int i = 0; i < dependentMetricValues.size() && i < filteredCoefficientMetricValues.size(); i++) {
 
-                            Double filteredCoeffValue = (Double) filteredCoefficientMetricValues.get(i).getValue();
-                            Double originalCoeffValue = (Double) originalCoefficientMetricValues.get(i).getValue();
+                            Double filteredCoeffValue =  ((Number)filteredCoefficientMetricValues.get(i).getValue()).doubleValue();
+                            Double originalCoeffValue = ((Number) originalCoefficientMetricValues.get(i).getValue()).doubleValue();
                             coefficientValuesColumns.set(i, coefficientValuesColumns.get(i) + "," + filteredCoeffValue + "," + originalCoeffValue);
 
                             computedFiltered.set(i, computedFiltered.get(i) + (dependencyCoefficient.getCoefficient() * filteredCoeffValue));

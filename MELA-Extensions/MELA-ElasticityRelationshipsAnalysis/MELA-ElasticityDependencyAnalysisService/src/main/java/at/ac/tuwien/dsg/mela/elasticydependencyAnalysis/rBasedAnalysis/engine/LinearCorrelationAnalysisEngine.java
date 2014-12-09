@@ -40,6 +40,7 @@ import static scala.xml.Null.value;
 public class LinearCorrelationAnalysisEngine {
 
     static final org.slf4j.Logger log = LoggerFactory.getLogger(LinearCorrelationAnalysisEngine.class);
+    static final org.slf4j.Logger rProcesssingLogger = LoggerFactory.getLogger("at.ac.tuwien.dsg.rProcessing");
 
     public LinearCorrelation evaluateLinearCorrelation(final Variable dependent, final List<Variable> predictors) {
 
@@ -56,7 +57,7 @@ public class LinearCorrelationAnalysisEngine {
                 for (Variable v : predictors) {
                     predictorsNames += ((Metric) v.getMetaData(Metric.class.getName())).getName() + ":" + ((MonitoredElement) v.getMetaData(MonitoredElement.class.getName())).getId() + ", ";
                 }
-                log.info("Evaluating " + predictorsNames);
+                rProcesssingLogger.info("Evaluating " + predictorsNames);
             }
         }
 
@@ -95,7 +96,7 @@ public class LinearCorrelationAnalysisEngine {
 
         caller.setRCode(rCode);
 
-        caller.redirectROutputToConsole();
+        //caller.redirectROutputToConsole();
 
         String predictorNames = "";
 //
@@ -295,6 +296,8 @@ public class LinearCorrelationAnalysisEngine {
 
                         //shift predictor according to its lag
                         predictor.shiftData(lag);
+                        
+//                        rProcesssingLogger.debug(lagRCode.toString());
 
                         //revert lag to make more sense when computing dependent from coefficient
 //                        lagMap.put(predictor, -1 * lag);
@@ -486,7 +489,7 @@ public class LinearCorrelationAnalysisEngine {
                     double[] adjustedR = caller.getParser().getAsDoubleArray("adj_r_squared");
                     correlation.setAdjustedRSquared(adjustedR[0]);
                 }
-                
+
                 return correlation;
 
             }
