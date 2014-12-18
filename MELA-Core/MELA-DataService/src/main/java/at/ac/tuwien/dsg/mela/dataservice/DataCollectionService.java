@@ -794,7 +794,15 @@ public class DataCollectionService {
         snapshots.setChildren(elementMonitoringSnapshots);
         return snapshots;
     }
-
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataFromTimestamp(String serviceID, int timestamp){
+       List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringData(timestamp,  serviceID)) {
+            elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
+        }
+        MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
+        snapshots.setChildren(elementMonitoringSnapshots);
+        return snapshots; 
+    }
     public MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String serviceID, int startTimestampID, int endTimestampID) {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
         for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, serviceID)) {

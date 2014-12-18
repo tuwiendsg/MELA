@@ -223,6 +223,14 @@ public class ConfigurationService {
     }
 
     @GET
+    @Path("/{serviceID}/historicalmonitoringdata/fromtimestamp/xml")
+    @Produces("application/xml")
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataFromTimestamp(@PathParam("serviceID") String serviceID, @QueryParam("timestamp") int timestamp)
+    {
+        return collectionService.getAllAggregatedMonitoringDataFromTimestamp(serviceID, timestamp);
+    }
+    
+    @GET
     @Path("/{serviceID}/historicalmonitoringdata/lastX/xml")
     @Produces("application/xml")
     public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@PathParam("serviceID") String serviceID, @QueryParam("count") int count) {
