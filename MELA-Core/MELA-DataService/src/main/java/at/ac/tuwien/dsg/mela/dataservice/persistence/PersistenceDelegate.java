@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -130,7 +131,12 @@ public class PersistenceDelegate {
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int timestamp, String monitoringSequenceID) {
         return persistenceSQLAccess.extractMonitoringData(timestamp, monitoringSequenceID);
     }
-
+    
+      public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(int timestamp, String monitoringSequenceID) {
+          
+        return persistenceSQLAccess.extractMonitoringDataFromTimestamp(timestamp, monitoringSequenceID);
+ 
+    }
     public List<ServiceMonitoringSnapshot> extractMonitoringData(String monitoringSequenceID) {
         return persistenceSQLAccess.extractMonitoringData(monitoringSequenceID);
 

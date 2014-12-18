@@ -796,7 +796,7 @@ public class DataCollectionService {
     }
     public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataFromTimestamp(String serviceID, int timestamp){
        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringData(timestamp,  serviceID)) {
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataFromTimestamp(timestamp,  serviceID)) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
         MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
