@@ -464,7 +464,7 @@ public class PersistenceSQLAccess {
 
     }
     
-  public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(int startTimestampID, String monitoringSequenceID) {
+  public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long startTimestampID, String monitoringSequenceID) {
 
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
                 + "ON AggregatedData.timestampID= Timestamp.ID  where " + " AggregatedData.timestampID >= ? "
@@ -480,7 +480,7 @@ public class PersistenceSQLAccess {
 
     }
   
-    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(int startTimestampID, int endTimestampID, String monitoringSequenceID) {
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(long startTimestampID, long endTimestampID, String monitoringSequenceID) {
 
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
                 + "ON AggregatedData.timestampID= Timestamp.ID  where " + " AggregatedData.timestampID >= ? "

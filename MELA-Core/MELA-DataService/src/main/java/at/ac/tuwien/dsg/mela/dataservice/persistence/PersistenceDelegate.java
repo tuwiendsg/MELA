@@ -123,7 +123,7 @@ public class PersistenceDelegate {
 
     }
 
-    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(int startTimestampID, int endTimestampID, String monitoringSequenceID) {
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(long startTimestampID, long endTimestampID, String monitoringSequenceID) {
 
         return persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, monitoringSequenceID);
     }
@@ -132,7 +132,7 @@ public class PersistenceDelegate {
         return persistenceSQLAccess.extractMonitoringData(timestamp, monitoringSequenceID);
     }
     
-      public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(int timestamp, String monitoringSequenceID) {
+      public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long timestamp, String monitoringSequenceID) {
           
         return persistenceSQLAccess.extractMonitoringDataFromTimestamp(timestamp, monitoringSequenceID);
  
