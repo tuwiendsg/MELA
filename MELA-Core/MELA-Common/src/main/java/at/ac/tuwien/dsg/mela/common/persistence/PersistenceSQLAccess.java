@@ -467,7 +467,7 @@ public class PersistenceSQLAccess {
   public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long startTimestampID, String monitoringSequenceID) {
 
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
-                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " AggregatedData.timestampID >= ? "
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
                 + "AND AggregatedData.monSeqID=?;";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
@@ -476,15 +476,15 @@ public class PersistenceSQLAccess {
             }
         };
 
-        return jdbcTemplate.query(sql, rowMapper, startTimestampID,  monitoringSequenceID);
+        return jdbcTemplate.query(sql, rowMapper, startTimestampID+"",  monitoringSequenceID);
 
     }
   
     public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(long startTimestampID, long endTimestampID, String monitoringSequenceID) {
 
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
-                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " AggregatedData.timestampID >= ? "
-                + "AND AggregatedData.timestampID <=  ? AND AggregatedData.monSeqID=?;";
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
+                + "AND Timestamp.timestamp <=  ? AND AggregatedData.monSeqID=?;";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -492,7 +492,7 @@ public class PersistenceSQLAccess {
             }
         };
 
-        return jdbcTemplate.query(sql, rowMapper, startTimestampID, endTimestampID, monitoringSequenceID);
+        return jdbcTemplate.query(sql, rowMapper, ""+startTimestampID, ""+endTimestampID, monitoringSequenceID);
 
     }
 
