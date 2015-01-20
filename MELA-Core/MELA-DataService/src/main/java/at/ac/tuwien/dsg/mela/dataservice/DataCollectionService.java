@@ -786,8 +786,41 @@ public class DataCollectionService {
     }
 
     public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(String serviceID) {
+
+        //if space is not null, update it with new data
+        List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<>();
+
+        //used to detect last snapshot timestamp, and then extratc new data until that timestamp
+        ServiceMonitoringSnapshot latestMonitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData(serviceID);
+
+        Integer lastTimestampID = (latestMonitoringSnapshot == null) ? Integer.MAX_VALUE : latestMonitoringSnapshot.getTimestampID();
+
+        int currentImestamp = 0;
+
+        //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
+        do {
+            //gets data after the supplied timestamp
+            dataFromTimestamp = persistenceSQLAccess.extractMonitoringDataByTimeInterval(currentImestamp, currentImestamp + 1000, serviceID);
+            currentImestamp += 1000;
+            if (dataFromTimestamp != null) {
+
+                //remove all data after monitoringSnapshot timestamp
+                Iterator<ServiceMonitoringSnapshot> it = dataFromTimestamp.iterator();
+                while (it.hasNext()) {
+
+                    Integer timestampID = it.next().getTimestampID();
+                    if (timestampID > lastTimestampID) {
+                        it.remove();
+                    }
+
+                }
+            }
+
+        } while (dataFromTimestamp != null && !dataFromTimestamp.isEmpty() && currentImestamp < lastTimestampID);
+
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringData(serviceID)) {
+
+        for (ServiceMonitoringSnapshot monitoringSnapshot : dataFromTimestamp) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
         MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
