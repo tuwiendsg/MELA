@@ -800,7 +800,7 @@ public class DataCollectionService {
         //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
         do {
             //gets data after the supplied timestamp
-            dataFromTimestamp = persistenceSQLAccess.extractMonitoringDataByTimeInterval(currentImestamp, currentImestamp + 1000, serviceID);
+            dataFromTimestamp = persistenceSQLAccess.extractMonitoringDataByTimestampIDsInterval(currentImestamp, currentImestamp + 1000, serviceID);
             currentImestamp += 1000;
             if (dataFromTimestamp != null) {
 

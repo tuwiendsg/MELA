@@ -128,15 +128,20 @@ public class PersistenceDelegate {
         return persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, monitoringSequenceID);
     }
 
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimestampIDsInterval(int starTimestampID, int endTimestampID, String monitoringSequenceID) {
+        return persistenceSQLAccess.extractMonitoringDataByTimestampIDsInterval(starTimestampID, endTimestampID, monitoringSequenceID);
+    }
+
     public List<ServiceMonitoringSnapshot> extractMonitoringData(int timestamp, String monitoringSequenceID) {
         return persistenceSQLAccess.extractMonitoringData(timestamp, monitoringSequenceID);
     }
-    
-      public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long timestamp, String monitoringSequenceID) {
-          
+
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long timestamp, String monitoringSequenceID) {
+
         return persistenceSQLAccess.extractMonitoringDataFromTimestamp(timestamp, monitoringSequenceID);
- 
+
     }
+
     public List<ServiceMonitoringSnapshot> extractMonitoringData(String monitoringSequenceID) {
         return persistenceSQLAccess.extractMonitoringData(monitoringSequenceID);
 

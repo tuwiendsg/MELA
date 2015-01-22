@@ -464,10 +464,10 @@ public class PersistenceSQLAccess {
 
     }
     
-  public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long startTimestampID, String monitoringSequenceID) {
+  public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long timestamp, String monitoringSequenceID) {
 
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
-                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.ID >= ? "
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
                 + "AND AggregatedData.monSeqID=?;";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
@@ -476,11 +476,27 @@ public class PersistenceSQLAccess {
             }
         };
 
-        return jdbcTemplate.query(sql, rowMapper, startTimestampID+"",  monitoringSequenceID);
+        return jdbcTemplate.query(sql, rowMapper, timestamp+"",  monitoringSequenceID);
 
     }
   
-    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(long startTimestampID, long endTimestampID, String monitoringSequenceID) {
+    public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(long timestamp, long endTimestampID, String monitoringSequenceID) {
+
+        String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
+                + "AND Timestamp.timestamp <=  ? AND AggregatedData.monSeqID=?;";
+
+        RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
+            public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToSnapshot(rs);
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, ""+timestamp, ""+endTimestampID, monitoringSequenceID);
+
+    }
+    
+     public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimestampIDsInterval(int starTimestampID, int endTimestampID, String monitoringSequenceID) {
 
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
                 + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.ID >= ? "
@@ -492,7 +508,7 @@ public class PersistenceSQLAccess {
             }
         };
 
-        return jdbcTemplate.query(sql, rowMapper, ""+startTimestampID, ""+endTimestampID, monitoringSequenceID);
+        return jdbcTemplate.query(sql, rowMapper, ""+starTimestampID, ""+endTimestampID, monitoringSequenceID);
 
     }
 
