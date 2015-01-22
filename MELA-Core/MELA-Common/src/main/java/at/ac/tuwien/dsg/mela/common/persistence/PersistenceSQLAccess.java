@@ -467,7 +467,7 @@ public class PersistenceSQLAccess {
   public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long startTimestampID, String monitoringSequenceID) {
 
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
-                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.ID >= ? "
                 + "AND AggregatedData.monSeqID=?;";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
@@ -483,8 +483,8 @@ public class PersistenceSQLAccess {
     public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(long startTimestampID, long endTimestampID, String monitoringSequenceID) {
 
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
-                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
-                + "AND Timestamp.timestamp <=  ? AND AggregatedData.monSeqID=?;";
+                + "ON AggregatedData.timestampID= Timestamp.ID  where " + " Timestamp.ID >= ? "
+                + "AND Timestamp.ID <=  ? AND AggregatedData.monSeqID=?;";
 
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
