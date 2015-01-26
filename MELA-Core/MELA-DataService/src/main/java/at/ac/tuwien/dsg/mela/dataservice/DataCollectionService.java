@@ -795,28 +795,18 @@ public class DataCollectionService {
 
         Integer lastTimestampID = (latestMonitoringSnapshot == null) ? Integer.MAX_VALUE : latestMonitoringSnapshot.getTimestampID();
 
-        int currentImestamp = 0;
+        int currentTimestamp = 0;
 
         //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
         do {
             //gets data after the supplied timestamp
-            dataFromTimestamp = persistenceSQLAccess.extractMonitoringDataByTimestampIDsInterval(currentImestamp, currentImestamp + 1000, serviceID);
-            currentImestamp += 1000;
-            if (dataFromTimestamp != null) {
+            int nextTimestamp = currentTimestamp + 1000;
+            nextTimestamp = (nextTimestamp < lastTimestampID)? nextTimestamp: lastTimestampID;
+            
+            dataFromTimestamp = persistenceSQLAccess.extractMonitoringDataByTimestampIDsInterval(currentTimestamp, nextTimestamp, serviceID);
+            currentTimestamp = nextTimestamp;
 
-                //remove all data after monitoringSnapshot timestamp
-                Iterator<ServiceMonitoringSnapshot> it = dataFromTimestamp.iterator();
-                while (it.hasNext()) {
-
-                    Integer timestampID = it.next().getTimestampID();
-                    if (timestampID > lastTimestampID) {
-                        it.remove();
-                    }
-
-                }
-            }
-
-        } while (dataFromTimestamp != null && !dataFromTimestamp.isEmpty() && currentImestamp < lastTimestampID);
+        } while (dataFromTimestamp != null && !dataFromTimestamp.isEmpty() && currentTimestamp < lastTimestampID);
 
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
 

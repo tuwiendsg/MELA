@@ -108,37 +108,28 @@ public class PersistenceDelegate {
             Integer lastTimestampID = (monitoringSnapshot == null) ? Integer.MAX_VALUE : monitoringSnapshot.getTimestampID();
 
             boolean spaceUpdated = false;
-
+            int currentTimestamp = 0;
             //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
             do {
                 //gets data after the supplied timestamp
-                dataFromTimestamp = this.extractMonitoringData(space.getEndTimestampID(), monitoringSequenceID);
 
-                if (dataFromTimestamp != null) {
+                int nextTimestamp = space.getEndTimestampID() + 1000;
+                nextTimestamp = (nextTimestamp < lastTimestampID) ? nextTimestamp : lastTimestampID;
 
-                    //remove all data after monitoringSnapshot timestamp
-                    Iterator<ServiceMonitoringSnapshot> it = dataFromTimestamp.iterator();
-                    while (it.hasNext()) {
+                dataFromTimestamp = persistenceSQLAccess.extractMonitoringDataByTimestampIDsInterval(space.getEndTimestampID(), nextTimestamp, monitoringSequenceID);
+                currentTimestamp = nextTimestamp;
 
-                        Integer timestampID = it.next().getTimestampID();
-                        if (timestampID > lastTimestampID) {
-                            it.remove();
-                        }
-
-                    }
-
-                    //check if new data has been collected between elasticity space querries
-                    if (!dataFromTimestamp.isEmpty()) {
-                        ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-                        fct.setRequirements(requirements);
-                        fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
-                        //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-                        space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-                        spaceUpdated = true;
-                    }
+                //check if new data has been collected between elasticity space querries
+                if (!dataFromTimestamp.isEmpty()) {
+                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+                    fct.setRequirements(requirements);
+                    fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
+                    //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+                    space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+                    spaceUpdated = true;
                 }
 
-            } while (!dataFromTimestamp.isEmpty());
+            } while (dataFromTimestamp != null && !dataFromTimestamp.isEmpty() && currentTimestamp < lastTimestampID);
 
             //persist cached space
             if (spaceUpdated) {
