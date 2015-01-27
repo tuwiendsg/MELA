@@ -71,6 +71,7 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
     public MonitoredElement(String id) {
         this.id = id;
+        this.name = id;
     }
 
     public List<UsedCloudOfferedService> getCloudOfferedServices() {
