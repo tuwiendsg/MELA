@@ -801,9 +801,9 @@ public class DataCollectionService {
         do {
             //gets data after the supplied timestamp
             int nextTimestamp = currentTimestamp + 1000;
-            nextTimestamp = (nextTimestamp < lastTimestampID)? nextTimestamp: lastTimestampID;
-            
-            dataFromTimestamp = persistenceSQLAccess.extractMonitoringDataByTimestampIDsInterval(currentTimestamp, nextTimestamp, serviceID);
+            nextTimestamp = (nextTimestamp < lastTimestampID) ? nextTimestamp : lastTimestampID;
+
+            dataFromTimestamp.addAll(persistenceSQLAccess.extractMonitoringDataByTimestampIDsInterval(currentTimestamp, nextTimestamp - 1, serviceID));
             currentTimestamp = nextTimestamp;
 
         } while (dataFromTimestamp != null && !dataFromTimestamp.isEmpty() && currentTimestamp < lastTimestampID);
@@ -817,15 +817,17 @@ public class DataCollectionService {
         snapshots.setChildren(elementMonitoringSnapshots);
         return snapshots;
     }
-    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataFromTimestamp(String serviceID, long timestamp){
-       List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
-        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataFromTimestamp(timestamp,  serviceID)) {
+
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataFromTimestamp(String serviceID, long timestamp) {
+        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
+        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataFromTimestamp(timestamp, serviceID)) {
             elementMonitoringSnapshots.add(monitoringSnapshot.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE).values().iterator().next());
         }
         MonitoredElementMonitoringSnapshots snapshots = new MonitoredElementMonitoringSnapshots();
         snapshots.setChildren(elementMonitoringSnapshots);
-        return snapshots; 
+        return snapshots;
     }
+
     public MonitoredElementMonitoringSnapshots getAggregatedMonitoringDataInTimeInterval(String serviceID, long startTimestampID, long endTimestampID) {
         List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
         for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceSQLAccess.extractMonitoringDataByTimeInterval(startTimestampID, endTimestampID, serviceID)) {
