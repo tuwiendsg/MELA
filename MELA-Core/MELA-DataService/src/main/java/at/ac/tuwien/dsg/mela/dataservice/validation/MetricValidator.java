@@ -16,12 +16,10 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.validation;
 
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.CollectedMetricValue;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -56,7 +54,7 @@ public class MetricValidator {
         this.validationTests = validationTests;
     }
 
-    public void addValidationTests(MetricValidationTest test) {
+    public void addValidationTest(MetricValidationTest test) {
         this.validationTests.add(test);
     }
 
@@ -64,7 +62,7 @@ public class MetricValidator {
         this.validationTests.remove(test);
     }
 
-    public boolean isValid(CollectedMetricValue metricValue) {
+    public boolean isValid(NumericalCollectedMetricValue metricValue) {
         for (MetricValidationTest metricValidationTest : validationTests) {
             if (!metricValidationTest.isValid(metricValue)) {
                 return false;
@@ -82,13 +80,12 @@ public class MetricValidator {
 //        }
 //        return metricValidator;
 //    }
-
     /**
      *
      * @param metricValue
      * @return a list of failed tests description
      */
-    public List<MetricValidationTest> isValidDetailedAnalaysis(CollectedMetricValue metricValue) {
+    public List<MetricValidationTest> isValidDetailedAnalysis(NumericalCollectedMetricValue metricValue) {
 
         List<MetricValidationTest> analysys = new ArrayList<>();
 

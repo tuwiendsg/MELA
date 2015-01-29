@@ -30,5 +30,32 @@
             </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
+    
+    <xsd:element name="ganglia-push-datasource">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="beans:identifiedType">
+                    <xsd:attribute name="host" type="xsd:string" use="required"/>
+                    <xsd:attribute name="port" type="xsd:string" use="required"/>
+                    <xsd:attribute name="polling-interval-ms" type="xsd:int" use="optional" default="1000"/>
+                    <xsd:attribute name="brokerURL" type="xsd:string" use="optional" default="tcp://localhost:9124"/>
+                    <xsd:attribute name="QUEUE_NAME" type="xsd:string" use="optional" default="metrics_queue"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="mela-push-datasource">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="beans:identifiedType">
+                    <xsd:attribute name="polling-interval-ms" type="xsd:int" use="optional" default="1000"/>
+                    <xsd:attribute name="brokerURL" type="xsd:string" use="optional" default="tcp://localhost:9124"/>
+                    <xsd:attribute name="QUEUE_NAME" type="xsd:string" use="optional" default="metrics_queue"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
 
 </xsd:schema>

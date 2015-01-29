@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  * FILTERS will be applied SEQUENTIALLY
  */
@@ -151,5 +151,7 @@ public class MetricFilter {
         this.metrics = metrics;
         return this;
     }
+
+    public static final MetricFilter ANY = new MetricFilter().withId("*").withName("*").withLevel(MonitoredElement.MonitoredElementLevel.VM);
 
 }

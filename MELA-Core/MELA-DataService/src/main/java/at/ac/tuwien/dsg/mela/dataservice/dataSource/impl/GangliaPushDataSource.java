@@ -35,22 +35,38 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPollingDataSource;
-import org.apache.log4j.Level;
-
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import java.io.PrintWriter;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
 import java.net.Socket;
-import org.apache.log4j.Logger;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
+ *
+ * This is an adaptor that pools from Ganglia, and then acts as push data source
  */
-public class GangliaDataSource extends AbstractPollingDataSource {
+public class GangliaPushDataSource {
+
+    static final Logger logger = LoggerFactory.getLogger(GangliaPushDataSource.class);
 
     public static final String DEFAULT_HOST = "localhost";
     public static final String SERVICE_UNIT_ID_MARKER = "MonitoredElementID";
@@ -62,12 +78,149 @@ public class GangliaDataSource extends AbstractPollingDataSource {
 
     private int port = DEFAULT_PORT;
 
-    @Override
-    public Long getRateAtWhichDataShouldBeRead() {
-        return (long) getPollingIntervalMs();
+    private long pollingIntervalMs = 1000;
+
+    private Timer gangliaPoolingTimer;
+
+    private String brokerURL = "tcp://localhost:9124";
+
+    private String QUEUE_NAME = "metrics_queue";
+
+    private Session session;
+    private Connection connection = null;
+
+    private MessageProducer producer;
+
+    private final ExecutorService executorService;
+
+    {
+        executorService = Executors.newCachedThreadPool();
     }
 
-    public MonitoringData getMonitoringData() throws DataAccessException {
+    {
+        gangliaPoolingTimer = new Timer(true);
+    }
+
+    public void setPollingIntervalMs(long pollingIntervalMs) {
+        this.pollingIntervalMs = pollingIntervalMs;
+    }
+
+    @PostConstruct
+    public void init() {
+        startSendingToData();
+    }
+
+    @PreDestroy
+    public void destroy() {
+        stopSendingToData();
+    }
+
+    public void startSendingToData() {
+
+        ActiveMQConnectionFactory connectionFactory;
+
+        try {
+            connectionFactory = new ActiveMQConnectionFactory(brokerURL);
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
+            return;
+        }
+        try {
+            connection = connectionFactory.createConnection();
+            connection.start();
+        } catch (JMSException ex) {
+            logger.error(ex.getMessage(), ex);
+            return;
+        }
+        ;
+
+        try {
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        } catch (JMSException ex) {
+            logger.error(ex.getMessage(), ex);
+            return;
+        }
+        Destination destination;
+        try {
+            destination = session.createQueue(QUEUE_NAME);
+        } catch (JMSException ex) {
+            logger.error(ex.getMessage(), ex);
+            return;
+        }
+
+        try {
+            producer = session.createProducer(destination);
+            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+            logger.info("Created producer " + producer.toString());
+
+        } catch (JMSException ex) {
+            logger.error(ex.getMessage(), ex);
+            return;
+        }
+
+        TimerTask readGangliaMetrics = new TimerTask() {
+
+            @Override
+            public void run() {
+                try {
+                    MonitoringData data = getMonitoringData();
+                    for (final MonitoredElementData elementData : data.getMonitoredElementDatas()) {
+
+                        executorService.submit(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                for (final CollectedMetricValue metricValue : elementData.getMetrics()) {
+                                    executorService.submit(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+
+                                            //if not numerical value, do not send it
+                                            if (metricValue.getConvertedValue() instanceof Number) {
+                                                try {
+                                                    NumericalCollectedMetricValue numerical = NumericalCollectedMetricValue.from(metricValue);
+
+                                                    ObjectMessage message = session.createObjectMessage(numerical);                                                    producer.send(message);
+                                                } catch (JMSException ex) {
+                                                    logger.error(ex.getMessage(), ex);
+                                                }
+                                            }
+                                        }
+
+                                    });
+                                }
+                            }
+                        });
+                    }
+
+                } catch (DataAccessException ex) {
+                    logger.error(ex.getMessage(), ex);
+                }
+
+            }
+        };
+
+        gangliaPoolingTimer.scheduleAtFixedRate(readGangliaMetrics, 0, pollingIntervalMs);
+    }
+
+    public void stopSendingToData() {
+        gangliaPoolingTimer.cancel();
+        try {
+            session.close();
+
+        } catch (JMSException ex) {
+            logger.error(ex.getMessage(), ex);
+        }
+        try {
+            connection.close();
+        } catch (JMSException ex) {
+            logger.error(ex.getMessage(), ex);
+        }
+    }
+
+    private MonitoringData getMonitoringData() throws DataAccessException {
 
         String content = "";
 
@@ -82,7 +235,7 @@ public class GangliaDataSource extends AbstractPollingDataSource {
 
                 //if ganglia does not respond
                 if (line.contains("Unable to connect")) {
-                    Logger.getLogger(this.getClass()).log(Level.WARN, "Unable to connect to " + socket.toString());
+                    logger.warn("Unable to connect to " + socket.toString());
                     return null;
                 }
                 if (line.contains("<") || line.endsWith("]>")) {
@@ -96,26 +249,31 @@ public class GangliaDataSource extends AbstractPollingDataSource {
 
             //if ganglia does not respond
             if (content.length() == 0) {
-                Logger.getLogger(this.getClass()).log(Level.WARN, "" + "Unable to connect to " + socket.toString());
+                logger.warn("Unable to connect to " + socket.toString());
                 return new MonitoringData();
             }
         } catch (Exception ex) {
-            Logger.getLogger(this.getClass()).log(Level.ERROR, ex);
+            logger.error(ex.getMessage(), ex);
             return new MonitoringData();
         }
 
         StringReader stringReader = new StringReader(content);
+
         try {
-            JAXBContext jc = JAXBContext.newInstance(GangliaSystemInfo.class);
+            JAXBContext jc = JAXBContext.newInstance(GangliaSystemInfo.class
+            );
             Unmarshaller unmarshaller = jc.createUnmarshaller();
             GangliaSystemInfo info = (GangliaSystemInfo) unmarshaller.unmarshal(stringReader);
 
             //create monitoring data representation to be returned
             MonitoringData monitoringData = new MonitoringData();
-            monitoringData.setTimestamp("" + new Date().getTime());
+
+            monitoringData.setTimestamp(
+                    "" + new Date().getTime());
             monitoringData.setSource(info.getSource());
 
-            for (GangliaClusterInfo gangliaCluster : info.getClusters()) {
+            for (GangliaClusterInfo gangliaCluster
+                    : info.getClusters()) {
                 //currently ClusterInfo is ignored, and we go and extract the HostInfo
 
                 for (GangliaHostInfo gangliaHostInfo : gangliaCluster.hostsInfo) {
@@ -143,19 +301,20 @@ public class GangliaDataSource extends AbstractPollingDataSource {
                         metricInfo.setUnits(gangliaMetricInfo.units);
                         metricInfo.setValue(gangliaMetricInfo.value);
                         metricInfo.setTimeSinceCollection(gangliaMetricInfo.getTn());
+                        metricInfo.setMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.VM.toString());
+                        metricInfo.setMonitoredElementID(gangliaHostInfo.getIp());
 
                         //process ganglia extra data, and if we find SERVICE_UNIT_ID, use it
-                        for (GangliaExtraDataInfo extraDataInfo : gangliaMetricInfo.gangliaExtraDataInfoCollection) {
-                            for (GangliaExtraElementInfo elementInfo : extraDataInfo.getGangliaExtraElementInfo()) {
-                                if (elementInfo.getName().toLowerCase().equals(SERVICE_UNIT_ID_MARKER.toLowerCase())) {
-                                    metricInfo.setMonitoredElementID(elementInfo.getValue());
-                                }
-                                if (elementInfo.getName().toLowerCase().equals(SERVICE_UNIT_LEVEL_MARKER.toLowerCase())) {
-                                    metricInfo.setMonitoredElementLevel(elementInfo.getValue());
-                                }
-                            }
-                        }
-
+//                        for (GangliaExtraDataInfo extraDataInfo : gangliaMetricInfo.gangliaExtraDataInfoCollection) {
+//                            for (GangliaExtraElementInfo elementInfo : extraDataInfo.getGangliaExtraElementInfo()) {
+//                                if (elementInfo.getName().toLowerCase().equals(SERVICE_UNIT_ID_MARKER.toLowerCase())) {
+//                                    metricInfo.setMonitoredElementID(elementInfo.getValue());
+//                                }
+//                                if (elementInfo.getName().toLowerCase().equals(SERVICE_UNIT_LEVEL_MARKER.toLowerCase())) {
+//                                    metricInfo.setMonitoredElementLevel(elementInfo.getValue());
+//                                }
+//                            }
+//                        }
                         elementData.addMetric(metricInfo);
                     }
 
@@ -168,8 +327,8 @@ public class GangliaDataSource extends AbstractPollingDataSource {
 
             //dataSQLWriteAccess.writeMonitoringData(gangliaClusterInfo);
             return monitoringData;
-        } catch (Exception e) {
-            Logger.getLogger(this.getClass()).log(Level.ERROR, null, e);
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
             return new MonitoringData();
         }
     }
@@ -195,11 +354,11 @@ public class GangliaDataSource extends AbstractPollingDataSource {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof GangliaDataSource)) {
+        if (!(o instanceof GangliaPushDataSource)) {
             return false;
         }
 
-        GangliaDataSource that = (GangliaDataSource) o;
+        GangliaPushDataSource that = (GangliaPushDataSource) o;
 
         if (port != that.port) {
             return false;
@@ -220,11 +379,12 @@ public class GangliaDataSource extends AbstractPollingDataSource {
 
     @Override
     public String toString() {
-        return "GangliaDataSource{"
+        return "GangliaPushDataSource{"
                 + "hostname='" + hostname + '\''
                 + ", port=" + port
-                + ", pollingInterval=" + getPollingIntervalMs()
+                + ", pollingInterval=" + pollingIntervalMs
                 + "}";
+
     }
 
     /**
@@ -803,4 +963,43 @@ public class GangliaDataSource extends AbstractPollingDataSource {
             return "ExtraElementInfo{" + "name='" + name + '\'' + ", value='" + value + '\'' + '}';
         }
     }
+
+    public GangliaPushDataSource withHostname(final String hostname) {
+        this.hostname = hostname;
+        return this;
+    }
+
+    public GangliaPushDataSource withPort(final int port) {
+        this.port = port;
+        return this;
+    }
+
+    public GangliaPushDataSource withPollingIntervalMs(final int pollingIntervalMs) {
+        this.pollingIntervalMs = pollingIntervalMs;
+        return this;
+    }
+
+    public GangliaPushDataSource withGangliaPoolingTimer(final Timer gangliaPoolingTimer) {
+        this.gangliaPoolingTimer = gangliaPoolingTimer;
+        return this;
+    }
+
+    public GangliaPushDataSource withBrokerURL(final String brokerURL) {
+        this.brokerURL = brokerURL;
+        return this;
+    }
+
+    public void setBrokerURL(String brokerURL) {
+        this.brokerURL = brokerURL;
+    }
+
+    public void setQUEUE_NAME(String QUEUE_NAME) {
+        this.QUEUE_NAME = QUEUE_NAME;
+    }
+
+    public GangliaPushDataSource withQUEUE_NAME(final String QUEUE_NAME) {
+        this.QUEUE_NAME = QUEUE_NAME;
+        return this;
+    }
+
 }

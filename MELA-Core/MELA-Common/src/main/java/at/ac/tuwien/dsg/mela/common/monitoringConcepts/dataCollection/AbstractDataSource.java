@@ -21,12 +21,32 @@ package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
-public interface AbstractDataSource {
+public abstract class AbstractDataSource {
 
-    public MonitoringData getMonitoringData() throws DataAccessException;
+//    protected Map<String, Map<String, List<Metric>>> metricsToCollect;
+//
+//    public final void updateMetricsToCollect(Map<String, Map<String, List<Metric>>> metricsToCollect) {
+//        this.metricsToCollect = metricsToCollect;
+//    }
+//
+//    public final Map<String, Map<String, List<Metric>>> getMetricsToCollect() {
+//        return metricsToCollect;
+//    }
+    public abstract MonitoringData getMonitoringData() throws DataAccessException;
+    
+    /**
+     * In milliseconds, the rate at which collected data so far should be inspected.
+     * Even if this is a push-based data source, it would still collect all the pushed data in a cache, that can be read
+     * @return 
+     */
+    public abstract Long getRateAtWhichDataShouldBeRead();
+
 }

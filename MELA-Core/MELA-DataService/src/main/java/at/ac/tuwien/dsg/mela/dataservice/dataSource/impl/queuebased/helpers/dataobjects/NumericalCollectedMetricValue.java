@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects;
 
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
 import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 
@@ -27,90 +28,90 @@ import javax.xml.bind.annotation.*;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "CollectedMetricValue")
-public class CollectedMetricValue implements Serializable {
-
+@XmlRootElement(name = "SerializableCollectedMetricValue")
+public class NumericalCollectedMetricValue implements Serializable {
+    
     @XmlAttribute(name = "Name", required = true)
     private String name;
-
+    
     @XmlAttribute(name = "Value", required = true)
     private Double value;
-
+    
     @XmlAttribute(name = "Type", required = true)
     private String type;
     
     @XmlAttribute(name = "Units")
     private String units;
-
+    
     @XmlAttribute(name = "MonitoredElementLevel")
     private String monitoredElementLevel;
-
+    
     @XmlAttribute(name = "MonitoredElementID")
     private String monitoredElementID;
-
+    
     @XmlAttribute(name = "TimeSinceCollection")
     //in seconds
     private long timeSinceCollection;
-
+    
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public String getMonitoredElementLevel() {
         return monitoredElementLevel;
     }
-
+    
     public void setMonitoredElementLevel(String monitoredElementLevel) {
         this.monitoredElementLevel = monitoredElementLevel;
     }
-
+    
     public String getMonitoredElementID() {
         return monitoredElementID;
     }
-
+    
     public void setMonitoredElementID(String monitoredElementID) {
         this.monitoredElementID = monitoredElementID;
     }
-
+    
     public String getType() {
         return type;
     }
-
+    
     public void setType(String type) {
         this.type = type;
     }
-
+    
     public String getUnits() {
         return units;
     }
-
+    
     public void setUnits(String units) {
         this.units = units;
     }
-
+    
     public long getTimeSinceCollection() {
         return timeSinceCollection;
     }
-
+    
     public void setTimeSinceCollection(long timeSinceCollection) {
         this.timeSinceCollection = timeSinceCollection;
     }
-
+    
     public Double getValue() {
         return value;
     }
-
+    
     public void setValue(Double value) {
         this.value = value;
     }
-
+    
     @Override
     public String toString() {
-        return "CollectedMetricValue{"
+        return "SerializableCollectedMetricValue{"
                 + "name='" + name + '\''
                 + ", value='" + value + '\''
                 + ", type='" + type + '\''
@@ -119,48 +120,82 @@ public class CollectedMetricValue implements Serializable {
                 + ", MonitoredElementID='" + monitoredElementID + '\''
                 + "}";
     }
-
-    public CollectedMetricValue withName(final String name) {
+    
+    public NumericalCollectedMetricValue withName(final String name) {
         this.name = name;
         return this;
     }
-
-    public CollectedMetricValue withType(final String type) {
+    
+    public NumericalCollectedMetricValue withType(final String type) {
         this.type = type;
         return this;
     }
-
-    public CollectedMetricValue withUnits(final String units) {
+    
+    public NumericalCollectedMetricValue withUnits(final String units) {
         this.units = units;
         return this;
     }
-
-    public CollectedMetricValue withMonitoredElementLevel(final String monitoredElementLevel) {
+    
+    public NumericalCollectedMetricValue withMonitoredElementLevel(final String monitoredElementLevel) {
         this.monitoredElementLevel = monitoredElementLevel;
         return this;
     }
-
-    public CollectedMetricValue withMonitoredElementID(final String monitoredElementID) {
+    
+    public NumericalCollectedMetricValue withMonitoredElementID(final String monitoredElementID) {
         this.monitoredElementID = monitoredElementID;
         return this;
     }
-
+    
     public boolean hasMonitoredElementID() {
         return monitoredElementID != null && monitoredElementID.length() > 0;
     }
-
+    
     public boolean hasMonitoredElementLevel() {
         return monitoredElementLevel != null && monitoredElementLevel.length() > 0;
     }
-
-    public CollectedMetricValue withValue(final Double value) {
+    
+    public NumericalCollectedMetricValue withValue(final Double value) {
         this.value = value;
         return this;
     }
-
-    public CollectedMetricValue withTimeSinceCollection(final long timeSinceCollection) {
+    
+    public NumericalCollectedMetricValue withTimeSinceCollection(final long timeSinceCollection) {
         this.timeSinceCollection = timeSinceCollection;
         return this;
     }
+    
+    public static NumericalCollectedMetricValue from(CollectedMetricValue cmv) {
+        
+        NumericalCollectedMetricValue value = new NumericalCollectedMetricValue();
+        value.monitoredElementLevel = cmv.getMonitoredElementLevel();
+        value.monitoredElementID = cmv.getMonitoredElementID();
+        value.name = cmv.getName();
+        value.type = cmv.getType();
+        value.units = cmv.getUnits();
+        value.timeSinceCollection = Long.parseLong(cmv.getTimeSinceCollection());
 
+        //eat the exception, if the converted value is not double, is null
+        try {
+            value.value = ((Number) cmv.getConvertedValue()).doubleValue();
+        } catch (Exception e) {
+            return null;
+        }
+        
+        return value;
+    }
+    
+    public CollectedMetricValue toCollectedMetricValue() {
+        
+        CollectedMetricValue collectedMetricValue = new CollectedMetricValue()
+                .withMonitoredElementLevel(this.getMonitoredElementLevel())
+                .withMonitoredElementID(this.getMonitoredElementID())
+                .withName(this.getName())
+                .withType(this.getType())
+                .withUnits(this.getUnits())
+                .withTimeSinceCollection("" + this.getTimeSinceCollection())
+                .withValue(this.getValue().toString());
+        
+        return collectedMetricValue;
+    }
+    
 }

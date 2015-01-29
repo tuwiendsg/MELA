@@ -19,11 +19,14 @@
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
+import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
-public abstract class AbstractPollingDataSource implements AbstractDataSource {
+public abstract class AbstractPollingDataSource extends AbstractDataSource {
 
     int pollingIntervalMs = 1000;
 

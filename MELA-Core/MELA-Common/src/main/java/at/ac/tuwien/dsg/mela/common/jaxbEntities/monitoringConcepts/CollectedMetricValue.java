@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Metric")
-public class MetricInfo {
+public class CollectedMetricValue {
 
     @XmlAttribute(name = "Name", required = true)
     private String name;
@@ -44,15 +44,17 @@ public class MetricInfo {
     @XmlAttribute(name = "Units")
     private String units;
 
+    @XmlAttribute(name = "TimeSinceCollection")
+    //in seconds
+    private String timeSinceCollection;
+
     @XmlAttribute(name = "MonitoredElementLevel")
     private String monitoredElementLevel;
 
     @XmlAttribute(name = "MonitoredElementID")
     private String monitoredElementID;
 
-    private Object convertedValue;
-
-    public static final MetricInfo UNDEFINED = new MetricInfo();
+    public static final CollectedMetricValue UNDEFINED = new CollectedMetricValue();
 
     static {
         UNDEFINED.value = "-1";
@@ -60,6 +62,48 @@ public class MetricInfo {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 67 * hash + (this.value != null ? this.value.hashCode() : 0);
+        hash = 67 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 67 * hash + (this.units != null ? this.units.hashCode() : 0);
+        hash = 67 * hash + (this.monitoredElementLevel != null ? this.monitoredElementLevel.hashCode() : 0);
+        hash = 67 * hash + (this.monitoredElementID != null ? this.monitoredElementID.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CollectedMetricValue other = (CollectedMetricValue) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
+            return false;
+        }
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        if ((this.units == null) ? (other.units != null) : !this.units.equals(other.units)) {
+            return false;
+        }
+        if ((this.monitoredElementLevel == null) ? (other.monitoredElementLevel != null) : !this.monitoredElementLevel.equals(other.monitoredElementLevel)) {
+            return false;
+        }
+        if ((this.monitoredElementID == null) ? (other.monitoredElementID != null) : !this.monitoredElementID.equals(other.monitoredElementID)) {
+            return false;
+        }
+        return true;
     }
 
     public void setName(String name) {
@@ -80,6 +124,14 @@ public class MetricInfo {
 
     public void setMonitoredElementID(String monitoredElementID) {
         this.monitoredElementID = monitoredElementID;
+    }
+
+    public String getTimeSinceCollection() {
+        return timeSinceCollection;
+    }
+
+    public void setTimeSinceCollection(String timeSinceCollection) {
+        this.timeSinceCollection = timeSinceCollection;
     }
 
     /**
@@ -130,10 +182,6 @@ public class MetricInfo {
 
     }
 
-    public void setConvertedValue(Object convertedValue) {
-        this.convertedValue = convertedValue;
-    }
-
     public String getValue() {
         return value;
     }
@@ -168,37 +216,32 @@ public class MetricInfo {
                 + "}";
     }
 
-    public MetricInfo withName(final String name) {
+    public CollectedMetricValue withName(final String name) {
         this.name = name;
         return this;
     }
 
-    public MetricInfo withValue(final String value) {
+    public CollectedMetricValue withValue(final String value) {
         this.value = value;
         return this;
     }
 
-    public MetricInfo withType(final String type) {
+    public CollectedMetricValue withType(final String type) {
         this.type = type;
         return this;
     }
 
-    public MetricInfo withUnits(final String units) {
+    public CollectedMetricValue withUnits(final String units) {
         this.units = units;
         return this;
     }
 
-    public MetricInfo withConvertedValue(final Object convertedValue) {
-        this.convertedValue = convertedValue;
-        return this;
-    }
-
-    public MetricInfo withMonitoredElementLevel(final String monitoredElementLevel) {
+    public CollectedMetricValue withMonitoredElementLevel(final String monitoredElementLevel) {
         this.monitoredElementLevel = monitoredElementLevel;
         return this;
     }
 
-    public MetricInfo withMonitoredElementID(final String monitoredElementID) {
+    public CollectedMetricValue withMonitoredElementID(final String monitoredElementID) {
         this.monitoredElementID = monitoredElementID;
         return this;
     }
@@ -209,6 +252,11 @@ public class MetricInfo {
 
     public boolean hasMonitoredElementLevel() {
         return monitoredElementLevel != null && monitoredElementLevel.length() > 0;
+    }
+
+    public CollectedMetricValue withTimeSinceCollection(final String timeSinceCollection) {
+        this.timeSinceCollection = timeSinceCollection;
+        return this;
     }
 
 }

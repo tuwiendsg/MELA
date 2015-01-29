@@ -16,30 +16,74 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers;
 
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.CollectedMetricValue;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
 import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.MetricAccuracyAnalysis;
 import at.ac.tuwien.dsg.mela.dataservice.validation.MetricValidator;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
-public class MetricCollectionConsumer extends DefaultConsumer {
+//public class MetricCollectionConsumer extends DefaultConsumer {
+//
+//    private Channel channel;
+//
+//    //array of tests to be perform to determine value validity
+//    private MetricValidator metricValidator;
+//
+//    private MetricAccuracyAnalysis accuracyAnalysis;
+//
+//    //where to put the value
+//    private MonitoringData currentMonitoringSnapshot;
+//
+//    private ExecutorService executorService;
+//
+//    {
+//        executorService = Executors.newCachedThreadPool();
+//    }
+//
+//    public MetricCollectionConsumer(int prefetch, Channel channel,
+//            String queue, MetricValidator metricValidator, MetricAccuracyAnalysis accuracyAnalysis,
+//            MonitoringData currentMonitoringSnapshot) throws Exception {
+//        super(channel);
+//        this.metricValidator = metricValidator;
+//        this.accuracyAnalysis = accuracyAnalysis;
+//        this.currentMonitoringSnapshot = currentMonitoringSnapshot;
+//        channel.basicQos(prefetch);
+//        channel.basicConsume(queue, false, this);
+//    }
+//
+//    @Override
+//    public void handleDelivery(String consumerTag,
+//            Envelope envelope,
+//            AMQP.BasicProperties properties,
+//            byte[] body) throws IOException {
+//
+//        try {
+////            CollectedMetricValue collectedMetricValue;
+////            ByteArrayInputStream bis = new ByteArrayInputStream(body);
+////            ObjectInput in = new ObjectInputStream(bis);
+////            collectedMetricValue = (CollectedMetricValue) in.readObject();
+//            NumericalCollectedMetricValue collectedMetricValue = (NumericalCollectedMetricValue) SerializationUtils.deserialize(body);
+//
+//            //task to process metric goes here
+//            executorService.submit(new CollectedMetricProcessor(collectedMetricValue, metricValidator, accuracyAnalysis, currentMonitoringSnapshot));
+//        } catch (Exception ex) {
+//            Logger.getLogger(MetricCollectionConsumer.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
+//}
+public class MetricCollectionConsumer implements MessageListener {
 
-    private Channel channel;
+    static final org.slf4j.Logger log = LoggerFactory.getLogger(MetricCollectionConsumer.class);
 
     //array of tests to be perform to determine value validity
     private MetricValidator metricValidator;
@@ -47,7 +91,7 @@ public class MetricCollectionConsumer extends DefaultConsumer {
     private MetricAccuracyAnalysis accuracyAnalysis;
 
     //where to put the value
-    private ServiceMonitoringSnapshot currentMonitoringSnapshot;
+    private MonitoringData currentMonitoringSnapshot;
 
     private ExecutorService executorService;
 
@@ -55,32 +99,29 @@ public class MetricCollectionConsumer extends DefaultConsumer {
         executorService = Executors.newCachedThreadPool();
     }
 
-    public MetricCollectionConsumer(int prefetch, Channel channel,
-            String queue, MetricValidator metricValidator, MetricAccuracyAnalysis accuracyAnalysis,
-            ServiceMonitoringSnapshot currentMonitoringSnapshot) throws Exception {
-        super(channel);
+    public MetricCollectionConsumer(MetricValidator metricValidator, MetricAccuracyAnalysis accuracyAnalysis,
+            MonitoringData currentMonitoringSnapshot) throws Exception {
         this.metricValidator = metricValidator;
         this.accuracyAnalysis = accuracyAnalysis;
         this.currentMonitoringSnapshot = currentMonitoringSnapshot;
-        channel.basicQos(prefetch);
-        channel.basicConsume(queue, false, this);
     }
 
-    @Override
-    public void handleDelivery(String consumerTag,
-            Envelope envelope,
-            AMQP.BasicProperties properties,
-            byte[] body) throws IOException {
-        try {
-            CollectedMetricValue collectedMetricValue;
-            ByteArrayInputStream bis = new ByteArrayInputStream(body);
-            ObjectInput in = new ObjectInputStream(bis);
-            collectedMetricValue = (CollectedMetricValue) in.readObject();
+    public void onMessage(Message message) {
 
-            //task to process metric goes here
-            executorService.submit(new CollectedMetricProcessor(collectedMetricValue, metricValidator, accuracyAnalysis, currentMonitoringSnapshot));
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MetricCollectionConsumer.class.getName()).log(Level.SEVERE, null, ex);
+        if (message instanceof ObjectMessage) {
+
+            try {
+
+                ObjectMessage objectMessage = (ObjectMessage) message;
+                NumericalCollectedMetricValue collectedMetricValue = (NumericalCollectedMetricValue) objectMessage.getObject();;
+                //task to process metric goes here
+                executorService.submit(new CollectedMetricProcessor(collectedMetricValue, metricValidator, accuracyAnalysis, currentMonitoringSnapshot));
+            } catch (JMSException ex) {
+                log.error(ex.getMessage(), ex);
+            }
+        } else {
+            log.error("Unrecognized message: " + message);
         }
+
     }
 }

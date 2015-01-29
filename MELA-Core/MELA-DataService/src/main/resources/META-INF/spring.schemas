@@ -1,1 +1,2 @@
-http\://www.infosys.tuwien.ac.at/schema/mela/spring-mela.xsd=at/ac/tuwien/dsg/mela/dataservice/spring/spring-mela.xsd
+http\://www.infosys.tuwien.ac.at/schema/mela/spring-mela-data-source.xsd=at/ac/tuwien/dsg/mela/dataservice/spring/spring-mela-data-source.xsd
+ 

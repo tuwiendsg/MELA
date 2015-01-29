@@ -16,17 +16,13 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers;
 
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.CollectedMetricValue;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
 import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.MetricAccuracyAnalysis;
 import at.ac.tuwien.dsg.mela.dataservice.validation.MetricValidationTest;
 import at.ac.tuwien.dsg.mela.dataservice.validation.MetricValidator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 /**
@@ -37,7 +33,7 @@ import org.apache.log4j.Logger;
 public class CollectedMetricProcessor implements Runnable {
 
     //what value to process
-    private CollectedMetricValue valueToProcess;
+    private NumericalCollectedMetricValue valueToProcess;
 
     //array of tests to be perform to determine value validity
     private MetricValidator metricValidator;
@@ -45,9 +41,9 @@ public class CollectedMetricProcessor implements Runnable {
     private MetricAccuracyAnalysis accuracyAnalysis;
 
     //where to put the value
-    private ServiceMonitoringSnapshot currentMonitoringSnapshot;
+    private MonitoringData currentMonitoringSnapshot;
 
-    public CollectedMetricProcessor(CollectedMetricValue valueToProcess, MetricValidator metricValidator, MetricAccuracyAnalysis accuracyAnalysis, ServiceMonitoringSnapshot currentMonitoringSnapshot) {
+    public CollectedMetricProcessor(NumericalCollectedMetricValue valueToProcess, MetricValidator metricValidator, MetricAccuracyAnalysis accuracyAnalysis, MonitoringData currentMonitoringSnapshot) {
         this.valueToProcess = valueToProcess;
         this.metricValidator = metricValidator;
         this.accuracyAnalysis = accuracyAnalysis;
@@ -57,26 +53,28 @@ public class CollectedMetricProcessor implements Runnable {
     @Override
     public void run() {
         boolean valid = false;
-        
+
         if (metricValidator.isValid(valueToProcess)) {
             valid = true;
         } else {
             //logging why is it invalid
-            for (MetricValidationTest entry : metricValidator.isValidDetailedAnalaysis(valueToProcess)) {
+            for (MetricValidationTest entry : metricValidator.isValidDetailedAnalysis(valueToProcess)) {
                 Logger.getLogger(CollectedMetricProcessor.class.getName()).info(entry.getHumanReadableDescription() + " failed for metric " + valueToProcess.toString());
             }
         }
 
         if (valid) {
-            
-            MonitoredElement.MonitoredElementLevel level = MonitoredElement.MonitoredElementLevel.valueOf(
-                    valueToProcess.getMonitoredElementLevel());
 
-            Metric metric = new Metric(valueToProcess.getName());
-
-            currentMonitoringSnapshot.addMonitoredData(level, new MonitoredElement(valueToProcess.getMonitoredElementID()), metric,
-                    new MetricValue(valueToProcess.getValue())
-            );
+//            MonitoredElement.MonitoredElementLevel level = MonitoredElement.MonitoredElementLevel.valueOf(
+//                    valueToProcess.getMonitoredElementLevel());
+//            CollectedMetricValue collectedMetricValue = new CollectedMetricValue()
+//                    .withMonitoredElementLevel(valueToProcess.getMonitorjavaedElementLevel())
+//                    .withMonitoredElementID(valueToProcess.getMonitoredElementID())
+//                    .withName(valueToProcess.getName())
+//                    .withType(valueToProcess.getType())
+//                    .withUnits(valueToProcess.getUnits())
+//                    .withValue(valueToProcess.getValue().toString());
+            currentMonitoringSnapshot.withMetricInfo(valueToProcess.toCollectedMetricValue());
 
             //see what I compute and if something in terms of data accuracy/staleness/etc
             Double accuracy = accuracyAnalysis.computeAccuracy(valueToProcess);

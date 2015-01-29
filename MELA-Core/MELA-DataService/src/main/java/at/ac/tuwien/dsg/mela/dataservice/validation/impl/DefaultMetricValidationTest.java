@@ -16,24 +16,28 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.validation.impl;
 
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.CollectedMetricValue;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
 import at.ac.tuwien.dsg.mela.dataservice.validation.MetricValidationTest;
 
 /**
  *
  * @author Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
-public class DefaultMetricValidator extends MetricValidationTest {
+public class DefaultMetricValidationTest extends MetricValidationTest {
 
     {
         this.humanReadableDescription = "Checks if value >=0 , ~= NaN, null, -/+ Infinity";
     }
 
     @Override
-    public boolean isValid(CollectedMetricValue metricValue) {
-        Double value = metricValue.getValue();
+    public boolean isValid(NumericalCollectedMetricValue metricValue) {
+        if (metricValue != null && metricValue.getValue() != null) {
+            Double value = metricValue.getValue();
+            return !Double.isNaN(value) && !Double.isInfinite(value) && value >= 0;
+        } else {
+            return false;
+        }
 
-        return value != null && !Double.isNaN(value) && !Double.isInfinite(value) && value >= 0;
     }
 
 }

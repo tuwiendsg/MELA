@@ -16,7 +16,7 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.validation;
 
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.CollectedMetricValue;
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
 
 /**
  *
@@ -33,7 +33,7 @@ public abstract class MetricValidationTest {
         return humanReadableDescription;
     }
 
-    public abstract boolean isValid(CollectedMetricValue metricValue);
+    public abstract boolean isValid(NumericalCollectedMetricValue metricValue);
     
 //    public abstract MetricValidationTest clone();
 }

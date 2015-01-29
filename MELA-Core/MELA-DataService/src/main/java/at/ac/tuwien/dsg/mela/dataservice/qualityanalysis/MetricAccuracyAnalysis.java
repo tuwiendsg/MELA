@@ -16,8 +16,8 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.qualityanalysis;
 
+import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
 import at.ac.tuwien.dsg.mela.dataservice.validation.*;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.CollectedMetricValue;
 
 /**
  *
@@ -34,7 +34,7 @@ public abstract class MetricAccuracyAnalysis {
         return humanReadableDescription;
     }
 
-    public abstract Double computeAccuracy(CollectedMetricValue metricValue);
+    public abstract Double computeAccuracy(NumericalCollectedMetricValue metricValue);
 
-    public abstract MetricValidationTest clone();
+    
 }
