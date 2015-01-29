@@ -395,7 +395,7 @@ public class DataCollectionService {
             dataAccess = dataAccesses.get(serviceID);
         }
 
-        dataAccess.getMetricFilters().clear();
+        dataAccess.clearMetricFilters();
 
         // set metric filters on data access
         for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
@@ -567,7 +567,7 @@ public class DataCollectionService {
             } else {
                 dataAccess = dataAccesses.get(serviceID);
             }
-            dataAccess.getMetricFilters().clear();
+            dataAccess.clearMetricFilters();
 
             if (compositionRulesConfigurations.containsKey(serviceID)) {
                 // set metric filters on data access

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Level;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
@@ -143,7 +143,7 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
 
                 // create MonitoredElementMonitoringSnapshot for each element
                 HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
-                for (MetricInfo metricInfo : elementData.getMetrics()) {
+                for (CollectedMetricValue metricInfo : elementData.getMetrics()) {
                     Metric metric = new Metric();
                     metric.setName(metricInfo.getName());
                     metric.setMeasurementUnit(metricInfo.getUnits());

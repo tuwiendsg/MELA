@@ -20,7 +20,7 @@
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
@@ -35,7 +35,9 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
+ * This uses the poll or pushbased data sources to compute structured complex
+ * monitoring information Author: Daniel Moldovan E-Mail:
+ * d.moldovan@dsg.tuwien.ac.at
  *
  */
 @Service
@@ -44,6 +46,9 @@ public abstract class AbstractDataAccess {
     static final Logger log = LoggerFactory.getLogger(AbstractDataAccess.class);
 
     protected Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters;
+
+    private Map<String, Map<String, List<Metric>>> metricsToCollect;
+
     protected List<AbstractDataSource> dataSources;
     protected Map<AbstractDataSource, Timer> dataSourcesPoolingTimers;
     protected Map<AbstractDataSource, MonitoringData> freshestMonitoredData = new HashMap<AbstractDataSource, MonitoringData>();
@@ -54,6 +59,7 @@ public abstract class AbstractDataAccess {
         freshestMonitoredData = Collections.synchronizedMap(new HashMap<AbstractDataSource, MonitoringData>());
         dataSourcesPoolingTimers = new HashMap<AbstractDataSource, Timer>();
         dataSources = new ArrayList<AbstractDataSource>();
+        metricsToCollect = Collections.synchronizedMap(new HashMap<String, Map<String, List<Metric>>>());
     }
 
     {
@@ -83,6 +89,9 @@ public abstract class AbstractDataAccess {
             list.add(metricFilter);
             metricFilters.put(metricFilter.getLevel(), list);
         }
+
+        addMetricToCollect(metricFilter);
+
     }
 
     public void addMetricFilters(Collection<MetricFilter> newFilters) {
@@ -98,6 +107,9 @@ public abstract class AbstractDataAccess {
                 metricFilters.put(metricFilter.getLevel(), list);
             }
         }
+
+        addMetricsToCollect(newFilters);
+
     }
 
     public void removeMetricFilter(MetricFilter metricFilter) {
@@ -107,6 +119,9 @@ public abstract class AbstractDataAccess {
                 list.remove(metricFilter);
             }
         }
+
+        removeMetricToCollect(metricFilter);
+
     }
 
     public void removeMetricFilters(Collection<MetricFilter> filtersToRemove) {
@@ -118,13 +133,130 @@ public abstract class AbstractDataAccess {
                 }
             }
         }
+
+        removeMetricsToCollect(filtersToRemove);
+
     }
 
-    public Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> getMetricFilters() {
-        return metricFilters;
+    private void addMetricToCollect(MetricFilter metricFilter) {
+        Map<String, List<Metric>> metricsToCollectPerLevel;
+
+        if (metricsToCollect.containsKey(metricFilter.getLevel().toString())) {
+            metricsToCollectPerLevel = metricsToCollect.get(metricFilter.getLevel().toString());
+        } else {
+            metricsToCollectPerLevel = Collections.synchronizedMap(new HashMap<String, List<Metric>>());
+            metricsToCollect.put(metricFilter.getLevel().toString(), metricsToCollectPerLevel);
+        }
+
+        for (String id : metricFilter.getTargetMonitoredElementIDs()) {
+            List<Metric> metricsToCollectPerID;
+            if (metricsToCollectPerLevel.containsKey(id)) {
+                metricsToCollectPerID = metricsToCollectPerLevel.get(id);
+            } else {
+                metricsToCollectPerID = Collections.synchronizedList(new ArrayList<Metric>());
+                metricsToCollectPerLevel.put(id, metricsToCollectPerID);
+            }
+
+            if (!metricFilter.equals(MetricFilter.ANY)) {
+                metricsToCollectPerID.addAll(metricFilter.getMetrics());
+            }
+        }
+    }
+
+    private void addMetricsToCollect(Collection<MetricFilter> newFilters) {
+        for (MetricFilter metricFilter : newFilters) {
+            Map<String, List<Metric>> metricsToCollectPerLevel;
+
+            if (metricsToCollect.containsKey(metricFilter.getLevel().toString())) {
+                metricsToCollectPerLevel = metricsToCollect.get(metricFilter.getLevel().toString());
+            } else {
+                metricsToCollectPerLevel = Collections.synchronizedMap(new HashMap<String, List<Metric>>());
+                metricsToCollect.put(metricFilter.getLevel().toString(), metricsToCollectPerLevel);
+            }
+
+            for (String id : metricFilter.getTargetMonitoredElementIDs()) {
+                List<Metric> metricsToCollectPerID;
+                if (metricsToCollectPerLevel.containsKey(id)) {
+                    metricsToCollectPerID = metricsToCollectPerLevel.get(id);
+                } else {
+                    metricsToCollectPerID = Collections.synchronizedList(new ArrayList<Metric>());
+                    metricsToCollectPerLevel.put(id, metricsToCollectPerID);
+                }
+
+                if (!metricFilter.equals(MetricFilter.ANY)) {
+                    metricsToCollectPerID.addAll(metricFilter.getMetrics());
+                }
+            }
+        }
+    }
+
+    private void removeMetricToCollect(MetricFilter metricFilter) {
+        if (metricFilters.containsKey(metricFilter.getLevel())) {
+            List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
+            if (list.contains(metricFilter)) {
+                list.remove(metricFilter);
+            }
+        }
+        Map<String, List<Metric>> metricsToCollectPerLevel;
+
+        if (metricsToCollect.containsKey(metricFilter.getLevel().toString())) {
+            metricsToCollectPerLevel = metricsToCollect.get(metricFilter.getLevel().toString());
+        } else {
+            return;
+        }
+
+        for (String id : metricFilter.getTargetMonitoredElementIDs()) {
+            List<Metric> metricsToCollectPerID;
+            if (metricsToCollectPerLevel.containsKey(id)) {
+                metricsToCollectPerID = metricsToCollectPerLevel.get(id);
+            } else {
+                break;
+            }
+
+            metricsToCollectPerID.removeAll(metricFilter.getMetrics());
+        }
+    }
+
+    public void removeMetricsToCollect(Collection<MetricFilter> filtersToRemove) {
+        for (MetricFilter metricFilter : filtersToRemove) {
+            if (metricFilters.containsKey(metricFilter.getLevel())) {
+                List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
+                if (list.contains(metricFilter)) {
+                    list.remove(metricFilter);
+                }
+            }
+            Map<String, List<Metric>> metricsToCollectPerLevel;
+
+            if (metricsToCollect.containsKey(metricFilter.getLevel().toString())) {
+                metricsToCollectPerLevel = metricsToCollect.get(metricFilter.getLevel().toString());
+            } else {
+                return;
+            }
+
+            for (String id : metricFilter.getTargetMonitoredElementIDs()) {
+                List<Metric> metricsToCollectPerID;
+                if (metricsToCollectPerLevel.containsKey(id)) {
+                    metricsToCollectPerID = metricsToCollectPerLevel.get(id);
+                } else {
+                    break;
+                }
+
+                metricsToCollectPerID.removeAll(metricFilter.getMetrics());
+            }
+        }
+
+    }
+
+    public void clearMetricFilters() {
+        metricFilters.clear();
+        metricsToCollect.clear();
+//        for (AbstractDataSource dataSource : dataSources) {
+//            dataSource.updateMetricsToCollect(metricsToCollect);
+//        }
     }
 
     public synchronized void addDataSource(AbstractDataSource dataSource) {
+
         this.dataSources.add(dataSource);
         this.dataSourcesPoolingTimers.put(dataSource, createMonitoringTimer(dataSource));
     }
@@ -132,13 +264,15 @@ public abstract class AbstractDataAccess {
     public synchronized void addDataSources(Collection<AbstractDataSource> dataSources) {
         this.dataSources.addAll(dataSources);
         for (AbstractDataSource dataSource : dataSources) {
+
             this.dataSourcesPoolingTimers.put(dataSource, createMonitoringTimer(dataSource));
         }
     }
 
     public synchronized void removeDataSource(AbstractDataSource dataSource) {
-        if (this.dataSourcesPoolingTimers.containsKey(dataSources)) {
-            this.dataSourcesPoolingTimers.remove(dataSources).cancel();
+        if (this.dataSourcesPoolingTimers.containsKey(dataSource)) {
+
+            this.dataSourcesPoolingTimers.remove(dataSource).cancel();
         }
         this.dataSources.remove(dataSource);
     }
@@ -146,18 +280,18 @@ public abstract class AbstractDataAccess {
     private Timer createMonitoringTimer(final AbstractDataSource dataSource) {
         Timer timer = new Timer();
 
-        if (dataSource instanceof AbstractPollingDataSource) {
-            final AbstractPollingDataSource abstractPollingDataSource = (AbstractPollingDataSource) dataSource;
+        if (dataSource instanceof AbstractDataSource) {
+            final AbstractDataSource abstractDataSource = (AbstractDataSource) dataSource;
 
             TimerTask dataCollectionTask = new TimerTask() {
                 @Override
                 public void run() {
                     try {
                         // pool data source
-                        MonitoringData data = dataSource.getMonitoringData();
+                        MonitoringData data = abstractDataSource.getMonitoringData();
                         // replace freshest monitoring data
 
-                        freshestMonitoredData.put(abstractPollingDataSource, data);
+                        freshestMonitoredData.put(abstractDataSource, data);
                     } catch (DataAccessException e) {
                         // TODO Auto-generated catch block
                         log.error("Caught DataAccessException", e);
@@ -167,7 +301,7 @@ public abstract class AbstractDataAccess {
                 }
             };
 
-            timer.scheduleAtFixedRate(dataCollectionTask, 0, abstractPollingDataSource.getPollingIntervalMs());
+            timer.scheduleAtFixedRate(dataCollectionTask, 0, abstractDataSource.getRateAtWhichDataShouldBeRead());
         } else {
             // TODO: needs to be implemented
             log.error("Not supporting yet data source of type " + dataSource.getClass().getName());
@@ -198,7 +332,7 @@ public abstract class AbstractDataAccess {
      * @return
      */
     public Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement monitoredElement) {
-        Map<MetricInfo, Metric> metrics = new HashMap<MetricInfo, Metric>();
+        Map<CollectedMetricValue, Metric> metrics = new HashMap<CollectedMetricValue, Metric>();
 
         //get  monitored data from all data sources
         for (MonitoringData data : freshestMonitoredData.values()) {
@@ -207,7 +341,7 @@ public abstract class AbstractDataAccess {
 
                 //if monitored data entry targets desired monitored element
                 if (elementData.getMonitoredElement().equals(monitoredElement)) {
-                    for (MetricInfo metricInfo : elementData.getMetrics()) {
+                    for (CollectedMetricValue metricInfo : elementData.getMetrics()) {
                         // in case several data sources collect same metric for same element
                         if (!metrics.containsKey(metricInfo)) {
                             Metric metric = new Metric();
@@ -221,11 +355,6 @@ public abstract class AbstractDataAccess {
         }
 
         return metrics.values();
-    }
-
-    public AbstractDataAccess withMetricFilters(final Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters) {
-        this.metricFilters = metricFilters;
-        return this;
     }
 
     public AbstractDataAccess withDataSources(final List<AbstractDataSource> dataSources) {

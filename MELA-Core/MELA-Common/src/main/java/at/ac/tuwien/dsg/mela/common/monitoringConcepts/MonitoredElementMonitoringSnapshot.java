@@ -23,11 +23,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -59,20 +61,20 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     @XmlElement(name = "Metrics", required = false)
 
     @XmlJavaTypeAdapter(MonitoringEntriesAdapter.class)
-    private HashMap<Metric, MetricValue> monitoredData;
+    private Map<Metric, MetricValue> monitoredData;
 
     @XmlElement(name = "Action", required = false)
     private List<Action> executingActions;
 
     @XmlElement(name = "MonitoredElementSnapshot")
-    private ArrayList<MonitoredElementMonitoringSnapshot> children;
+    private List<MonitoredElementMonitoringSnapshot> children;
 
     private int hashCode;
 
     {
-        monitoredData = new LinkedHashMap<Metric, MetricValue>();
-        executingActions = new ArrayList<Action>();
-        children = new ArrayList<MonitoredElementMonitoringSnapshot>();
+        monitoredData = new ConcurrentHashMap<Metric, MetricValue>();
+        executingActions = Collections.synchronizedList(new ArrayList<Action>());
+        children = Collections.synchronizedList(new ArrayList<MonitoredElementMonitoringSnapshot>());
     }
 
     @Override

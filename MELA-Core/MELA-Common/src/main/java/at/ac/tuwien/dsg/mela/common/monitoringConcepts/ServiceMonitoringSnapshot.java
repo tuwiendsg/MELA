@@ -37,7 +37,7 @@ import java.util.Map.Entry;
 public class ServiceMonitoringSnapshot implements Serializable {
     //CloudCom experiments
 //    private static final long serialVersionUID = 7738621893115870124l;
-    
+
     private String timestamp;
 
     private int timestampID;
@@ -91,6 +91,47 @@ public class ServiceMonitoringSnapshot implements Serializable {
 
     }
 
+    public void addMonitoredData(MonitoredElement.MonitoredElementLevel level, Map<MonitoredElement, MonitoredElementMonitoringSnapshot> elementsData) {
+
+        for (Map.Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> entry : elementsData.entrySet()) {
+            //if data contains level and if contains element, than just add metrics, otherwise put new metrics
+            if (monitoredData.containsKey(level)) {
+                if (monitoredData.get(level).containsKey(entry.getKey())) {
+                    monitoredData.get(level).get(entry.getKey()).getMonitoredData().putAll(entry.getValue().getMonitoredData());
+                } else {
+                    monitoredData.get(level).put(entry.getKey(), entry.getValue());
+                }
+            } else {
+                Map<MonitoredElement, MonitoredElementMonitoringSnapshot> map = Collections.synchronizedMap(new LinkedHashMap<MonitoredElement, MonitoredElementMonitoringSnapshot>());
+                map.put(entry.getKey(), entry.getValue());
+                monitoredData.put(level, map);
+            }
+        }
+
+    }
+
+    public void addMonitoredData(MonitoredElement.MonitoredElementLevel level, MonitoredElement element, Metric metric, MetricValue metricValue) {
+
+        //if data contains level and if contains element, than just add metrics, otherwise put new metrics
+        if (monitoredData.containsKey(level)) {
+            if (monitoredData.get(level).containsKey(element)) {
+                monitoredData.get(level).get(element).getMonitoredData().put(metric, metricValue);
+            } else {
+                MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(element);
+                elementMonitoringSnapshot.getMonitoredData().put(metric, metricValue);
+                monitoredData.get(level).put(element, elementMonitoringSnapshot);
+            }
+        } else {
+            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> map = Collections.synchronizedMap(new LinkedHashMap<MonitoredElement, MonitoredElementMonitoringSnapshot>());
+            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(element);
+            elementMonitoringSnapshot.getMonitoredData().put(metric, metricValue);
+
+            map.put(element, elementMonitoringSnapshot);
+            monitoredData.put(level, map);
+        }
+
+    }
+
     /**
      * @param level
      * @return the monitored snapshots and serviceStructure element for the
@@ -98,6 +139,19 @@ public class ServiceMonitoringSnapshot implements Serializable {
      */
     public Map<MonitoredElement, MonitoredElementMonitoringSnapshot> getMonitoredData(MonitoredElement.MonitoredElementLevel level) {
         return monitoredData.get(level);
+    }
+
+    public boolean contains(MonitoredElement.MonitoredElementLevel level) {
+        return monitoredData.containsKey(level);
+    }
+
+    public boolean contains(MonitoredElement.MonitoredElementLevel level, MonitoredElement element) {
+        return monitoredData.containsKey(level) && monitoredData.get(level).containsKey(element);
+    }
+
+    public boolean contains(MonitoredElement.MonitoredElementLevel level, MonitoredElement element, Metric metric) {
+        return monitoredData.containsKey(level) && monitoredData.get(level).containsKey(element)
+                && monitoredData.get(level).get(element).containsMetric(metric);
     }
 
     /**

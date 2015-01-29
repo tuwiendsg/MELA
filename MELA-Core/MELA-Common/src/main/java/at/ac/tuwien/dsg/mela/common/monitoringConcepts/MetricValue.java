@@ -50,8 +50,12 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
 
     @XmlElement(name = "Value", required = true)
     private Object value;
+
     @XmlAttribute(name = "ValueType", required = true)
     private ValueType valueType;
+
+    @XmlAttribute(name = "Accuracy", required = true)
+    private Double accuracy;
 
     public ValueType getValueType() {
         return valueType;
@@ -215,6 +219,14 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         return "" + value;
     }
 
+    public Double getAccuracy() {
+        return accuracy;
+    }
+
+    public void setAccuracy(Double accuracy) {
+        this.accuracy = accuracy;
+    }
+
     public MetricValue withValue(final Object value) {
         this.value = value;
         return this;
@@ -227,6 +239,11 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
 
     public boolean isUndefined() {
         return this.value != null && this.value.toString().equals(UNDEFINED.getValue().toString());
+    }
+
+    public MetricValue withAccuracy(final Double accuracy) {
+        this.accuracy = accuracy;
+        return this;
     }
 
 }

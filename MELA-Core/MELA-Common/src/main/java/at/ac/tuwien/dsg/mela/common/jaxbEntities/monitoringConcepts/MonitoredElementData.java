@@ -40,25 +40,25 @@ public class MonitoredElementData {
     private MonitoredElement monitoredElement;
 
     @XmlElement(name = "Metric")
-    Collection<MetricInfo> metrics;
+    List<CollectedMetricValue> metrics;
 
     {
-        metrics = new ArrayList<MetricInfo>();
+        metrics = new ArrayList<CollectedMetricValue>();
     }
 
-    public Collection<MetricInfo> getMetrics() {
+    public Collection<CollectedMetricValue> getMetrics() {
         return metrics;
     }
 
-    public void setMetrics(Collection<MetricInfo> metrics) {
+    public void setMetrics(List<CollectedMetricValue> metrics) {
         this.metrics = metrics;
     }
 
-    public void addMetrics(Collection<MetricInfo> metrics) {
+    public void addMetrics(List<CollectedMetricValue> metrics) {
         this.metrics.addAll(metrics);
     }
 
-    public void addMetric(MetricInfo metric) {
+    public void addMetric(CollectedMetricValue metric) {
         this.metrics.add(metric);
     }
 
@@ -75,9 +75,9 @@ public class MonitoredElementData {
      * name will be returned
      * @return
      */
-    public Collection<MetricInfo> searchMetricsByName(String name) {
-        List<MetricInfo> metrics = new ArrayList<MetricInfo>();
-        for (MetricInfo metricInfo : this.metrics) {
+    public List<CollectedMetricValue> searchMetricsByName(String name) {
+        List<CollectedMetricValue> metrics = new ArrayList<CollectedMetricValue>();
+        for (CollectedMetricValue metricInfo : this.metrics) {
             if (metricInfo.getName().contains(name)) {
                 metrics.add(metricInfo);
             }
@@ -89,7 +89,7 @@ public class MonitoredElementData {
     public String toString() {
         String info = "MonitoredElement: " + monitoredElement.getId() + ", metrics=";
 
-        for (MetricInfo metricInfo : metrics) {
+        for (CollectedMetricValue metricInfo : metrics) {
             info += "\n\t " + metricInfo.toString();
         }
         info += '}';
@@ -131,9 +131,19 @@ public class MonitoredElementData {
         return this;
     }
 
-    public MonitoredElementData withMetrics(final Collection<MetricInfo> metrics) {
+    public MonitoredElementData withMetrics(final List<CollectedMetricValue> metrics) {
         this.metrics = metrics;
         return this;
+    }
+
+    public void withMetricInfo(CollectedMetricValue info) {
+
+        if (metrics.contains(info)) {
+            CollectedMetricValue metricInfo = metrics.get(metrics.indexOf(info));
+            metricInfo.setValue(info.getValue());
+        } else {
+            metrics.add(info);
+        }
     }
 
 }

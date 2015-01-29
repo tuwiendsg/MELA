@@ -19,7 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
@@ -126,7 +126,7 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
 
                 // create MonitoredElementMonitoringSnapshot for each element
                 HashMap<Metric, MetricValue> monitoredMetricValues = new LinkedHashMap<Metric, MetricValue>();
-                for (MetricInfo metricInfo : elementData.getMetrics()) {
+                for (CollectedMetricValue metricInfo : elementData.getMetrics()) {
                     Metric metric = new Metric();
                     metric.setName(metricInfo.getName());
                     metric.setMeasurementUnit(metricInfo.getUnits());

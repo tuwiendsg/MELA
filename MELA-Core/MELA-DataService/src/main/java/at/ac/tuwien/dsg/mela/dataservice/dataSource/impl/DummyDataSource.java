@@ -32,13 +32,17 @@ import org.apache.log4j.Priority;
 public class DummyDataSource extends AbstractPollingDataSource {
 
     /*public DummyDataSource(Map<String, String> configuration) {
-        super(configuration);
-        // TODO Auto-generated constructor stub
-    }*/
-
+     super(configuration);
+     // TODO Auto-generated constructor stub
+     }*/
     public MonitoringData getMonitoringData() throws DataAccessException {
         MonitoringData clusterInfo = new MonitoringData();
         Logger.getLogger(this.getClass()).log(Priority.INFO, "Using DUMMY Data Source");
         return clusterInfo;
+    }
+
+    @Override
+    public Long getRateAtWhichDataShouldBeRead() {
+        return (long) getPollingIntervalMs();
     }
 }

@@ -21,7 +21,7 @@ package at.ac.tuwien.dsg.mela.common.persistence;
 
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
@@ -197,7 +197,7 @@ public class PersistenceSQLAccess {
             for (MonitoredElementData elementData : data.getMonitoredElementDatas()) {
                 MonitoredElement element = elementData.getMonitoredElement();
 
-                for (MetricInfo metricInfo : elementData.getMetrics()) {
+                for (CollectedMetricValue metricInfo : elementData.getMetrics()) {
                     jdbcTemplate.update(sql, timestamp, metricInfo.getName(),
                             metricInfo.getUnits(), metricInfo.getType(), metricInfo.getValue(),
                             element.getId(), element.getLevel().toString());
@@ -339,7 +339,7 @@ public class PersistenceSQLAccess {
 
                 if (retrievedData.containsKey(monitoredElementID)) {
                     MonitoredElementData monitoredElementData = retrievedData.get(monitoredElementID);
-                    MetricInfo info = new MetricInfo();
+                    CollectedMetricValue info = new CollectedMetricValue();
                     info.setName(metricName);
                     info.setValue(value);
                     info.setUnits(metricUnit);
@@ -354,7 +354,7 @@ public class PersistenceSQLAccess {
                     MonitoredElementData monitoredElementData = new MonitoredElementData();
                     monitoredElementData.setMonitoredElement(monitoredElement);
 
-                    MetricInfo info = new MetricInfo();
+                    CollectedMetricValue info = new CollectedMetricValue();
                     info.setName(metricName);
                     info.setValue(value);
                     info.setUnits(metricUnit);

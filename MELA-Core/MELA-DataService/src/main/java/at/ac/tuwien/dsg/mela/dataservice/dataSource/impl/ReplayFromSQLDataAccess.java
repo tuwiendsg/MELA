@@ -55,6 +55,11 @@ public class ReplayFromSQLDataAccess extends AbstractPollingDataSource {
         timestampIterator = persistenceDelegate.getTimestampIDs(monitoringSequenceID).iterator();
     }
 
+    @Override
+    public Long getRateAtWhichDataShouldBeRead() {
+        return (long) getPollingIntervalMs();
+    }
+
     public MonitoringData getMonitoringData() throws DataAccessException {
 
         if (!timestampIterator.hasNext()) {

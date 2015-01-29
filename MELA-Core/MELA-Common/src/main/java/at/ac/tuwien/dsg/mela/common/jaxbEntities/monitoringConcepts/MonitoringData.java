@@ -19,9 +19,11 @@
  */
 package at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts;
 
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import java.util.ArrayList;
 import javax.xml.bind.annotation.*;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at Contains
@@ -34,7 +36,7 @@ public class MonitoringData {
 
     //monitoring information collected for each MonitoredElement
     @XmlElement(name = "MonitoredElementData")
-    private Collection<MonitoredElementData> monitoredElementDatas;
+    private List<MonitoredElementData> monitoredElementDatas;
     //currently not used. left here in case needed in the future
     @XmlAttribute(name = "Version")
     private String version;
@@ -59,7 +61,7 @@ public class MonitoringData {
         return monitoredElementDatas;
     }
 
-    public void setMonitoredElementDatas(Collection<MonitoredElementData> monitoredElementDatas) {
+    public void setMonitoredElementDatas(List<MonitoredElementData> monitoredElementDatas) {
         this.monitoredElementDatas = monitoredElementDatas;
     }
 
@@ -87,7 +89,7 @@ public class MonitoringData {
         this.source = source;
     }
 
-    public MonitoringData withMonitoredElementDatas(final Collection<MonitoredElementData> monitoredElementDatas) {
+    public MonitoringData withMonitoredElementDatas(final List<MonitoredElementData> monitoredElementDatas) {
         this.monitoredElementDatas = monitoredElementDatas;
         return this;
     }
@@ -105,6 +107,20 @@ public class MonitoringData {
     public MonitoringData withTimestamp(final String timestamp) {
         this.timestamp = timestamp;
         return this;
+    }
+
+    public void withMetricInfo(CollectedMetricValue info) {
+        MonitoredElement element = new MonitoredElement(info.getMonitoredElementID())
+                .withLevel(MonitoredElement.MonitoredElementLevel.valueOf(info.getMonitoredElementLevel()));
+        MonitoredElementData toCheck = new MonitoredElementData().withMonitoredElement(element);
+
+        if (monitoredElementDatas.contains(toCheck)) {
+            MonitoredElementData data = monitoredElementDatas.get(monitoredElementDatas.indexOf(toCheck));
+            data.withMetricInfo(info);
+        } else {
+            toCheck.withMetricInfo(info);
+            monitoredElementDatas.add(toCheck);
+        }
     }
 
 }
