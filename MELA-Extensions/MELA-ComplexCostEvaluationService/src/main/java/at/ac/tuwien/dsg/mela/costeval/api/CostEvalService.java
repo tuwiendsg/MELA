@@ -138,6 +138,8 @@ public class CostEvalService {
     public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getLatestMonitoringDataEnrichedWithCostINJSON(serviceID);
     }
+    
+   
 
     /**
      * @return the service structure containing all virtual machines currently
@@ -254,6 +256,17 @@ public class CostEvalService {
     public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalServiceCostJSON(serviceID);
     }
+    
+     
+    @GET
+    @Path("/{serviceID}/cost/usage/instant/json")
+    @Produces("application/json")
+    public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getInstantCostPerUsageJSON(serviceID);
+    }
+    
+  
+    
 
     @GET
     @Path("/{serviceID}/cost/total/detailed")

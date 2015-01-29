@@ -214,8 +214,10 @@ public class PersistenceDelegate {
     public List<ServiceMonitoringSnapshot> extractMonitoringData(String monitoringSequenceID) {
         return persistenceSQLAccess.extractMonitoringData(monitoringSequenceID);
 
+        
     }
 
+    
     public List<Metric> getAvailableMetrics(MonitoredElement monitoredElement, String monitoringSequenceID) {
         return persistenceSQLAccess.getAvailableMetrics(monitoredElement, monitoringSequenceID);
     }

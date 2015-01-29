@@ -43,23 +43,7 @@
         <property name="licenseUrl" value="http://www.apache.org/licenses/LICENSE-2.0.html"/>
         <property name="scan" value="true"/>
     </bean>
-
-    <!--    <bean class="at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess"/>-->
-
  
-    <!-- JMS stuff -->
-    <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="tcp://${dataservice.ip}:9124"/>
-    </bean>
-
-    <amq:queue id="destination" physicalName="MELADataService.Config"/>
-
-    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory"/>
-        <property name="defaultDestination" ref="destination"/>
-    </bean>
-    
-    
     <beans profile="PORTABLE">
          
     

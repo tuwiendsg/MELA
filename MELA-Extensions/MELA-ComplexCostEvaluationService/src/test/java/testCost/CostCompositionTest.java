@@ -41,7 +41,6 @@ public class CostCompositionTest extends TestCase {
     static final Logger log = LoggerFactory.getLogger(CostCompositionTest.class);
 
     public void testX() throws IOException, JAXBException {
-        MonitoredElement element = new MonitoredElement().withId("10.0.0.1").withLevel(MonitoredElement.MonitoredElementLevel.VM);
         UsedCloudOfferedService cfg = new UsedCloudOfferedService(1l).withName("m1.small");
         cfg.getQualityProperties().put(new Metric("cpu", "cores", Metric.MetricType.QUALITY), new MetricValue(2));
         cfg.getQualityProperties().put(new Metric("i/o", "level", Metric.MetricType.QUALITY), new MetricValue("high"));
@@ -49,13 +48,12 @@ public class CostCompositionTest extends TestCase {
         cfg.getResourceProperties().put(new Metric("RAM", "GB", Metric.MetricType.RESOURCE), new MetricValue(20));
         cfg.getResourceProperties().put(new Metric("disk", "GB", Metric.MetricType.RESOURCE), new MetricValue(1024));
 
-        element.addUsedCloudOfferedService(cfg);
 
-        String rSYBL_BASE_IP = "localhost";
-        Integer rSYBL_BASE_PORT = 8081;
-        String rSYBL_BASE_URL = "/MELA/REST_WS";
+        String melaIP = "localhost";
+        Integer melaPort = 8080;
+        String melaURL = "/MELA/REST_WS";
         DefaultHttpClient httpClient = new DefaultHttpClient();
-        HttpHost endpoint = new HttpHost(rSYBL_BASE_IP, rSYBL_BASE_PORT);
+        HttpHost endpoint = new HttpHost(melaIP, melaPort);
 
         CloudServicesSpecification cloudServicesSpecification = new CloudServicesSpecification();
 
@@ -65,7 +63,7 @@ public class CostCompositionTest extends TestCase {
             //VM COST
             {
                 CostFunction vmCost = new CostFunction();
-                CostElement vmCostElement = new CostElement("vmCost", new Metric("numberOfVMs", "vms/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
+                CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.12);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
@@ -81,7 +79,7 @@ public class CostCompositionTest extends TestCase {
             //VM COST
             {
                 CostFunction vmCost = new CostFunction();
-                CostElement vmCostElement = new CostElement("vmCost", new Metric("numberOfVMs", "vms/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
+                CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.24);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
@@ -97,7 +95,7 @@ public class CostCompositionTest extends TestCase {
             //VM COST
             {
                 CostFunction vmCost = new CostFunction();
-                CostElement vmCostElement = new CostElement("vmCost", new Metric("numberOfVMs", "vms/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
+                CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.48);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
@@ -139,7 +137,7 @@ public class CostCompositionTest extends TestCase {
                 writer.flush();
                 writer.close();
 
-                URI putDeploymentStructureURL = UriBuilder.fromPath(rSYBL_BASE_URL + "/cloudofferedservice/pricingscheme").build();
+                URI putDeploymentStructureURL = UriBuilder.fromPath(melaURL + "/cloudofferedservice/pricingscheme").build();
                 HttpPut putDeployment = new HttpPut(putDeploymentStructureURL);
 
                 StringEntity entity = new StringEntity(sw.getBuffer().toString());

@@ -494,6 +494,34 @@ public class CostEvalManager {
         return converted;
     }
 
+    public String getInstantCostPerUsageJSON(String serviceID) {
+
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+
+        ServiceMonitoringSnapshot monitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(serviceID);
+
+        if (monitoringSnapshot == null) {
+
+            return "{no monitoring data}";
+        }
+
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.enrichMonSnapshotWithInstantCostPerUsage(serviceUnits, monitoringSnapshot);
+        if (completeCostSnapshot == null) {
+            return "{nothing}";
+        }
+
+        String converted = jsonConverter.convertMonitoringSnapshot(completeCostSnapshot);
+
+        Date after = new Date();
+        log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        return converted;
+    }
+
     public MonitoredElementMonitoringSnapshot getTotalServiceCostXML(String serviceID) {
         //TODO: compute cost as we go to avoid memory overflows
         List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(serviceID);
@@ -565,15 +593,36 @@ public class CostEvalManager {
     }
 
     public String getMetricCompositionRules(String serviceID) {
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
 
-        if (cfg != null && cfg.getCompositionRulesConfiguration() != null) {
-            return jsonConverter.convertToJSON(cfg.getCompositionRulesConfiguration().getMetricCompositionRules());
-        } else {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("name", "No composition rules yet");
-            return jsonObject.toJSONString();
+        Date before = new Date();
+
+        ServiceMonitoringSnapshot monitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(serviceID);
+
+        if (monitoringSnapshot == null) {
+
+            return "{no monitoring data}";
         }
+
+        CompositionRulesConfiguration compositionRulesConfiguration = costEvalEngine.createCompositionRulesForCostPerUsage(serviceUnits, monitoringSnapshot.getMonitoredService());
+        if (compositionRulesConfiguration == null) {
+            return "{nothing}";
+        }
+
+        String converted = jsonConverter.convertToJSON(compositionRulesConfiguration.getMetricCompositionRules());
+
+        Date after = new Date();
+        log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        return converted;
+
+//        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+//
+//        if (cfg != null && cfg.getCompositionRulesConfiguration() != null) {
+//            return jsonConverter.convertToJSON(cfg.getCompositionRulesConfiguration().getMetricCompositionRules());
+//        } else {
+//            JSONObject jsonObject = new JSONObject();
+//            jsonObject.put("name", "No composition rules yet");
+//            return jsonObject.toJSONString();
+//        }
     }
 
     private ElasticitySpace extractAndUpdateElasticitySpace(String serviceID) {
