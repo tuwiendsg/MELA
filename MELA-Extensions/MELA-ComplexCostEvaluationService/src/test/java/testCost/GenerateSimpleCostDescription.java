@@ -8,8 +8,8 @@ package testCost;
 import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
+import java.util.UUID;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -36,18 +37,20 @@ import org.slf4j.LoggerFactory;
  *
  * @author Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
-public class CostCompositionTest extends TestCase {
+public class GenerateSimpleCostDescription extends TestCase {
 
-    static final Logger log = LoggerFactory.getLogger(CostCompositionTest.class);
+    static final Logger log = LoggerFactory.getLogger(GenerateSimpleCostDescription.class);
 
-    public void testX() throws IOException, JAXBException {
-        UsedCloudOfferedService cfg = new UsedCloudOfferedService(1l).withName("m1.small");
+    public void testEcosystemDescription() throws IOException, JAXBException {
+        CloudProvider provider = new CloudProvider("Amazon");
+
+        UsedCloudOfferedService cfg = new UsedCloudOfferedService(provider.getUuid(), provider.getName(), UUID.fromString("4504cbe6-9481-4108-897a-a6e8f74a860a"), "m1.small");
+
         cfg.getQualityProperties().put(new Metric("cpu", "cores", Metric.MetricType.QUALITY), new MetricValue(2));
         cfg.getQualityProperties().put(new Metric("i/o", "level", Metric.MetricType.QUALITY), new MetricValue("high"));
 
         cfg.getResourceProperties().put(new Metric("RAM", "GB", Metric.MetricType.RESOURCE), new MetricValue(20));
         cfg.getResourceProperties().put(new Metric("disk", "GB", Metric.MetricType.RESOURCE), new MetricValue(1024));
-
 
         String melaIP = "localhost";
         Integer melaPort = 8080;
@@ -56,67 +59,69 @@ public class CostCompositionTest extends TestCase {
         HttpHost endpoint = new HttpHost(melaIP, melaPort);
 
         CloudServicesSpecification cloudServicesSpecification = new CloudServicesSpecification();
+        cloudServicesSpecification.addCloudProvider(provider);
 
         {
             ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.small");
+            unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000000"));
 
             //VM COST
             {
-                CostFunction vmCost = new CostFunction();
+                CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
                 CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.12);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
             }
 
-            cloudServicesSpecification.addServiceUnit(unit);
+            provider.addServiceUnit(unit);
 
         }
 
         {
             ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.medium");
-
+            unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000001"));
             //VM COST
             {
-                CostFunction vmCost = new CostFunction();
+                CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
                 CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.24);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
             }
 
-            cloudServicesSpecification.addServiceUnit(unit);
+            provider.addServiceUnit(unit);
 
         }
 
         {
             ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.large");
-
+            unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000002"));
             //VM COST
             {
-                CostFunction vmCost = new CostFunction();
+                CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
                 CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.48);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
             }
 
-            cloudServicesSpecification.addServiceUnit(unit);
+            provider.addServiceUnit(unit);
 
         }
         {
             ServiceUnit unit = new ServiceUnit("MaaS", "Network", "network");
-
+            unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000003"));
             //Data Transfer
             {
-                CostFunction cost = new CostFunction();
+                CostFunction cost = new CostFunction(unit.getName() + "_cost");
                 CostElement costElement = new CostElement("dataTransferCost", new Metric("dataTransfer", "MB/s", Metric.MetricType.COST), CostElement.Type.USAGE);
-                costElement.addCostInterval(new MetricValue(1024), 0.01 / 1024);
+                costElement.addCostInterval(new MetricValue(1024), 0.03 / 1024);
                 costElement.addCostInterval(new MetricValue(10 * 1024 * 1024), 0.01 / 1024);
                 cost.addCostElement(costElement);
                 unit.addCostFunction(cost);
             }
-            cloudServicesSpecification.addServiceUnit(unit);
+            provider.addServiceUnit(unit);
         }
 
         {
@@ -137,30 +142,29 @@ public class CostCompositionTest extends TestCase {
                 writer.flush();
                 writer.close();
 
-                URI putDeploymentStructureURL = UriBuilder.fromPath(melaURL + "/cloudofferedservice/pricingscheme").build();
-                HttpPut putDeployment = new HttpPut(putDeploymentStructureURL);
-
-                StringEntity entity = new StringEntity(sw.getBuffer().toString());
-
-                entity.setContentType("application/xml");
-                entity.setChunked(true);
-
-                putDeployment.setEntity(entity);
-
-                log.info("Executing request " + putDeployment.getRequestLine());
-                HttpResponse response = httpClient.execute(endpoint, putDeployment);
-                HttpEntity resEntity = response.getEntity();
-
-                System.out.println("----------------------------------------");
-                System.out.println(response.getStatusLine());
-                if (response.getStatusLine().getStatusCode() == 200) {
-
-                }
-                if (resEntity != null) {
-                    System.out.println("Response content length: " + resEntity.getContentLength());
-                    System.out.println("Chunked?: " + resEntity.isChunked());
-                }
-
+//                URI putDeploymentStructureURL = UriBuilder.fromPath(melaURL + "/cloudofferedservice/pricingscheme").build();
+//                HttpPut putDeployment = new HttpPut(putDeploymentStructureURL);
+//
+//                StringEntity entity = new StringEntity(sw.getBuffer().toString());
+//
+//                entity.setContentType("application/xml");
+//                entity.setChunked(true);
+//
+//                putDeployment.setEntity(entity);
+//
+//                log.info("Executing request " + putDeployment.getRequestLine());
+//                HttpResponse response = httpClient.execute(endpoint, putDeployment);
+//                HttpEntity resEntity = response.getEntity();
+//
+//                System.out.println("----------------------------------------");
+//                System.out.println(response.getStatusLine());
+//                if (response.getStatusLine().getStatusCode() == 200) {
+//
+//                }
+//                if (resEntity != null) {
+//                    System.out.println("Response content length: " + resEntity.getContentLength());
+//                    System.out.println("Chunked?: " + resEntity.isChunked());
+//                }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

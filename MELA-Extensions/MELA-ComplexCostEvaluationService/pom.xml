@@ -105,8 +105,15 @@
             <version>3.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
- 
         
+        <dependency>
+            <groupId>at.ac.tuwien.mela</groupId>
+            <artifactId>MELA-Common</artifactId>
+            <version>3.0-SNAPSHOT</version>
+            <type>jar</type>
+            <classifier>sources</classifier>
+        </dependency>
+  
         <dependency>
             <groupId>at.ac.tuwien.mela</groupId>
             <artifactId>MELA-DataService</artifactId>
@@ -129,6 +136,63 @@
             <classifier>sources</classifier>
         </dependency>
         
+        <dependency>
+            <groupId>at.ac.tuwien.quelle</groupId>
+            <artifactId>QUELLE-Extensions-Neo4JPersistenceAdapter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>jar</type>
+            <exclusions>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-access</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+        <dependency>
+            <groupId>at.ac.tuwien.quelle</groupId>
+            <artifactId>QUELLE-Extensions-Neo4JPersistenceAdapter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>jar</type>
+            <classifier>sources</classifier>
+            <exclusions>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-access</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+        
+        
+        <dependency>
+            <groupId>at.ac.tuwien.quelle</groupId>
+            <artifactId>QUELLE-Extensions-CloudServicesDescriptionParser</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>at.ac.tuwien.quelle</groupId>
+            <artifactId>QUELLE-Extensions-CloudServicesDescriptionParser</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>jar</type>
+            <classifier>sources</classifier>
+        </dependency>
+         
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>

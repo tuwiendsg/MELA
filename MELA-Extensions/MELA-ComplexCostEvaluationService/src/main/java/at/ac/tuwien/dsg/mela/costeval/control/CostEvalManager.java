@@ -27,26 +27,28 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathwa
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
-import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshots;
 import at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngine;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.descriptionParsers.CloudDescriptionParser;
+import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
+import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
 import org.json.simple.JSONArray;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -73,6 +75,7 @@ public class CostEvalManager {
 //    private MonitoredElement serviceConfiguration;
     @Autowired
     private InstantMonitoringDataAnalysisEngine instantMonitoringDataAnalysisEngine;
+
     @Autowired
     private CostEvalEngine costEvalEngine;
 
@@ -85,15 +88,26 @@ public class CostEvalManager {
     @Autowired
     private XmlConverter xmlConverter;
 
-    //TODO: persist this
-    private List<ServiceUnit> serviceUnits;
+    @Value("#{dataAccess}")
+    private DataAccess dataAccess;
+    
+    @Autowired
+    private ApplicationContext context;
 
-    {
-        serviceUnits = new ArrayList<ServiceUnit>();
-    }
+//    //TODO: persist this
+//    //TODO: transform this in a map so it can actually be indexed and searched fast.
+//    //Mam<CloudProviderUUID, ServiceUnit UUID, 
+//    private Map<UUID, Map<UUID, ServiceUnit>> serviceUnits;
+//
+//    {
+//        serviceUnits = new HashMap<>();
+//    }
 
     //in future cost casching should be done using persistence
     ServiceMonitoringSnapshot completeCost;
+
+    protected CostEvalManager() {
+    }
 
     @PostConstruct
     public void init() {
@@ -113,9 +127,24 @@ public class CostEvalManager {
 //        setInitialServiceConfiguration(configurationXMLRepresentation.getServiceConfiguration());
 //        setInitialCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
 //        setInitialRequirements(configurationXMLRepresentation.getRequirements());
+        updateCloudProvidersDescription();
     }
 
-    protected CostEvalManager() {
+    public void updateCloudProvidersDescription() {
+
+        List<CloudProvider> providers = new ArrayList<>();
+
+        // list all MELA datasources from application context
+        Map<String, CloudDescriptionParser> cloudParsers = context.getBeansOfType(CloudDescriptionParser.class);
+        for (String name : cloudParsers.keySet()) {
+            CloudDescriptionParser cloudDescriptionParser = cloudParsers.get(name);
+            log.debug("Using CloudDescriptionParser '{}': {}  to update cloud description", name, cloudDescriptionParser);
+            CloudProvider provider = cloudDescriptionParser.getCloudProviderDescription();
+            providers.add(provider);
+        }
+
+        CloudProviderDAO.persistCloudProviders(providers, dataAccess.getGraphDatabaseService());
+
     }
 
     public MonitoredElement getServiceConfiguration(String serviceID) {
@@ -131,14 +160,12 @@ public class CostEvalManager {
 //    private  void setInitialServiceConfiguration(MonitoredElement serviceConfiguration) {
 //        this.serviceConfiguration = serviceConfiguration;
 //    }
-    // actually removes all VMs and Virtual Clusters from the ServiceUnit and
-    // adds new ones.
-    public List<ServiceUnit> getServiceUnits() {
-        return serviceUnits;
+    public void addCloudProviders(List<CloudProvider> cloudProviders) {
+        CloudProviderDAO.persistCloudProviders(cloudProviders, dataAccess.getGraphDatabaseService());
     }
 
-    public void setServiceUnits(List<ServiceUnit> serviceUnits) {
-        this.serviceUnits = serviceUnits;
+    public void addCloudProvider(CloudProvider cloudProvider) {
+        CloudProviderDAO.persistCloudProvider(cloudProvider, dataAccess.getGraphDatabaseService());
     }
 
     public void updateServiceConfiguration(MonitoredElement serviceConfiguration) {
@@ -482,7 +509,14 @@ public class CostEvalManager {
             } while (true);
         }
 
-        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getLastMonSnapshotEnrichedWithCost(serviceUnits, allMonData);
+        List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+
+            return "{no pricing schemes}";
+        }
+
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getLastMonSnapshotEnrichedWithCost(cloudProviders, allMonData);
         if (completeCostSnapshot == null) {
             return "{nothing}";
         }
@@ -510,7 +544,14 @@ public class CostEvalManager {
             return "{no monitoring data}";
         }
 
-        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.enrichMonSnapshotWithInstantCostPerUsage(serviceUnits, monitoringSnapshot);
+        List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+
+            return "{no pricing schemes}";
+        }
+
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.enrichMonSnapshotWithInstantCostPerUsage(cloudProviders, monitoringSnapshot);
         if (completeCostSnapshot == null) {
             return "{nothing}";
         }
@@ -540,7 +581,15 @@ public class CostEvalManager {
                 }
             } while (true);
         }
-        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getTotalCost(serviceUnits, allMonData);;
+
+        List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+
+            return new MonitoredElementMonitoringSnapshot();
+        }
+
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getTotalCost(cloudProviders, allMonData);;
         MonitoredElementMonitoringSnapshot serviceSnapshot = completeCostSnapshot.getMonitoredData(new MonitoredElement(serviceID).withLevel(MonitoredElement.MonitoredElementLevel.SERVICE));
         return serviceSnapshot;
     }
@@ -564,7 +613,14 @@ public class CostEvalManager {
 //            } while (true);
 //        }
 //        if ((completeCost == null) || (allMonData.get(allMonData.size() - 1).getTimestampID() > completeCost.getTimestampID())) {
-        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getTotalCost(serviceUnits, allMonData);;
+        List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+
+            return "{no pricing schemes}";
+        }
+
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getTotalCost(cloudProviders, allMonData);;
         completeCostSnapshot.setTimestamp(allMonData.get(allMonData.size() - 1).getTimestamp());
         completeCostSnapshot.setTimestampID(allMonData.get(allMonData.size() - 1).getTimestampID());
         completeCost = completeCostSnapshot;
@@ -603,7 +659,16 @@ public class CostEvalManager {
             return "{no monitoring data}";
         }
 
-        CompositionRulesConfiguration compositionRulesConfiguration = costEvalEngine.createCompositionRulesForCostPerUsage(serviceUnits, monitoringSnapshot.getMonitoredService());
+        List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+
+            return "{no pricing schemes}";
+        }
+
+        Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServices = costEvalEngine.cloudProvidersToMap(cloudProviders);
+
+        CompositionRulesConfiguration compositionRulesConfiguration = costEvalEngine.createCompositionRulesForCostPerUsage(cloudOfferedServices, monitoringSnapshot.getMonitoredService());
         if (compositionRulesConfiguration == null) {
             return "{nothing}";
         }

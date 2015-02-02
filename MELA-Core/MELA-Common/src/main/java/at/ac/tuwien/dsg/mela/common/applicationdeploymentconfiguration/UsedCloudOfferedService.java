@@ -25,6 +25,7 @@ import at.ac.tuwien.dsg.mela.common.utils.xml.mappers.PropertiesAdapter;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -40,8 +41,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "UsedCloudOfferedServiceCfg")
 public class UsedCloudOfferedService implements Serializable {
 
-    @XmlAttribute(name = "id", required = true)
-    private Long id;
+    @XmlAttribute(name = "cloudProviderID", required = true)
+    private UUID cloudProviderID;
+
+    @XmlAttribute(name = "cloudProviderName", required = true)
+    private String cloudProviderName;
+
+    @XmlAttribute(name = "uuid", required = true)
+    private UUID id;
 
     @XmlAttribute(name = "name", required = true)
     private String name;
@@ -64,7 +71,34 @@ public class UsedCloudOfferedService implements Serializable {
     public UsedCloudOfferedService() {
     }
 
-    public UsedCloudOfferedService(Long id) {
+    public UsedCloudOfferedService(UUID cloudProviderID, String cloudProviderName, UUID id, String name) {
+        this.cloudProviderID = cloudProviderID;
+        this.cloudProviderName = cloudProviderName;
+        this.id = id;
+        this.name = name;
+    }
+
+    public UUID getCloudProviderID() {
+        return cloudProviderID;
+    }
+
+    public void setCloudProviderID(UUID cloudProviderID) {
+        this.cloudProviderID = cloudProviderID;
+    }
+
+    public String getCloudProviderName() {
+        return cloudProviderName;
+    }
+
+    public void setCloudProviderName(String cloudProviderName) {
+        this.cloudProviderName = cloudProviderName;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -74,19 +108,6 @@ public class UsedCloudOfferedService implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public UsedCloudOfferedService withId(Long id) {
-        this.id = id;
-        return this;
     }
 
     public UsedCloudOfferedService withName(String name) {
@@ -134,6 +155,31 @@ public class UsedCloudOfferedService implements Serializable {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    public UsedCloudOfferedService withCloudProviderID(final UUID cloudProviderID) {
+        this.cloudProviderID = cloudProviderID;
+        return this;
+    }
+
+    public UsedCloudOfferedService withCloudProviderName(final String cloudProviderName) {
+        this.cloudProviderName = cloudProviderName;
+        return this;
+    }
+
+    public UsedCloudOfferedService withId(final UUID id) {
+        this.id = id;
+        return this;
+    }
+
+    public UsedCloudOfferedService withQualityProperties(final Map<Metric, MetricValue> qualityProperties) {
+        this.qualityProperties = qualityProperties;
+        return this;
+    }
+
+    public UsedCloudOfferedService withResourceProperties(final Map<Metric, MetricValue> resourceProperties) {
+        this.resourceProperties = resourceProperties;
+        return this;
     }
 
 }

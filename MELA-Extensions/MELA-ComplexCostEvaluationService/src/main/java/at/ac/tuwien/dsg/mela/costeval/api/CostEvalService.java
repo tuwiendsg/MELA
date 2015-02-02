@@ -138,8 +138,6 @@ public class CostEvalService {
     public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getLatestMonitoringDataEnrichedWithCostINJSON(serviceID);
     }
-    
-   
 
     /**
      * @return the service structure containing all virtual machines currently
@@ -220,14 +218,15 @@ public class CostEvalService {
     @Path("/cloudofferedservice/pricingscheme")
     @Consumes("application/xml")
     public void putPricingScheme(CloudServicesSpecification cloudServicesSpecification) {
-        costEvalManager.setServiceUnits(cloudServicesSpecification.getServiceUnits());
+        costEvalManager.addCloudProviders(cloudServicesSpecification.getCloudProviders());
     }
 
     @GET
     @Path("/cloudofferedservice/pricingscheme")
     @Produces("application/xml")
     public CloudServicesSpecification getPricingScheme() {
-        return new CloudServicesSpecification().withServiceUnits(costEvalManager.getServiceUnits());
+        throw new UnsupportedOperationException("must implement");
+//        return new CloudServicesSpecification().withServiceUnits(costEvalManager.getServiceUnits());
     }
 
     @DELETE
@@ -256,17 +255,13 @@ public class CostEvalService {
     public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalServiceCostJSON(serviceID);
     }
-    
-     
+
     @GET
     @Path("/{serviceID}/cost/usage/instant/json")
     @Produces("application/json")
     public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getInstantCostPerUsageJSON(serviceID);
     }
-    
-  
-    
 
     @GET
     @Path("/{serviceID}/cost/total/detailed")

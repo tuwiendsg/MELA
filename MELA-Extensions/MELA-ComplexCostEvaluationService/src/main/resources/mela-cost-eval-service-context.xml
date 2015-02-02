@@ -16,6 +16,17 @@
     <context:component-scan base-package="at.ac.tuwien.dsg.mela"/>
     
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
+    
+    <bean id="dataAccess" class="at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess">
+        <constructor-arg name="databaseLocation" value="/tmp/cloud-providers-pricing-scheme"/>
+    </bean>
+    
+    
+    <bean id="amazonFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.AmazonCloudFileDescriptionParser">
+        <property name="descriptionFile" value="file:./config/default/cloud_pricing_scheme.xml"/>
+    </bean>
+    
+    
 
     <jaxrs:server id="customerService" address="/">
         <jaxrs:serviceBeans>
