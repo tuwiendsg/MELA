@@ -41,6 +41,7 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionR
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Relationship;
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
+import at.ac.tuwien.dsg.mela.costeval.model.ServiceUsageSnapshot;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
@@ -58,6 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import static org.neo4j.helpers.collection.Iterables.cache;
 
 /**
  *
@@ -377,13 +379,12 @@ public class CostEvalEngine {
     }
 
     public Map<UUID, Map<UUID, ServiceUnit>> cloudProvidersToMap(List<CloudProvider> cloudProviders) {
-        
+
         Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServices = new HashMap<UUID, Map<UUID, ServiceUnit>>();
-        
-        
+
         for (CloudProvider cloudProvider : cloudProviders) {
             Map<UUID, ServiceUnit> cloudUnits = new HashMap<UUID, ServiceUnit>();
-            
+
             cloudOfferedServices.put(cloudProvider.getUuid(), cloudUnits);
 
             for (ServiceUnit unit : cloudProvider.getServiceUnits()) {
@@ -1082,6 +1083,680 @@ public class CostEvalEngine {
 
         return compositionRulesConfiguration;
 
+    }
+
+    /**
+     * So, I want to compute PERIODIC COST for the CURRENT INSTANT service
+     * structure So, to monitor how much am I paying NOW for PERIODIC COST, and
+     * for cost PER USAGE For this, I cache things, to avoid computing all the
+     * history of usage
+     *
+     * @param cloudOfferedServices
+     * @param monData new monitoring data from the cached period
+     * @param previouselyDeterminedUsage cached service usage so far
+     * @return
+     */
+    public ServiceUsageSnapshot evaluateServiceUsageWithCurrentStructure(Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServices, List<ServiceMonitoringSnapshot> monData, ServiceUsageSnapshot previouselyDeterminedUsage) {
+
+        if (monData == null || monData.isEmpty()) {
+            return new ServiceUsageSnapshot();
+        }
+
+        //for computing instant PERIODIC COST for this instant (with these currently used cloud services), i need to consider only the current used cloud services
+        ServiceMonitoringSnapshot currentMonitoringSnapshot = monData.remove(monData.size() - 1);
+        ServiceMonitoringSnapshot cachedMonitoringSnapshot = null;
+
+        //if we have not cached anything before
+        if (previouselyDeterminedUsage == null || previouselyDeterminedUsage.getTotalUsageSoFar().getMonitoredData().isEmpty()) {
+            if (!monData.isEmpty()) {
+                cachedMonitoringSnapshot = monData.remove(0);
+                previouselyDeterminedUsage = new ServiceUsageSnapshot()
+                        .withTotalUsageSoFar(cachedMonitoringSnapshot)
+                        .withtLastUpdatedTimestampID(cachedMonitoringSnapshot.getTimestampID());
+            } else {
+                return previouselyDeterminedUsage;
+            }
+        } else {
+            cachedMonitoringSnapshot = previouselyDeterminedUsage.getTotalUsageSoFar();
+        }
+
+        List<Metric> createdMetrics = new ArrayList<>();
+
+        //work on VM level now. So for example, one VM can be IN_CONJUNCTION with another VM. Or one VM could have 3 cloudOfferedServices : IaaS VM, PaaS OS + MaaS Monitoring
+        //
+        //so, we have 2 types of cost, PERIODIC, and PER USAGE
+        //usually per USAGE is payed according to some interval, such as free first GB, rest 0.12, etc
+        //thus, for each USAGE cost metric, we compute for each snapshot its usage so far, and insert in the snapshot the instant cost rate
+        Map<MonitoredElement, Map<Metric, MetricValue>> usageSoFar = new ConcurrentHashMap<MonitoredElement, Map<Metric, MetricValue>>();
+        //fill this up with old data from old mon snapshot
+        //holds timestamp in which each mon element appears in the service
+        //        Map<MonitoredElement, Long> cloudOfferedServiceInstantiationTimes = new ConcurrentHashMap<MonitoredElement, Long>();
+
+        List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
+        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.VM);
+        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE);
+        //compute cost for each service unit, topology and service for each snapshot
+//        CompositionRulesBlock costCompositionRules = new CompositionRulesBlock();
+//        CompositionRulesBlock historicalCostCompositionRules = new CompositionRulesBlock();
+
+        //add cached monitoring data in the usage so far
+        for (MonitoredElement.MonitoredElementLevel level : levelsInOrder) {
+            for (Map.Entry<MonitoredElement, MonitoredElementMonitoringSnapshot> monitoredLevelCachedUsageData : cachedMonitoringSnapshot.getMonitoredData(level).entrySet()) {
+                usageSoFar.put(monitoredLevelCachedUsageData.getKey(), monitoredLevelCachedUsageData.getValue().getMonitoredData());
+            }
+
+        }
+
+        for (int i = 0; i < monData.size(); i++) {
+            ServiceMonitoringSnapshot monitoringSnapshot = monData.get(i);
+
+            for (MonitoredElement.MonitoredElementLevel level : levelsInOrder) {
+
+                Map<MonitoredElement, MonitoredElementMonitoringSnapshot> vmsData = monitoringSnapshot.getMonitoredData(level);
+
+                if (vmsData == null) {
+                    log.error("No monitoring data for service" + monitoringSnapshot.getMonitoredService() + " at level " + level.toString() + " timestamp " + monitoringSnapshot.getTimestampID());
+                    continue;
+                }
+
+                for (MonitoredElement monitoredElement : vmsData.keySet()) {
+
+                    //if just appeared, add monitored element VM in the instatiationTimes
+                    //update used cloud offered services, i.e., add newly added ones, and remove deleted ones
+                    Map<UsedCloudOfferedService, Long> monitoredElementUsedServicesLifetimes = previouselyDeterminedUsage.getServicesLifetime(monitoredElement);
+
+                    List<UsedCloudOfferedService> monitoredElementUsedServices = monitoredElement.getCloudOfferedServices();
+
+                    //remove deallocated services
+                    Iterator<UsedCloudOfferedService> it = monitoredElementUsedServicesLifetimes.keySet().iterator();
+                    while (it.hasNext()) {
+                        UsedCloudOfferedService cloudOfferedService = it.next();
+                        //if used service not used anymore, remove it from the map
+                        if (!monitoredElementUsedServices.contains(cloudOfferedService)) {
+                            it.remove();
+                        }
+
+                    }
+
+                    //add newly allocated services
+                    for (UsedCloudOfferedService ucos : monitoredElementUsedServices) {
+                        if (!monitoredElementUsedServicesLifetimes.containsKey(ucos)) {
+                            previouselyDeterminedUsage.withInstantiationTimes(monitoredElement, ucos, Long.parseLong(monitoringSnapshot.getTimestamp()));
+                        }
+                    }
+
+                    for (UsedCloudOfferedService service : monitoredElement.getCloudOfferedServices()) {
+                        //get service cost scheme
+                        List<CostFunction> costFunctions = null;
+
+                        if (cloudOfferedServices.containsKey(service.getCloudProviderID())) {
+                            Map<UUID, ServiceUnit> cloudServices = cloudOfferedServices.get(service.getCloudProviderID());
+                            if (cloudServices.containsKey(service.getId())) {
+                                ServiceUnit cloudService = cloudServices.get(service.getId());
+                                costFunctions = cloudService.getCostFunctions();
+                            } else {
+                                log.warn("Cloud service {} with UUID {} of cloud provider {} with UUID {} not present in cloud offered services with size {}", new Object[]{
+                                    service.getName(), service.getId(), service.getCloudProviderName(), service.getCloudProviderID(), "" + cloudServices.size()});
+                            }
+
+                        } else {
+                            log.warn("Cloud provider {} with UUID {} not present in cloud offered services {}", new Object[]{service.getCloudProviderName(), service.getCloudProviderID(), "" + cloudOfferedServices.keySet().size()});
+                        }
+
+                        if (costFunctions == null) {
+                            log.warn("UsedCloudOfferedService with ID {} not found in cloud offered services", service.getId());
+                        } else {
+
+                            //from the cost functions, we extratc those that should be applied.
+                            //maybe some do not quality to be apply as the service does not fulfill application requirements
+                            List<CostFunction> costFunctionsToApply = new ArrayList<CostFunction>();
+
+                            for (CostFunction cf : costFunctions) {
+                                //if cost function is to be applied no mather what (does not depend on the service being used in conjunction with another service)
+                                //means getAppliedInConjunctionWith() returns empty 
+                                if (cf.getAppliedInConjunctionWith().isEmpty()) {
+                                    costFunctionsToApply.add(cf);
+                                } else {
+                                //else need to check if it is used in conjunction with the mentioned
+
+                                    //can be diff entities: For example, VM type A costs X if has RAM 1, CPU 2, and used with Storage Y
+                                    List<ServiceUnit> tobeAppliedInConjunctionWithServiceUnit = cf.getAppliedInConjunctionWithServiceUnit();
+                                    List<Resource> tobeAppliedInConjunctionWithResource = cf.getAppliedInConjunctionWithResource();
+                                    List<Quality> tobeAppliedInConjunctionWithQuality = cf.getAppliedInConjunctionWithQuality();
+
+                                    //NEED TO MATCH Resources
+                                    Map<Metric, MetricValue> serviceResourceProperties = service.getResourceProperties();
+                                    //check if ALL properties match
+                                    //reduce all Resource to one large property map
+                                    Map<Metric, MetricValue> tobeAppliedInConjunctionWithResourceProperties = new ConcurrentHashMap<Metric, MetricValue>();
+                                    for (Resource r : tobeAppliedInConjunctionWithResource) {
+                                        tobeAppliedInConjunctionWithResourceProperties.putAll(r.getProperties());
+                                    }
+
+                                    boolean resourcesMatch = true;
+
+                                    if (tobeAppliedInConjunctionWithResourceProperties.size() <= serviceResourceProperties.size()) {
+                                        for (Metric m : tobeAppliedInConjunctionWithResourceProperties.keySet()) {
+                                            if (serviceResourceProperties.containsKey(m)) {
+                                                if (tobeAppliedInConjunctionWithResourceProperties.get(m).equals(serviceResourceProperties.get(m))) {
+                                                    //good
+                                                } else {
+                                                    //no match
+                                                    resourcesMatch = false;
+                                                    break;
+                                                }
+                                            } else {
+                                                //no match
+                                                resourcesMatch = false;
+                                                break;
+                                            }
+                                        }
+                                        //if we reached here with no break, then we have a match and apply cost
+
+                                    } else {
+                                        resourcesMatch = false;
+                                        //no match
+                                    }
+
+                                    //NEED TO MATCH Quality
+                                    Map<Metric, MetricValue> serviceQualityProperties = service.getQualityProperties();
+                                    Map<Metric, MetricValue> tobeAppliedInConjunctionWithQualityProperties = new ConcurrentHashMap<Metric, MetricValue>();
+                                    for (Quality q : tobeAppliedInConjunctionWithQuality) {
+                                        tobeAppliedInConjunctionWithResourceProperties.putAll(q.getProperties());
+                                    }
+
+                                    boolean qualityMatch = true;
+
+                                    if (tobeAppliedInConjunctionWithQualityProperties.size() <= serviceQualityProperties.size()) {
+                                        for (Metric m : tobeAppliedInConjunctionWithQualityProperties.keySet()) {
+                                            if (serviceQualityProperties.containsKey(m)) {
+                                                if (tobeAppliedInConjunctionWithQualityProperties.get(m).equals(serviceQualityProperties.get(m))) {
+                                                    //good
+                                                } else {
+                                                    //no match
+                                                    qualityMatch = false;
+                                                    break;
+                                                }
+                                            } else {
+                                                //no match
+                                                qualityMatch = false;
+                                                break;
+                                            }
+                                        }
+                                        //if we reached here with no break, then we have a match and apply cost
+
+                                    } else {
+                                        qualityMatch = false;
+                                        //no match
+                                    }
+
+                                    //NEED TO MATCH InConjunctionWith other services
+                                    boolean serviceUnitInConjunctionMatch = true;
+                                    //if empty vm is not related to anything
+                                    Collection<Relationship> relationships = monitoredElement.getRelationships(Relationship.RelationshipType.InConjunctionWith);
+                                    if ((!tobeAppliedInConjunctionWithServiceUnit.isEmpty()) && relationships.isEmpty()) {
+                                        serviceUnitInConjunctionMatch = false;
+                                    } else {
+                                        //here we need to check if used in conjunction with the right cloud service
+
+                                        if (tobeAppliedInConjunctionWithServiceUnit.size() <= relationships.size()) {
+
+                                            for (ServiceUnit unit : tobeAppliedInConjunctionWithServiceUnit) {
+                                                boolean unitMatched = false;
+                                                for (Relationship r : relationships) {
+                                                    if (r.getTo().getName().equals(unit.getName())) {
+                                                        unitMatched = true;
+                                                    }
+                                                }
+                                                //if we have not found that even one in conjunction was not found, then we do not apply cost scheme
+                                                if (!unitMatched) {
+                                                    serviceUnitInConjunctionMatch = false;
+                                                    break;
+                                                }
+                                            }
+
+                                        } else {
+                                            //not enough in conjunction => no match
+                                            serviceUnitInConjunctionMatch = false;
+                                        }
+
+                                    }
+
+                                    //if we have all resource, quality, other services to be applied
+                                    //in conjunction with, then apply cost scheme
+                                    if (resourcesMatch && qualityMatch && serviceUnitInConjunctionMatch) {
+                                        costFunctionsToApply.add(cf);
+                                    }
+
+                                }
+
+                            }
+                            //apply cost functions
+
+                            Map<Metric, MetricValue> vmUsageSoFar = usageSoFar.get(monitoredElement);
+
+                            //start with USAGE type of cost, easier to apply. 
+                            for (CostFunction cf : costFunctionsToApply) {
+                                for (CostElement element : cf.getCostElements()) {
+
+                                    if (element.getType().equals(CostElement.Type.USAGE)) {
+                                        //if we just added the VM, so we do not have any historical usage so far
+                                        MonitoredElementMonitoringSnapshot vmMonSnapshot = vmsData.get(monitoredElement);
+
+                                        MetricValue value = vmMonSnapshot.getMetricValue(element.getCostMetric());
+                                        if (value != null) {
+
+                                            if (!vmUsageSoFar.containsKey(element.getCostMetric())) {
+                                                vmUsageSoFar.put(element.getCostMetric(), value.clone());
+                                                //enrich Monitoring Snapshot with COST 
+                                                MetricValue costValue = value.clone();
+                                                costValue.multiply(element.getCostForCostMetricValue(value));
+
+                                                Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
+
+                                                if (!createdMetrics.contains(cost)) {
+                                                    createdMetrics.add(cost);
+                                                }
+
+                                                vmMonSnapshot.putMetric(cost, costValue);
+
+                                            } else {
+                                                //else we need to sum up usage
+                                                MetricValue usageSoFarForMetric = vmUsageSoFar.get(element.getCostMetric());
+
+                                                //we should compute estimated usage over time not captured by monitoring points:
+                                                //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
+                                                //depending on the measurement unit of the measured metric
+                                                //I.E. a pkts_out/s will be multiplied with 60
+                                                //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
+                                                //this works as we assume we target only metrics which change in time using PER USAGE cost functions
+                                                String timePeriod = "s";
+
+                                                if (element.getCostMetric().getMeasurementUnit().contains("/")) {
+                                                    timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+                                                }
+
+                                                //check amount of time in millis between two measurement units
+                                                Long previousTimestamp = Long.parseLong(monitoringSnapshot.getTimestamp());;
+                                                Long currentTimestamp = Long.parseLong(monitoringSnapshot.getTimestamp());
+                                                Long timeIntervalInMillis = 0l;
+                                                if (i > 0) {
+                                                    previousTimestamp = Long.parseLong(monData.get(i - 1).getTimestamp());
+                                                    timeIntervalInMillis = (currentTimestamp - previousTimestamp) / 1000;
+                                                }
+
+                                                //convert to seconds
+                                                Long periodsBetweenPrevAndCurrentTimestamp = 0l;
+
+                                                //must standardise these somehow
+                                                if (timePeriod.equals("s")) {
+                                                    periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
+                                                } else if (timePeriod.equals("m")) {
+                                                    periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
+                                                } else if (timePeriod.equals("h")) {
+                                                    periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 3600;
+                                                } else if (timePeriod.equals("d")) {
+                                                    periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
+                                                }
+
+                                                //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up hsitorical usage by itself
+                                                if (periodsBetweenPrevAndCurrentTimestamp == null) {
+
+                                                    MetricValue costValue = usageSoFarForMetric.clone();
+                                                    costValue.setValue(element.getCostForCostMetricValue(value));
+                                                    Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
+
+                                                    if (!createdMetrics.contains(cost)) {
+                                                        createdMetrics.add(cost);
+                                                    }
+
+                                                    vmMonSnapshot.putMetric(cost, costValue);
+                                                } else if (periodsBetweenPrevAndCurrentTimestamp <= 1) {
+                                                    usageSoFarForMetric.sum(value);
+                                                    //enrich Monitoring Snapshot with COST 
+                                                    MetricValue costValue = usageSoFarForMetric.clone();
+                                                    costValue.multiply(element.getCostForCostMetricValue(value));
+                                                    Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
+
+                                                    if (!createdMetrics.contains(cost)) {
+                                                        createdMetrics.add(cost);
+                                                    }
+
+                                                    vmMonSnapshot.putMetric(cost, costValue);
+                                                } else {
+                                                    //if more than one period between recordings, need to compute usage for non-monitored periods
+                                                    //we compute average for intermediary
+                                                    MonitoredElementMonitoringSnapshot prevVMData = monData.get(i - 1).getMonitoredData(monitoredElement);
+
+                                                    MetricValue prevValue = prevVMData.getMetricValue(element.getCostMetric());
+                                                    MetricValue average = prevValue.clone();
+                                                    prevValue.sum(value);
+                                                    average.divide(2);
+                                                    //add average for intermediary monitoring points
+                                                    //TODO: add option for adding other plug-ins for filling up missing data, and computing accuracy of estimation
+                                                    average.multiply(periodsBetweenPrevAndCurrentTimestamp.intValue());
+                                                    //add monitored points
+                                                    average.sum(prevValue);
+                                                    average.sum(value);
+                                                    usageSoFarForMetric.setValue(average.getValue());
+                                                    MetricValue costValue = usageSoFarForMetric.clone();
+                                                    costValue.multiply(element.getCostForCostMetricValue(value));
+                                                    Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
+
+                                                    if (!createdMetrics.contains(cost)) {
+                                                        createdMetrics.add(cost);
+                                                    }
+
+                                                    vmMonSnapshot.putMetric(cost, costValue);
+                                                }
+
+                                            }
+                                        } else {
+                                            log.error("Cost metric {} was not found on VM {}", element.getCostMetric().getName(), monitoredElement.getId());
+                                        }
+                                    } else if (element.getType().equals(CostElement.Type.PERIODIC)) {
+                                        MonitoredElementMonitoringSnapshot vmMonSnapshot = vmsData.get(monitoredElement);
+
+                                        MetricValue value = vmMonSnapshot.getMetricValue(element.getCostMetric());
+                                        if (value != null) {
+
+                                            //we should compute estimated usage over time not captured by monitoring points:
+                                            //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
+                                            //depending on the measurement unit of the measured metric
+                                            //I.E. a pkts_out/s will be multiplied with 60
+                                            //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
+                                            //this works as we assume we target only metrics which change in time using PER USAGE cost functions
+                                            String timePeriod = "s";
+
+                                            if (element.getCostMetric().getMeasurementUnit().contains("/")) {
+                                                timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+                                            }
+
+                                            for (UsedCloudOfferedService ucos : monitoredElement.getCloudOfferedServices()) {
+
+                                                //check amount of time in millis between two measurement units
+                                                Long instantiationTimestamp = monitoredElementUsedServicesLifetimes.get(ucos);
+                                                Long currentTimestamp = Long.parseLong(monitoringSnapshot.getTimestamp());
+
+                                                //convert to seconds
+                                                Long timeIntervalInMillis = (currentTimestamp - instantiationTimestamp) / 1000;
+
+                                                long costPeriodsFromCreation = 0;
+
+                                                //must standardise these somehow
+                                                if (timePeriod.equals("s")) {
+                                                    costPeriodsFromCreation = timeIntervalInMillis;
+                                                } else if (timePeriod.equals("m")) {
+                                                    costPeriodsFromCreation = timeIntervalInMillis / 60;
+                                                } else if (timePeriod.equals("h")) {
+                                                    costPeriodsFromCreation = timeIntervalInMillis / 3600;
+                                                } else if (timePeriod.equals("d")) {
+                                                    costPeriodsFromCreation = timeIntervalInMillis / 86400;
+                                                }
+
+                                                MetricValue totalCostFromCreation = new MetricValue(costPeriodsFromCreation * element.getCostForCostMetricValue(new MetricValue(costPeriodsFromCreation)));
+
+                                                Metric cost = new Metric("cost_" + element.getCostMetric().getName() + "_for_" + ucos.getName(), "costUnits/" + timePeriod, Metric.MetricType.COST);
+
+                                                if (!createdMetrics.contains(cost)) {
+                                                    createdMetrics.add(cost);
+                                                }
+
+                                                vmMonSnapshot.putMetric(cost, totalCostFromCreation);
+
+                                            }
+                                        }
+                                    } else {
+                                        log.error("Cost metric {} was not found on VM {}", element.getCostMetric().getName(), monitoredElement.getId());
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+//                for (Metric created : createdMetrics) {
+//                    //service unit rules
+//                    if (level.equals(MonitoredElement.MonitoredElementLevel.VM)) {
+//
+//                        //instant snapshot composition rule 
+//                        {
+//                            CompositionRule compositionRule = new CompositionRule();
+//                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+//                            CompositionOperation compositionOperation = new CompositionOperation();
+//                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.VM);
+//                            compositionOperation.setTargetMetric(created);
+//                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//                            compositionRule.setOperation(compositionOperation);
+//
+//                            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                costCompositionRules.addCompositionRule(compositionRule);
+//                            }
+//                        }
+//
+//                        //historical composition rule
+//                        {
+//                            CompositionRule compositionRule = new CompositionRule();
+//                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+//                            CompositionOperation compositionOperation = new CompositionOperation();
+//                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//                            compositionOperation.setTargetMetric(created);
+//                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//                            compositionRule.setOperation(compositionOperation);
+//
+//                            if (!historicalCostCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                historicalCostCompositionRules.addCompositionRule(compositionRule);
+//                            }
+//                        }
+//
+//                    }
+//                    //service topology rules
+//                    if (level.equals(MonitoredElement.MonitoredElementLevel.VM) || level.equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
+//                        //instant snapshot composition rule 
+//                        {
+//                            CompositionRule compositionRule = new CompositionRule();
+//                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+//                            CompositionOperation compositionOperation = new CompositionOperation();
+//                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//                            compositionOperation.setTargetMetric(created);
+//                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//                            compositionRule.setOperation(compositionOperation);
+//
+//                            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                costCompositionRules.addCompositionRule(compositionRule);
+//                            }
+//                        }
+//                        //historical composition rule
+//                        {
+//                            CompositionRule compositionRule = new CompositionRule();
+//                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+//                            CompositionOperation compositionOperation = new CompositionOperation();
+//                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//                            compositionOperation.setTargetMetric(created);
+//                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//                            compositionRule.setOperation(compositionOperation);
+//
+//                            if (!historicalCostCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                historicalCostCompositionRules.addCompositionRule(compositionRule);
+//                            }
+//
+//                        }
+//
+//                    }
+//                    //service rules
+//                    if (level.equals(MonitoredElement.MonitoredElementLevel.VM) || level.equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
+//                            || level.equals(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)) {
+//
+//                        //instant snapshot composition rule 
+//                        {
+//                            CompositionRule compositionRule = new CompositionRule();
+//                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+//                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+//                            CompositionOperation compositionOperation = new CompositionOperation();
+//                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//                            compositionOperation.setTargetMetric(created);
+//                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//                            compositionRule.setOperation(compositionOperation);
+//
+//                            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                costCompositionRules.addCompositionRule(compositionRule);
+//                            }
+//                        }
+//                        //historical composition rule
+//                        {
+//
+//                            CompositionRule compositionRule = new CompositionRule();
+//                            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+//                            compositionRule.setResultingMetric(new Metric(created.getName(), created.getMeasurementUnit(), Metric.MetricType.COST));
+//                            CompositionOperation compositionOperation = new CompositionOperation();
+//                            compositionOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+//                            compositionOperation.setTargetMetric(created);
+//                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//                            compositionRule.setOperation(compositionOperation);
+//
+//                            if (!historicalCostCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                historicalCostCompositionRules.addCompositionRule(compositionRule);
+//                            }
+//
+//                        }
+//
+//                    }
+//
+//                }
+//            }
+//        }
+//
+//        //rules creating total cost
+//        //service unit rules
+//        {
+//            CompositionRule compositionRule = new CompositionRule();
+//            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//            compositionRule.setResultingMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//
+//            CompositionOperation compositionOperation = new CompositionOperation();
+//            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//            compositionRule.setOperation(compositionOperation);
+//
+//            for (Metric m : createdMetrics) {
+//
+//                CompositionOperation subOperation = new CompositionOperation();
+//                subOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.VM);
+//                subOperation.setOperationType(CompositionOperationType.SUM);
+//                subOperation.setTargetMetric(m);
+//
+//                compositionOperation.addCompositionOperation(subOperation);
+//            }
+//
+//            for (Metric m : createdMetrics) {
+//
+//                CompositionOperation subOperation = new CompositionOperation();
+//                subOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//                subOperation.setOperationType(CompositionOperationType.KEEP);
+//                subOperation.setTargetMetric(m);
+//
+//                compositionOperation.addCompositionOperation(subOperation);
+//            }
+//
+//            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                costCompositionRules.addCompositionRule(compositionRule);
+//            }
+//
+//        }
+//
+//        //service topology rules
+//        {
+//            CompositionRule compositionRule = new CompositionRule();
+//            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//            compositionRule.setResultingMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//
+//            CompositionOperation compositionOperation = new CompositionOperation();
+//            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//            compositionRule.setOperation(compositionOperation);
+//
+//            {
+//
+//                CompositionOperation subOperation = new CompositionOperation();
+//                subOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//                subOperation.setOperationType(CompositionOperationType.SUM);
+//                subOperation.setTargetMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//
+//                compositionOperation.addCompositionOperation(subOperation);
+//            }
+//            for (Metric m : createdMetrics) {
+//
+//                CompositionOperation subOperation = new CompositionOperation();
+//                subOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//                subOperation.setOperationType(CompositionOperationType.KEEP);
+//                subOperation.setTargetMetric(m);
+//
+//                compositionOperation.addCompositionOperation(subOperation);
+//            }
+//
+//            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                costCompositionRules.addCompositionRule(compositionRule);
+//            }
+//
+//        }
+//
+//        //service rules
+//        {
+//            CompositionRule compositionRule = new CompositionRule();
+//            compositionRule.setTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+//            compositionRule.setResultingMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//
+//            CompositionOperation compositionOperation = new CompositionOperation();
+//            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//            compositionRule.setOperation(compositionOperation);
+//
+//            {
+//
+//                CompositionOperation subOperation = new CompositionOperation();
+//                subOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//                subOperation.setOperationType(CompositionOperationType.SUM);
+//                subOperation.setTargetMetric(new Metric("cost_total", "costUnits", Metric.MetricType.COST));
+//
+//                compositionOperation.addCompositionOperation(subOperation);
+//            }
+//            for (Metric m : createdMetrics) {
+//
+//                CompositionOperation subOperation = new CompositionOperation();
+//                subOperation.setMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
+//                subOperation.setOperationType(CompositionOperationType.KEEP);
+//                subOperation.setTargetMetric(m);
+//
+//                compositionOperation.addCompositionOperation(subOperation);
+//            }
+//
+//            if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                costCompositionRules.addCompositionRule(compositionRule);
+//            }
+//
+//        }
+//
+//        CompositionRulesConfiguration compositionRulesConfiguration = new CompositionRulesConfiguration();
+//        compositionRulesConfiguration.setHistoricDataAggregationRules(historicalCostCompositionRules);
+//        compositionRulesConfiguration.setMetricCompositionRules(costCompositionRules);
+//        ServiceMonitoringSnapshot monitoringSnapshot = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, ms);
+                //
+//        tre sa cache 1: monitoring snapshot
+//                     2. composition rules sa pot calcula total? sau nu imi trebe?
+//        return compositionRulesConfiguration;
+//                
+//                tre sa cache 1: monitoring snapshot . am pus timestamp pe ea, tre acuma cached, (de manager cred)
+//                si trebe retrieved etc
+            }
+        }
+        ServiceMonitoringSnapshot sms = monData.get(monData.size() - 1);
+        previouselyDeterminedUsage.withTotalUsageSoFar(sms);
+        previouselyDeterminedUsage.withtLastUpdatedTimestampID(sms.getTimestampID());
+        return previouselyDeterminedUsage;
     }
 
     public CompositionRulesConfiguration createCompositionRulesForCostPerPeriod(final List<ServiceUnit> cloudOfferedServices, final MonitoredElement monitoredElement) {

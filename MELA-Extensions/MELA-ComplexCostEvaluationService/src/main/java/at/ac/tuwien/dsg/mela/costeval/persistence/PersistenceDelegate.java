@@ -28,12 +28,24 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import at.ac.tuwien.dsg.mela.costeval.model.ServiceUsageSnapshot;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
 /**
@@ -47,8 +59,20 @@ public class PersistenceDelegate {
     @Autowired
     private PersistenceSQLAccess persistenceSQLAccess;
 
+    @Value("#{melaDBConnector}")
+    private DataSource dataSource;
+
+    protected JdbcTemplate jdbcTemplate;
+
     public PersistenceDelegate() {
     }
+
+    @PostConstruct
+    public void init() {
+        log.debug("Creating new JdbcTemplate with datasource {}", dataSource);
+        jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+    
 
     public void writeElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
         try {
@@ -107,7 +131,7 @@ public class PersistenceDelegate {
             Integer lastTimestampID = (monitoringSnapshot == null) ? Integer.MAX_VALUE : monitoringSnapshot.getTimestampID();
 
             boolean spaceUpdated = false;
-            
+
             //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
             do {
                 //gets data after the supplied timestamp
@@ -139,7 +163,7 @@ public class PersistenceDelegate {
             } while (!dataFromTimestamp.isEmpty());
 
             //persist cached space
-            if(spaceUpdated){
+            if (spaceUpdated) {
                 this.writeElasticitySpace(space, monitoringSequenceID);
             }
         }
@@ -214,10 +238,8 @@ public class PersistenceDelegate {
     public List<ServiceMonitoringSnapshot> extractMonitoringData(String monitoringSequenceID) {
         return persistenceSQLAccess.extractMonitoringData(monitoringSequenceID);
 
-        
     }
 
-    
     public List<Metric> getAvailableMetrics(MonitoredElement monitoredElement, String monitoringSequenceID) {
         return persistenceSQLAccess.getAvailableMetrics(monitoredElement, monitoringSequenceID);
     }
@@ -233,6 +255,65 @@ public class PersistenceDelegate {
 
     public List<String> getMonitoringSequencesIDs() {
         return persistenceSQLAccess.getMonitoringSequencesIDs();
+    }
+
+    //    CaschedHistoricalUsage (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int,
+    //    data  LONGBLOB, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
+    public ServiceUsageSnapshot extractCachedServiceUsage(String serviceID) {
+        String sql = "SELECT CaschedHistoricalUsage.timestampID, CaschedHistoricalUsage.data from CaschedHistoricalUsage where CaschedHistoricalUsage.monSeqID = (?);";
+        RowMapper<ServiceUsageSnapshot> rowMapper = new RowMapper<ServiceUsageSnapshot>() {
+            public ServiceUsageSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        List<ServiceUsageSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots.get(0);
+        }
+    }
+
+    public void persistCachedServiceUsage(String serviceID, ServiceUsageSnapshot serviceUsageSnapshot) {
+
+        //delete old cached
+        {
+            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
+            jdbcTemplate.update(sql, serviceID);
+        }
+        {
+            String sql = "INSERT INTO CaschedHistoricalUsage (monseqid, timestampID, data) VALUES (?, ?, ?)";
+            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
+        }
+
+    }
+
+    private ServiceUsageSnapshot mapToServiceUsageSnapshot(ResultSet rs) throws SQLException {
+        int sTimestamp = rs.getInt(1);
+        Object data = rs.getObject(2);
+
+        //if array of bytes as mysql returns
+        if (data instanceof byte[]) {
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
+                ObjectInput in = new ObjectInputStream(bis);
+                ServiceUsageSnapshot snapshot = (ServiceUsageSnapshot) in.readObject();
+                snapshot.setLastUpdatedTimestampID(sTimestamp);
+                return snapshot;
+            } catch (ClassNotFoundException ex) {
+                log.info(ex.getMessage(), ex);
+                return new ServiceUsageSnapshot();
+            } catch (IOException ex) {
+                log.info(ex.getMessage(), ex);
+                return new ServiceUsageSnapshot();
+            }
+        } else {
+            //can convert and return with H2 and HyperSQL adapters
+            ServiceUsageSnapshot snapshot = (ServiceUsageSnapshot) rs.getObject(2);
+            snapshot.setLastUpdatedTimestampID(sTimestamp);
+            return snapshot;
+        }
     }
 
 }

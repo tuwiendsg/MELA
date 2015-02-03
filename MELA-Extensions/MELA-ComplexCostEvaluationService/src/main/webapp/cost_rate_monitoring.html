@@ -44,10 +44,10 @@
 
         <input type="checkbox" name="detail" value="Instant Cost Per Usage" id="instantUsageCost" checked>Instant Cost Per Usage
         <br>
-        <!--            <input type="checkbox" name="detail" value="Instant Cost Per Usage" id="totalUsageCost">Total Cost Per Usage
+                    <input type="checkbox" name="detail" value="Instant Cost Per Usage" id="totalUsageCost">Total Cost Per Usage
                     <br>
                     <input type="checkbox" name="detail" value="Total Cost Per Usage and periodic" id="totalCost" >Total Cost Per Usage and periodic
-                    <br>-->
+                    <br>
         <button id="buton" onclick="updateCostDetail()">Update</button>
 
 
@@ -66,7 +66,7 @@
 
                 var INSTANT_COST_RATE_URL = "/cost/usage/instant/json";
                 var TOTAL_INSTANT_COST_RATE_URL = "/cost/total/json";
-                var TOTAL_COST_RATE_URL = "/cost/total/json";
+                var TOTAL_COST_RATE_URL = "/cost/usage/total/json";
 
                 var costServiceURL = INSTANT_COST_RATE_URL;
 

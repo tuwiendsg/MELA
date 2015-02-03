@@ -17,18 +17,12 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
 import java.util.UUID;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import junit.framework.TestCase;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +31,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
-public class GenerateSimpleCostDescription extends TestCase {
+public class SimpleCostDescriptionTest extends TestCase {
 
-    static final Logger log = LoggerFactory.getLogger(GenerateSimpleCostDescription.class);
+    static final Logger log = LoggerFactory.getLogger(SimpleCostDescriptionTest.class);
 
     public void testEcosystemDescription() throws IOException, JAXBException {
         CloudProvider provider = new CloudProvider("Amazon");
@@ -68,7 +62,7 @@ public class GenerateSimpleCostDescription extends TestCase {
             //VM COST
             {
                 CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
-                CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
+                CostElement vmCostElement = new CostElement("vmCost", new Metric("instance", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.12);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
@@ -84,7 +78,7 @@ public class GenerateSimpleCostDescription extends TestCase {
             //VM COST
             {
                 CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
-                CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
+                CostElement vmCostElement = new CostElement("vmCost", new Metric("instance", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.24);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
@@ -100,7 +94,7 @@ public class GenerateSimpleCostDescription extends TestCase {
             //VM COST
             {
                 CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
-                CostElement vmCostElement = new CostElement("vmCost", new Metric("instances", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
+                CostElement vmCostElement = new CostElement("vmCost", new Metric("instance", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
                 vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.48);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
@@ -167,6 +161,7 @@ public class GenerateSimpleCostDescription extends TestCase {
 //                }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                fail(e.getMessage());
             }
 
         }

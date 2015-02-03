@@ -52,72 +52,7 @@ public class CostEvalService {
 
     public CostEvalService() {
     }
-
-//    @POST
-//    @Path("/{serviceID}/elasticitypathway")
-//    @Consumes("application/xml")
-//    @Produces("application/json")
-//    @ApiOperation(value = "Retrieve elasticity pathway",
-//            notes = "Retrieves the elasticity pathway for the given MonitoredElement",
-//            response = String.class)
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 400, message = "Invalid ID supplied"),
-//        @ApiResponse(code = 404, message = "Service element not found in service structure")
-//    })
-//    public String getElasticityPathwayInJSON(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-//        return systemControl.getElasticityPathway(serviceID, element);
-//
-//    }
-////    @POST
-////    @Path("/{serviceID}/elasticitypathwayxml")
-////    @Consumes("application/xml")
-////    @Produces("application/xml")
-////    public ElasticityPathwayXML getElasticityPathwayInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-////        return systemControl.getElasticityPathwayInXML(serviceID, element);
-////
-////    }
-////
-////    /**
-////     * @param element the MonitoredElement for which the elasticity space must
-////     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
-////     * SERVICE_TOPOLOGY, etc)
-////     * @return the elasticity space in JSON
-////     */
-////    @POST
-////    @Path("/{serviceID}/elasticityspace")
-////    @Consumes("application/xml")
-////    @Produces("application/json")
-////    public String getLatestElasticitySpaceInJSON(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-////        return systemControl.getElasticitySpaceJSON(serviceID, element);
-////    }
-//
-//    /**
-//     * @param element the MonitoredElement for which the elasticity space must
-//     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
-//     * SERVICE_TOPOLOGY, etc)
-//     * @return the elasticity space in XML WITH historical monitoring data
-//     */
-//    @POST
-//    @Path("/{serviceID}/elasticityspacecompletexml")
-//    @Consumes("application/xml")
-//    @Produces("application/xml")
-//    public ElasticitySpaceXML getLatestElasticitySpaceInXMLComplete(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-//        return systemControl.getCompleteElasticitySpaceXML(serviceID, element);
-//    }
-//
-//    /**
-//     * @param element the MonitoredElement for which the elasticity space must
-//     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
-//     * SERVICE_TOPOLOGY, etc)
-//     * @return the elasticity space in XML WITH historical monitoring data
-//     */
-//    @POST
-//    @Path("/{serviceID}/elasticityspacexml")
-//    @Consumes("application/xml")
-//    @Produces("application/xml")
-//    public ElasticitySpaceXML getLatestElasticitySpaceInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-//        return systemControl.getElasticitySpaceXML(serviceID, element);
-//    }
+ 
     /**
      * Method for retrieving an easy to display JSON string of the latest
      * monitored Data complete with composed metrics
@@ -149,43 +84,7 @@ public class CostEvalService {
     public MonitoredElement getLatestServiceStructure(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getLatestServiceStructure(serviceID);
     }
-
-//    @GET
-//    @Path("/{serviceID}/monitoringdataXML")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID) {
-//        return systemControl.getLatestMonitoringData(serviceID);
-//    }
-//
-//    @POST
-//    @Path("/{serviceID}/monitoringdataXML")
-//    @Consumes("application/xml")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-//        return systemControl.getLatestMonitoringData(serviceID, element);
-//    }
-//
-//    @GET
-//    @Path("/{serviceID}/historicalmonitoringdataXML/all")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(@PathParam("serviceID") String serviceID) {
-//        return systemControl.getAllAggregatedMonitoringData(serviceID);
-//    }
-//
-//    @GET
-//    @Path("/{serviceID}/historicalmonitoringdataXML/ininterval")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@PathParam("serviceID") String serviceID, @QueryParam("startTimestamp") int startTimestamp,
-//            @QueryParam("endTimestamp") int endTimestamp) {
-//        return systemControl.getAggregatedMonitoringDataInTimeInterval(serviceID, startTimestamp, endTimestamp);
-//    }
-//
-//    @GET
-//    @Path("/{serviceID}/historicalmonitoringdataXML/lastX")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@PathParam("serviceID") String serviceID, @QueryParam("count") int count) {
-//        return systemControl.getLastXAggregatedMonitoringData(serviceID, count);
-//    }
+ 
     @GET
     @Path("/{serviceID}/servicerequirements")
     @Produces("application/xml")
@@ -261,6 +160,13 @@ public class CostEvalService {
     @Produces("application/json")
     public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getInstantCostPerUsageJSON(serviceID);
+    }
+    
+    @GET
+    @Path("/{serviceID}/cost/usage/total/json")
+    @Produces("application/json")
+    public String totalUsage(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalCachedServiceUsageInJSON(serviceID);
     }
 
     @GET
