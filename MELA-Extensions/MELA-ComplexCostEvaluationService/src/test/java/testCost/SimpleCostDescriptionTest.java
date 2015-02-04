@@ -37,14 +37,9 @@ public class SimpleCostDescriptionTest extends TestCase {
 
     public void testEcosystemDescription() throws IOException, JAXBException {
         CloudProvider provider = new CloudProvider("Amazon");
+        provider.setUuid(UUID.fromString("251ed7c7-aa4d-49d4-b42b-7efefd970d6b"));
 
-        UsedCloudOfferedService cfg = new UsedCloudOfferedService(provider.getUuid(), provider.getName(), UUID.fromString("4504cbe6-9481-4108-897a-a6e8f74a860a"), "m1.small");
-
-        cfg.getQualityProperties().put(new Metric("cpu", "cores", Metric.MetricType.QUALITY), new MetricValue(2));
-        cfg.getQualityProperties().put(new Metric("i/o", "level", Metric.MetricType.QUALITY), new MetricValue("high"));
-
-        cfg.getResourceProperties().put(new Metric("RAM", "GB", Metric.MetricType.RESOURCE), new MetricValue(20));
-        cfg.getResourceProperties().put(new Metric("disk", "GB", Metric.MetricType.RESOURCE), new MetricValue(1024));
+//        UsedCloudOfferedService cfg .put(new Metric("disk", "GB", Metric.MetricType.RESOURCE), new MetricValue(1024));
 
         String melaIP = "localhost";
         Integer melaPort = 8080;

@@ -468,6 +468,7 @@ public class JsonConverter {
                         }
                         metric.put("name", entry.getValue().getValueRepresentation() + " [ " + entry.getKey().getName() + " (" + entry.getKey().getMeasurementUnit() + ") ]");
                         metric.put("type", "metric");
+                        metric.put("category", entry.getKey().getType().toString());
 
                         children.add(metric);
                     }
@@ -482,6 +483,17 @@ public class JsonConverter {
             root.put("name", "No monitoring data");
             return "{\"name\":\"No Data\",\"type\":\"METRIC\"}";
         }
+    }
+    public static String convertMonitoringSnapshotAndCompositionRules(ServiceMonitoringSnapshot serviceMonitoringSnapshot, CompositionRulesBlock compositionRulesBlock) {
+
+        if (serviceMonitoringSnapshot == null) {
+            return "";
+        }
+       
+        String complete ="{\"monitoringData\": " +   convertMonitoringSnapshot(serviceMonitoringSnapshot) 
+                + ",\"compositionRules\":" + convertToJSON(compositionRulesBlock)+"}";
+
+        return complete;
     }
 
     public String convertMonitoringSnapshot(ServiceMonitoringSnapshot serviceMonitoringSnapshot, Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysysResult, Map<MonitoredElement, String> actionsInExecution) {
@@ -610,7 +622,7 @@ public class JsonConverter {
     }
 
     //convert metrics to JSON
-    public String convertToJSON(CompositionRulesBlock compositionRulesBlock) {
+    public static String convertToJSON(CompositionRulesBlock compositionRulesBlock) {
 
         JSONArray compositionRules = new JSONArray();
 

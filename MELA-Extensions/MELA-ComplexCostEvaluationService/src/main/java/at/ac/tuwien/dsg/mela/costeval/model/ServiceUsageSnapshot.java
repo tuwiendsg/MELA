@@ -17,6 +17,7 @@
 package at.ac.tuwien.dsg.mela.costeval.model;
 
 import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
+import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
@@ -59,10 +60,32 @@ public class ServiceUsageSnapshot implements Serializable {
     {
         totalUsageSoFar = new ServiceMonitoringSnapshot();
     }
+    
+    
+    //here just to help us draw lines
+    private CompositionRulesBlock costCompositionRules;
 
     public int getLastUpdatedTimestampID() {
         return lastUpdatedTimestampID;
     }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+
+    public CompositionRulesBlock getCostCompositionRules() {
+        return costCompositionRules;
+    }
+
+    public void setCostCompositionRules(CompositionRulesBlock costCompositionRules) {
+        this.costCompositionRules = costCompositionRules;
+    }
+    
+    
 
     public void setLastUpdatedTimestampID(int lastUpdatedTimestampID) {
         this.lastUpdatedTimestampID = lastUpdatedTimestampID;
@@ -137,6 +160,11 @@ public class ServiceUsageSnapshot implements Serializable {
 
     public ServiceUsageSnapshot withServicesLifetime(final Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> servicesLifetime) {
         this.servicesLifetime = servicesLifetime;
+        return this;
+    }
+
+    public ServiceUsageSnapshot withCostCompositionRules(final CompositionRulesBlock costCompositionRules) {
+        this.costCompositionRules = costCompositionRules;
         return this;
     }
 

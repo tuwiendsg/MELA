@@ -82,7 +82,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
         return hashCode;
     }
 
-    public MonitoredElementMonitoringSnapshot(MonitoredElement MonitoredElement, HashMap<Metric, MetricValue> monitoredData) {
+    public MonitoredElementMonitoringSnapshot(MonitoredElement MonitoredElement, Map<Metric, MetricValue> monitoredData) {
         this.monitoredElement = MonitoredElement;
         this.monitoredData = monitoredData;
         hashCode = super.hashCode() + monitoredElement.hashCode() + monitoredData.hashCode();

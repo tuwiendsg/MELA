@@ -52,7 +52,7 @@ public class CostEvalService {
 
     public CostEvalService() {
     }
- 
+
     /**
      * Method for retrieving an easy to display JSON string of the latest
      * monitored Data complete with composed metrics
@@ -71,7 +71,7 @@ public class CostEvalService {
     @Path("/{serviceID}/monitoringdata/json")
     @Produces("application/json")
     public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getLatestMonitoringDataEnrichedWithCostINJSON(serviceID);
+        return "{}";//costEvalManager.getLatestMonitoringDataEnrichedWithCostINJSON(serviceID);
     }
 
     /**
@@ -84,20 +84,14 @@ public class CostEvalService {
     public MonitoredElement getLatestServiceStructure(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getLatestServiceStructure(serviceID);
     }
- 
+
     @GET
     @Path("/{serviceID}/servicerequirements")
     @Produces("application/xml")
     public Requirements getRequirements(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getRequirements(serviceID);
     }
-
-    @GET
-    @Path("/{serviceID}/metriccompositionrules")
-    @Produces("application/json")
-    public String getMetricCompositionRules(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getMetricCompositionRules(serviceID);
-    }
+ 
 
     @GET
     @Path("/{serviceID}/metriccompositionrulesxml")
@@ -152,21 +146,21 @@ public class CostEvalService {
     @Path("/{serviceID}/cost/total/json")
     @Produces("application/json")
     public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getTotalServiceCostJSON(serviceID);
+        return "{}";//costEvalManager.getTotalServiceCostJSON(serviceID);
     }
 
     @GET
-    @Path("/{serviceID}/cost/usage/instant/json")
+    @Path("/{serviceID}/cost/instant/json")
     @Produces("application/json")
     public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getInstantCostPerUsageJSON(serviceID);
+        return costEvalManager.getInstantUsageCostJSON(serviceID);
     }
-    
+
     @GET
-    @Path("/{serviceID}/cost/usage/total/json")
+    @Path("/{serviceID}/cost/periodic/instant/json")
     @Produces("application/json")
     public String totalUsage(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getTotalCachedServiceUsageInJSON(serviceID);
+        return "{}";//costEvalManager.getTotalServiceCostJSON(serviceID);
     }
 
     @GET

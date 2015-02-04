@@ -260,7 +260,8 @@ public class PersistenceDelegate {
     //    CaschedHistoricalUsage (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int,
     //    data  LONGBLOB, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
     public ServiceUsageSnapshot extractCachedServiceUsage(String serviceID) {
-        String sql = "SELECT CaschedHistoricalUsage.timestampID, CaschedHistoricalUsage.data from CaschedHistoricalUsage where CaschedHistoricalUsage.monSeqID = (?);";
+        String sql = "SELECT CaschedHistoricalUsage.timestampID, CaschedHistoricalUsage.data from CaschedHistoricalUsage where "
+                + "ID=(SELECT MAX(ID) from CaschedHistoricalUsage where monSeqID=?);";
         RowMapper<ServiceUsageSnapshot> rowMapper = new RowMapper<ServiceUsageSnapshot>() {
             public ServiceUsageSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return mapToServiceUsageSnapshot(rs);
@@ -277,13 +278,43 @@ public class PersistenceDelegate {
 
     public void persistCachedServiceUsage(String serviceID, ServiceUsageSnapshot serviceUsageSnapshot) {
 
-        //delete old cached
-        {
-            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
-            jdbcTemplate.update(sql, serviceID);
-        }
+//        //delete old cached
+//        {
+//            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
+//            jdbcTemplate.update(sql, serviceID);
+//        }
         {
             String sql = "INSERT INTO CaschedHistoricalUsage (monseqid, timestampID, data) VALUES (?, ?, ?)";
+            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
+        }
+
+    }
+    public ServiceUsageSnapshot extractLastInstantCost(String serviceID) {
+        String sql = "SELECT InstantCostHistory.timestampID, InstantCostHistory.data from InstantCostHistory where "
+                + "ID=(SELECT MAX(ID) from InstantCostHistory where monSeqID=?);";
+        RowMapper<ServiceUsageSnapshot> rowMapper = new RowMapper<ServiceUsageSnapshot>() {
+            public ServiceUsageSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        List<ServiceUsageSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots.get(0);
+        }
+    }
+
+    public void persistInstantCost(String serviceID, ServiceUsageSnapshot serviceUsageSnapshot) {
+
+//        //delete old cached
+//        {
+//            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
+//            jdbcTemplate.update(sql, serviceID);
+//        }
+        {
+            String sql = "INSERT INTO InstantCostHistory (monseqid, timestampID, data) VALUES (?, ?, ?)";
             jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
         }
 
