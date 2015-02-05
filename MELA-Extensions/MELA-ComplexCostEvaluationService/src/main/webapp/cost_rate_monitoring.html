@@ -42,9 +42,7 @@
     </head>
     <body>
 
-        <input type="radio" name="detail" value="Instant Cost Per Usage" id="instantUsageCost" checked>Instant Cost Per Usage
-        <br>
-        <input type="radio" name="detail" value="Instant Cost Per Usage" id="totalUsageCost">Total Cost Per Usage
+        <input type="radio" name="detail" value="Instant Cost" id="instantUsageCost" checked>Instant Cost Per Usage
         <br>
         <input type="radio" name="detail" value="Total Cost Per Usage and periodic" id="totalCost" >Total Cost Per Usage and periodic
         <br>
@@ -64,9 +62,9 @@
             var vars = query.split("&");
             var serviceID = vars[0];
 
-            var INSTANT_COST_RATE_URL = "/cost/usage/instant/json";
+            var INSTANT_COST_RATE_URL = "/cost/instant/json";
             var TOTAL_INSTANT_COST_RATE_URL = "/cost/total/json";
-            var TOTAL_COST_RATE_URL = "/cost/periodic/instant/json";
+            var TOTAL_COST_RATE_URL = "/cost/total/json";
 
             var costServiceURL = INSTANT_COST_RATE_URL;
 

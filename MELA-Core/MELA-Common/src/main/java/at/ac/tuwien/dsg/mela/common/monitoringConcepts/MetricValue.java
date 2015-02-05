@@ -136,6 +136,28 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         }
     }
 
+    public void sub(MetricValue metricValue) {
+        if (value instanceof Number) {
+            double oldVal = ((Number) value).doubleValue();
+            double newVal = ((Number) metricValue.getValue()).doubleValue();
+            this.value = oldVal - newVal;
+        }
+    }
+
+    public void sum(double metricValue) {
+        if (value instanceof Number) {
+            double oldVal = ((Number) value).doubleValue();
+            this.value = oldVal + metricValue;
+        }
+    }
+
+    public void sub(double metricValue) {
+        if (value instanceof Number) {
+            double oldVal = ((Number) value).doubleValue();
+            this.value = oldVal - metricValue;
+        }
+    }
+
     public void divide(double size) {
         if (value instanceof Number) {
             double oldVal = ((Number) value).doubleValue();

@@ -91,7 +91,6 @@ public class CostEvalService {
     public Requirements getRequirements(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getRequirements(serviceID);
     }
- 
 
     @GET
     @Path("/{serviceID}/metriccompositionrulesxml")
@@ -146,22 +145,16 @@ public class CostEvalService {
     @Path("/{serviceID}/cost/total/json")
     @Produces("application/json")
     public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
-        return "{}";//costEvalManager.getTotalServiceCostJSON(serviceID);
+        return costEvalManager.getTotalCostJSON(serviceID);
     }
 
     @GET
     @Path("/{serviceID}/cost/instant/json")
     @Produces("application/json")
     public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getInstantUsageCostJSON(serviceID);
+        return costEvalManager.getInstantCostJSON(serviceID);
     }
 
-    @GET
-    @Path("/{serviceID}/cost/periodic/instant/json")
-    @Produces("application/json")
-    public String totalUsage(@PathParam("serviceID") String serviceID) {
-        return "{}";//costEvalManager.getTotalServiceCostJSON(serviceID);
-    }
 
     @GET
     @Path("/{serviceID}/cost/total/detailed")

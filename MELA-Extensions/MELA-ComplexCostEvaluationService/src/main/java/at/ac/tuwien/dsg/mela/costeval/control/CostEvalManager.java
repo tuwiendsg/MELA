@@ -362,7 +362,7 @@ public class CostEvalManager {
         }
     }
 
-    public String getInstantUsageCostJSON(String serviceID) {
+    public String getInstantCostJSON(String serviceID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
 
@@ -370,6 +370,31 @@ public class CostEvalManager {
             return "{nothing}";
         }
         ServiceUsageSnapshot serviceUsageSnapshot = persistenceDelegate.extractLastInstantCost(serviceID);
+
+        if (serviceUsageSnapshot == null) {
+            return "{nothing}";
+        }
+
+        try {
+            String converted = jsonConverter.convertMonitoringSnapshotAndCompositionRules(serviceUsageSnapshot.getTotalUsageSoFar(), serviceUsageSnapshot.getCostCompositionRules());
+            return converted;
+        } catch (Exception e) {
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getServiceUsageInJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+
+    public String getTotalCostJSON(String serviceID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        ServiceUsageSnapshot serviceUsageSnapshot = persistenceDelegate.extractLastTotalCost(serviceID);
 
         if (serviceUsageSnapshot == null) {
             return "{nothing}";
@@ -444,18 +469,32 @@ public class CostEvalManager {
         for (ServiceMonitoringSnapshot monitoringSnapshot : allMonData) {
             //update total usage so far and persist
 
+            //compute total usage so fat
             ServiceMonitoringSnapshot updatedTotalUsageSoFar = costEvalEngine.updateTotalUsageSoFar(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
 
             previouselyDeterminedUsage.withTotalUsageSoFar(updatedTotalUsageSoFar);
             previouselyDeterminedUsage.withtLastUpdatedTimestampID(updatedTotalUsageSoFar.getTimestampID());
 
+            //persist the total usage
             persistenceDelegate.persistCachedServiceUsage(serviceID, previouselyDeterminedUsage);
 
+            //compute composition rules to create instant cost based on total usage so far
             CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCost(cloudProvidersMap, cfg.getServiceConfiguration(), previouselyDeterminedUsage, serviceID);
             ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, monitoringSnapshot);
 
+            //persist instant cost
             persistenceDelegate.persistInstantCost(serviceID, new ServiceUsageSnapshot().withCostCompositionRules(block)
                     .withLastUpdatedTimestampID(enrichedSnapshot.getTimestampID()).withTotalUsageSoFar(enrichedSnapshot));
+
+            //retrieve the previousely computed total usage, as the computation of the instant cost destr
+//            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
+            //create rules for metrics for total cost based on usage so far
+            CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCost(cloudProvidersMap, previouselyDeterminedUsage, serviceID);
+            ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getTotalUsageSoFar());
+
+//            persist mon snapshot enriched with total cost
+            persistenceDelegate.persistTotalCost(serviceID, new ServiceUsageSnapshot().withCostCompositionRules(totalCostBlock)
+                    .withLastUpdatedTimestampID(snapshotWithTotalCost.getTimestampID()).withTotalUsageSoFar(snapshotWithTotalCost));
         }
 
         Date after = new Date();
@@ -656,40 +695,22 @@ public class CostEvalManager {
         return elasticitySpaceXML;
     }
 
-  
- 
-
     public MonitoredElementMonitoringSnapshot getTotalServiceCostXML(String serviceID) {
-
-        List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(serviceID);
-
-        if (!allMonData.isEmpty()) {
-
-            //as I extract 1000 entries at a time to avoid memory overflow, I need to read the rest
-            do {
-                int timestampID = allMonData.get(allMonData.size() - 1).getTimestampID();
-                List<ServiceMonitoringSnapshot> restOfData = persistenceDelegate.extractMonitoringData(timestampID, serviceID);
-                if (restOfData.isEmpty()) {
-                    break;
-                } else {
-                    allMonData.addAll(restOfData);
-                }
-            } while (true);
-        }
-
-        List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
-
-        if (cloudProviders == null) {
-
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+        if (cfg == null) {
             return new MonitoredElementMonitoringSnapshot();
         }
 
-        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.getTotalCost(cloudProviders, allMonData);;
+        ServiceUsageSnapshot serviceUsageSnapshot = persistenceDelegate.extractLastTotalCost(serviceID);
+
+        ServiceMonitoringSnapshot completeCostSnapshot = costEvalEngine.applyCompositionRules(serviceUsageSnapshot.getCostCompositionRules(), serviceUsageSnapshot.getTotalUsageSoFar());
+
         MonitoredElementMonitoringSnapshot serviceSnapshot = completeCostSnapshot.getMonitoredData(new MonitoredElement(serviceID).withLevel(MonitoredElement.MonitoredElementLevel.SERVICE));
+        Date after = new Date();
+        log.debug("getTotalServiceCostXML time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return serviceSnapshot;
     }
-
-     
 
     public MonitoredElement getLatestServiceStructure(String serviceID) {
         Date before = new Date();
@@ -702,7 +723,7 @@ public class CostEvalManager {
         log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return serviceMonitoringSnapshot.getMonitoredService();
     }
- 
+
     public String getAllManagedServicesIDs() {
 
         JSONArray array = new JSONArray();

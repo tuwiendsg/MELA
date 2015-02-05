@@ -319,6 +319,36 @@ public class PersistenceDelegate {
         }
 
     }
+    public ServiceUsageSnapshot extractLastTotalCost(String serviceID) {
+        String sql = "SELECT TotalCostHistory.timestampID, TotalCostHistory.data from TotalCostHistory where "
+                + "ID=(SELECT MAX(ID) from TotalCostHistory where monSeqID=?);";
+        RowMapper<ServiceUsageSnapshot> rowMapper = new RowMapper<ServiceUsageSnapshot>() {
+            public ServiceUsageSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        List<ServiceUsageSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots.get(0);
+        }
+    }
+
+    public void persistTotalCost(String serviceID, ServiceUsageSnapshot serviceUsageSnapshot) {
+
+//        //delete old cached
+//        {
+//            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
+//            jdbcTemplate.update(sql, serviceID);
+//        }
+        {
+            String sql = "INSERT INTO TotalCostHistory (monseqid, timestampID, data) VALUES (?, ?, ?)";
+            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
+        }
+
+    }
 
     private ServiceUsageSnapshot mapToServiceUsageSnapshot(ResultSet rs) throws SQLException {
         int sTimestamp = rs.getInt(1);
