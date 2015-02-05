@@ -40,7 +40,7 @@ import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Relationship;
-import at.ac.tuwien.dsg.mela.costeval.model.ServiceUsageSnapshot;
+import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
@@ -96,7 +96,7 @@ public class CostEvalEngine {
         return cloudOfferedServices;
     }
 
-    public SnapshotEnrichmentReport enrichMonSnapshotWithInstantUsageCost(List<CloudProvider> cloudOfferedServices, ServiceMonitoringSnapshot monitoringSnapshot, ServiceUsageSnapshot totalUsageSoFar, final String currentTimesnapshot) {
+    public SnapshotEnrichmentReport enrichMonSnapshotWithInstantUsageCost(List<CloudProvider> cloudOfferedServices, ServiceMonitoringSnapshot monitoringSnapshot, CostEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
 
         Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServicesMap = cloudProvidersToMap(cloudOfferedServices);
 
@@ -156,7 +156,7 @@ public class CostEvalEngine {
      * @param newMonData
      * @return
      */
-    public ServiceMonitoringSnapshot updateTotalUsageSoFar(Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServices, ServiceUsageSnapshot previouselyDeterminedUsage, ServiceMonitoringSnapshot newMonData) {
+    public ServiceMonitoringSnapshot updateTotalUsageSoFar(Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServices, CostEnrichedSnapshot previouselyDeterminedUsage, ServiceMonitoringSnapshot newMonData) {
 
         if (newMonData == null) {
             return new ServiceMonitoringSnapshot();
@@ -221,12 +221,12 @@ public class CostEvalEngine {
 
                         Map<Metric, MetricValue> vmUsageSoFar = null;
 
-                        if (previouselyDeterminedUsage.getTotalUsageSoFar().contains(level, monitoredElement)) {
-                            vmUsageSoFar = previouselyDeterminedUsage.getTotalUsageSoFar().getMonitoredData(monitoredElement).getMonitoredData();
+                        if (previouselyDeterminedUsage.getSnapshot().contains(level, monitoredElement)) {
+                            vmUsageSoFar = previouselyDeterminedUsage.getSnapshot().getMonitoredData(monitoredElement).getMonitoredData();
                         } else {
                             vmUsageSoFar = new HashMap<>();
                             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, vmUsageSoFar);
-                            previouselyDeterminedUsage.getTotalUsageSoFar().addMonitoredData(elementMonitoringSnapshot);
+                            previouselyDeterminedUsage.getSnapshot().addMonitoredData(elementMonitoringSnapshot);
                         }
 
                         //apply cost functions
@@ -318,7 +318,7 @@ public class CostEvalEngine {
 
         }
 
-        return previouselyDeterminedUsage.getTotalUsageSoFar();
+        return previouselyDeterminedUsage.getSnapshot();
     }
 
     public Map<UsedCloudOfferedService, List<CostFunction>> getApplicableCostFunctions(Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServices, MonitoredElement monitoredElement) {
@@ -500,7 +500,7 @@ public class CostEvalEngine {
      * @return
      */
     public CompositionRulesBlock createCompositionRulesForInstantUsageCost(final Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServices,
-            final MonitoredElement monitoredElement, final ServiceUsageSnapshot totalUsageSoFar, final String currentTimesnapshot) {
+            final MonitoredElement monitoredElement, final CostEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
 
         CompositionRulesBlock costCompositionRules = new CompositionRulesBlock();
 
@@ -516,7 +516,7 @@ public class CostEvalEngine {
 
                     //start with USAGE type of cost, easier to apply. 
                     for (CostFunction cf : costFunctionsToApply) {
-                        MonitoredElementMonitoringSnapshot vmMonSnapshot = totalUsageSoFar.getTotalUsageSoFar().getMonitoredData(monitoredElement);
+                        MonitoredElementMonitoringSnapshot vmMonSnapshot = totalUsageSoFar.getSnapshot().getMonitoredData(monitoredElement);
 
                         for (CostElement element : cf.getCostElements()) {
 
@@ -724,7 +724,7 @@ public class CostEvalEngine {
     }
 
     public CompositionRulesBlock createCompositionRulesForTotalCost(final Map<UUID, Map<UUID, ServiceUnit>> cloudOfferedServices,
-            final ServiceUsageSnapshot totalUsageSoFar, final String currentTimesnapshot) {
+            final CostEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
 
         List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
         levelsInOrder.add(MonitoredElement.MonitoredElementLevel.VM);
@@ -734,11 +734,11 @@ public class CostEvalEngine {
 
         CompositionRulesBlock costCompositionRules = new CompositionRulesBlock();
 
-        ServiceMonitoringSnapshot monitoringSnapshot = totalUsageSoFar.getTotalUsageSoFar();
+        ServiceMonitoringSnapshot monitoringSnapshot = totalUsageSoFar.getSnapshot();
 
         for (MonitoredElement.MonitoredElementLevel level : levelsInOrder) {
 
-            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> vmsData = totalUsageSoFar.getTotalUsageSoFar().getMonitoredData(level);
+            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> vmsData = totalUsageSoFar.getSnapshot().getMonitoredData(level);
 
             if (vmsData == null) {
                 log.error("No monitoring data for service" + monitoringSnapshot.getMonitoredService() + " at level " + level.toString() + " timestamp " + monitoringSnapshot.getTimestampID());
@@ -759,7 +759,7 @@ public class CostEvalEngine {
 
                             //start with USAGE type of cost, easier to apply. 
                             for (CostFunction cf : costFunctionsToApply) {
-                                MonitoredElementMonitoringSnapshot vmMonSnapshot = totalUsageSoFar.getTotalUsageSoFar().getMonitoredData(monitoredElement);
+                                MonitoredElementMonitoringSnapshot vmMonSnapshot = totalUsageSoFar.getSnapshot().getMonitoredData(monitoredElement);
 
                                 for (CostElement element : cf.getCostElements()) {
 

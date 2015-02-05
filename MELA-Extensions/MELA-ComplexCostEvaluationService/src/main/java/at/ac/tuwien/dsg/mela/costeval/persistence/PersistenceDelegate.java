@@ -28,7 +28,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.costeval.model.ServiceUsageSnapshot;
+import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -67,12 +67,19 @@ public class PersistenceDelegate {
     public PersistenceDelegate() {
     }
 
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
     @PostConstruct
     public void init() {
         log.debug("Creating new JdbcTemplate with datasource {}", dataSource);
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
-    
 
     public void writeElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
         try {
@@ -259,16 +266,16 @@ public class PersistenceDelegate {
 
     //    CaschedHistoricalUsage (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int,
     //    data  LONGBLOB, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
-    public ServiceUsageSnapshot extractCachedServiceUsage(String serviceID) {
+    public CostEnrichedSnapshot extractTotalUsageSnapshot(String serviceID) {
         String sql = "SELECT CaschedHistoricalUsage.timestampID, CaschedHistoricalUsage.data from CaschedHistoricalUsage where "
                 + "ID=(SELECT MAX(ID) from CaschedHistoricalUsage where monSeqID=?);";
-        RowMapper<ServiceUsageSnapshot> rowMapper = new RowMapper<ServiceUsageSnapshot>() {
-            public ServiceUsageSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return mapToServiceUsageSnapshot(rs);
             }
         };
 
-        List<ServiceUsageSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
         if (snapshots.isEmpty()) {
             return null;
         } else {
@@ -276,7 +283,7 @@ public class PersistenceDelegate {
         }
     }
 
-    public void persistCachedServiceUsage(String serviceID, ServiceUsageSnapshot serviceUsageSnapshot) {
+    public void persistTotalUsageSnapshot(String serviceID, CostEnrichedSnapshot serviceUsageSnapshot) {
 
 //        //delete old cached
 //        {
@@ -289,16 +296,17 @@ public class PersistenceDelegate {
         }
 
     }
-    public ServiceUsageSnapshot extractLastInstantCost(String serviceID) {
+
+    public CostEnrichedSnapshot extractInstantCostSnapshot(String serviceID) {
         String sql = "SELECT InstantCostHistory.timestampID, InstantCostHistory.data from InstantCostHistory where "
                 + "ID=(SELECT MAX(ID) from InstantCostHistory where monSeqID=?);";
-        RowMapper<ServiceUsageSnapshot> rowMapper = new RowMapper<ServiceUsageSnapshot>() {
-            public ServiceUsageSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return mapToServiceUsageSnapshot(rs);
             }
         };
 
-        List<ServiceUsageSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
         if (snapshots.isEmpty()) {
             return null;
         } else {
@@ -306,7 +314,7 @@ public class PersistenceDelegate {
         }
     }
 
-    public void persistInstantCost(String serviceID, ServiceUsageSnapshot serviceUsageSnapshot) {
+    public void persistInstantCostSnapshot(String serviceID, CostEnrichedSnapshot serviceUsageSnapshot) {
 
 //        //delete old cached
 //        {
@@ -319,16 +327,17 @@ public class PersistenceDelegate {
         }
 
     }
-    public ServiceUsageSnapshot extractLastTotalCost(String serviceID) {
+
+    public CostEnrichedSnapshot extractTotalCostSnapshot(String serviceID) {
         String sql = "SELECT TotalCostHistory.timestampID, TotalCostHistory.data from TotalCostHistory where "
                 + "ID=(SELECT MAX(ID) from TotalCostHistory where monSeqID=?);";
-        RowMapper<ServiceUsageSnapshot> rowMapper = new RowMapper<ServiceUsageSnapshot>() {
-            public ServiceUsageSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return mapToServiceUsageSnapshot(rs);
             }
         };
 
-        List<ServiceUsageSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
         if (snapshots.isEmpty()) {
             return null;
         } else {
@@ -336,7 +345,7 @@ public class PersistenceDelegate {
         }
     }
 
-    public void persistTotalCost(String serviceID, ServiceUsageSnapshot serviceUsageSnapshot) {
+    public void persistTotalCostSnapshot(String serviceID, CostEnrichedSnapshot serviceUsageSnapshot) {
 
 //        //delete old cached
 //        {
@@ -350,7 +359,7 @@ public class PersistenceDelegate {
 
     }
 
-    private ServiceUsageSnapshot mapToServiceUsageSnapshot(ResultSet rs) throws SQLException {
+    private CostEnrichedSnapshot mapToServiceUsageSnapshot(ResultSet rs) throws SQLException {
         int sTimestamp = rs.getInt(1);
         Object data = rs.getObject(2);
 
@@ -359,19 +368,19 @@ public class PersistenceDelegate {
             try {
                 ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
                 ObjectInput in = new ObjectInputStream(bis);
-                ServiceUsageSnapshot snapshot = (ServiceUsageSnapshot) in.readObject();
+                CostEnrichedSnapshot snapshot = (CostEnrichedSnapshot) in.readObject();
                 snapshot.setLastUpdatedTimestampID(sTimestamp);
                 return snapshot;
             } catch (ClassNotFoundException ex) {
                 log.info(ex.getMessage(), ex);
-                return new ServiceUsageSnapshot();
+                return new CostEnrichedSnapshot();
             } catch (IOException ex) {
                 log.info(ex.getMessage(), ex);
-                return new ServiceUsageSnapshot();
+                return new CostEnrichedSnapshot();
             }
         } else {
             //can convert and return with H2 and HyperSQL adapters
-            ServiceUsageSnapshot snapshot = (ServiceUsageSnapshot) rs.getObject(2);
+            CostEnrichedSnapshot snapshot = (CostEnrichedSnapshot) rs.getObject(2);
             snapshot.setLastUpdatedTimestampID(sTimestamp);
             return snapshot;
         }

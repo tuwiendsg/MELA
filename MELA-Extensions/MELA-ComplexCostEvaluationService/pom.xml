@@ -76,6 +76,7 @@
             <artifactId>spring-jdbc</artifactId>
             <version>${spring.version}</version>
         </dependency>
+   
 
         <!-- Swagger API documentation -->
         <dependency>
@@ -122,6 +123,7 @@
             <classifier>sources</classifier>
         </dependency>
    
+    
         <dependency>
             <groupId>at.ac.tuwien.quelle</groupId>
             <artifactId>QUELLE-Core-CloudServicesModel</artifactId>

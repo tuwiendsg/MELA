@@ -34,14 +34,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
-public class ServiceUsageSnapshot implements Serializable {
+public class CostEnrichedSnapshot implements Serializable {
 
     private int lastUpdatedTimestampID;
 
     private Logger logger;
 
     {
-        logger = LoggerFactory.getLogger(ServiceUsageSnapshot.class);
+        logger = LoggerFactory.getLogger(CostEnrichedSnapshot.class);
     }
 
     /**
@@ -55,10 +55,10 @@ public class ServiceUsageSnapshot implements Serializable {
         servicesLifetime = new HashMap<>();
     }
 
-    private ServiceMonitoringSnapshot totalUsageSoFar;
+    private ServiceMonitoringSnapshot snapshot;
 
     {
-        totalUsageSoFar = new ServiceMonitoringSnapshot();
+        snapshot = new ServiceMonitoringSnapshot();
     }
     
     
@@ -91,22 +91,22 @@ public class ServiceUsageSnapshot implements Serializable {
         this.lastUpdatedTimestampID = lastUpdatedTimestampID;
     }
 
-    public ServiceUsageSnapshot withtLastUpdatedTimestampID(int lastUpdatedTimestampID) {
+    public CostEnrichedSnapshot withtLastUpdatedTimestampID(int lastUpdatedTimestampID) {
         this.lastUpdatedTimestampID = lastUpdatedTimestampID;
         return this;
     }
 
-    public ServiceUsageSnapshot withLogger(final Logger logger) {
+    public CostEnrichedSnapshot withLogger(final Logger logger) {
         this.logger = logger;
         return this;
     }
 
-    public ServiceUsageSnapshot withTotalUsageSoFar(final ServiceMonitoringSnapshot totalUsageSoFar) {
-        this.totalUsageSoFar = totalUsageSoFar;
+    public CostEnrichedSnapshot withSnapshot(final ServiceMonitoringSnapshot totalUsageSoFar) {
+        this.snapshot = totalUsageSoFar;
         return this;
     }
 
-    public ServiceUsageSnapshot withInstantiationTimes(MonitoredElement element, UsedCloudOfferedService cloudOfferedService, Long timestamp) {
+    public CostEnrichedSnapshot withInstantiationTimes(MonitoredElement element, UsedCloudOfferedService cloudOfferedService, Long timestamp) {
         Map<UsedCloudOfferedService, Long> elementServices;
 
         if (servicesLifetime.containsKey(element)) {
@@ -149,21 +149,21 @@ public class ServiceUsageSnapshot implements Serializable {
         }
     }
 
-    public ServiceMonitoringSnapshot getTotalUsageSoFar() {
-        return totalUsageSoFar;
+    public ServiceMonitoringSnapshot getSnapshot() {
+        return snapshot;
     }
 
-    public ServiceUsageSnapshot withLastUpdatedTimestampID(final int lastUpdatedTimestampID) {
+    public CostEnrichedSnapshot withLastUpdatedTimestampID(final int lastUpdatedTimestampID) {
         this.lastUpdatedTimestampID = lastUpdatedTimestampID;
         return this;
     }
 
-    public ServiceUsageSnapshot withServicesLifetime(final Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> servicesLifetime) {
+    public CostEnrichedSnapshot withServicesLifetime(final Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> servicesLifetime) {
         this.servicesLifetime = servicesLifetime;
         return this;
     }
 
-    public ServiceUsageSnapshot withCostCompositionRules(final CompositionRulesBlock costCompositionRules) {
+    public CostEnrichedSnapshot withCostCompositionRules(final CompositionRulesBlock costCompositionRules) {
         this.costCompositionRules = costCompositionRules;
         return this;
     }
