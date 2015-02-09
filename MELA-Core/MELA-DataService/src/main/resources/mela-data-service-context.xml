@@ -20,7 +20,8 @@
     <context:property-placeholder location="file:./config/mela-data-service.properties"/>
 
    
-    
+    <bean id="dataFreshnessAnalysisEngine" class="at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine">
+    </bean>
     
     <!--     JMS stuff 
     -->    
