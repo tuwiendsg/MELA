@@ -26,7 +26,9 @@ import at.ac.tuwien.dsg.mela.common.utils.outputConverters.XmlConverter;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
@@ -123,12 +125,14 @@ public class CostEvalManager {
     @Value("${data.caching.interval:1}")
     private int cachingIntervalInSeconds;
 
-    private Map<String, Timer> monitoringTimers;
+    private Map<String, Timer> costMonitoringTimers;
+    private Map<String, Timer> costElasticityTimers;
 
     private Timer checkForAddedServices;
 
     {
-        monitoringTimers = new ConcurrentHashMap<String, Timer>();
+        costMonitoringTimers = new ConcurrentHashMap<String, Timer>();
+        costElasticityTimers = new ConcurrentHashMap<String, Timer>();
     }
 
 //        TimerTask momMemUsageTask = new TimerTask() {
@@ -161,7 +165,7 @@ public class CostEvalManager {
                 //read all existing services and create for them caching timers of service usage so far
                 for (final String monSeqID : persistenceDelegate.getMonitoringSequencesIDs()) {
 
-                    if (!monitoringTimers.containsKey(monSeqID)) {
+                    if (!costMonitoringTimers.containsKey(monSeqID)) {
                         final Timer timer = new Timer(true);
 
                         TimerTask cacheUsageSoFarTask = new TimerTask() {
@@ -170,7 +174,7 @@ public class CostEvalManager {
                             public void run() {
                                 if (persistenceDelegate.getLatestConfiguration(monSeqID) == null) {
                                     timer.cancel();
-                                    monitoringTimers.remove(monSeqID);
+                                    costMonitoringTimers.remove(monSeqID);
                                 } else {
                                     try {
                                         updateAndCacheHistoricalServiceUsageForInstantCostPerUsage(monSeqID);
@@ -184,7 +188,33 @@ public class CostEvalManager {
 
                         timer.schedule(cacheUsageSoFarTask, 0, cachingIntervalInSeconds * 1000);
 
-                        monitoringTimers.put(monSeqID, timer);
+                        costMonitoringTimers.put(monSeqID, timer);
+                    }
+
+                    if (!costElasticityTimers.containsKey(monSeqID)) {
+                        final Timer timer = new Timer(true);
+
+                        TimerTask cacheUsageSoFarTask = new TimerTask() {
+//
+                            @Override
+                            public void run() {
+                                if (persistenceDelegate.getLatestConfiguration(monSeqID) == null) {
+                                    timer.cancel();
+                                    costElasticityTimers.remove(monSeqID);
+                                } else {
+                                    try {
+                                        updateAndGetInstantCostElasticitySpace(monSeqID);
+                                    } catch (Exception e) {
+                                        log.error(e.getMessage(), e);
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        };
+
+                        timer.schedule(cacheUsageSoFarTask, 0, cachingIntervalInSeconds * 1000);
+
+                        costElasticityTimers.put(monSeqID, timer);
                     }
                 }
             }
@@ -369,7 +399,7 @@ public class CostEvalManager {
         if (cfg == null) {
             return "{nothing}";
         }
-        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractInstantCostSnapshot(serviceID);
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractLastInstantCostSnapshot(serviceID);
 
         if (serviceUsageSnapshot == null) {
             return "{nothing}";
@@ -503,6 +533,99 @@ public class CostEvalManager {
         return previouselyDeterminedUsage;
     }
 
+    private ElasticitySpace updateAndGetInstantCostElasticitySpace(String serviceID) {
+
+        ElasticitySpace space = persistenceDelegate.extractLatestInstantCostElasticitySpace(serviceID);
+
+        //update space with new data
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            log.error("Retrieved empty configuration.");
+            return null;
+        } else if (cfg.getRequirements() == null) {
+            log.error("Retrieved configuration does not contain Requirements.");
+            return null;
+        } else if (cfg.getServiceConfiguration() == null) {
+            log.error("Retrieved configuration does not contain Service Configuration.");
+            return null;
+        }
+        Requirements requirements = cfg.getRequirements();
+        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
+
+        //if space == null, compute it 
+        if (space == null) {
+
+            //if space is null, compute it from all aggregated monitored data recorded so far
+            List<CostEnrichedSnapshot> enrichedCostSnapshots = persistenceDelegate.extractInstantUsageSnapshot(serviceID);
+
+            List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<>();
+            for (CostEnrichedSnapshot snapshot : enrichedCostSnapshots) {
+                dataFromTimestamp.add(snapshot.getSnapshot());
+            }
+
+            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+            fct.setRequirements(requirements);
+
+            fct.trainElasticitySpace(dataFromTimestamp);
+            space = fct.getElasticitySpace();
+
+            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+            space.setStartTimestampID(dataFromTimestamp.get(0).getTimestampID());
+            space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+
+            //persist cached space
+            persistenceDelegate.writeInstantCostElasticitySpace(space, serviceID);
+        } else {
+            //else read max 1000 monitoring data records at a time, train space, and repeat as needed
+
+            //if space is not null, update it with new data
+            List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
+
+            //used to detect last snapshot timestamp, and then extratc new data until that timestamp
+            ServiceMonitoringSnapshot monitoringSnapshot = persistenceDelegate.extractLastInstantCostSnapshot(serviceID).getSnapshot();
+
+            Integer lastTimestampID = (monitoringSnapshot == null) ? Integer.MAX_VALUE : monitoringSnapshot.getTimestampID();
+
+            boolean spaceUpdated = false;
+            int currentTimestamp = 0;
+            //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
+            do {
+                //gets data after the supplied timestamp
+
+                int nextTimestamp = space.getEndTimestampID() + 1000;
+                nextTimestamp = (nextTimestamp < lastTimestampID) ? nextTimestamp : lastTimestampID;
+
+                //if space is null, compute it from all aggregated monitored data recorded so far
+                List<CostEnrichedSnapshot> enrichedCostSnapshots = persistenceDelegate.extractInstantUsageSnapshot(nextTimestamp, serviceID);
+                dataFromTimestamp = new ArrayList<>();
+                for (CostEnrichedSnapshot snapshot : enrichedCostSnapshots) {
+                    dataFromTimestamp.add(snapshot.getSnapshot());
+                }
+
+                currentTimestamp = nextTimestamp;
+
+                //check if new data has been collected between elasticity space querries
+                if (!dataFromTimestamp.isEmpty()) {
+                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+                    fct.setRequirements(requirements);
+                    fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
+                    //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+                    space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+                    spaceUpdated = true;
+                }
+
+            } while (!dataFromTimestamp.isEmpty() && currentTimestamp < lastTimestampID);
+
+            //persist cached space
+            if (spaceUpdated) {
+                persistenceDelegate.writeInstantCostElasticitySpace(space, serviceID);
+            }
+        }
+
+        return space;
+    }
+
 //    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(String serviceID) {
 //        List<MonitoredElementMonitoringSnapshot> elementMonitoringSnapshots = new ArrayList<MonitoredElementMonitoringSnapshot>();
 //        for (ServiceMonitoringSnapshot monitoringSnapshot : persistenceDelegate.extractMonitoringData(serviceID)) {
@@ -553,7 +676,7 @@ public class CostEvalManager {
 
         List<Metric> metrics = null;
 
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(serviceID);
+        ElasticitySpace space = persistenceDelegate.extractLatestInstantCostElasticitySpace(serviceID);
 
         if (space == null) {
             log.error("Elasticity Space returned is null");
@@ -612,7 +735,7 @@ public class CostEvalManager {
 
         List<Metric> metrics = null;
 
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(element.getId());
+        ElasticitySpace space = persistenceDelegate.extractLatestInstantCostElasticitySpace(element.getId());
 
         Map<Metric, List<MetricValue>> map = space.getMonitoredDataForService(element);
         if (map != null) {
@@ -636,7 +759,10 @@ public class CostEvalManager {
 
     }
 
-    public String getElasticitySpaceJSON(String serviceID, MonitoredElement element) {
+    public String getInstantCostSpaceJSON(String serviceID, String monitoredElementID, String monitoredElementLevel) {
+
+        MonitoredElement element = new MonitoredElement(monitoredElementID)
+                .withLevel(MonitoredElement.MonitoredElementLevel.valueOf(monitoredElementLevel));
 
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
         // if no service configuration, we can't have elasticity space function
@@ -649,50 +775,13 @@ public class CostEvalManager {
         }
 
         Date before = new Date();
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(serviceID);
+        ElasticitySpace space = persistenceDelegate.extractLatestInstantCostElasticitySpace(serviceID);
 
         String jsonRepr = jsonConverter.convertElasticitySpace(space, element);
 
         Date after = new Date();
         log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return jsonRepr;
-    }
-
-    /**
-     * @param element
-     * @return also contains the monitored values
-     */
-    public ElasticitySpaceXML getCompleteElasticitySpaceXML(String serviceID, MonitoredElement element) {
-        Date before = new Date();
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
-
-        if (cfg == null) {
-            return new ElasticitySpaceXML();
-        }
-
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
-        ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXMLCompletely(space, element);
-        Date after = new Date();
-        log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
-        return elasticitySpaceXML;
-    }
-
-    /**
-     * @param element
-     * @return contains only the Metric and their ElasticityBoundaries
-     */
-    public ElasticitySpaceXML getElasticitySpaceXML(String serviceID, MonitoredElement element) {
-        Date before = new Date();
-        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
-        if (cfg == null) {
-            return new ElasticitySpaceXML();
-        }
-
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(cfg.getServiceConfiguration().getId());
-        ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXML(space, element);
-        Date after = new Date();
-        log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
-        return elasticitySpaceXML;
     }
 
     public MonitoredElementMonitoringSnapshot getTotalServiceCostXML(String serviceID) {

@@ -155,6 +155,14 @@ public class CostEvalService {
         return costEvalManager.getInstantCostJSON(serviceID);
     }
 
+    @GET
+    @Path("/{serviceID}/cost/instant/elasticityspace/{monitoredElementID}/{monitoredElementLevel}/json")
+    @Produces("application/json")
+    public String getInstantCostPerUsageElasticitySpaceJSON(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        return costEvalManager.getInstantCostSpaceJSON(serviceID, monitoredElementID, monitoredElementlevel);
+    }
 
     @GET
     @Path("/{serviceID}/cost/total/detailed")

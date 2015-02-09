@@ -33,7 +33,7 @@
 </style>
 <body>
     <script src="http://d3js.org/d3.v3.js"></script>
-    <script src="./spin.js" type="text/javascript"></script>
+    <script src="scripts/spin.js" type="text/javascript"></script>
     <div id="loadingIcon"></div>
     <script>
 
@@ -474,7 +474,7 @@
 
         }
 
-        var elSpaceColors = ["72B095", "D13F31", "D13F31"];
+        var elSpaceColors = ["#72B095", "#D13F31", "#D13F31"];
         var elPathwayColors = ["#1C4946", "#1F7872", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"];
         //       
         var lineThickness = new Array("3px", "3px", "3px");
@@ -503,9 +503,9 @@
             }
 
             elasticitySpaceRequest.onreadystatechange = processElasticitySpaceRequestResponse;
-            elasticitySpaceRequest.open("POST", "./REST_WS/" + vars[0] + "/elasticityspace", true);
-            elasticitySpaceRequest.setRequestHeader('Content-type', 'application/xml');
-            elasticitySpaceRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
+            elasticitySpaceRequest.open("GET", "./REST_WS/" + vars[0] + "/cost/instant/elasticityspace/" +vars[1] + "/" + vars[2] + "/json", true);
+            elasticitySpaceRequest.setRequestHeader('Content-type', 'application/json');
+//            elasticitySpaceRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
 
         }
 
@@ -530,31 +530,32 @@
 
         function drawElSpace(elSpace, vars) {
 
-            elSpaceDiv.selectAll("h2").remove();
-            elSpaceDiv.selectAll("svg").remove();
+            if (elSpace && elSpace.dimensions) {
 
-            elSpaceDiv.append("h2").text("Elasticity Space  for " + vars[1]);
+                elSpaceDiv.selectAll("h2").remove();
+                elSpaceDiv.selectAll("svg").remove();
 
-            maxColumns = Math.floor(window.innerWidth / (width + 60));
 
-            elSpaceSVGHeight = Math.ceil(elSpace.dimensions.length / maxColumns) * (height + 120);
+                maxColumns = Math.floor(window.innerWidth / (width + 60));
 
-            elSpaceSVG = elSpaceDiv.append("svg")
-                    .attr("width", window.innerWidth)
-                    .attr("height", elSpaceSVGHeight)
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                elSpaceSVGHeight = Math.ceil(elSpace.dimensions.length / maxColumns) * (height + 120);
 
-            elSpaceSVG.append("line")
-                    .attr("x1", -margin.left)
-                    .attr("y1", -20)
-                    .attr("x2", window.innerWidth)
-                    .attr("y2", -20)
-                    .attr("stroke-width", 1)
-                    .attr("stroke", "black");
+                elSpaceSVG = elSpaceDiv.append("svg")
+                        .attr("width", window.innerWidth)
+                        .attr("height", elSpaceSVGHeight)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            generateElSpaceChart(elSpace, elSpaceSVG, lineThickness, elSpaceColors, -50, 20, width, height, "Time (s)");
+                elSpaceSVG.append("line")
+                        .attr("x1", -margin.left)
+                        .attr("y1", -20)
+                        .attr("x2", window.innerWidth)
+                        .attr("y2", -20)
+                        .attr("stroke-width", 1)
+                        .attr("stroke", "black");
 
+                generateElSpaceChart(elSpace, elSpaceSVG, lineThickness, elSpaceColors, -50, 20, width, height, "Time (s)");
+            }
         }
 
 

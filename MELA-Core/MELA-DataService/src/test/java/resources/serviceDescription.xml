@@ -1,0 +1,18 @@
+<MonitoredElement id="HelloElasticity" level="SERVICE">
+   
+    <MonitoredElement id="EventProcessingTopology" level="SERVICE_TOPOLOGY">
+        <MonitoredElement id="LoadBalancerUnit" level="SERVICE_UNIT">
+            <MonitoredElement id="10.99.0.18" level="VM">
+                <UsedCloudOfferedServiceCfg cloudProviderName="Amazon" cloudProviderID="251ed7c7-aa4d-49d4-b42b-7efefd970d6b" 
+name="m1.small" uuid="251ed7c7-aa4d-49d4-b42b-7efefd970d6b"/>
+                 <UsedCloudOfferedServiceCfg  cloudProviderName="Amazon" cloudProviderID="251ed7c7-aa4d-49d4-b42b-7efefd970d6b" name="network" uuid="38400000-8cf0-11bd-b23e-000000000003"/>
+            </MonitoredElement>
+        </MonitoredElement>
+        <MonitoredElement id="EventProcessingUnit" level="SERVICE_UNIT">
+            <MonitoredElement id="10.99.0.65" level="VM">
+                <UsedCloudOfferedServiceCfg cloudProviderName="Amazon" cloudProviderID="251ed7c7-aa4d-49d4-b42b-7efefd970d6b"  name="m1.medium" uuid="38400000-8cf0-11bd-b23e-000000000001"/>
+                 <UsedCloudOfferedServiceCfg  cloudProviderName="Amazon" cloudProviderID="251ed7c7-aa4d-49d4-b42b-7efefd970d6b" name="network" uuid="38400000-8cf0-11bd-b23e-000000000003"/>
+            </MonitoredElement>
+        </MonitoredElement>
+    </MonitoredElement>
+</MonitoredElement>

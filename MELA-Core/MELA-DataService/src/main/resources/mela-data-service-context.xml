@@ -15,11 +15,9 @@
        http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd
  http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
-
     <!-- MELA properties -->
     <context:property-placeholder location="file:./config/mela-data-service.properties"/>
 
-   
     <bean id="dataFreshnessAnalysisEngine" class="at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine">
     </bean>
     
@@ -35,7 +33,6 @@
         </amq:transportConnectors>
     </amq:broker>
     
-    
     <!--Metric validators-->
     <bean id="defaultMetricsValidationTest"  class="at.ac.tuwien.dsg.mela.dataservice.validation.impl.DefaultMetricValidationTest">
     </bean>
@@ -43,7 +40,6 @@
     <import resource="file:./config/dataSources.xml" />
     
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
-  
 
     <!-- database related configuration -->
 

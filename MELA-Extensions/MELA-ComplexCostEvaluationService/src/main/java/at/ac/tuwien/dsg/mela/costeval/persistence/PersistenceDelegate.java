@@ -89,93 +89,36 @@ public class PersistenceDelegate {
         }
     }
 
-    public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID) {
-
-        ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID);
-
-        //update space with new data
-        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration(monitoringSequenceID);
-
-        if (cfg == null) {
-            log.error("Retrieved empty configuration.");
-            return null;
-        } else if (cfg.getRequirements() == null) {
-            log.error("Retrieved configuration does not contain Requirements.");
-            return null;
-        } else if (cfg.getServiceConfiguration() == null) {
-            log.error("Retrieved configuration does not contain Service Configuration.");
-            return null;
-        }
-        Requirements requirements = cfg.getRequirements();
-        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
-
-        //if space == null, compute it 
-        if (space == null) {
-
-            //if space is null, compute it from all aggregated monitored data recorded so far
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = this.extractMonitoringData(monitoringSequenceID);
-
-            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-            fct.setRequirements(requirements);
-            fct.trainElasticitySpace(dataFromTimestamp);
-            space = fct.getElasticitySpace();
-
-            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-            space.setStartTimestampID(dataFromTimestamp.get(0).getTimestampID());
-            space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-
-            //persist cached space
-            this.writeElasticitySpace(space, monitoringSequenceID);
-        } else {
-            //else read max 1000 monitoring data records at a time, train space, and repeat as needed
-
-            //if space is not null, update it with new data
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
-
-            //used to detect last snapshot timestamp, and then extratc new data until that timestamp
-            ServiceMonitoringSnapshot monitoringSnapshot = this.extractLatestMonitoringData(monitoringSequenceID);
-
-            Integer lastTimestampID = (monitoringSnapshot == null) ? Integer.MAX_VALUE : monitoringSnapshot.getTimestampID();
-
-            boolean spaceUpdated = false;
-
-            //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
-            do {
-                //gets data after the supplied timestamp
-                dataFromTimestamp = this.extractMonitoringData(space.getEndTimestampID(), monitoringSequenceID);
-
-                if (dataFromTimestamp != null) {
-
-                    //remove all data after monitoringSnapshot timestamp
-                    Iterator<ServiceMonitoringSnapshot> it = dataFromTimestamp.iterator();
-                    while (it.hasNext()) {
-
-                        Integer timestampID = it.next().getTimestampID();
-                        if (timestampID > lastTimestampID) {
-                            it.remove();
-                        }
-
-                    }
-                }
-                //check if new data has been collected between elasticity space querries
-                if (!dataFromTimestamp.isEmpty()) {
-                    ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-                    fct.setRequirements(requirements);
-                    fct.trainElasticitySpace(space, dataFromTimestamp, requirements);
-                    //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-                    space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-                    spaceUpdated = true;
-                }
-
-            } while (!dataFromTimestamp.isEmpty());
-
-            //persist cached space
-            if (spaceUpdated) {
-                this.writeElasticitySpace(space, monitoringSequenceID);
+    public ElasticitySpace extractLatestInstantCostElasticitySpace(String monitoringSequenceID) {
+        String sql = "SELECT startTimestampID, endTimestampID, elasticitySpace from InstantCostElasticitySpace where monSeqID=? and ID=(SELECT MAX(ID) from InstantCostElasticitySpace where monSeqID=?);";
+        RowMapper<ElasticitySpace> rowMapper = new RowMapper<ElasticitySpace>() {
+            public ElasticitySpace mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToSpace(rs);
             }
-        }
+        };
 
-        return space;
+        //get last space
+        List<ElasticitySpace> space = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, monitoringSequenceID);
+        if (space.isEmpty()) {
+            return null;
+        } else {
+            return space.get(0);
+        }
+    }
+
+    public void writeInstantCostElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
+
+        String sql = "DELETE FROM InstantCostElasticitySpace WHERE monseqid=?";
+        jdbcTemplate.update(sql, elasticitySpace.getService().getId());
+
+        //add new entry
+        sql = "INSERT INTO InstantCostElasticitySpace (monSeqID, startTimestampID, endTimestampID, elasticitySpace) "
+                + "VALUES "
+                + "( (SELECT ID FROM MonitoringSeq WHERE id='"
+                + monitoringSequenceID + "')" + ", ? , ? " + ", ? )";
+
+        jdbcTemplate.update(sql, elasticitySpace.getStartTimestampID(), elasticitySpace.getEndTimestampID(), elasticitySpace);
+
     }
 
     public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID, final int startTimestampID, final int endTimestampID) {
@@ -264,6 +207,50 @@ public class PersistenceDelegate {
         return persistenceSQLAccess.getMonitoringSequencesIDs();
     }
 
+    public List<CostEnrichedSnapshot> extractInstantUsageSnapshotByTimeInterval(int startTimestampID, int endTimestampID, String serviceID) {
+
+        String sql = "SELECT InstantCostHistory.timestampID, Timestamp.timestamp, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
+                + "ON InstantCostHistory.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
+                + "AND Timestamp.timestamp <=  ? AND InstantCostHistory.monSeqID=?;";
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots;
+        }
+    }
+
+    public List<CostEnrichedSnapshot> extractInstantUsageSnapshot(int timestamp, String monitoringSequenceID) {
+        String sql = "SELECT InstantCostHistory.timestampID, Timestamp.timestamp, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
+                + "ON InstantCostHistory.timestampID= Timestamp.ID where InstantCostHistory.monSeqID=? and InstantCostHistory.timestampID > ? LIMIT 1000;";
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, timestamp);
+
+    }
+
+    public List<CostEnrichedSnapshot> extractInstantUsageSnapshot(String monitoringSequenceID) {
+        String sql = "SELECT InstantCostHistory.timestampID, Timestamp.timestamp, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
+                + "ON InstantCostHistory.timestampID= Timestamp.ID where InstantCostHistory.monSeqID=? LIMIT 1000;";
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
+    }
+
     //    CaschedHistoricalUsage (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int,
     //    data  LONGBLOB, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
     public CostEnrichedSnapshot extractTotalUsageSnapshot(String serviceID) {
@@ -297,7 +284,7 @@ public class PersistenceDelegate {
 
     }
 
-    public CostEnrichedSnapshot extractInstantCostSnapshot(String serviceID) {
+    public CostEnrichedSnapshot extractLastInstantCostSnapshot(String serviceID) {
         String sql = "SELECT InstantCostHistory.timestampID, InstantCostHistory.data from InstantCostHistory where "
                 + "ID=(SELECT MAX(ID) from InstantCostHistory where monSeqID=?);";
         RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
@@ -383,6 +370,37 @@ public class PersistenceDelegate {
             CostEnrichedSnapshot snapshot = (CostEnrichedSnapshot) rs.getObject(2);
             snapshot.setLastUpdatedTimestampID(sTimestamp);
             return snapshot;
+        }
+    }
+
+    private ElasticitySpace mapToSpace(ResultSet rs) throws SQLException {
+
+        int startTimestamp = rs.getInt(1);
+        int endTimestamp = rs.getInt(2);
+        Object data = rs.getObject(3);
+
+        //if array of bytes as mysql returns
+        if (data instanceof byte[]) {
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
+                ObjectInput in = new ObjectInputStream(bis);
+                ElasticitySpace space = (ElasticitySpace) in.readObject();
+                space.setStartTimestampID(startTimestamp);
+                space.setEndTimestampID(endTimestamp);
+                return space;
+            } catch (ClassNotFoundException ex) {
+                log.info(ex.getMessage(), ex);
+                return new ElasticitySpace();
+            } catch (IOException ex) {
+                log.info(ex.getMessage(), ex);
+                return new ElasticitySpace();
+            }
+        } else {
+            //can convert and space with H2 and HyperSQL adapters
+            ElasticitySpace space = (ElasticitySpace) rs.getObject(3);
+            space.setStartTimestampID(startTimestamp);
+            space.setEndTimestampID(endTimestamp);
+            return space;
         }
     }
 
