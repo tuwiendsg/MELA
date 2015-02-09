@@ -43,6 +43,16 @@
             <version>1.1</version>
             <type>jar</type>
         </dependency>
+        
+        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
@@ -55,14 +65,7 @@
             <version>3.7</version>
         </dependency>
         
-
-        <!-- todo why are we using Junit 3???-->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
+ 
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>

@@ -46,6 +46,13 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         ENUM
     }
 
+    private Double freshness;
+
+    /**
+     * In seconds.
+     */
+    private Long timeSinceCollection;
+
     public static final MetricValue UNDEFINED = new MetricValue(-1);
 
     @XmlElement(name = "Value", required = true)
@@ -54,15 +61,20 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
     @XmlAttribute(name = "ValueType", required = true)
     private ValueType valueType;
 
-    @XmlAttribute(name = "Accuracy", required = true)
-    private Double accuracy;
-
     public ValueType getValueType() {
         return valueType;
     }
 
     public void setValueType(ValueType valueType) {
         this.valueType = valueType;
+    }
+
+    public Long getTimeSinceCollection() {
+        return timeSinceCollection;
+    }
+
+    public void setTimeSinceCollection(Long timeSinceCollection) {
+        this.timeSinceCollection = timeSinceCollection;
     }
 
     public MetricValue(Object value) {
@@ -241,14 +253,6 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         return "" + value;
     }
 
-    public Double getAccuracy() {
-        return accuracy;
-    }
-
-    public void setAccuracy(Double accuracy) {
-        this.accuracy = accuracy;
-    }
-
     public MetricValue withValue(final Object value) {
         this.value = value;
         return this;
@@ -263,9 +267,22 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
         return this.value != null && this.value.toString().equals(UNDEFINED.getValue().toString());
     }
 
-    public MetricValue withAccuracy(final Double accuracy) {
-        this.accuracy = accuracy;
+    public MetricValue withCollectionTimestamp(final Long collectionTimestamp) {
+        this.timeSinceCollection = collectionTimestamp;
         return this;
+    }
+
+    public MetricValue withFreshness(final Double freshness) {
+        this.freshness = freshness;
+        return this;
+    }
+
+    public Double getFreshness() {
+        return freshness;
+    }
+
+    public void setFreshness(Double freshness) {
+        this.freshness = freshness;
     }
 
 }

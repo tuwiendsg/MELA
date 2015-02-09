@@ -42,10 +42,13 @@ import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
 import java.io.PrintWriter;
 import java.net.Socket;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -61,6 +64,7 @@ public class GangliaDataSource extends AbstractPollingDataSource {
     private String hostname = DEFAULT_HOST;
 
     private int port = DEFAULT_PORT;
+
 
     @Override
     public Long getRateAtWhichDataShouldBeRead() {
@@ -118,6 +122,8 @@ public class GangliaDataSource extends AbstractPollingDataSource {
             for (GangliaClusterInfo gangliaCluster : info.getClusters()) {
                 //currently ClusterInfo is ignored, and we go and extract the HostInfo
 
+                Long currentTimestamp = Long.parseLong(gangliaCluster.localtime);
+
                 for (GangliaHostInfo gangliaHostInfo : gangliaCluster.hostsInfo) {
 
                     MonitoredElementData elementData = new MonitoredElementData();
@@ -140,7 +146,7 @@ public class GangliaDataSource extends AbstractPollingDataSource {
                         CollectedMetricValue metricInfo = new CollectedMetricValue();
                         metricInfo.setName(gangliaMetricInfo.name);
                         metricInfo.setType(gangliaMetricInfo.type);
-                        metricInfo.setUnits(gangliaMetricInfo.units);
+                        metricInfo.setUnits(gangliaMetricInfo.units.replace("sec", "s"));
                         metricInfo.setValue(gangliaMetricInfo.value);
                         metricInfo.setTimeSinceCollection(gangliaMetricInfo.getTn());
 

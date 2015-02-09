@@ -25,11 +25,13 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -37,10 +39,21 @@ import java.util.*;
 @Service("autoUnguidedStructureDetectionDataAccess")
 public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAccess {
 
+    @Autowired
+    private DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine;
+
     static final Logger log = LoggerFactory.getLogger(DataAccessWithUnguidedAutoStructureDetection.class);
 
     public DataAccessWithUnguidedAutoStructureDetection() {
 
+    }
+
+    public DataFreshnessAnalysisEngine getDataFreshnessAnalysisEngine() {
+        return dataFreshnessAnalysisEngine;
+    }
+
+    public void setDataFreshnessAnalysisEngine(DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine) {
+        this.dataFreshnessAnalysisEngine = dataFreshnessAnalysisEngine;
     }
 
     /**
@@ -160,7 +173,12 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
                                 MonitoredElement structureElement = elements.get(element);
 
                                 HashMap<Metric, MetricValue> elementValues = new LinkedHashMap<Metric, MetricValue>();
-                                MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                                Long metricValueCollectionTimestamp = Long.parseLong(metricInfo.getTimeSinceCollection());
+                                Double freshness = dataFreshnessAnalysisEngine.evaluateFreshness(new Metric(metricInfo.getName(), metricInfo.getType()), metricValueCollectionTimestamp);
+
+                                MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue())
+                                        .withFreshness(freshness)
+                                        .withCollectionTimestamp(metricValueCollectionTimestamp);
                                 elementValues.put(metric, metricValue);
 
                                 MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureElement, elementValues);
@@ -171,7 +189,12 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
                         }
                     } else {
                         //else put it in the generic VM metrics
-                        MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                        Long metricValueCollectionTimestamp = Long.parseLong(metricInfo.getTimeSinceCollection());
+                        Double freshness = dataFreshnessAnalysisEngine.evaluateFreshness(new Metric(metricInfo.getName(), metricInfo.getType()), metricValueCollectionTimestamp);
+
+                        MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue())
+                                .withFreshness(freshness)
+                                .withCollectionTimestamp(metricValueCollectionTimestamp);
                         monitoredMetricValues.put(metric, metricValue);
                     }
                 }
@@ -219,6 +242,11 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
     @Override
     public synchronized MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement suppliedMonitoringElement) {
         throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
+    }
+
+    public DataAccessWithUnguidedAutoStructureDetection withDataFreshnessAnalysisEngine(final DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine) {
+        this.dataFreshnessAnalysisEngine = dataFreshnessAnalysisEngine;
+        return this;
     }
 
 }

@@ -44,8 +44,8 @@ public class CollectedMetricValue {
     @XmlAttribute(name = "Units")
     private String units;
 
-    @XmlAttribute(name = "TimeSinceCollection")
-    //in seconds
+    @XmlAttribute(name = "Age")
+    //timestamp at which metric was collected
     private String timeSinceCollection;
 
     @XmlAttribute(name = "MonitoredElementLevel")

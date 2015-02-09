@@ -147,4 +147,32 @@ public class PersistenceDelegate {
 
     }
 
+    public PersistenceSQLAccess getPersistenceSQLAccess() {
+        return persistenceSQLAccess;
+    }
+
+    public void setPersistenceSQLAccess(PersistenceSQLAccess persistenceSQLAccess) {
+        this.persistenceSQLAccess = persistenceSQLAccess;
+    }
+
+    public ConfigurationUtility getConfigurationUtility() {
+        return configurationUtility;
+    }
+
+    public void setConfigurationUtility(ConfigurationUtility configurationUtility) {
+        this.configurationUtility = configurationUtility;
+    }
+
+    public PersistenceDelegate withPersistenceSQLAccess(final PersistenceSQLAccess persistenceSQLAccess) {
+        this.persistenceSQLAccess = persistenceSQLAccess;
+        return this;
+    }
+
+    public PersistenceDelegate withConfigurationUtility(final ConfigurationUtility configurationUtility) {
+        this.configurationUtility = configurationUtility;
+        return this;
+    }
+
+  
+
 }

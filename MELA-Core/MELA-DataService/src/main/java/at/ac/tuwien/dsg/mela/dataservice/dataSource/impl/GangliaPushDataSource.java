@@ -39,8 +39,10 @@ import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.CollectedMetricValue;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
 import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -58,6 +60,7 @@ import javax.jms.Session;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
@@ -182,7 +185,8 @@ public class GangliaPushDataSource {
                                                 try {
                                                     NumericalCollectedMetricValue numerical = NumericalCollectedMetricValue.from(metricValue);
 
-                                                    ObjectMessage message = session.createObjectMessage(numerical);                                                    producer.send(message);
+                                                    ObjectMessage message = session.createObjectMessage(numerical);
+                                                    producer.send(message);
                                                 } catch (JMSException ex) {
                                                     logger.error(ex.getMessage(), ex);
                                                 }
@@ -272,9 +276,10 @@ public class GangliaPushDataSource {
                     "" + new Date().getTime());
             monitoringData.setSource(info.getSource());
 
-            for (GangliaClusterInfo gangliaCluster
-                    : info.getClusters()) {
+            for (GangliaClusterInfo gangliaCluster : info.getClusters()) {
                 //currently ClusterInfo is ignored, and we go and extract the HostInfo
+
+                Long currentTimestamp = Long.parseLong(gangliaCluster.localtime);
 
                 for (GangliaHostInfo gangliaHostInfo : gangliaCluster.hostsInfo) {
 
@@ -298,7 +303,7 @@ public class GangliaPushDataSource {
                         CollectedMetricValue metricInfo = new CollectedMetricValue();
                         metricInfo.setName(gangliaMetricInfo.name);
                         metricInfo.setType(gangliaMetricInfo.type);
-                        metricInfo.setUnits(gangliaMetricInfo.units);
+                        metricInfo.setUnits(gangliaMetricInfo.units.replace("sec", "s"));
                         metricInfo.setValue(gangliaMetricInfo.value);
                         metricInfo.setTimeSinceCollection(gangliaMetricInfo.getTn());
                         metricInfo.setMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.VM.toString());

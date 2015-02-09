@@ -75,6 +75,16 @@ public class PersistenceSQLAccess {
     public PersistenceSQLAccess() {
     }
 
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    
+    
     @PostConstruct
     public void init() {
         log.debug("Creating new JdbcTemplate with datasource {}", dataSource);
@@ -854,5 +864,7 @@ public class PersistenceSQLAccess {
             return snapshot;
         }
     }
+
+    
 
 }
