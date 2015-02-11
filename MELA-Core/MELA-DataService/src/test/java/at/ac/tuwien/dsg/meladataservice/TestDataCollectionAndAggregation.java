@@ -16,6 +16,7 @@
  */
 package at.ac.tuwien.dsg.meladataservice;
 
+import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
@@ -25,6 +26,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
 import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine;
@@ -82,7 +84,12 @@ public class TestDataCollectionAndAggregation {
             server.setRestartOnShutdown(false);
             server.setNoSystemExit(true);
             server.setPort(9001);
-            server.setDatabasePath(0, "/tmp/test/mela");
+
+            if (System.getProperty("os.name").contains("Windows")) {
+                server.setDatabasePath(0, "C:\\Windows\\Temp\\mela_test");
+            } else {
+                server.setDatabasePath(0, "/tmp/test/mela");
+            }
             server.setDatabaseName(0, "mela");
 
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -147,7 +154,6 @@ public class TestDataCollectionAndAggregation {
                 .unmarshal(new FileReader(new File("src/test/java/resources/serviceDescription.xml")));
 
         {
-
             persistenceDelegate.writeMonitoringSequenceId(element.getId());
 
             JAXBContext rulesContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
@@ -159,6 +165,7 @@ public class TestDataCollectionAndAggregation {
 
             persistenceDelegate.writeConfiguration(element.getId(), new ConfigurationXMLRepresentation(element, compositionRulesConfiguration, new Requirements()));
         }
+
         ConfigurationXMLRepresentation config = persistenceDelegate.getLatestConfiguration(element.getId());
 
         element = config.getServiceConfiguration();
@@ -182,7 +189,8 @@ public class TestDataCollectionAndAggregation {
 
         DataAggregationEngine aggregationEngine = new DataAggregationEngine();
 
-        ServiceMonitoringSnapshot enrichedSnapshot = aggregationEngine.enrichMonitoringData(compositionRulesConfiguration, monitoringSnapshot);;
+        ServiceMonitoringSnapshot enrichedSnapshot = aggregationEngine.enrichMonitoringData(compositionRulesConfiguration, monitoringSnapshot);
+         
 
         persistenceDelegate.writeInTimestamp("1", element, element.getId());
         persistenceDelegate.writeMonitoringData("1", monitoringSnapshot, element.getId());

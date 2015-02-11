@@ -52,6 +52,12 @@ public class LightweightEncounterRateElasticityPathway implements Serializable {
     private int sizeOfDataToClassify = 10;
     private SOM2 som;
 
+    private final List<Metric> neuronsDimensions;
+
+    {
+        neuronsDimensions = new ArrayList<>();
+    }
+
     public LightweightEncounterRateElasticityPathway(int sizeOfDataToClassify) {
         this.sizeOfDataToClassify = sizeOfDataToClassify;
         som = new SOM2(cellsSize, sizeOfDataToClassify, 0, upperNormalizationValue, new SimpleSOMStrategy());
@@ -76,7 +82,6 @@ public class LightweightEncounterRateElasticityPathway implements Serializable {
             }
         });
 
-
         return neurons;
     }
 
@@ -87,19 +92,47 @@ public class LightweightEncounterRateElasticityPathway implements Serializable {
      * @param dataToClassify a set of monitoring snapshots to classify
      */
     public void trainElasticityPathway(Map<Metric, List<MetricValue>> dataToClassify) {
-
-        List<SignatureEntry> mapped = new ArrayList<SignatureEntry>();
-        //classify all monitoring data
-        //need to go trough all monitoring data, and push the classified items, such that I respect the monitored sequence.
         if (dataToClassify == null || dataToClassify.values().isEmpty()) {
             Logger.getLogger(this.getClass()).log(Level.ERROR, "Empty data to classify as elasticity pathway");
             return;
         }
+
+        if (neuronsDimensions.isEmpty()) {
+            neuronsDimensions.addAll(dataToClassify.keySet());
+        } else {
+            if (neuronsDimensions.size() != dataToClassify.keySet().size()) {
+                Logger.getLogger(this.getClass()).log(Level.ERROR, "Trying to train with more/ress metrics. Original metrics number " + neuronsDimensions.size()
+                        + " and now training with " + dataToClassify.keySet().size());
+                return;
+            } else if (!neuronsDimensions.equals(dataToClassify)) {
+                String originalMetrics = "";
+                String newMetrics = "";
+
+                for (Metric m : neuronsDimensions) {
+                    originalMetrics += m.toString() + "; ";
+                }
+
+                for (Metric m : dataToClassify.keySet()) {
+                    newMetrics += m.toString() + "; ";
+                }
+
+                Logger.getLogger(this.getClass()).log(Level.ERROR, "Trying to train with different metrics. Original metrics "
+                        + originalMetrics
+                        + " and now training with " + newMetrics);
+                return;
+            }
+        }
+
+        List<SignatureEntry> mapped = new ArrayList<SignatureEntry>();
+        //classify all monitoring data
+        //need to go trough all monitoring data, and push the classified items, such that I respect the monitored sequence.
+
         int maxIndex = dataToClassify.values().iterator().next().size();
 
         for (int i = 0; i < maxIndex; i++) {
             SignatureEntry signatureEntry = new SignatureEntry();
             for (Metric metric : dataToClassify.keySet()) {
+
                 List<MetricValue> values = dataToClassify.get(metric);
 
                 //maybe we have diff value count for different metrics. Not sure when his might happen though.
@@ -136,7 +169,7 @@ public class LightweightEncounterRateElasticityPathway implements Serializable {
         }
 
         //classify all entries
-        //not really sure what this for does. I think nothing?
+        //updates classified values
         for (SignatureEntry signatureEntry : mapped) {
 
             //build the mappedNeuron used to classify the situation
@@ -155,10 +188,9 @@ public class LightweightEncounterRateElasticityPathway implements Serializable {
             signatureEntry.mappedNeuron = som.classifySituation(new Neuron(values));
         }
 
-
     }
 
-    public class SignatureEntry  implements Serializable{
+    public class SignatureEntry implements Serializable {
 
         private Neuron mappedNeuron;
         private Map<Metric, MetricValue> classifiedSituation;
@@ -199,6 +231,9 @@ public class LightweightEncounterRateElasticityPathway implements Serializable {
         this.som = som;
         return this;
     }
-    
-    
+
+    public List<Metric> getNeuronsDimensions() {
+        return neuronsDimensions;
+    }
+
 }

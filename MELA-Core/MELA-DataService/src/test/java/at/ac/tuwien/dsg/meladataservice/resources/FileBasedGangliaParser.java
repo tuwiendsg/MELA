@@ -52,8 +52,6 @@ public class FileBasedGangliaParser extends AbstractPollingDataSource {
 
     static final Logger logger = LoggerFactory.getLogger(FileBasedGangliaParser.class);
 
-     
-
     private File file;
 
     public FileBasedGangliaParser(File file) {
@@ -741,5 +739,5 @@ public class FileBasedGangliaParser extends AbstractPollingDataSource {
         }
 
     }
- 
+
 }

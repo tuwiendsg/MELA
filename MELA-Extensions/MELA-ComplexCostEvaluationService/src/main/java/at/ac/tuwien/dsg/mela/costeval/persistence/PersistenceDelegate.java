@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.costeval.persistence;
 
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.ServiceElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
@@ -75,13 +76,17 @@ public class PersistenceDelegate {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public void setPersistenceSQLAccess(PersistenceSQLAccess persistenceSQLAccess) {
+        this.persistenceSQLAccess = persistenceSQLAccess;
+    }
+
     @PostConstruct
     public void init() {
         log.debug("Creating new JdbcTemplate with datasource {}", dataSource);
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public void writeElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
+    public void persistElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
         try {
             persistenceSQLAccess.writeElasticitySpace(elasticitySpace, monitoringSequenceID);
         } catch (Exception e) {
@@ -106,7 +111,7 @@ public class PersistenceDelegate {
         }
     }
 
-    public void writeInstantCostElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
+    public void persistInstantCostElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
 
         String sql = "DELETE FROM InstantCostElasticitySpace WHERE monseqid=?";
         jdbcTemplate.update(sql, elasticitySpace.getService().getId());
@@ -121,55 +126,86 @@ public class PersistenceDelegate {
 
     }
 
-    public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID, final int startTimestampID, final int endTimestampID) {
+    public void persistInstantCostElasticityPathway(ServiceElasticityPathway elasticityPathway, String monitoringSequenceID) {
 
-        ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID);
+        String sql = "DELETE FROM InstantCostElasticityPathway WHERE monseqid=?";
+        jdbcTemplate.update(sql, monitoringSequenceID);
 
-        //update space with new data
-        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration(monitoringSequenceID);
+        //add new entry
+        sql = "INSERT INTO InstantCostElasticityPathway (monSeqID, timestampID, elasticityPathway) "
+                + "VALUES "
+                + "( (SELECT ID FROM MonitoringSeq WHERE id='"
+                + monitoringSequenceID + "')" + ", ? , ? )";
 
-        if (cfg == null) {
-            log.error("Retrieved empty configuration.");
-            return null;
-        } else if (cfg.getRequirements() == null) {
-            log.error("Retrieved configuration does not contain Requirements.");
-            return null;
-        } else if (cfg.getServiceConfiguration() == null) {
-            log.error("Retrieved configuration does not contain Service Configuration.");
-            return null;
-        }
-        Requirements requirements = cfg.getRequirements();
-        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
-
-        //if space == null, compute it 
-        if (space == null) {
-
-            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-            fct.setRequirements(requirements);
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<ServiceMonitoringSnapshot>();
-
-            int currentStart = startTimestampID;
-            do {
-                dataFromTimestamp = this.extractMonitoringDataByTimeInterval(currentStart, endTimestampID, monitoringSequenceID);
-                fct.trainElasticitySpace(dataFromTimestamp);
-                currentStart += 1000; //advance start timestamp with 1000, as we read max 1000 records at once
-            } while (dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID() < endTimestampID);
-
-            space = fct.getElasticitySpace();
-
-            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-            space.setStartTimestampID(startTimestampID);
-            space.setEndTimestampID(endTimestampID);
-
-            //check how much data we actually extracted, as the extraction limits data to 1000
-            //persist cached space
-            this.writeElasticitySpace(space, monitoringSequenceID);
-
-        }
-        return space;
+        jdbcTemplate.update(sql, elasticityPathway.getTimestampID(), elasticityPathway);
 
     }
 
+    public ServiceElasticityPathway extractInstantCostElasticityPathway(String monitoringSequenceID) {
+        String sql = "SELECT timestampID, elasticityPathway from InstantCostElasticityPathway where monSeqID=? and ID=(SELECT MAX(ID) from InstantCostElasticityPathway where monSeqID=?);";
+        RowMapper<ServiceElasticityPathway> rowMapper = new RowMapper<ServiceElasticityPathway>() {
+            public ServiceElasticityPathway mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToPathway(rs);
+            }
+        };
+
+        //get last space
+        List<ServiceElasticityPathway> space = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, monitoringSequenceID);
+        if (space.isEmpty()) {
+            return null;
+        } else {
+            return space.get(0);
+        }
+    }
+
+//    public ElasticitySpace extractLatestElasticitySpace(String monitoringSequenceID, final int startTimestampID, final int endTimestampID) {
+//
+//        ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace(monitoringSequenceID);
+//
+//        //update space with new data
+//        ConfigurationXMLRepresentation cfg = this.getLatestConfiguration(monitoringSequenceID);
+//
+//        if (cfg == null) {
+//            log.error("Retrieved empty configuration.");
+//            return null;
+//        } else if (cfg.getRequirements() == null) {
+//            log.error("Retrieved configuration does not contain Requirements.");
+//            return null;
+//        } else if (cfg.getServiceConfiguration() == null) {
+//            log.error("Retrieved configuration does not contain Service Configuration.");
+//            return null;
+//        }
+//        Requirements requirements = cfg.getRequirements();
+//        MonitoredElement serviceConfiguration = cfg.getServiceConfiguration();
+//
+//        //if space == null, compute it 
+//        if (space == null) {
+//
+//            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+//            fct.setRequirements(requirements);
+//            List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<ServiceMonitoringSnapshot>();
+//
+//            int currentStart = startTimestampID;
+//            do {
+//                dataFromTimestamp = this.extractMonitoringDataByTimeInterval(currentStart, endTimestampID, monitoringSequenceID);
+//                fct.trainElasticitySpace(dataFromTimestamp);
+//                currentStart += 1000; //advance start timestamp with 1000, as we read max 1000 records at once
+//            } while (dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID() < endTimestampID);
+//
+//            space = fct.getElasticitySpace();
+//
+//            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+//            space.setStartTimestampID(startTimestampID);
+//            space.setEndTimestampID(endTimestampID);
+//
+//            //check how much data we actually extracted, as the extraction limits data to 1000
+//            //persist cached space
+//            this.writeElasticitySpace(space, monitoringSequenceID);
+//
+//        }
+//        return space;
+//
+//    }
     public List<ServiceMonitoringSnapshot> extractLastXMonitoringDataSnapshots(int x, String monitoringSequenceID) {
 
         return persistenceSQLAccess.extractLastXMonitoringDataSnapshots(x, monitoringSequenceID);
@@ -209,7 +245,7 @@ public class PersistenceDelegate {
 
     public List<CostEnrichedSnapshot> extractInstantUsageSnapshotByTimeInterval(int startTimestampID, int endTimestampID, String serviceID) {
 
-        String sql = "SELECT InstantCostHistory.timestampID, Timestamp.timestamp, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
+        String sql = "SELECT InstantCostHistory.timestampID, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
                 + "ON InstantCostHistory.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
                 + "AND Timestamp.timestamp <=  ? AND InstantCostHistory.monSeqID=?;";
         RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
@@ -227,7 +263,7 @@ public class PersistenceDelegate {
     }
 
     public List<CostEnrichedSnapshot> extractInstantUsageSnapshot(int timestamp, String monitoringSequenceID) {
-        String sql = "SELECT InstantCostHistory.timestampID, Timestamp.timestamp, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
+        String sql = "SELECT InstantCostHistory.timestampID, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
                 + "ON InstantCostHistory.timestampID= Timestamp.ID where InstantCostHistory.monSeqID=? and InstantCostHistory.timestampID > ? LIMIT 1000;";
         RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
             public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -240,7 +276,8 @@ public class PersistenceDelegate {
     }
 
     public List<CostEnrichedSnapshot> extractInstantUsageSnapshot(String monitoringSequenceID) {
-        String sql = "SELECT InstantCostHistory.timestampID, Timestamp.timestamp, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
+
+        String sql = "SELECT InstantCostHistory.timestampID, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
                 + "ON InstantCostHistory.timestampID= Timestamp.ID where InstantCostHistory.monSeqID=? LIMIT 1000;";
         RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
             public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -402,6 +439,96 @@ public class PersistenceDelegate {
             space.setEndTimestampID(endTimestamp);
             return space;
         }
+    }
+
+    private ServiceElasticityPathway mapToPathway(ResultSet rs) throws SQLException {
+
+        int timestamp = rs.getInt(1);
+        Object data = rs.getObject(2);
+
+        //if array of bytes as mysql returns
+        if (data instanceof byte[]) {
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
+                ObjectInput in = new ObjectInputStream(bis);
+                ServiceElasticityPathway space = (ServiceElasticityPathway) in.readObject();
+                space.setTimestampID(timestamp);
+                return space;
+            } catch (ClassNotFoundException ex) {
+                log.info(ex.getMessage(), ex);
+                return new ServiceElasticityPathway();
+            } catch (IOException ex) {
+                log.info(ex.getMessage(), ex);
+                return new ServiceElasticityPathway();
+            }
+        } else {
+            //can convert and space with H2 and HyperSQL adapters
+            ServiceElasticityPathway space = (ServiceElasticityPathway) rs.getObject(3);
+            space.setTimestampID(timestamp);
+            return space;
+        }
+    }
+
+    public void removeService(String serviceID) {
+        String checkIfExistsSql = "select count(1) from MonitoringSeq where ID=?";
+
+        RowMapper<Long> rowMapper = new RowMapper<Long>() {
+            public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return rs.getLong(1);
+            }
+
+        };
+
+        if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, serviceID) == 1) {
+            {
+                log.debug("Removing InstantCostElasticitySpace for " + serviceID);
+                String sql = "delete from InstantCostElasticitySpace where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+            {
+                log.debug("Removing TotalCostHistory for " + serviceID);
+                String sql = "delete from TotalCostHistory where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing InstantCostHistory for " + serviceID);
+                String sql = "delete from InstantCostHistory where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+            {
+                log.debug("Removing CaschedHistoricalUsage for " + serviceID);
+                String sql = "delete from CaschedHistoricalUsage where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing RawCollectedData for " + serviceID);
+                String sql = "delete from RawCollectedData where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing Configuration for " + serviceID);
+                String sql = "delete from Configuration where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing Timestamp for " + serviceID);
+                String sql = "delete from Timestamp where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+
+            {
+                log.debug("Removing sequenceId from MonitoringSeq");
+                String sql = "delete from MonitoringSeq where ID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+        } else {
+            log.debug("sequenceId " + serviceID + " not found from in MontoringSeq");
+        }
+
     }
 
 }

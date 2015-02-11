@@ -18,15 +18,23 @@ package at.ac.tuwien.dsg.mela.costeval.engines;
 
 import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
+import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.ServiceElasticityPathway;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
+import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import at.ac.tuwien.dsg.mela.costeval.control.CostEvalManager;
 import static at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngine.log;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
+import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
@@ -37,6 +45,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.After;
@@ -45,7 +54,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hsqldb.server.ServerConstants;
@@ -63,6 +71,8 @@ public class CostEvalEngineTest {
 
 //    @Value("#{persistenceDelegate}")
     private PersistenceDelegate persistenceDelegate;
+
+    private PersistenceSQLAccess generalAccess;
 
     private org.hsqldb.Server server;
 
@@ -86,7 +96,13 @@ public class CostEvalEngineTest {
             server.setRestartOnShutdown(false);
             server.setNoSystemExit(true);
             server.setPort(9001);
-            server.setDatabasePath(0, "/tmp/mela");
+
+            if (System.getProperty("os.name").contains("Windows")) {
+                server.setDatabasePath(0, "C:\\Windows\\Temp\\mela_test");
+            } else {
+                server.setDatabasePath(0, "/tmp/test/mela");
+            }
+
             server.setDatabaseName(0, "mela");
 
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -110,7 +126,8 @@ public class CostEvalEngineTest {
             //read content of sql schema
             BufferedReader reader = null;
             try {
-                reader = new BufferedReader(new FileReader("src/test/java/resources/schema.sql"));
+
+                reader = new BufferedReader(new FileReader("src/test/java/resources/create-initial-db-schema.sql"));
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(CostEvalEngineTest.class.getName()).log(Level.SEVERE, null, ex);
                 fail(ex.getMessage());
@@ -125,6 +142,9 @@ public class CostEvalEngineTest {
             persistenceDelegate = new PersistenceDelegate();
             persistenceDelegate.setDataSource(dataSource);
             persistenceDelegate.setJdbcTemplate(jdbcTemplate);
+
+            generalAccess = new PersistenceSQLAccess().withDataSource(dataSource).withJdbcTemplate(jdbcTemplate);
+
         } catch (IOException ex) {
             Logger.getLogger(CostEvalEngineTest.class.getName()).log(Level.SEVERE, null, ex);
             fail(ex.getMessage());
@@ -195,17 +215,25 @@ public class CostEvalEngineTest {
                         .withName("m1.small")
                 );
 
+        MonitoredElement unit = new MonitoredElement("Unit").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
+                .withContainedElement(vm);
+
+        MonitoredElement topology = new MonitoredElement("Topology").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)
+                .withContainedElement(unit);
+
         MonitoredElement service = new MonitoredElement("Service").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE)
-                .withContainedElement(new MonitoredElement("Topology").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)
-                        .withContainedElement(new MonitoredElement("Unit").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
-                                .withContainedElement(vm)
-                        )
-                );
+                .withContainedElement(topology);
+
+        //make sure all is clean
+        persistenceDelegate.removeService(service.getId());
 
         ServiceMonitoringSnapshot monitoringSnapshot1 = new ServiceMonitoringSnapshot().withTimestamp("0");
 
         Metric instanceMetric = new Metric("instance", "#/s", Metric.MetricType.RESOURCE);
         Metric usageMetric = new Metric("usage", "#", Metric.MetricType.RESOURCE);
+
+        Metric ELEMENT_COST_METRIC = new Metric("element_cost", "costUnits", Metric.MetricType.COST);
+        Metric CHILDREN_COST_METRIC = new Metric("children_cost", "costUnits", Metric.MetricType.COST);
 
         Metric instanceMetricCost = new Metric("cost_instance_for_m1.small", "costUnits/s", Metric.MetricType.RESOURCE);
         Metric usageMetricCost = new Metric("cost_usage", "costUnits", Metric.MetricType.RESOURCE);
@@ -217,7 +245,20 @@ public class CostEvalEngineTest {
             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
             elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(0));
             elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(0));
+
+            MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
+            unitMonSnapshpot.addChild(elementMonitoringSnapshot);
+
+            MonitoredElementMonitoringSnapshot topologyMonSnapshpot = new MonitoredElementMonitoringSnapshot(topology);
+            topologyMonSnapshpot.addChild(unitMonSnapshpot);
+
+            MonitoredElementMonitoringSnapshot serviceMonSnapshpot = new MonitoredElementMonitoringSnapshot(service);
+            serviceMonSnapshpot.addChild(topologyMonSnapshpot);
+
             monitoringSnapshot1.addMonitoredData(elementMonitoringSnapshot);
+            monitoringSnapshot1.addMonitoredData(unitMonSnapshpot);
+            monitoringSnapshot1.addMonitoredData(topologyMonSnapshpot);
+            monitoringSnapshot1.addMonitoredData(serviceMonSnapshpot);
 
         }
         //add another monitoring snapshot
@@ -226,7 +267,20 @@ public class CostEvalEngineTest {
             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
             elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(1));
             elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(1));
+
+            MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
+            unitMonSnapshpot.addChild(elementMonitoringSnapshot);
+
+            MonitoredElementMonitoringSnapshot topologyMonSnapshpot = new MonitoredElementMonitoringSnapshot(topology);
+            topologyMonSnapshpot.addChild(unitMonSnapshpot);
+
+            MonitoredElementMonitoringSnapshot serviceMonSnapshpot = new MonitoredElementMonitoringSnapshot(service);
+            serviceMonSnapshpot.addChild(topologyMonSnapshpot);
+
             monitoringSnapshot2.addMonitoredData(elementMonitoringSnapshot);
+            monitoringSnapshot2.addMonitoredData(unitMonSnapshpot);
+            monitoringSnapshot2.addMonitoredData(topologyMonSnapshpot);
+            monitoringSnapshot2.addMonitoredData(serviceMonSnapshpot);
 
         }
 
@@ -247,9 +301,16 @@ public class CostEvalEngineTest {
 
         assertEquals(new MetricValue(1.0), cost1.getMonitoredData(vm).getMetricValue(instanceMetricCost));
         assertEquals(new MetricValue(0.5), cost1.getMonitoredData(vm).getMetricValue(usageMetricCost));
+        assertEquals(new MetricValue(1.5), cost1.getMonitoredData(service).getMetricValue(ELEMENT_COST_METRIC));
+        assertEquals(new MetricValue(1.5), cost1.getMonitoredData(service).getMetricValue(CHILDREN_COST_METRIC));
+
+        generalAccess.writeMonitoringSequenceId(service.getId());
+        generalAccess.writeInTimestamp("" + serviceUsageSnapshot1.getLastUpdatedTimestampID(), service, service.getId());
+        generalAccess.writeConfiguration(service.getId(), new ConfigurationXMLRepresentation(service, new CompositionRulesConfiguration(),
+                new Requirements()));
 
         persistenceDelegate.persistTotalUsageSnapshot(service.getId(), serviceUsageSnapshot1);
-        persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block1).withSnapshot(updatedTotalUsageSoFar1).withLastUpdatedTimestampID(cost1.getTimestampID()));
+        persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block1).withSnapshot(cost1).withLastUpdatedTimestampID(cost1.getTimestampID()));
 
         //add another monitoring snapshot
         ServiceMonitoringSnapshot monitoringSnapshot3 = new ServiceMonitoringSnapshot().withTimestamp("2000");
@@ -258,7 +319,19 @@ public class CostEvalEngineTest {
             elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(2));
             elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(2));
 
+            MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
+            unitMonSnapshpot.addChild(elementMonitoringSnapshot);
+
+            MonitoredElementMonitoringSnapshot topologyMonSnapshpot = new MonitoredElementMonitoringSnapshot(topology);
+            topologyMonSnapshpot.addChild(unitMonSnapshpot);
+
+            MonitoredElementMonitoringSnapshot serviceMonSnapshpot = new MonitoredElementMonitoringSnapshot(service);
+            serviceMonSnapshpot.addChild(topologyMonSnapshpot);
+
             monitoringSnapshot3.addMonitoredData(elementMonitoringSnapshot);
+            monitoringSnapshot3.addMonitoredData(unitMonSnapshpot);
+            monitoringSnapshot3.addMonitoredData(topologyMonSnapshpot);
+            monitoringSnapshot3.addMonitoredData(serviceMonSnapshpot);
 
         }
 
@@ -270,11 +343,14 @@ public class CostEvalEngineTest {
                 .withSnapshot(updatedTotalUsageSoFar2)
                 .withtLastUpdatedTimestampID(updatedTotalUsageSoFar2.getTimestampID());
 
+        generalAccess.writeInTimestamp("" + serviceUsageSnapshot2.getLastUpdatedTimestampID(), service, service.getId());
         persistenceDelegate.persistTotalCostSnapshot(service.getId(), serviceUsageSnapshot2);
 
         CompositionRulesBlock block2 = instance.createCompositionRulesForInstantUsageCost(cloudProvidersMap, service, serviceUsageSnapshot2, monitoringSnapshot3.getTimestamp());
 
         ServiceMonitoringSnapshot cost2 = instance.applyCompositionRules(block2, monitoringSnapshot1);
+
+        persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block2).withSnapshot(cost2).withLastUpdatedTimestampID(cost2.getTimestampID()));
 
         assertEquals(new MetricValue(2.0), cost2.getMonitoredData(vm).getMetricValue(instanceMetricCost));
         assertEquals(new MetricValue(1.5), cost2.getMonitoredData(vm).getMetricValue(usageMetricCost));
@@ -286,9 +362,19 @@ public class CostEvalEngineTest {
             elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(10));
             elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(10));
 
-            monitoringSnapshot4.addMonitoredData(elementMonitoringSnapshot);
+            MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
+            unitMonSnapshpot.addChild(elementMonitoringSnapshot);
 
-            monitoringSnapshot4.addMonitoredData(new MonitoredElementMonitoringSnapshot(service));
+            MonitoredElementMonitoringSnapshot topologyMonSnapshpot = new MonitoredElementMonitoringSnapshot(topology);
+            topologyMonSnapshpot.addChild(unitMonSnapshpot);
+
+            MonitoredElementMonitoringSnapshot serviceMonSnapshpot = new MonitoredElementMonitoringSnapshot(service);
+            serviceMonSnapshpot.addChild(topologyMonSnapshpot);
+
+            monitoringSnapshot4.addMonitoredData(elementMonitoringSnapshot);
+            monitoringSnapshot4.addMonitoredData(unitMonSnapshpot);
+            monitoringSnapshot4.addMonitoredData(topologyMonSnapshpot);
+            monitoringSnapshot4.addMonitoredData(serviceMonSnapshpot);
 
         }
 
@@ -302,13 +388,34 @@ public class CostEvalEngineTest {
         assertEquals(new MetricValue(6.0), totalCostEnrichedSnapshot.getMonitoredData(vm).getMetricValue(totalInstanceMetricCost));
         assertEquals(new MetricValue(5.0), totalCostEnrichedSnapshot.getMonitoredData(vm).getMetricValue(totalUsageMetricCost));
 
+        generalAccess.writeInTimestamp("" + totalCostSnapshot.getLastUpdatedTimestampID(), service, service.getId());
         persistenceDelegate.persistTotalCostSnapshot(service.getId(), totalCostSnapshot);
+        persistenceDelegate.setPersistenceSQLAccess(generalAccess);
 
         totalCostSnapshot = persistenceDelegate.extractTotalCostSnapshot(service.getId());
         totalCostEnrichedSnapshot = totalCostSnapshot.getSnapshot();
 
         assertEquals(new MetricValue(6.0), totalCostEnrichedSnapshot.getMonitoredData(vm).getMetricValue(totalInstanceMetricCost));
         assertEquals(new MetricValue(5.0), totalCostEnrichedSnapshot.getMonitoredData(vm).getMetricValue(totalUsageMetricCost));
+
+        CostEvalManager manager = new CostEvalManager();
+        manager.setPersistenceDelegate(persistenceDelegate);
+
+        ElasticitySpace space = manager.updateAndGetInstantCostElasticitySpace(service.getId());
+        List<MetricValue> metricValues = space.getMonitoredDataForService(vm).get(instanceMetricCost);
+
+        assertEquals(new MetricValue(1.0), metricValues.get(0));
+        assertEquals(new MetricValue(2.0), metricValues.get(1));
+
+        ServiceElasticityPathway elasticityPathway = manager.updateAndGetInstantCostElasticityPathway(service.getId());
+        assertFalse(elasticityPathway.getPathway().isEmpty());
+
+        log.info("Situations for VM " + elasticityPathway.getPathway(vm).getSituationGroups().size());
+        persistenceDelegate.removeService(service.getId());
+
+        CostJSONConverter converter = new CostJSONConverter();
+
+        log.info(converter.toJSONForRadialPieChart(totalCostSnapshot));
 
     }
 

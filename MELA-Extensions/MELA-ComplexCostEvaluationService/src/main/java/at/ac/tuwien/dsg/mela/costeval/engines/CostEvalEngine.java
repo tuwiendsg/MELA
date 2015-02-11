@@ -478,6 +478,7 @@ public class CostEvalEngine {
     }
 
     private static final Metric ELEMENT_COST_METRIC = new Metric("element_cost", "costUnits", Metric.MetricType.COST);
+    private static final Metric CHILDREN_COST_METRIC = new Metric("children_cost", "costUnits", Metric.MetricType.COST);
 
     /**
      * Only computes the current cost rate for cost element reported per USAGE.
@@ -656,7 +657,7 @@ public class CostEvalEngine {
                     CompositionRule children_cost_rule = new CompositionRule();
                     children_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
                     children_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                    children_cost_rule.setResultingMetric(new Metric("children_cost", "costUnits", Metric.MetricType.COST));
+                    children_cost_rule.setResultingMetric(CHILDREN_COST_METRIC);
 
                     //we sum up each of the metrics from the children                
                     //one big  SUM operation
@@ -686,7 +687,7 @@ public class CostEvalEngine {
                 CompositionRule element_cost_rule = new CompositionRule();
                 element_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
                 element_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                element_cost_rule.setResultingMetric(new Metric("element_cost", "costUnits", Metric.MetricType.COST));
+                element_cost_rule.setResultingMetric(ELEMENT_COST_METRIC);
 
                 //we sum up each of the metrics from the children                
                 //one big  SUM operation
@@ -698,7 +699,7 @@ public class CostEvalEngine {
                     for (CompositionRule rule : costCompositionRules.getCompositionRules()) {
 
                         // only its rules, not also the rules from the children
-                        // the issue is that I recursivelyc reate a list, not a tree  of rules, and the
+                        // the issue is that I recursively create a list, not a tree  of rules, and the
                         // list contains all rules for all the subtree of this element
                         if (rule.getTargetMonitoredElementIDs().contains(monitoredElement.getId())) {
 
@@ -777,7 +778,10 @@ public class CostEvalEngine {
                                                 if (element.getCostMetric().getMeasurementUnit().contains("/")) {
                                                     timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
                                                 }
-                                                compositionRule.setResultingMetric(new Metric("total_cost_" + element.getCostMetric().getName(), "costUnits/" + timePeriod, Metric.MetricType.COST));
+                                                //"total_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
+                                                // and I put again this total cost metric with same name, will not replace it.
+                                                //TODO: address this
+                                                compositionRule.setResultingMetric(new Metric("total_cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST));
                                                 CompositionOperation compositionOperation = new CompositionOperation();
                                                 compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
 
@@ -887,6 +891,9 @@ public class CostEvalEngine {
                                                 }
                                             }
 
+                                            //"total_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
+                                            // and I put again this total cost metric with same name, will not replace it.
+                                            //TODO: address this
                                             Metric cost = new Metric("total_cost_" + element.getCostMetric().getName() + "_for_" + service.getName(), "costUnits", Metric.MetricType.COST);
 
                                             CompositionRule compositionRule = new CompositionRule();
@@ -959,8 +966,8 @@ public class CostEvalEngine {
                         {
                             CompositionRule children_cost_rule = new CompositionRule();
                             children_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                            children_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                            children_cost_rule.setResultingMetric(new Metric("children_cost", "costUnits", Metric.MetricType.COST));
+//                            children_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
+                            children_cost_rule.setResultingMetric(CHILDREN_COST_METRIC);
 
                             //we sum up each of the metrics from the children                
                             //one big  SUM operation
@@ -990,7 +997,7 @@ public class CostEvalEngine {
                         CompositionRule element_cost_rule = new CompositionRule();
                         element_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
                         element_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                        element_cost_rule.setResultingMetric(new Metric("element_cost", "costUnits", Metric.MetricType.COST));
+                        element_cost_rule.setResultingMetric(ELEMENT_COST_METRIC);
 
                         //we sum up each of the metrics from the children                
                         //one big  SUM operation

@@ -21,10 +21,10 @@ package at.ac.tuwien.dsg.mela.costeval.control;
 
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
-import at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.XmlConverter;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.ServiceElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
@@ -32,11 +32,11 @@ import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngine;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
+import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
 import at.ac.tuwien.dsg.quelle.descriptionParsers.CloudDescriptionParser;
@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -90,7 +91,7 @@ public class CostEvalManager {
     private PersistenceDelegate persistenceDelegate;
 
     @Autowired
-    private JsonConverter jsonConverter;
+    private CostJSONConverter jsonConverter;
 
     @Autowired
     private XmlConverter xmlConverter;
@@ -119,9 +120,6 @@ public class CostEvalManager {
         threadExecutorService = Executors.newCachedThreadPool();
     }
 
-    protected CostEvalManager() {
-    }
-
     @Value("${data.caching.interval:1}")
     private int cachingIntervalInSeconds;
 
@@ -135,15 +133,14 @@ public class CostEvalManager {
         costElasticityTimers = new ConcurrentHashMap<String, Timer>();
     }
 
-//        TimerTask momMemUsageTask = new TimerTask() {
-//
-//            @Override
-//            public void run() {
-//                MELAPerfMonitor.logMemoryUsage(performanceLog);
-//            }
-//        };
-//
-//        monitoringMemUsageTimer.scheduleAtFixedRate(momMemUsageTask, 0, 60000);
+    public PersistenceDelegate getPersistenceDelegate() {
+        return persistenceDelegate;
+    }
+
+    public void setPersistenceDelegate(PersistenceDelegate persistenceDelegate) {
+        this.persistenceDelegate = persistenceDelegate;
+    }
+
     @PostConstruct
     public void init() {
         if (instantMonitoringDataAnalysisEngine == null) {
@@ -533,8 +530,9 @@ public class CostEvalManager {
         return previouselyDeterminedUsage;
     }
 
-    private ElasticitySpace updateAndGetInstantCostElasticitySpace(String serviceID) {
-
+    public ElasticitySpace updateAndGetInstantCostElasticitySpace(String serviceID) {
+        Date before = new Date();
+        
         ElasticitySpace space = persistenceDelegate.extractLatestInstantCostElasticitySpace(serviceID);
 
         //update space with new data
@@ -575,7 +573,7 @@ public class CostEvalManager {
             space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
 
             //persist cached space
-            persistenceDelegate.writeInstantCostElasticitySpace(space, serviceID);
+            persistenceDelegate.persistInstantCostElasticitySpace(space, serviceID);
         } else {
             //else read max 1000 monitoring data records at a time, train space, and repeat as needed
 
@@ -619,11 +617,63 @@ public class CostEvalManager {
 
             //persist cached space
             if (spaceUpdated) {
-                persistenceDelegate.writeInstantCostElasticitySpace(space, serviceID);
+                persistenceDelegate.persistInstantCostElasticitySpace(space, serviceID);
             }
         }
 
+        Date after = new Date();
+        log.debug("updateAndGetInstantCostElasticitySpace time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+
         return space;
+    }
+
+    public ServiceElasticityPathway updateAndGetInstantCostElasticityPathway(String serviceID) {
+
+        Date before = new Date();
+
+        final ElasticitySpace space = persistenceDelegate.extractLatestInstantCostElasticitySpace(serviceID);
+
+        if (space == null) {
+            log.error("Elasticity Space returned is null");
+            return new ServiceElasticityPathway();
+        }
+
+        final ServiceElasticityPathway completePathway = new ServiceElasticityPathway();
+        completePathway.setTimestampID(space.getEndTimestampID());
+
+        List<Thread> threads = new ArrayList<>();
+
+        for (final Map.Entry<MonitoredElement, Map<Metric, List<MetricValue>>> entry : space.getMonitoringData().entrySet()) {
+
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    Map<Metric, List<MetricValue>> map = entry.getValue();
+                    LightweightEncounterRateElasticityPathway elasticityPathway = new LightweightEncounterRateElasticityPathway(map.size());
+                    elasticityPathway.trainElasticityPathway(map);
+                    completePathway.addPathway(entry.getKey(), elasticityPathway);
+                }
+            };
+
+            threads.add(t);
+            t.setDaemon(true);
+            t.start();
+        }
+
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                java.util.logging.Logger.getLogger(CostEvalManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        persistenceDelegate.persistInstantCostElasticityPathway(completePathway, serviceID);
+
+        Date after = new Date();
+        log.debug("updateAndGetInstantCostElasticityPathway time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+
+        return completePathway;
     }
 
 //    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(String serviceID) {
