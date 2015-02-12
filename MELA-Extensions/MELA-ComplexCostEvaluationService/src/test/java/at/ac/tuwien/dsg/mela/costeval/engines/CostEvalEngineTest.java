@@ -98,9 +98,9 @@ public class CostEvalEngineTest {
             server.setPort(9001);
 
             if (System.getProperty("os.name").contains("Windows")) {
-                server.setDatabasePath(0, "C:\\Windows\\Temp\\mela_test");
+                server.setDatabasePath(0, "C:\\Windows\\Temp\\mela_test_cost");
             } else {
-                server.setDatabasePath(0, "/tmp/test/mela");
+                server.setDatabasePath(0, "/tmp/test/mela_cost");
             }
 
             server.setDatabaseName(0, "mela");
@@ -207,7 +207,7 @@ public class CostEvalEngineTest {
             cloudUnits.put(unit.getUuid(), unit);
         }
 
-        MonitoredElement vm = new MonitoredElement("VM").withLevel(MonitoredElement.MonitoredElementLevel.VM)
+        MonitoredElement vm = new MonitoredElement("UNIT_INSTANCE").withLevel(MonitoredElement.MonitoredElementLevel.VM)
                 .withCloudOfferedService(new UsedCloudOfferedService()
                         .withCloudProviderID(UUID.fromString("251ed7c7-aa4d-49d4-b42b-7efefd970d6b"))
                         .withCloudProviderName("Amazon")
@@ -227,7 +227,7 @@ public class CostEvalEngineTest {
         //make sure all is clean
         persistenceDelegate.removeService(service.getId());
 
-        ServiceMonitoringSnapshot monitoringSnapshot1 = new ServiceMonitoringSnapshot().withTimestamp("0");
+        ServiceMonitoringSnapshot monitoringSnapshot1 = new ServiceMonitoringSnapshot().withTimestamp("1000");
 
         Metric instanceMetric = new Metric("instance", "#/s", Metric.MetricType.RESOURCE);
         Metric usageMetric = new Metric("usage", "#", Metric.MetricType.RESOURCE);
@@ -235,16 +235,16 @@ public class CostEvalEngineTest {
         Metric ELEMENT_COST_METRIC = new Metric("element_cost", "costUnits", Metric.MetricType.COST);
         Metric CHILDREN_COST_METRIC = new Metric("children_cost", "costUnits", Metric.MetricType.COST);
 
-        Metric instanceMetricCost = new Metric("cost_instance_for_m1.small", "costUnits/s", Metric.MetricType.RESOURCE);
-        Metric usageMetricCost = new Metric("cost_usage", "costUnits", Metric.MetricType.RESOURCE);
+        Metric instanceMetricCost = new Metric("cost_instance_for_m1.small", "costUnits/s", Metric.MetricType.COST);
+        Metric usageMetricCost = new Metric("cost_usage", "costUnits", Metric.MetricType.COST);
 
-        Metric totalInstanceMetricCost = new Metric("total_cost_instance_for_m1.small", "costUnits", Metric.MetricType.RESOURCE);
-        Metric totalUsageMetricCost = new Metric("total_cost_usage", "costUnits", Metric.MetricType.RESOURCE);
+        Metric totalInstanceMetricCost = new Metric("total_cost_instance_for_m1.small", "costUnits", Metric.MetricType.COST);
+        Metric totalUsageMetricCost = new Metric("total_cost_usage", "costUnits", Metric.MetricType.COST);
 
         {
             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
-            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(0));
-            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(0));
+            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(0).withFreshness(80d));
+            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(0).withFreshness(50d));
 
             MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
             unitMonSnapshpot.addChild(elementMonitoringSnapshot);
@@ -262,11 +262,11 @@ public class CostEvalEngineTest {
 
         }
         //add another monitoring snapshot
-        ServiceMonitoringSnapshot monitoringSnapshot2 = new ServiceMonitoringSnapshot().withTimestamp("1000");
+        ServiceMonitoringSnapshot monitoringSnapshot2 = new ServiceMonitoringSnapshot().withTimestamp("2000");
         {
             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
-            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(1));
-            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(1));
+            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(1).withFreshness(80d));
+            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(1).withFreshness(50d));
 
             MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
             unitMonSnapshpot.addChild(elementMonitoringSnapshot);
@@ -289,35 +289,37 @@ public class CostEvalEngineTest {
                 .withtLastUpdatedTimestampID(monitoringSnapshot1.getTimestampID());
 
         //test1
-        ServiceMonitoringSnapshot updatedTotalUsageSoFar1 = instance.updateTotalUsageSoFar(cloudProvidersMap, serviceUsageSnapshot1, monitoringSnapshot2);
+        CostEnrichedSnapshot totalUsageSnapshot = instance.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, serviceUsageSnapshot1, monitoringSnapshot2);
 
-        CostEnrichedSnapshot totalUsageSnapshot1 = new CostEnrichedSnapshot()
-                .withSnapshot(updatedTotalUsageSoFar1)
-                .withtLastUpdatedTimestampID(updatedTotalUsageSoFar1.getTimestampID());
+        assertEquals(new MetricValue(1), totalUsageSnapshot.getSnapshot().getMonitoredData(vm).getMetricValue(instanceMetric));
+        assertEquals(new MetricValue(1.0), totalUsageSnapshot.getSnapshot().getMonitoredData(vm).getMetricValue(usageMetric));
 
-        CompositionRulesBlock block1 = instance.createCompositionRulesForInstantUsageCost(cloudProvidersMap, service, totalUsageSnapshot1, monitoringSnapshot2.getTimestamp());
+        persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId(), totalUsageSnapshot);
 
-        ServiceMonitoringSnapshot cost1 = instance.applyCompositionRules(block1, monitoringSnapshot1);
+        CostEnrichedSnapshot instantCostCleaned1 = instance.cleanUnusedServices(totalUsageSnapshot);
 
-        assertEquals(new MetricValue(1.0), cost1.getMonitoredData(vm).getMetricValue(instanceMetricCost));
-        assertEquals(new MetricValue(0.5), cost1.getMonitoredData(vm).getMetricValue(usageMetricCost));
-        assertEquals(new MetricValue(1.5), cost1.getMonitoredData(service).getMetricValue(ELEMENT_COST_METRIC));
-        assertEquals(new MetricValue(1.5), cost1.getMonitoredData(service).getMetricValue(CHILDREN_COST_METRIC));
+        CompositionRulesBlock block1 = instance.createCompositionRulesForInstantUsageCost(cloudProvidersMap, service, instantCostCleaned1, monitoringSnapshot2.getTimestamp());
+
+        ServiceMonitoringSnapshot instantCost1 = instance.applyCompositionRules(block1, monitoringSnapshot2);
+
+        assertEquals(new MetricValue(1.0), instantCost1.getMonitoredData(vm).getMetricValue(instanceMetricCost));
+        assertEquals(new MetricValue(0.5), instantCost1.getMonitoredData(vm).getMetricValue(usageMetricCost));
+        assertEquals(new MetricValue(1.5), instantCost1.getMonitoredData(service).getMetricValue(ELEMENT_COST_METRIC));
+        assertEquals(new MetricValue(1.5), instantCost1.getMonitoredData(service).getMetricValue(CHILDREN_COST_METRIC));
 
         generalAccess.writeMonitoringSequenceId(service.getId());
         generalAccess.writeInTimestamp("" + serviceUsageSnapshot1.getLastUpdatedTimestampID(), service, service.getId());
         generalAccess.writeConfiguration(service.getId(), new ConfigurationXMLRepresentation(service, new CompositionRulesConfiguration(),
                 new Requirements()));
 
-        persistenceDelegate.persistTotalUsageSnapshot(service.getId(), serviceUsageSnapshot1);
-        persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block1).withSnapshot(cost1).withLastUpdatedTimestampID(cost1.getTimestampID()));
+        persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block1).withSnapshot(instantCost1).withLastUpdatedTimestampID(instantCost1.getTimestampID()));
 
         //add another monitoring snapshot
-        ServiceMonitoringSnapshot monitoringSnapshot3 = new ServiceMonitoringSnapshot().withTimestamp("2000");
+        ServiceMonitoringSnapshot monitoringSnapshot3 = new ServiceMonitoringSnapshot().withTimestamp("3000");
         {
             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
-            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(2));
-            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(2));
+            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(2).withFreshness(80d));
+            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(2).withFreshness(50d));
 
             MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
             unitMonSnapshpot.addChild(elementMonitoringSnapshot);
@@ -335,32 +337,45 @@ public class CostEvalEngineTest {
 
         }
 
-        totalUsageSnapshot1 = persistenceDelegate.extractTotalUsageSnapshot(service.getId());
+        CostEnrichedSnapshot totalServiceUsage2 = instance.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, totalUsageSnapshot, monitoringSnapshot3);
 
-        ServiceMonitoringSnapshot updatedTotalUsageSoFar2 = instance.updateTotalUsageSoFar(cloudProvidersMap, totalUsageSnapshot1, monitoringSnapshot3);
+        assertEquals(new MetricValue(2), totalServiceUsage2.getSnapshot().getMonitoredData(vm).getMetricValue(instanceMetric));
+        assertEquals(new MetricValue(3.0), totalServiceUsage2.getSnapshot().getMonitoredData(vm).getMetricValue(usageMetric));
 
-        CostEnrichedSnapshot serviceUsageSnapshot2 = new CostEnrichedSnapshot()
-                .withSnapshot(updatedTotalUsageSoFar2)
-                .withtLastUpdatedTimestampID(updatedTotalUsageSoFar2.getTimestampID());
+        persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId(), totalServiceUsage2);
 
-        generalAccess.writeInTimestamp("" + serviceUsageSnapshot2.getLastUpdatedTimestampID(), service, service.getId());
-        persistenceDelegate.persistTotalCostSnapshot(service.getId(), serviceUsageSnapshot2);
+        CostEnrichedSnapshot instantCostCleaned2 = instance.cleanUnusedServices(totalServiceUsage2);
 
-        CompositionRulesBlock block2 = instance.createCompositionRulesForInstantUsageCost(cloudProvidersMap, service, serviceUsageSnapshot2, monitoringSnapshot3.getTimestamp());
+        generalAccess.writeInTimestamp("" + totalServiceUsage2.getLastUpdatedTimestampID(), service, service.getId());
+//        persistenceDelegate.persistTotalCostSnapshot(service.getId(), serviceUsageSnapshot2);
 
-        ServiceMonitoringSnapshot cost2 = instance.applyCompositionRules(block2, monitoringSnapshot1);
+        CompositionRulesBlock block2 = instance.createCompositionRulesForInstantUsageCost(cloudProvidersMap, service, instantCostCleaned2, monitoringSnapshot3.getTimestamp());
 
-        persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block2).withSnapshot(cost2).withLastUpdatedTimestampID(cost2.getTimestampID()));
+        ServiceMonitoringSnapshot instantCost2 = instance.applyCompositionRules(block2, monitoringSnapshot3);
 
-        assertEquals(new MetricValue(2.0), cost2.getMonitoredData(vm).getMetricValue(instanceMetricCost));
-        assertEquals(new MetricValue(1.5), cost2.getMonitoredData(vm).getMetricValue(usageMetricCost));
+        persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block2).withSnapshot(instantCost2).withLastUpdatedTimestampID(instantCost2.getTimestampID()));
+
+        assertEquals(new MetricValue(2.0), instantCost2.getMonitoredData(vm).getMetricValue(instanceMetricCost));
+        assertEquals(new MetricValue(1.0), instantCost2.getMonitoredData(vm).getMetricValue(usageMetricCost));
+
+        MonitoredElement newVM = new MonitoredElement("UNIT_INSTANCE_2").withLevel(MonitoredElement.MonitoredElementLevel.VM)
+                .withCloudOfferedService(new UsedCloudOfferedService()
+                        .withCloudProviderID(UUID.fromString("251ed7c7-aa4d-49d4-b42b-7efefd970d6b"))
+                        .withCloudProviderName("Amazon")
+                        .withId(UUID.fromString("38400000-8cf0-11bd-b23e-000000000000"))
+                        .withName("m1.small")
+                );
 
         //add another monitoring snapshot
-        ServiceMonitoringSnapshot monitoringSnapshot4 = new ServiceMonitoringSnapshot().withTimestamp("3000");
+        ServiceMonitoringSnapshot monitoringSnapshot4 = new ServiceMonitoringSnapshot().withTimestamp("4000");
         {
-            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
-            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(10));
-            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(10));
+
+            unit.getContainedElements().clear();
+            unit.withContainedElement(newVM);
+
+            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(newVM);
+            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(10).withFreshness(80d));
+            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(10).withFreshness(50d));
 
             MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
             unitMonSnapshpot.addChild(elementMonitoringSnapshot);
@@ -378,22 +393,23 @@ public class CostEvalEngineTest {
 
         }
 
-        CostEnrichedSnapshot totalCostSnapshot = new CostEnrichedSnapshot()
-                .withSnapshot(monitoringSnapshot4)
-                .withtLastUpdatedTimestampID(monitoringSnapshot4.getTimestampID());
+        CostEnrichedSnapshot totalServiceUsage3 = instance.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, totalServiceUsage2, monitoringSnapshot4);
 
-        CompositionRulesBlock totalCostRules = instance.createCompositionRulesForTotalCost(cloudProvidersMap, totalCostSnapshot, monitoringSnapshot4.getTimestamp());
+        assertEquals(new MetricValue(3), totalServiceUsage3.getSnapshot().getMonitoredData(vm).getMetricValue(instanceMetric));
+        assertEquals(new MetricValue(1), totalServiceUsage3.getSnapshot().getMonitoredData(newVM).getMetricValue(instanceMetric));
+        assertEquals(new MetricValue(12.0), totalServiceUsage3.getSnapshot().getMonitoredData(vm).getMetricValue(usageMetric));
+
+        CompositionRulesBlock totalCostRules = instance.createCompositionRulesForTotalCost(cloudProvidersMap, totalServiceUsage3, totalServiceUsage3.getSnapshot().getTimestamp());
         ServiceMonitoringSnapshot totalCostEnrichedSnapshot = instance.applyCompositionRules(totalCostRules, monitoringSnapshot4);
 
         assertEquals(new MetricValue(6.0), totalCostEnrichedSnapshot.getMonitoredData(vm).getMetricValue(totalInstanceMetricCost));
         assertEquals(new MetricValue(5.0), totalCostEnrichedSnapshot.getMonitoredData(vm).getMetricValue(totalUsageMetricCost));
 
-        generalAccess.writeInTimestamp("" + totalCostSnapshot.getLastUpdatedTimestampID(), service, service.getId());
-        persistenceDelegate.persistTotalCostSnapshot(service.getId(), totalCostSnapshot);
+        generalAccess.writeInTimestamp("" + totalServiceUsage3.getLastUpdatedTimestampID(), service, service.getId());
         persistenceDelegate.setPersistenceSQLAccess(generalAccess);
 
-        totalCostSnapshot = persistenceDelegate.extractTotalCostSnapshot(service.getId());
-        totalCostEnrichedSnapshot = totalCostSnapshot.getSnapshot();
+        totalServiceUsage3 = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId());
+        totalCostEnrichedSnapshot = totalServiceUsage3.getSnapshot();
 
         assertEquals(new MetricValue(6.0), totalCostEnrichedSnapshot.getMonitoredData(vm).getMetricValue(totalInstanceMetricCost));
         assertEquals(new MetricValue(5.0), totalCostEnrichedSnapshot.getMonitoredData(vm).getMetricValue(totalUsageMetricCost));
@@ -415,7 +431,11 @@ public class CostEvalEngineTest {
 
         CostJSONConverter converter = new CostJSONConverter();
 
-        log.info(converter.toJSONForRadialPieChart(totalCostSnapshot));
+        totalServiceUsage3.getSnapshot().getMonitoredData().remove(MonitoredElement.MonitoredElementLevel.VM);
+
+        log.info(converter.toJSONForRadialPieChart(totalServiceUsage3));
+
+        log.info(converter.toJSONForRadialPieChart(new CostEnrichedSnapshot().withCostCompositionRules(block2).withSnapshot(instantCost2).withLastUpdatedTimestampID(instantCost2.getTimestampID())));
 
     }
 

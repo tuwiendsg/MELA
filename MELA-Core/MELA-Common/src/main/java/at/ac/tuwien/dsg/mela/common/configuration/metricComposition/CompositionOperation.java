@@ -226,7 +226,7 @@ public class CompositionOperation implements Serializable {
         //if I removed all values, add an empty undefined -1 one back to create metric on it
         //this solve problem with el space
         if (valuesToBeProcessed.isEmpty() && flagUndefinedPurged) {
-            valuesToBeProcessed.add(new MetricValue(-1));
+            valuesToBeProcessed.add(new MetricValue(-1).withFreshness(100d));
         }
 
         //2'nd step
@@ -250,26 +250,37 @@ public class CompositionOperation implements Serializable {
         switch (operationType) {
             case ADD:
                 if (!valuesToBeProcessed.isEmpty()) {
+                    Double combinedFreshness = 0d;
                     for (MetricValue metricValue : valuesToBeProcessed) {
                         if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
                             metricValue.setValue(((Number) metricValue.getValue())
                                     .doubleValue() + operator);
+                            //compute oldness (substracting freshness from 100)
+                            combinedFreshness += Math.pow(100 - metricValue.getFreshness(), 2);
                         }
                     }
+
                     result = valuesToBeProcessed.get(0);
+                    //compute back freshness
+                    combinedFreshness = 100 - Math.min(Math.sqrt(combinedFreshness), 100d);
+                    result.setFreshness(combinedFreshness);
                 }
                 break;
             case AVG: {
                 if (!valuesToBeProcessed.isEmpty()) {
                     Double avg = 0.0d;
+                    Double combinedFreshness = 0d;
                     for (MetricValue metricValue : valuesToBeProcessed) {
                         if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
                             avg += (((Number) metricValue.getValue()).doubleValue());
+                            combinedFreshness += Math.pow(100 - metricValue.getFreshness(), 2);
                         }
                     }
                     MetricValue metricValue = new MetricValue();
                     metricValue.setValue(avg / valuesToBeProcessed.size());
                     result = metricValue;
+                    combinedFreshness = 100 - Math.min(Math.sqrt(combinedFreshness), 100d);
+                    result.setFreshness(combinedFreshness);
                 }
             }
             break;
@@ -282,29 +293,39 @@ public class CompositionOperation implements Serializable {
                     MetricValue metricValue = new MetricValue();
                     metricValue.setValue(concat);
                     result = metricValue;
+                    result.setFreshness(100d);
                 }
             }
             break;
             case DIV: {
                 if (!valuesToBeProcessed.isEmpty()) {
+                    Double combinedFreshness = 0d;
+
                     MetricValue metricValue = new MetricValue();
                     Double firstOperand = ((Number) valuesToBeProcessed.get(0).getValue()).doubleValue();
                     Double secondOperand;
 
+                    Double firstOperandFreshness = Math.pow((100 - valuesToBeProcessed.get(0).getFreshness()), 2);
+                    Double secondOperandFreshness;
+
                     if (valuesToBeProcessed.size() > 1) {
                         secondOperand = ((Number) valuesToBeProcessed.get(1).getValue()).doubleValue();
+                        secondOperandFreshness = Math.pow((100 - valuesToBeProcessed.get(1).getFreshness()), 2);
                     } else {
                         secondOperand = operator;
+                        secondOperandFreshness = 0d;
                     }
 
                     if (secondOperand != 0) {
-                        metricValue.setValue(firstOperand / secondOperand);
-
+                        metricValue.setValue(firstOperand);
                     } else {
                         metricValue.setValue(firstOperand);
                     }
 
                     result = metricValue;
+                    combinedFreshness = Math.sqrt(firstOperandFreshness + secondOperandFreshness);
+                    combinedFreshness = 100 - Math.min(combinedFreshness, 100d);
+                    result.setFreshness(combinedFreshness);
                 }
             }
             break;
@@ -316,39 +337,29 @@ public class CompositionOperation implements Serializable {
                 break;
             case MAX: {
                 if (!valuesToBeProcessed.isEmpty()) {
-                    Double max = (((Number) valuesToBeProcessed.get(0).getValue())
-                            .doubleValue());
+                    MetricValue max = valuesToBeProcessed.get(0);
                     for (MetricValue metricValue : valuesToBeProcessed) {
                         if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
-                            if (max < (((Number) metricValue.getValue())
-                                    .doubleValue())) {
-                                max = (((Number) metricValue.getValue())
-                                        .doubleValue());
+                            if (max.compareTo(metricValue) < 1) {
+                                max = metricValue;
                             }
                         }
                     }
-                    MetricValue metricValue = new MetricValue();
-                    metricValue.setValue(max);
-                    result = metricValue;
+                    result = max.clone();
                 }
             }
             break;
             case MIN: {
                 if (!valuesToBeProcessed.isEmpty()) {
-                    Double min = (((Number) valuesToBeProcessed.get(0).getValue())
-                            .doubleValue());
+                    MetricValue min = valuesToBeProcessed.get(0);
                     for (MetricValue metricValue : valuesToBeProcessed) {
                         if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
-                            if (min > (((Number) metricValue.getValue())
-                                    .doubleValue())) {
-                                min = (((Number) metricValue.getValue())
-                                        .doubleValue());
+                            if (min.compareTo(metricValue) > -1) {
+                                min = metricValue;
                             }
                         }
                     }
-                    MetricValue metricValue = new MetricValue();
-                    metricValue.setValue(min);
-                    result = metricValue;
+                    result = min.clone();
                 }
             }
             break;
@@ -358,40 +369,57 @@ public class CompositionOperation implements Serializable {
                     Double firstOperand = ((Number) valuesToBeProcessed.get(0).getValue()).doubleValue();
                     Double secondOperand;
 
+                    Double firstOperandFreshness = Math.pow((100 - valuesToBeProcessed.get(0).getFreshness()), 2);
+                    Double secondOperandFreshness;
+
                     if (valuesToBeProcessed.size() > 1) {
                         secondOperand = ((Number) valuesToBeProcessed.get(1).getValue()).doubleValue();
+                        secondOperandFreshness = Math.pow((100 - valuesToBeProcessed.get(1).getFreshness()), 2);
                     } else {
                         secondOperand = operator;
+                        secondOperandFreshness = 0d;
                     }
 
                     metricValue.setValue(firstOperand * secondOperand);
 
                     result = metricValue;
+                    Double combinedFreshness = Math.sqrt(firstOperandFreshness + secondOperandFreshness);
+                    combinedFreshness = 100 - Math.min(combinedFreshness, 100d);
+                    result.setFreshness(combinedFreshness);
                 }
             }
             break;
             case SUB:
                 if (!valuesToBeProcessed.isEmpty()) {
+                    Double combinedFreshness = 0d;
                     for (MetricValue metricValue : valuesToBeProcessed) {
                         if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
                             metricValue.setValue((((Number) metricValue.getValue())
                                     .doubleValue()) - operator);
+                            combinedFreshness += Math.pow(100 - metricValue.getFreshness(), 2);
                         }
                     }
                     result = valuesToBeProcessed.get(0);
+                    combinedFreshness = 100 - Math.min(Math.sqrt(combinedFreshness), 100d);
+                    result.setFreshness(combinedFreshness);
                 }
                 break;
             case SUM: {
                 if (!valuesToBeProcessed.isEmpty()) {
+                    Double combinedFreshness = 0d;
                     Double sum = 0.0d;
                     for (MetricValue metricValue : valuesToBeProcessed) {
                         if (metricValue.getValueType() == MetricValue.ValueType.NUMERIC) {
                             sum += (((Number) metricValue.getValue()).doubleValue());
+                            combinedFreshness += Math.pow(100 - metricValue.getFreshness(), 2);
+
                         }
                     }
                     MetricValue metricValue = new MetricValue();
                     metricValue.setValue(sum);
                     result = metricValue;
+                    combinedFreshness = 100 - Math.min(Math.sqrt(combinedFreshness), 100d);
+                    result.setFreshness(combinedFreshness);
                 }
             }
             break;
@@ -413,6 +441,7 @@ public class CompositionOperation implements Serializable {
                 MetricValue metricValue = new MetricValue();
                 metricValue.setValue(operator);
                 result = metricValue;
+                result.setFreshness(100d);
             }
             break;
             default:

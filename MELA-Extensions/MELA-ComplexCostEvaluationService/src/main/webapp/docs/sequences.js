@@ -20,7 +20,8 @@
 //var elColors = ["#72B095", "#D13F31", "#D13F31"];
 
 // var elColors = ["#1C4946", "#1F7872", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"]
-var elColors = ["#1C4946", "orange", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"]
+//var elColors = ["#1C4946", "orange", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"]
+var elColors = ["orange", "#DEDBA7", "#1F7872"]
 
 var width = window.innerWidth - 100;
 var height = window.innerHeight - 100;
@@ -63,13 +64,17 @@ var arc = d3.svg.arc()
 
 function mapNodesToColor(d, selected) {
     if (selected) {
-        return elColors[1];
+        return elColors[0];
     } else {
-        return elColors[2];
+        if (d.level == "metric") {
+            return elColors[1];
+        } else {
+            return elColors[2];
+        }
     }
 }
 function mapTrailElementsToColor(d) {
-    return elColors[0];
+    return elColors[2];
 }
 
 // Use d3.text and d3.csv.parseRows so that we do not need to have a header
@@ -81,12 +86,17 @@ function mapTrailElementsToColor(d) {
 //});
 
 // Main function to draw and set up the visualization, once we have the data.
-function createVisualization(json) {
+function createVisualization(json, divID) {
 
-    svg = d3.select("#chart").append("svg:svg")
+    svg = d3.select("#" + divID).append("svg:svg")
             .attr("width", width)
             .attr("height", height);
 
+    drawPieChart(json);
+
+}
+
+function drawPieChart(json) {
     vis = svg.append("svg:g")
             .attr("id", "container")
             .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
@@ -120,7 +130,7 @@ function createVisualization(json) {
                 })
                 .attr("d", arc(d))
                 .attr("id", function () {
-                    return "path_" + d.name;
+                    return "path_" + d.uniqueID;
                 })
                 .style("fill", function () {
                     return mapNodesToColor(d, false);
@@ -147,7 +157,7 @@ function createVisualization(json) {
                 .append("textPath")
 
                 .attr("xlink:href", function () {
-                    return "#path_" + d.name;
+                    return "#path_" + d.uniqueID;
                 })
                 //place text towards middle of arc
                 .attr("startOffset", "20%")
@@ -168,12 +178,12 @@ function createVisualization(json) {
 
     // Get total size of the tree = value of root node from partition.
     totalSize = root.value;
-
 }
+
 function recreateVisualization(json) {
 
-    svg.remove();
-    createVisualization(json);
+    vis.remove();
+    drawPieChart(json);
     if (highlightedNode) {
         //need to find the updated node in current structure
 
@@ -238,8 +248,12 @@ function clear() {
     // Data join; key function combines name and depth (= position in sequence).
     var g = d3.select("#trail")
             .selectAll("g");
+
     g.remove();
 
+    var percentageText = d3.select("#trail")
+            .selectAll("#endlabel");
+    percentageText.text("");
 
     // Fade all the segments.
     d3.selectAll("path")
@@ -279,7 +293,8 @@ function mouseover(d) {
             //.style("opacity", 0.3)
             .style("fill", function (d) {
                 return mapNodesToColor(d, false);
-            });
+            })
+            ;
 
     // Then highlight only those that are an ancestor of the current segment.
     vis.selectAll("path")

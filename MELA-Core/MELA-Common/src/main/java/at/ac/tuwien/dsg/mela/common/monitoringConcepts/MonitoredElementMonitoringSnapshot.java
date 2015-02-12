@@ -257,4 +257,28 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
         return this;
     }
 
+    @Override
+    public MonitoredElementMonitoringSnapshot clone() {
+
+        MonitoredElementMonitoringSnapshot clone = new MonitoredElementMonitoringSnapshot();
+        clone.monitoredElement = monitoredElement.clone();
+        clone.timestamp = "" + timestamp;
+
+        for (Map.Entry<Metric, MetricValue> entry : monitoredData.entrySet()) {
+            clone.monitoredData.put(entry.getKey().clone(), entry.getValue().clone());
+        }
+
+        for (Action action : executingActions) {
+            clone.executingActions.add(action.clone());
+        }
+
+        
+        for (MonitoredElementMonitoringSnapshot child : children) {
+            clone.children.add(child.clone());
+        }
+        
+    
+        return clone;
+    }
+
 }

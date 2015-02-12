@@ -121,7 +121,7 @@ public class MetricValue implements Comparable<MetricValue>, Serializable {
 //            cloneValue =  value;
 //        }
 //        return new MetricValue(cloneValue);
-        return new MetricValue(value);
+        return new MetricValue(value).withCollectionTimestamp(timeSinceCollection).withFreshness(freshness);
     }
 
     public void setValue(Object value) {

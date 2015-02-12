@@ -307,7 +307,7 @@ public class PersistenceDelegate {
         }
     }
 
-    public void persistTotalUsageSnapshot(String serviceID, CostEnrichedSnapshot serviceUsageSnapshot) {
+    public void persistTotalUsageWithCurrentStructureSnapshot(String serviceID, CostEnrichedSnapshot serviceUsageSnapshot) {
 
 //        //delete old cached
 //        {
@@ -319,6 +319,43 @@ public class PersistenceDelegate {
             jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
         }
 
+    }
+
+    /**
+     * the submitted snapshot should have no composite cost
+     *
+     * @param serviceID
+     * @param serviceUsageSnapshot
+     */
+    public void persistTotalUsageWithCompleteHistoricalStructureSnapshot(String serviceID, CostEnrichedSnapshot serviceUsageSnapshot) {
+
+//        //delete old cached
+//        {
+//            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
+//            jdbcTemplate.update(sql, serviceID);
+//        }
+        {
+            String sql = "INSERT INTO CaschedCompleteHistoricalUsage (monseqid, timestampID, data) VALUES (?, ?, ?)";
+            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
+        }
+
+    }
+
+    public CostEnrichedSnapshot extractTotalUsageWithCompleteHistoricalStructureSnapshot(String serviceID) {
+        String sql = "SELECT CaschedCompleteHistoricalUsage.timestampID, CaschedCompleteHistoricalUsage.data from CaschedCompleteHistoricalUsage where "
+                + "ID=(SELECT MAX(ID) from CaschedCompleteHistoricalUsage where monSeqID=?);";
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots.get(0);
+        }
     }
 
     public CostEnrichedSnapshot extractLastInstantCostSnapshot(String serviceID) {

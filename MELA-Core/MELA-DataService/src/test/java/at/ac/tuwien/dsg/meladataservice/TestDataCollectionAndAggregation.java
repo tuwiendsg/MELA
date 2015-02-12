@@ -86,9 +86,9 @@ public class TestDataCollectionAndAggregation {
             server.setPort(9001);
 
             if (System.getProperty("os.name").contains("Windows")) {
-                server.setDatabasePath(0, "C:\\Windows\\Temp\\mela_test");
+                server.setDatabasePath(0, "C:\\Windows\\Temp\\mela_test_data_service");
             } else {
-                server.setDatabasePath(0, "/tmp/test/mela");
+                server.setDatabasePath(0, "/tmp/test/mela_data_service");
             }
             server.setDatabaseName(0, "mela");
 

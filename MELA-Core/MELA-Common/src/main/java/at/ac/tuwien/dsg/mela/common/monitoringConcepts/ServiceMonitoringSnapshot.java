@@ -349,4 +349,34 @@ public class ServiceMonitoringSnapshot implements Serializable {
         return this;
     }
 
+    public ServiceMonitoringSnapshot clone() {
+        ServiceMonitoringSnapshot clone = new ServiceMonitoringSnapshot();
+        clone.timestamp = "" + timestamp;
+        clone.timestampID = timestampID;
+
+        MonitoredElementMonitoringSnapshot coreSnapshot = this.getMonitoredData(this.getMonitoredService()).clone();
+
+        Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> clonedMonitoredData = new HashMap<>();
+
+        for (MonitoredElementMonitoringSnapshot elementMonitoringSnapshot : coreSnapshot) {
+
+            MonitoredElement element = elementMonitoringSnapshot.getMonitoredElement();
+
+            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> elementClonedData;
+
+            if (clonedMonitoredData.containsKey(element.getLevel())) {
+                elementClonedData = clonedMonitoredData.get(element.getLevel());
+            } else {
+                elementClonedData = new HashMap<>();
+                clonedMonitoredData.put(element.getLevel(), elementClonedData);
+            }
+
+            elementClonedData.put(element, elementMonitoringSnapshot);
+
+        }
+
+        clone.monitoredData = clonedMonitoredData;
+        return clone;
+    }
+
 }

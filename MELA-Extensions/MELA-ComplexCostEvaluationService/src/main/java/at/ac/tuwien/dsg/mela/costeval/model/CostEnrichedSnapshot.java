@@ -49,10 +49,17 @@ public class CostEnrichedSnapshot implements Serializable {
      * and the timestamp in milliseconds since epoch when the offered service
      * was instantiated
      */
-    private Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> servicesLifetime;
+    private Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> instantiationTimes;
 
     {
-        servicesLifetime = new HashMap<>();
+        instantiationTimes = new HashMap<>();
+    }
+
+    //marks the time at which the service was deallocated, i.e. no longer used
+    private Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> deallocationTimes;
+
+    {
+        deallocationTimes = new HashMap<>();
     }
 
     private ServiceMonitoringSnapshot snapshot;
@@ -60,8 +67,7 @@ public class CostEnrichedSnapshot implements Serializable {
     {
         snapshot = new ServiceMonitoringSnapshot();
     }
-    
-    
+
     //here just to help us draw lines
     private CompositionRulesBlock costCompositionRules;
 
@@ -84,8 +90,6 @@ public class CostEnrichedSnapshot implements Serializable {
     public void setCostCompositionRules(CompositionRulesBlock costCompositionRules) {
         this.costCompositionRules = costCompositionRules;
     }
-    
-    
 
     public void setLastUpdatedTimestampID(int lastUpdatedTimestampID) {
         this.lastUpdatedTimestampID = lastUpdatedTimestampID;
@@ -103,17 +107,22 @@ public class CostEnrichedSnapshot implements Serializable {
 
     public CostEnrichedSnapshot withSnapshot(final ServiceMonitoringSnapshot totalUsageSoFar) {
         this.snapshot = totalUsageSoFar;
+        for (MonitoredElement element : totalUsageSoFar.getMonitoredService()) {
+            for (UsedCloudOfferedService cloudOfferedService : element.getCloudOfferedServices()) {
+                withInstantiationTime(element, cloudOfferedService, Long.parseLong(totalUsageSoFar.getTimestamp()));
+            }
+        }
         return this;
     }
 
-    public CostEnrichedSnapshot withInstantiationTimes(MonitoredElement element, UsedCloudOfferedService cloudOfferedService, Long timestamp) {
+    public CostEnrichedSnapshot withInstantiationTime(MonitoredElement element, UsedCloudOfferedService cloudOfferedService, Long timestamp) {
         Map<UsedCloudOfferedService, Long> elementServices;
 
-        if (servicesLifetime.containsKey(element)) {
-            elementServices = servicesLifetime.get(element);
+        if (instantiationTimes.containsKey(element)) {
+            elementServices = instantiationTimes.get(element);
         } else {
             elementServices = new HashMap<>();
-            servicesLifetime.put(element, elementServices);
+            instantiationTimes.put(element, elementServices);
         }
 
         elementServices.put(cloudOfferedService, timestamp);
@@ -122,8 +131,8 @@ public class CostEnrichedSnapshot implements Serializable {
     }
 
     public Long getInstantiationTime(MonitoredElement element, UsedCloudOfferedService cloudOfferedService) {
-        if (servicesLifetime.containsKey(element)) {
-            Map<UsedCloudOfferedService, Long> elementServices = servicesLifetime.get(element);
+        if (instantiationTimes.containsKey(element)) {
+            Map<UsedCloudOfferedService, Long> elementServices = instantiationTimes.get(element);
             if (elementServices.containsKey(cloudOfferedService)) {
 
                 return elementServices.get(cloudOfferedService);
@@ -137,13 +146,86 @@ public class CostEnrichedSnapshot implements Serializable {
         }
     }
 
-    public Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> getServicesLifetime() {
-        return servicesLifetime;
+    public boolean hasInstantiationTime(MonitoredElement element, UsedCloudOfferedService cloudOfferedService) {
+        if (instantiationTimes.containsKey(element)) {
+            Map<UsedCloudOfferedService, Long> elementServices = instantiationTimes.get(element);
+            if (elementServices.containsKey(cloudOfferedService)) {
+                return true;
+            } else {
+                logger.error("UsedCloudOfferedService with name {} and ID {} not found for element {}", new Object[]{cloudOfferedService.getName(), cloudOfferedService.getId(), element.getId()});;
+                return false;
+            }
+        } else {
+            logger.error("Element {} not found in snapshot", element.getId());
+            return false;
+        }
     }
 
-    public Map<UsedCloudOfferedService, Long> getServicesLifetime(MonitoredElement element) {
-        if (servicesLifetime.containsKey(element)) {
-            return servicesLifetime.get(element);
+    public Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> getInstantiationTimes() {
+        return instantiationTimes;
+    }
+
+    public Map<UsedCloudOfferedService, Long> getInstantiationTimes(MonitoredElement element) {
+        if (instantiationTimes.containsKey(element)) {
+            return instantiationTimes.get(element);
+        } else {
+            return new HashMap<>();
+        }
+    }
+
+    public CostEnrichedSnapshot withDeallocationTime(MonitoredElement element, UsedCloudOfferedService cloudOfferedService, Long timestamp) {
+        Map<UsedCloudOfferedService, Long> elementServices;
+
+        if (deallocationTimes.containsKey(element)) {
+            elementServices = deallocationTimes.get(element);
+        } else {
+            elementServices = new HashMap<>();
+            deallocationTimes.put(element, elementServices);
+        }
+
+        elementServices.put(cloudOfferedService, timestamp);
+
+        return this;
+    }
+
+    public Long getDeallocationTime(MonitoredElement element, UsedCloudOfferedService cloudOfferedService) {
+        if (deallocationTimes.containsKey(element)) {
+            Map<UsedCloudOfferedService, Long> elementServices = instantiationTimes.get(element);
+            if (elementServices.containsKey(cloudOfferedService)) {
+
+                return elementServices.get(cloudOfferedService);
+            } else {
+                logger.error("UsedCloudOfferedService with name {} and ID {} not found for element {}", new Object[]{cloudOfferedService.getName(), cloudOfferedService.getId(), element.getId()});;
+                return 0l;
+            }
+        } else {
+            logger.error("Element {} not found in snapshot", element.getId());
+            return 0l;
+        }
+    }
+
+    public boolean hasDeallocationTime(MonitoredElement element, UsedCloudOfferedService cloudOfferedService) {
+        if (deallocationTimes.containsKey(element)) {
+            Map<UsedCloudOfferedService, Long> elementServices = instantiationTimes.get(element);
+            if (elementServices.containsKey(cloudOfferedService)) {
+                return true;
+            } else {
+                logger.error("UsedCloudOfferedService with name {} and ID {} not found for element {}", new Object[]{cloudOfferedService.getName(), cloudOfferedService.getId(), element.getId()});;
+                return false;
+            }
+        } else {
+            logger.error("Element {} not found in snapshot", element.getId());
+            return false;
+        }
+    }
+
+    public Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> getDeallocationTimes() {
+        return deallocationTimes;
+    }
+
+    public Map<UsedCloudOfferedService, Long> getDeallocationTimes(MonitoredElement element) {
+        if (deallocationTimes.containsKey(element)) {
+            return deallocationTimes.get(element);
         } else {
             return new HashMap<>();
         }
@@ -158,14 +240,28 @@ public class CostEnrichedSnapshot implements Serializable {
         return this;
     }
 
-    public CostEnrichedSnapshot withServicesLifetime(final Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> servicesLifetime) {
-        this.servicesLifetime = servicesLifetime;
-        return this;
-    }
-
     public CostEnrichedSnapshot withCostCompositionRules(final CompositionRulesBlock costCompositionRules) {
         this.costCompositionRules = costCompositionRules;
         return this;
+    }
+
+    public CostEnrichedSnapshot withInstantiationTimes(final Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> instantiationTimes) {
+        this.instantiationTimes = instantiationTimes;
+        return this;
+    }
+
+    public CostEnrichedSnapshot withDeallocationTimes(final Map<MonitoredElement, Map<UsedCloudOfferedService, Long>> deallocationTimes) {
+        this.deallocationTimes = deallocationTimes;
+        return this;
+    }
+
+    public CostEnrichedSnapshot clone() {
+        CostEnrichedSnapshot ces = new CostEnrichedSnapshot()
+                .withSnapshot(this.snapshot.clone())
+                .withCostCompositionRules(this.costCompositionRules)
+                .withDeallocationTimes(this.deallocationTimes)
+                .withInstantiationTimes(this.instantiationTimes);
+        return ces;
     }
 
 }

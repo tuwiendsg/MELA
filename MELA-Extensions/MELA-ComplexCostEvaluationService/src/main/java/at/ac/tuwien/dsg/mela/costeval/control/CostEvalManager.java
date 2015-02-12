@@ -464,6 +464,7 @@ public class CostEvalManager {
                 log.debug("Nothing cached or monitored for Service ID  {}", serviceID);
                 return null;
             }
+
             //as I extract 1000 entries at a time to avoid memory overflow, I need to read the rest
             do {
                 lastRetrievedTimestampID = allMonData.get(allMonData.size() - 1).getTimestampID();
@@ -496,17 +497,17 @@ public class CostEvalManager {
         for (ServiceMonitoringSnapshot monitoringSnapshot : allMonData) {
             //update total usage so far and persist
 
-            //compute total usage so fat
-            ServiceMonitoringSnapshot updatedTotalUsageSoFar = costEvalEngine.updateTotalUsageSoFar(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
-
-            previouselyDeterminedUsage.withSnapshot(updatedTotalUsageSoFar);
-            previouselyDeterminedUsage.withtLastUpdatedTimestampID(updatedTotalUsageSoFar.getTimestampID());
+            //compute total usage so far
+            previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
 
             //persist the total usage
-            persistenceDelegate.persistTotalUsageSnapshot(serviceID, previouselyDeterminedUsage);
+            persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID, previouselyDeterminedUsage);
+
+            //as the previous method has also the currently unused services, we must remove them for computing instant cost
+            CostEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(previouselyDeterminedUsage);
 
             //compute composition rules to create instant cost based on total usage so far
-            CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCost(cloudProvidersMap, cfg.getServiceConfiguration(), previouselyDeterminedUsage, serviceID);
+            CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCost(cloudProvidersMap, cfg.getServiceConfiguration(), cleanedCostSnapshot, serviceID);
             ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, monitoringSnapshot);
 
             //persist instant cost
@@ -532,7 +533,7 @@ public class CostEvalManager {
 
     public ElasticitySpace updateAndGetInstantCostElasticitySpace(String serviceID) {
         Date before = new Date();
-        
+
         ElasticitySpace space = persistenceDelegate.extractLatestInstantCostElasticitySpace(serviceID);
 
         //update space with new data

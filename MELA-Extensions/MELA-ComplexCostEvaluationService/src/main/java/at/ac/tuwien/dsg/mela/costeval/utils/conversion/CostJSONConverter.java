@@ -27,6 +27,7 @@ import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -98,6 +99,8 @@ public class CostJSONConverter extends JsonConverter {
             MonitoredElement element = sms.getMonitoredService();
             elementsStack.add(element);
             root.put("name", element.getId());
+            root.put("uniqueID", UUID.randomUUID().toString());
+            root.put("level", element.getLevel().toString());
         }
 
         elementsJSONStack.add(root);
@@ -109,9 +112,6 @@ public class CostJSONConverter extends JsonConverter {
 
             //so, the cost of the element is determined by the cost of the children, and its cost elements
             //we also apply total cost in case element has no children
-            if (!sms.contains(currentElement.getLevel(), currentElement)) {
-                continue;
-            }
             MonitoredElementMonitoringSnapshot snapshot = sms.getMonitoredData(currentElement);
 
             for (Metric m : snapshot.getMetrics()) {
@@ -127,24 +127,36 @@ public class CostJSONConverter extends JsonConverter {
                     String valueRepresentation = value.getValueRepresentation();
                     currentElementJSON.put("displayValue", valueRepresentation);
                     currentElementJSON.put("size", valueRepresentation);
+                    currentElementJSON.put("freshness", value.getFreshness());
+                    //we do not represent the total cost metric. instead we create an entry for the Monitored Element in the diagram
                     currentElementJSON.put("level", currentElement.getLevel().toString());
+                    currentElementJSON.put("uniqueID", UUID.randomUUID().toString());
                 } else if (m.equals(totalChildrenCostMetric)) {
                     //if child, I need to expand its children
                     JSONObject child = new JSONObject();
-                    child.put("name", currentElement.getId() + ": " + m.getName());//+"(" + m.getMeasurementUnit()+")");
+                    child.put("name", m.getName());//+"(" + m.getMeasurementUnit()+")");
                     MetricValue value = snapshot.getMetricValue(m);
                     String valueRepresentation = value.getValueRepresentation();
                     child.put("displayValue", valueRepresentation);
                     child.put("size", valueRepresentation);
-                    child.put("level", currentElement.getLevel().toString());
+                    child.put("level", "metric");
+                    child.put("freshness", value.getFreshness());
+                    child.put("uniqueID", UUID.randomUUID().toString());
 
                     JSONArray childChildrenJSON = new JSONArray();
                     for (MonitoredElement childElement : currentElement.getContainedElements()) {
                         JSONObject childChild = new JSONObject();
                         childChild.put("name", childElement.getId());
-                        childChildrenJSON.add(childChild);
-                        elementsJSONStack.add(childChild);
-                        elementsStack.add(childElement);
+                        childChild.put("level", childElement.getLevel().toString());
+                        currentElementJSON.put("freshness", value.getFreshness());
+                        childChild.put("uniqueID", currentElement.getId() + "_" + currentElement.getLevel().toString());
+
+                        //add the child only if there is monitoring data for it
+                        if (sms.contains(childElement.getLevel(), childElement)) {
+                            elementsJSONStack.add(childChild);
+                            elementsStack.add(childElement);
+                            childChildrenJSON.add(childChild);
+                        }
                     }
                     child.put("children", childChildrenJSON);
                     childrenJSON.add(child);
@@ -152,12 +164,14 @@ public class CostJSONConverter extends JsonConverter {
                 } else {
                     //here means the metric is a final leaf
                     JSONObject child = new JSONObject();
-                    child.put("name", currentElement.getId() + ": " + m.getName());//+"(" + m.getMeasurementUnit()+")");
+                    child.put("name", m.getName());//+"(" + m.getMeasurementUnit()+")");
                     MetricValue value = snapshot.getMetricValue(m);
                     String valueRepresentation = value.getValueRepresentation();
                     child.put("displayValue", valueRepresentation);
                     child.put("size", valueRepresentation);
                     child.put("level", "metric");
+                    child.put("freshness", value.getFreshness());
+                    child.put("uniqueID", UUID.randomUUID().toString());
 
                     childrenJSON.add(child);
 
