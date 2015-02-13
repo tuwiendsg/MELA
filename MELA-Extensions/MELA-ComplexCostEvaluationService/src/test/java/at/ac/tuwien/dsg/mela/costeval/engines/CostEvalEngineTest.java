@@ -442,11 +442,17 @@ public class CostEvalEngineTest {
         CostJSONConverter converter = new CostJSONConverter();
 
 //        totalCostEnrichedSnapshot.getMonitoredData().remove(MonitoredElement.MonitoredElementLevel.VM);
-
+        log.info("");
+        log.info("Radial : totalCostEnrichedSnapshot");
+        log.info("");
         log.info(converter.toJSONForRadialPieChart(totalCostEnrichedSnapshot));
-
+        log.info("");
+        log.info("Radial : instantCost2");
+        log.info("");
         log.info(converter.toJSONForRadialPieChart(instantCost2));
-
+        log.info("ElasticitySpace : totalCostEnrichedSnapshot");
+        log.info("");
+        log.info(converter.convertElasticitySpace(space, service));
     }
 
 }

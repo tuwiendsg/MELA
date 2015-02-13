@@ -7,6 +7,49 @@
         <link rel="stylesheet" type="text/css"
               href="https://fonts.googleapis.com/css?family=Open+Sans:400,600">
         <link rel="stylesheet" type="text/css" href="docs/css/sequences.css"/>
+        
+        
+
+        <style type="text/css">
+
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+            .node circle {
+                cursor: pointer;
+                fill: #fff;
+                stroke: steelblue;
+                stroke-width: 1.5px;
+            }
+
+            .node text {
+                font: 10px sans-serif;
+            }
+
+            path.link {
+                fill: none;
+                stroke: #ccc;
+                stroke-dasharray: 3.3;
+                stroke-width: 1.5px;
+            }
+
+            path.metricLink {
+                fill: none;
+                stroke: #A31E39;
+                stroke-width: 3px;
+            }
+
+            #A{
+                position:absolute;
+                top:50%;
+                left:50%;
+            }
+
+        </style>
 
     </head>
     <body>
@@ -17,19 +60,23 @@
                     <span id="percentage"></span><br/>
                 </div>
             </div>
+            <div id="elasticitySpace"></div>
         </div>
         <!--        <div id="sidebar">
                     <input type="checkbox" id="togglelegend"> Legend<br/>
                     <div id="legend" style="visibility: hidden;"></div>
                 </div>-->
 
+        
+        <script type="text/javascript" src="docs/spin.js" ></script>
         <script type="text/javascript" src="docs/sequences.js"></script>
+        <script type="text/javascript" src="docs/elasticity.js"></script>
         <script type="text/javascript" >
             d3.json("test.json", function (error, root) {
                 var json = root;
-                createVisualization(json, "chart");
+                createVisualization(json, "chart", 800, 200);
             });
-        </script>
+        </script> 
 
         <script type="text/javascript" >
             function refresh() {
@@ -40,12 +87,22 @@
             }
         </script>
 
-        <button onclick="refresh()">Click me</button>
+        <!--<button onclick="refresh()">Click me</button>-->
 
         <script type="text/javascript">
             // Hack to make this example display correctly in an iframe on bl.ocks.org
             d3.select(self.frameElement).style("height", "700px");
         </script> 
+
+        <script type="text/javascript">
+            d3.json("space.json", function (error, root) {
+                var json = root;
+                drawElSpace(json, "elasticitySpace", 500, 200);
+            });
+
+
+        </script> 
+
     </body>
 </html>
 <!--

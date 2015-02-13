@@ -122,6 +122,10 @@ public class JsonConverter {
         });
 
         sortedMetricSet.addAll(elementMonitoringData.keySet());
+        
+         
+        //TODO: convert timestamp from milliseconds from epoch to seconds since start of space
+        
 
         for (Metric metric : sortedMetricSet) {
             JSONObject spaceDimensionJSON = new JSONObject();

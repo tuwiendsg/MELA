@@ -23,11 +23,11 @@
 //var elColors = ["#1C4946", "orange", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"]
 var elColors = ["orange", "#DEDBA7", "#1F7872"]
 
-var width = window.innerWidth - 100;
-var height = window.innerHeight - 100;
-var radius = Math.min(width, height) / 2;
-var x = d3.scale.linear().range([0, 2 * Math.PI]);
-var y = d3.scale.pow().exponent(0.9).domain([0, 1]).range([0, radius]);
+var width;
+var height;
+var radius;
+var x;
+var y;
 // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
 var b = {
     w: 75, h: 30, s: 3, t: 10
@@ -49,24 +49,7 @@ var partition = d3.layout.partition()
         });
 
 
-d3.layout.partition()
-        .size([2 * Math.PI, radius * radius])
-        .value(function (d) {
-            return d.size;
-        });
-var arc = d3.svg.arc()
-        .startAngle(function (d) {
-            return Math.max(0, Math.min(2 * Math.PI, x(d.x)));
-        })
-        .endAngle(function (d) {
-            return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx)));
-        })
-        .innerRadius(function (d) {
-            return Math.max(0, d.y ? y(d.y) : d.y);
-        })
-        .outerRadius(function (d) {
-            return Math.max(0, y(d.y + d.dy));
-        });
+var arc;
 
 function mapNodesToColor(d, selected) {
     if (selected) {
@@ -92,7 +75,29 @@ function mapTrailElementsToColor(d) {
 //});
 
 // Main function to draw and set up the visualization, once we have the data.
-function createVisualization(json, divID) {
+function createVisualization(json, divID, w, h) {
+
+    width = w;
+    height = w;
+
+    radius = Math.min(width, height) / 2;
+
+    x = d3.scale.linear().range([0, 2 * Math.PI]);
+    y = d3.scale.pow().exponent(0.9).domain([0, 1]).range([0, radius]);
+
+    arc = d3.svg.arc()
+            .startAngle(function (d) {
+                return Math.max(0, Math.min(2 * Math.PI, x(d.x)));
+            })
+            .endAngle(function (d) {
+                return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx)));
+            })
+            .innerRadius(function (d) {
+                return Math.max(0, d.y ? y(d.y) : d.y);
+            })
+            .outerRadius(function (d) {
+                return Math.max(0, y(d.y + d.dy));
+            });
 
     svg = d3.select("#" + divID).append("svg:svg")
             .attr("width", width)
@@ -108,7 +113,7 @@ function drawPieChart(json) {
             .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
     // Basic setup of page elements.
-    initializeBreadcrumbTrail();
+    initializeBreadcrumbTrail(width);
 //    drawLegend();
 //    d3.select("#togglelegend").on("click", toggleLegend);
 
@@ -174,7 +179,7 @@ function drawPieChart(json) {
                 });
 
     });
-    
+
 
 
 //has some needed side effects and the breadcrum/selection does not seem to work without
@@ -351,12 +356,20 @@ function getAncestors(node) {
     return path;
 }
 
-function initializeBreadcrumbTrail() {
+function initializeBreadcrumbTrail(width) {
+
+    var oldTrail = document.getElementById("trail");
+    if (oldTrail)
+    {
+        oldTrail.remove();
+    }
     // Add the svg area.
-    var trail = d3.select("#sequence").append("svg:svg")
+    var trail = d3.select("#sequence")
+            .append("svg:svg")
             .attr("width", width)
             .attr("height", 50)
             .attr("id", "trail");
+
     // Add the label at the end, for the percentage.
     trail.append("svg:text")
             .attr("id", "endlabel")
@@ -378,16 +391,21 @@ function breadcrumbPoints(d, i) {
     points.push(nameSize + b.t + "," + (b.h / 2));
     points.push(nameSize + "," + b.h);
     points.push("0," + b.h);
+
     if (i > 0) { // Leftmost breadcrumb; don't include 6th vertex.
         points.push(b.t + "," + (b.h / 2));
     }
+
     return points.join(" ");
+
 }
 
 // Update the breadcrumb trail to show the current sequence and percentage.
 function updateBreadcrumbs(nodeArray, percentageString) {
 
-
+    if (trailPointsWidth[trailPointsWidth.length - 1] > width) {
+        initializeBreadcrumbTrail(width + trailPointsWidth[trailPointsWidth.length - 1]);
+    }
 
     // Data join; key function combines name and depth (= position in sequence).
     var g = d3.select("#trail")
@@ -398,6 +416,7 @@ function updateBreadcrumbs(nodeArray, percentageString) {
 
     // Add breadcrumb and label for entering nodes.
     var entering = g.enter().append("svg:g");
+
 
     entering.append("svg:polygon")
             .attr("points", breadcrumbPoints)

@@ -105,18 +105,18 @@
                     index = index + 1;
                 }
 
-                x.domain(d3.extent(dimension.values, function(d) {
+                x.domain(d3.extent(dimension.values, function (d) {
                     return d.index;
                 }));
 
                 var minY = dimension.lowerBoundary[0].value;
 
 
-                var maxValue = Math.max.apply(null, dimension.values.map(function(c) {
+                var maxValue = Math.max.apply(null, dimension.values.map(function (c) {
                     return c.value;
                 }));
 
-                var minValue = Math.min.apply(null, dimension.values.map(function(c) {
+                var minValue = Math.min.apply(null, dimension.values.map(function (c) {
                     return c.value;
                 }));
 
@@ -161,7 +161,7 @@
                         .style("text-anchor", "end")
                         .attr("dx", "-.8em")
                         .attr("dy", ".15em")
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             return "rotate(-65)"
                         });
 
@@ -199,10 +199,10 @@
 
 
                 var line = d3.svg.line()
-                        .x(function(d) {
+                        .x(function (d) {
                             return x(d.index);
                         })
-                        .y(function(d) {
+                        .y(function (d) {
                             return y(d.value);
                         });
 
@@ -213,19 +213,19 @@
                         .style("stroke-width", lineThickness[0])
                         .attr("d", line);
 
-                rootNode.append("path")
-                        .datum(dimension.upperBoundary)
-                        .attr("class", "line")
-                        .style("stroke", lineColors[1])
-                        .style("stroke-width", lineThickness[1])
-                        .attr("d", line);
-
-                rootNode.append("path")
-                        .datum(dimension.lowerBoundary)
-                        .attr("class", "line")
-                        .style("stroke", lineColors[2])
-                        .style("stroke-width", lineThickness[2])
-                        .attr("d", line);
+//                rootNode.append("path")
+//                        .datum(dimension.upperBoundary)
+//                        .attr("class", "line")
+//                        .style("stroke", lineColors[1])
+//                        .style("stroke-width", lineThickness[1])
+//                        .attr("d", line);
+//
+//                rootNode.append("path")
+//                        .datum(dimension.lowerBoundary)
+//                        .attr("class", "line")
+//                        .style("stroke", lineColors[2])
+//                        .style("stroke-width", lineThickness[2])
+//                        .attr("d", line);
 
 
 
@@ -269,7 +269,7 @@
                             .append("g")
                             .data([legendNames[1]])
                             .attr("class", "legend")
-                            .attr("transform", function(d, i) {
+                            .attr("transform", function (d, i) {
                                 return "translate(" + (legendNames[1].length * 9) + "," + (+yLocation - 20) + ")";
                             });
 
@@ -278,7 +278,7 @@
                             .attr("y", -5)
                             .attr("width", 10)
                             .attr("height", 10)
-                            .style("fill", function(d) {
+                            .style("fill", function (d) {
                                 if (d.match(/.*Boundary/)) {
                                     return "D13F31";
                                 } else {
@@ -291,7 +291,7 @@
                             .attr("dy", ".35em")
                             .style("font-size", "160%")
                             .style("text-anchor", "end")
-                            .text(function(d) {
+                            .text(function (d) {
                                 return d;
                             });
                 }
@@ -302,7 +302,7 @@
                             .append("g")
                             .data([legendNames[2]])
                             .attr("class", "legend")
-                            .attr("transform", function(d, i) {
+                            .attr("transform", function (d, i) {
                                 return "translate(" + 0 + "," + (+yLocation - 20) + ")";
                             });
 
@@ -311,7 +311,7 @@
                             .attr("y", -5)
                             .attr("width", 10)
                             .attr("height", 10)
-                            .style("fill", function(d) {
+                            .style("fill", function (d) {
                                 if (d.match(/.*Boundar/)) {
                                     return "D13F31";
                                 } else {
@@ -324,7 +324,7 @@
                             .attr("dy", ".35em")
                             .style("font-size", "160%")
                             .style("text-anchor", "end")
-                            .text(function(d) {
+                            .text(function (d) {
                                 return d;
                             });
                 }
@@ -335,145 +335,6 @@
 
         }
 
-        function generateElPathwayChart(signature, rootNode, colors, xLocation, yLocation, width, height, xAxisLabel, yAxisLabel) {
-
-            var x0 = d3.scale.ordinal()
-                    .rangeRoundBands([xLocation, xLocation + width], .1);
-
-            var x1 = d3.scale.ordinal();
-
-            var y = d3.scale.linear()
-                    .range([yLocation + height, yLocation]);
-
-            var color = d3.scale.ordinal()
-                    .range(colors);
-
-            var xAxis = d3.svg.axis()
-                    .scale(x0)
-                    .orient("bottom");
-
-            var yAxis = d3.svg.axis()
-                    .scale(y)
-                    .orient("left")
-                    .tickFormat(d3.format(".2s"));
-
-            var data = signature.neurons;
-
-            var ageNames = signature.metricLabels.map(function(d) {
-                return d.name;
-            });
-
-            data.forEach(function(d) {
-                d.ages = ageNames.map(function(name) {
-                    return {name: name, value: +d[name]};
-                });
-            });
-
-            x0.domain(data.map(function(d) {
-                return d.encounterRate;
-            }));
-            x1.domain(ageNames).rangeRoundBands([0, x0.rangeBand()]);
-            y.domain([-0.1, d3.max(data, function(d) {
-                    return d3.max(d.ages, function(d) {
-                        return d.value;
-                    });
-                })]);
-
-            rootNode.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform", "translate(0," + (yLocation + height) + ")")
-                    .style("font-size", "140%")
-                    .call(xAxis)
-                    .selectAll("text")
-                    .style("text-anchor", "end")
-                    .attr("dx", "-.8em")
-                    .attr("dy", ".15em")
-                    .attr("transform", function(d) {
-                        return "rotate(-65)"
-                    });
-
-
-            rootNode.append("g")
-                    .attr("class", "y axis")
-                    .style("font-size", "140%")
-                    .call(yAxis)
-                    .append("text")
-                    .attr("transform", "rotate(-90)")
-                    .attr("y", +(+xLocation - 45))
-                    .attr("x", +(-yLocation - height / 2 - yAxisLabel.length * 12 / 2))
-                    .attr("dy", ".71em")
-                    .style("text-anchor", "start")
-                    .style("font-size", "150%")
-                    .text(yAxisLabel);
-
-
-            rootNode.append("g")
-                    .attr("class", "y axis")
-                    .append("text")
-                    .attr("y", +yLocation + height + 60)
-                    .attr("x", +xLocation + width / 2 - xAxisLabel.length * 6 / 2)
-                    .attr("dy", ".71em")
-                    .style("text-anchor", "start")
-                    .style("font-size", "150%")
-                    .text(xAxisLabel);
-
-
-            var state = rootNode.selectAll(".encounterRate")
-                    .data(data)
-                    .enter().append("g")
-                    .attr("class", "g")
-                    .attr("transform", function(d) {
-                        return "translate(" + x0(d.encounterRate) + ",0)";
-                    });
-
-            state.selectAll("rect")
-                    .data(function(d) {
-                        return d.ages;
-                    })
-                    .enter().append("rect")
-                    .attr("width", x1.rangeBand())
-                    .attr("x", function(d) {
-                        return x1(d.name);
-                    })
-                    .attr("y", function(d) {
-                        return y(d.value);
-                    })
-                    .attr("height", function(d) {
-                        return (+yLocation + +height) - y(d.value);
-                    })
-                    .style("fill", function(d, i) {
-                        return color(i);
-                    });
-
-            var legend = rootNode.selectAll(".legend")
-                    .data(ageNames.slice())
-                    .enter().append("g")
-                    .attr("class", "legend")
-                    .attr("transform", function(d, i) {
-                        return "translate(" + (50 + i * width / ageNames.length) + "," + (+yLocation - 40) + ")";
-                    });
-
-            legend.append("rect")
-                    .attr("x", xLocation - 18)
-                    .attr("width", 18)
-                    .attr("height", 18)
-                    .style("fill", function(d, i) {
-                        return color(i);
-                    });
-
-            legend.append("text")
-                    .attr("x", xLocation + 5)
-                    .attr("y", 9)
-                    .attr("dy", ".35em")
-                    .style("font-size", "140%")
-                    .style("text-anchor", "start")
-                    .text(function(d) {
-                        return d;
-                    });
-
-
-        }
-
         var elSpaceColors = ["#72B095", "#D13F31", "#D13F31"];
         var elPathwayColors = ["#1C4946", "#1F7872", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"];
         //       
@@ -481,67 +342,61 @@
         var elSpaceLoaded = false;
         var elPathwayLoaded = false;
 
-
-
-        var query = window.location.search.substring(1);
-        var vars = query.split("&");
-
-        var elSpaceDiv = d3.select("body").append("div");
-        var elPthwDiv = d3.select("body").append("div");
-        var maxColumns;
-
-        document.title = vars[1] + ": Elasticity Space Analysis";
-
-        function refreshElSpace() {
-
-            elasticitySpaceRequest = null;
-
-            if (window.XMLHttpRequest) {
-                elasticitySpaceRequest = new XMLHttpRequest();
-            } else {
-                elasticitySpaceRequest = new ActiveXObject("Microsoft.XMLHTTP");
-            }
-
-            elasticitySpaceRequest.onreadystatechange = processElasticitySpaceRequestResponse;
-            elasticitySpaceRequest.open("GET", "./REST_WS/" + vars[0] + "/cost/instant/elasticityspace/" +vars[1] + "/" + vars[2] + "/json", true);
-            elasticitySpaceRequest.setRequestHeader('Content-type', 'application/json');
-//            elasticitySpaceRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
-
-        }
-
-        function processElasticitySpaceRequestResponse() {
-            if (elasticitySpaceRequest.readyState == 4) {
-
-
-                elasticitySpace = JSON.parse(elasticitySpaceRequest.responseText);
-                elSpaceLoaded = true;
-                loadingSpinner.stop();
-                d3.select("#loadingIcon").remove();
-
-
-                drawElSpace(elasticitySpace, vars)
-
-
-                setTimeout(refreshElSpace, 5000);
-            }
-        }
+////
+////        function refreshElSpace() {
+////
+////            elasticitySpaceRequest = null;
+////
+////            if (window.XMLHttpRequest) {
+////                elasticitySpaceRequest = new XMLHttpRequest();
+////            } else {
+////                elasticitySpaceRequest = new ActiveXObject("Microsoft.XMLHTTP");
+////            }
+////
+////            elasticitySpaceRequest.onreadystatechange = processElasticitySpaceRequestResponse;
+////            elasticitySpaceRequest.open("POST", "./REST_WS/" + vars[0] + "/elasticityspace/json", true);
+////            elasticitySpaceRequest.setRequestHeader('Content-type', 'application/xml');
+////            elasticitySpaceRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
+////
+////        }
+//
+//        function processElasticitySpaceRequestResponse() {
+//            if (elasticitySpaceRequest.readyState == 4) {
+//
+//
+//                elasticitySpace = JSON.parse(elasticitySpaceRequest.responseText);
+//                elSpaceLoaded = true;
+//                loadingSpinner.stop();
+//                d3.select("#loadingIcon").remove();
+//
+//
+//                drawElSpace(elasticitySpace, vars)
+//
+//
+//                setTimeout(refreshElSpace, 5000);
+//            }
+//        }
 
 
 
-        function drawElSpace(elSpace, vars) {
+        function drawElSpace(elSpace, elSpaceDiv, width, height) {
 
             if (elSpace && elSpace.dimensions) {
+
+                var loadingSpinner = document.createElement('div');
+                elSpaceDiv.setAttribute('id', "loadingIcon");
+
+                drawSpinner('loadingIcon');
 
                 elSpaceDiv.selectAll("h2").remove();
                 elSpaceDiv.selectAll("svg").remove();
 
-
-                maxColumns = Math.floor(window.innerWidth / (width + 60));
+                maxColumns = 1;
 
                 elSpaceSVGHeight = Math.ceil(elSpace.dimensions.length / maxColumns) * (height + 120);
 
                 elSpaceSVG = elSpaceDiv.append("svg")
-                        .attr("width", window.innerWidth)
+                        .attr("width", width)
                         .attr("height", elSpaceSVGHeight)
                         .append("g")
                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -555,6 +410,9 @@
                         .attr("stroke", "black");
 
                 generateElSpaceChart(elSpace, elSpaceSVG, lineThickness, elSpaceColors, -50, 20, width, height, "Time (s)");
+
+                loadingSpinner.stop();
+                d3.select("#loadingIcon").remove();
             }
         }
 
@@ -566,9 +424,9 @@
             loadingSpinner.spin(target);
         }
 
-        drawSpinner('loadingIcon');
 
-        refreshElSpace();
+
+//        refreshElSpace();
 
 
     </script>
