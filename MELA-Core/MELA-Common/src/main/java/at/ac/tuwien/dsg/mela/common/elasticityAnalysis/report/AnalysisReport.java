@@ -76,7 +76,7 @@ public class AnalysisReport implements Serializable{
                 List<AnalysisReportEntry> analysis = Collections.synchronizedList(new ArrayList<AnalysisReportEntry>());
 
                 //get the value of the targeted metric
-                MetricValue targetMetricValue = entry.getValue().getValueForMetric(targetMetric);
+                MetricValue targetMetricValue = entry.getValue().getMetricValue(targetMetric);
                 if (targetMetricValue == null) {
                     Logger.getLogger(this.getClass()).log(Level.WARN, "Metric " + targetMetric + "not found on " + entry.getKey());
                 } else {

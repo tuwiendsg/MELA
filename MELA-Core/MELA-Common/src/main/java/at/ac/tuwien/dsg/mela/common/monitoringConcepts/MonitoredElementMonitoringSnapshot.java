@@ -135,10 +135,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     public synchronized MonitoredElement getMonitoredElement() {
         return monitoredElement;
     }
-
-    public synchronized MetricValue getValueForMetric(Metric metric) {
-        return monitoredData.get(metric);
-    }
+ 
 
     public synchronized Collection<MonitoredElementMonitoringSnapshot> getChildren() {
         return children;
@@ -261,7 +258,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     public MonitoredElementMonitoringSnapshot clone() {
 
         MonitoredElementMonitoringSnapshot clone = new MonitoredElementMonitoringSnapshot();
-        clone.monitoredElement = monitoredElement.clone();
+        clone.monitoredElement = monitoredElement;
         clone.timestamp = "" + timestamp;
 
         for (Map.Entry<Metric, MetricValue> entry : monitoredData.entrySet()) {

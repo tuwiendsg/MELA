@@ -188,7 +188,7 @@ public class CompositionOperation implements Serializable {
             //search in the element children (composition rules search metrics for the target element level and the direct sub-level)
             if (this.getMetricSourceMonitoredElementLevel().equals(MonitoredElement.getLevel())) {
                 if (elementMonitoringSnapshot.containsMetric(referenceMetric)) {
-                    valuesToBeProcessed.add(elementMonitoringSnapshot.getValueForMetric(referenceMetric).clone());
+                    valuesToBeProcessed.add(elementMonitoringSnapshot.getMetricValue(referenceMetric).clone());
                 } else {
                     // Logger.getRootLogger().log(Level.WARN, "Metric " + referenceMetric + " not found in " + MonitoredElement.getId());
 //                    return null;
@@ -205,7 +205,7 @@ public class CompositionOperation implements Serializable {
                 for (MonitoredElementMonitoringSnapshot childSnapshot : childSnapshotForSpecificLevel) {
                     //if source IDs have been supplied check if the snapshot belongs to a specified ID
                     if (childSnapshot.containsMetric(referenceMetric)) {
-                        valuesToBeProcessed.add(childSnapshot.getValueForMetric(referenceMetric).clone());
+                        valuesToBeProcessed.add(childSnapshot.getMetricValue(referenceMetric).clone());
                     } else {
 //                        Logger.getRootLogger().log(Level.WARN, "Metric " + referenceMetric + " not found in " + childSnapshot.getMonitoredElement().getId());
 //                        return null;

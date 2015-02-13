@@ -24,6 +24,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitorin
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
+import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,13 +44,13 @@ public class CostJSONConverter extends JsonConverter {
 
     static final Logger logger = LoggerFactory.getLogger(CostJSONConverter.class);
 
-    public String toJSONForRadialPieChart(CostEnrichedSnapshot costEnrichedSnapshot) {
+    public String toJSONForRadialPieChart(ServiceMonitoringSnapshot costEnrichedSnapshot) {
 
         DecimalFormat df4 = new DecimalFormat("0.####");
         DecimalFormat df2 = new DecimalFormat("0.##");
 
-        CompositionRulesBlock block = costEnrichedSnapshot.getCostCompositionRules();
-        ServiceMonitoringSnapshot sms = costEnrichedSnapshot.getSnapshot();
+//        CompositionRulesBlock block = costEnrichedSnapshot.getCostCompositionRules();
+        ServiceMonitoringSnapshot sms = costEnrichedSnapshot;
 
 //        //map pf resulting metrics
 //        //Map<Level, Map<MonitoredElementID,Map<ResultingMetric,Rule>>>

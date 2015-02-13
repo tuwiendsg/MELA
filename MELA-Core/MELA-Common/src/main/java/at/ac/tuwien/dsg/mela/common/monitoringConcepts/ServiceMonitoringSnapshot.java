@@ -354,11 +354,11 @@ public class ServiceMonitoringSnapshot implements Serializable {
         clone.timestamp = "" + timestamp;
         clone.timestampID = timestampID;
 
-        MonitoredElementMonitoringSnapshot coreSnapshot = this.getMonitoredData(this.getMonitoredService()).clone();
-
+        MonitoredElementMonitoringSnapshot serviceSnapshot = this.getMonitoredData(this.getMonitoredService()).clone();
+        
         Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> clonedMonitoredData = new HashMap<>();
 
-        for (MonitoredElementMonitoringSnapshot elementMonitoringSnapshot : coreSnapshot) {
+        for (MonitoredElementMonitoringSnapshot elementMonitoringSnapshot : serviceSnapshot) {
 
             MonitoredElement element = elementMonitoringSnapshot.getMonitoredElement();
 

@@ -30,6 +30,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
+import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -327,7 +328,7 @@ public class PersistenceDelegate {
      * @param serviceID
      * @param serviceUsageSnapshot
      */
-    public void persistTotalUsageWithCompleteHistoricalStructureSnapshot(String serviceID, CostEnrichedSnapshot serviceUsageSnapshot) {
+    public void persistTotalUsageWithCompleteHistoricalStructureSnapshot(String serviceID, LifetimeEnrichedSnapshot serviceUsageSnapshot) {
 
 //        //delete old cached
 //        {
@@ -341,16 +342,16 @@ public class PersistenceDelegate {
 
     }
 
-    public CostEnrichedSnapshot extractTotalUsageWithCompleteHistoricalStructureSnapshot(String serviceID) {
+    public LifetimeEnrichedSnapshot extractTotalUsageWithCompleteHistoricalStructureSnapshot(String serviceID) {
         String sql = "SELECT CaschedCompleteHistoricalUsage.timestampID, CaschedCompleteHistoricalUsage.data from CaschedCompleteHistoricalUsage where "
                 + "ID=(SELECT MAX(ID) from CaschedCompleteHistoricalUsage where monSeqID=?);";
-        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
-            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
-                return mapToServiceUsageSnapshot(rs);
+        RowMapper<LifetimeEnrichedSnapshot> rowMapper = new RowMapper<LifetimeEnrichedSnapshot>() {
+            public LifetimeEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToLifetimeEnrichedSnapshot(rs);
             }
         };
 
-        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        List<LifetimeEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
         if (snapshots.isEmpty()) {
             return null;
         } else {
@@ -442,6 +443,33 @@ public class PersistenceDelegate {
         } else {
             //can convert and return with H2 and HyperSQL adapters
             CostEnrichedSnapshot snapshot = (CostEnrichedSnapshot) rs.getObject(2);
+            snapshot.setLastUpdatedTimestampID(sTimestamp);
+            return snapshot;
+        }
+    }
+
+    private LifetimeEnrichedSnapshot mapToLifetimeEnrichedSnapshot(ResultSet rs) throws SQLException {
+        int sTimestamp = rs.getInt(1);
+        Object data = rs.getObject(2);
+
+        //if array of bytes as mysql returns
+        if (data instanceof byte[]) {
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
+                ObjectInput in = new ObjectInputStream(bis);
+                LifetimeEnrichedSnapshot snapshot = (LifetimeEnrichedSnapshot) in.readObject();
+                snapshot.setLastUpdatedTimestampID(sTimestamp);
+                return snapshot;
+            } catch (ClassNotFoundException ex) {
+                log.info(ex.getMessage(), ex);
+                return new LifetimeEnrichedSnapshot();
+            } catch (IOException ex) {
+                log.info(ex.getMessage(), ex);
+                return new LifetimeEnrichedSnapshot();
+            }
+        } else {
+            //can convert and return with H2 and HyperSQL adapters
+            LifetimeEnrichedSnapshot snapshot = (LifetimeEnrichedSnapshot) rs.getObject(2);
             snapshot.setLastUpdatedTimestampID(sTimestamp);
             return snapshot;
         }

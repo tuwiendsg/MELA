@@ -45,9 +45,15 @@ var vis;
 var partition = d3.layout.partition()
         .sort(null)
         .value(function (d) {
-            return 5.8 - d.depth;
+            return d.size;
         });
 
+
+d3.layout.partition()
+        .size([2 * Math.PI, radius * radius])
+        .value(function (d) {
+            return d.size;
+        });
 var arc = d3.svg.arc()
         .startAngle(function (d) {
             return Math.max(0, Math.min(2 * Math.PI, x(d.x)));
@@ -168,6 +174,7 @@ function drawPieChart(json) {
                 });
 
     });
+    
 
 
 //has some needed side effects and the breadcrum/selection does not seem to work without

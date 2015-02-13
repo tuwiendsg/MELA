@@ -36,6 +36,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngine;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
+import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
@@ -439,7 +440,7 @@ public class CostEvalManager {
 
     }
 
-    public CostEnrichedSnapshot updateAndCacheHistoricalServiceUsageForInstantCostPerUsage(final String serviceID) {
+    public LifetimeEnrichedSnapshot updateAndCacheHistoricalServiceUsageForInstantCostPerUsage(final String serviceID) {
         Date before = new Date();
 
         //if service DI not found
@@ -450,7 +451,7 @@ public class CostEvalManager {
             return null;
         }
 
-        CostEnrichedSnapshot previouselyDeterminedUsage = persistenceDelegate.extractTotalUsageSnapshot(serviceID);
+        LifetimeEnrichedSnapshot previouselyDeterminedUsage = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID);
 
         int lastRetrievedTimestampID = (previouselyDeterminedUsage != null) ? previouselyDeterminedUsage.getLastUpdatedTimestampID() : 0;
 
@@ -459,7 +460,7 @@ public class CostEvalManager {
         if (!allMonData.isEmpty()) {
             if (previouselyDeterminedUsage == null) {
                 ServiceMonitoringSnapshot data = allMonData.remove(0);
-                previouselyDeterminedUsage = new CostEnrichedSnapshot().withSnapshot(data).withLastUpdatedTimestampID(data.getTimestampID());
+                previouselyDeterminedUsage = new LifetimeEnrichedSnapshot().withSnapshot(data).withLastUpdatedTimestampID(data.getTimestampID());
             } else {
                 log.debug("Nothing cached or monitored for Service ID  {}", serviceID);
                 return null;
@@ -504,7 +505,7 @@ public class CostEvalManager {
             persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID, previouselyDeterminedUsage);
 
             //as the previous method has also the currently unused services, we must remove them for computing instant cost
-            CostEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(previouselyDeterminedUsage);
+            LifetimeEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(previouselyDeterminedUsage);
 
             //compute composition rules to create instant cost based on total usage so far
             CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCost(cloudProvidersMap, cfg.getServiceConfiguration(), cleanedCostSnapshot, serviceID);
