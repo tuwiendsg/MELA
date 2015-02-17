@@ -124,14 +124,14 @@ public class CostEvalService {
     @DELETE
     @Path("/{cloudofferedserviceID}/pricingscheme")
     public void deletePricingScheme(@PathParam("cloudofferedserviceID") String cloudofferedserviceID) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @GET
     @Path("/{cloudofferedserviceID}/pricingscheme")
     @Produces("application/xml")
     public void getPricingSchemeForService(@PathParam("cloudofferedserviceID") String cloudofferedserviceID) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @GET
@@ -144,7 +144,7 @@ public class CostEvalService {
     @GET
     @Path("/{serviceID}/cost/total/json")
     @Produces("application/json")
-    public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
+    public String getTotalCostForServiceWithCurrentStructureJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostJSON(serviceID);
     }
 
@@ -153,6 +153,20 @@ public class CostEvalService {
     @Produces("application/json")
     public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getInstantCostJSON(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/json/tree")
+    @Produces("application/json")
+    public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalCostForServiceJSON(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/json/piechart")
+    @Produces("application/json")
+    public String getTotalCostForServiceJSONAsPieChart(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalCostForServiceJSONAsPieChart(serviceID);
     }
 
     @GET
@@ -165,10 +179,12 @@ public class CostEvalService {
     }
 
     @GET
-    @Path("/{serviceID}/cost/total/detailed")
-    @Produces("application/csv")
-    public void getTotalCostForServiceCSV(@PathParam("serviceID") String serviceID) {
-
+    @Path("/{serviceID}/cost/total/elasticityspace/{monitoredElementID}/{monitoredElementLevel}/json")
+    @Produces("application/json")
+    public String gettotalCostPerUsageElasticitySpaceJSON(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @GET
@@ -176,7 +192,7 @@ public class CostEvalService {
     @Produces("application/xml")
     public void getTotalCostForServiceInIntervalXML(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @GET
@@ -184,7 +200,7 @@ public class CostEvalService {
     @Produces("application/csv")
     public void getTotalCostForServiceInIntervalCSV(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @POST
@@ -199,7 +215,7 @@ public class CostEvalService {
         @ApiResponse(code = 404, message = "Service element not found in service structure")
     })
     public void getTotalCostForElementXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @POST
@@ -214,7 +230,7 @@ public class CostEvalService {
         @ApiResponse(code = 404, message = "Service element not found in service structure")
     })
     public void getTotalCostForElementJson(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @POST
@@ -230,7 +246,7 @@ public class CostEvalService {
     })
     public void getTotalCostForElementInIntervalXML(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @POST
@@ -246,7 +262,7 @@ public class CostEvalService {
     })
     public void getTotalCostForElementInIntervalCSV(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Path("/{serviceID}/cost/ininterval/{start}/{end}/json")
@@ -261,7 +277,7 @@ public class CostEvalService {
     })
     public void getTotalCostForElementInIntervalJSON(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
 }

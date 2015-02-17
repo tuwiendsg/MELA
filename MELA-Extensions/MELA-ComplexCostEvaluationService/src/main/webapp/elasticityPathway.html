@@ -33,7 +33,7 @@
 </style>
 <body>
     <script src="http://d3js.org/d3.v3.js"></script>
-    <script src="./spin.js" type="text/javascript"></script>
+    <script src="scripts/spin.js" type="text/javascript"></script>
     <div id="loadingIcon"></div>
     <script>
 
@@ -44,7 +44,7 @@
 
         var margin = {top: 20, right: 20, bottom: 30, left: 120},
         width = 500 - margin.left - margin.right,
-                height = 270 - margin.top - margin.bottom;
+                height = 500 - margin.top - margin.bottom;
 
         var opts = {
             lines: 20, // The number of lines to draw
@@ -105,18 +105,18 @@
                     index = index + 1;
                 }
 
-                x.domain(d3.extent(dimension.values, function(d) {
+                x.domain(d3.extent(dimension.values, function (d) {
                     return d.index;
                 }));
 
                 var minY = dimension.lowerBoundary[0].value;
 
 
-                var maxValue = Math.max.apply(null, dimension.values.map(function(c) {
+                var maxValue = Math.max.apply(null, dimension.values.map(function (c) {
                     return c.value;
                 }));
 
-                var minValue = Math.min.apply(null, dimension.values.map(function(c) {
+                var minValue = Math.min.apply(null, dimension.values.map(function (c) {
                     return c.value;
                 }));
 
@@ -161,7 +161,7 @@
                         .style("text-anchor", "end")
                         .attr("dx", "-.8em")
                         .attr("dy", ".15em")
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             return "rotate(-65)"
                         });
 
@@ -199,10 +199,10 @@
 
 
                 var line = d3.svg.line()
-                        .x(function(d) {
+                        .x(function (d) {
                             return x(d.index);
                         })
-                        .y(function(d) {
+                        .y(function (d) {
                             return y(d.value);
                         });
 
@@ -269,7 +269,7 @@
                             .append("g")
                             .data([legendNames[1]])
                             .attr("class", "legend")
-                            .attr("transform", function(d, i) {
+                            .attr("transform", function (d, i) {
                                 return "translate(" + (legendNames[1].length * 9) + "," + (+yLocation - 20) + ")";
                             });
 
@@ -278,7 +278,7 @@
                             .attr("y", -5)
                             .attr("width", 10)
                             .attr("height", 10)
-                            .style("fill", function(d) {
+                            .style("fill", function (d) {
                                 if (d.match(/.*Boundary/)) {
                                     return "D13F31";
                                 } else {
@@ -291,7 +291,7 @@
                             .attr("dy", ".35em")
                             .style("font-size", "160%")
                             .style("text-anchor", "end")
-                            .text(function(d) {
+                            .text(function (d) {
                                 return d;
                             });
                 }
@@ -302,7 +302,7 @@
                             .append("g")
                             .data([legendNames[2]])
                             .attr("class", "legend")
-                            .attr("transform", function(d, i) {
+                            .attr("transform", function (d, i) {
                                 return "translate(" + 0 + "," + (+yLocation - 20) + ")";
                             });
 
@@ -311,7 +311,7 @@
                             .attr("y", -5)
                             .attr("width", 10)
                             .attr("height", 10)
-                            .style("fill", function(d) {
+                            .style("fill", function (d) {
                                 if (d.match(/.*Boundar/)) {
                                     return "D13F31";
                                 } else {
@@ -324,7 +324,7 @@
                             .attr("dy", ".35em")
                             .style("font-size", "160%")
                             .style("text-anchor", "end")
-                            .text(function(d) {
+                            .text(function (d) {
                                 return d;
                             });
                 }
@@ -359,22 +359,22 @@
 
             var data = signature.neurons;
 
-            var ageNames = signature.metricLabels.map(function(d) {
+            var ageNames = signature.metricLabels.map(function (d) {
                 return d.name;
             });
 
-            data.forEach(function(d) {
-                d.ages = ageNames.map(function(name) {
+            data.forEach(function (d) {
+                d.ages = ageNames.map(function (name) {
                     return {name: name, value: +d[name]};
                 });
             });
 
-            x0.domain(data.map(function(d) {
+            x0.domain(data.map(function (d) {
                 return d.encounterRate;
             }));
             x1.domain(ageNames).rangeRoundBands([0, x0.rangeBand()]);
-            y.domain([-0.1, d3.max(data, function(d) {
-                    return d3.max(d.ages, function(d) {
+            y.domain([-0.1, d3.max(data, function (d) {
+                    return d3.max(d.ages, function (d) {
                         return d.value;
                     });
                 })]);
@@ -388,7 +388,7 @@
                     .style("text-anchor", "end")
                     .attr("dx", "-.8em")
                     .attr("dy", ".15em")
-                    .attr("transform", function(d) {
+                    .attr("transform", function (d) {
                         return "rotate(-65)"
                     });
 
@@ -422,26 +422,26 @@
                     .data(data)
                     .enter().append("g")
                     .attr("class", "g")
-                    .attr("transform", function(d) {
+                    .attr("transform", function (d) {
                         return "translate(" + x0(d.encounterRate) + ",0)";
                     });
 
             state.selectAll("rect")
-                    .data(function(d) {
+                    .data(function (d) {
                         return d.ages;
                     })
                     .enter().append("rect")
                     .attr("width", x1.rangeBand())
-                    .attr("x", function(d) {
+                    .attr("x", function (d) {
                         return x1(d.name);
                     })
-                    .attr("y", function(d) {
+                    .attr("y", function (d) {
                         return y(d.value);
                     })
-                    .attr("height", function(d) {
+                    .attr("height", function (d) {
                         return (+yLocation + +height) - y(d.value);
                     })
-                    .style("fill", function(d, i) {
+                    .style("fill", function (d, i) {
                         return color(i);
                     });
 
@@ -449,7 +449,7 @@
                     .data(ageNames.slice())
                     .enter().append("g")
                     .attr("class", "legend")
-                    .attr("transform", function(d, i) {
+                    .attr("transform", function (d, i) {
                         return "translate(" + (50 + i * width / ageNames.length) + "," + (+yLocation - 40) + ")";
                     });
 
@@ -457,7 +457,7 @@
                     .attr("x", xLocation - 18)
                     .attr("width", 18)
                     .attr("height", 18)
-                    .style("fill", function(d, i) {
+                    .style("fill", function (d, i) {
                         return color(i);
                     });
 
@@ -467,7 +467,7 @@
                     .attr("dy", ".35em")
                     .style("font-size", "140%")
                     .style("text-anchor", "start")
-                    .text(function(d) {
+                    .text(function (d) {
                         return d;
                     });
 
@@ -506,9 +506,8 @@
             }
 
             elasticityPathwayRequest.onreadystatechange = processElasticityPathwayRequestResponse;
-            elasticityPathwayRequest.open("POST", "./REST_WS/" + vars[0] + "/elasticitypathway", true);
-            elasticityPathwayRequest.setRequestHeader('Content-type', 'application/xml');
-            elasticityPathwayRequest.send("<MonitoredElement id=\"" + vars[1] + "\" level=\"" + vars[2] + "\"/>");
+            elasticityPathwayRequest.open("GET", "./REST_WS/" + vars[0] + "/cost/" + vars[3] + "/elasticitypathway/" + vars[1] + "/" + vars[2] + "/json", true);
+            elasticityPathwayRequest.send(null);
 
         }
 
@@ -531,39 +530,38 @@
 
         function drawElasticityPathway(elPthw, vars) {
 
+            if (elPthw && elPthw.neurons) {
 
-            elPthwDiv.selectAll("h2").remove();
-            elPthwDiv.selectAll("svg").remove();
+                elPthwDiv.selectAll("h2").remove();
+                elPthwDiv.selectAll("svg").remove();
 
-            elPthwDiv.append("h2").text("Elasticity Pathway  for " + vars[1]);
+                elPthwSVG = elPthwDiv.append("svg")
+                        .attr("width", window.innerWidth)
+                        .attr("height", window.innerHeight)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            elPthwSVG = elPthwDiv.append("svg")
-                    .attr("width", window.innerWidth)
-                    .attr("height", window.innerHeight)
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            elPthwSVG.append("line")
-                    .attr("x1", -margin.left)
-                    .attr("y1", 0)
-                    .attr("x2", window.innerWidth)
-                    .attr("y2", 0)
-                    .attr("stroke-width", 1)
-                    .attr("stroke", "black");
+                elPthwSVG.append("line")
+                        .attr("x1", -margin.left)
+                        .attr("y1", 0)
+                        .attr("x2", window.innerWidth)
+                        .attr("y2", 0)
+                        .attr("stroke-width", 1)
+                        .attr("stroke", "black");
 
 
-            var elSgnChartWidth = window.innerWidth - 200;
+                var elSgnChartWidth = window.innerWidth - 200;
 
-            if ((elSgnChartWidth / elPthw.neurons.length) > 200 && elPthw.neurons.length > 0) {
-                elSgnChartWidth = elPthw.neurons.length * 200;
+                if ((elSgnChartWidth / elPthw.neurons.length) > 200 && elPthw.neurons.length > 0) {
+                    elSgnChartWidth = elPthw.neurons.length * 200;
+                }
+
+                if ((elSgnChartWidth / elPthw.metricLabels.length) < 200 && elPthw.metricLabels.length > 0) {
+                    elSgnChartWidth = elPthw.metricLabels.length * 200;
+                }
+
+                generateElPathwayChart(elPthw, elPthwSVG, elPathwayColors, 0, 70, elSgnChartWidth, height, "Situations Encounter Rate (%)", "Value");
             }
-
-            if ((elSgnChartWidth / elPthw.metricLabels.length) < 200 && elPthw.metricLabels.length > 0) {
-                elSgnChartWidth = elPthw.metricLabels.length * 200;
-            }
-
-            generateElPathwayChart(elPthw, elPthwSVG, elPathwayColors, 0, 70, elSgnChartWidth, height, "Situations Encounter Rate (%)", "Value");
-
         }
 
 

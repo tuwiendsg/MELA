@@ -439,6 +439,54 @@ public class CostEvalManager {
         }
 
     }
+    public String getTotalCostForServiceJSON(String serviceID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        LifetimeEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID);
+
+        if (serviceUsageSnapshot == null) {
+            return "{nothing}";
+        }
+
+        try {
+            String converted = jsonConverter.convertMonitoringSnapshot(serviceUsageSnapshot.getSnapshot());
+            return converted;
+        } catch (Exception e) {
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getTotalCostForServiceJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+    public String getTotalCostForServiceJSONAsPieChart(String serviceID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        LifetimeEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID);
+
+        if (serviceUsageSnapshot == null) {
+            return "{nothing}";
+        }
+
+        try {
+            String converted = jsonConverter.toJSONForRadialPieChart(serviceUsageSnapshot.getSnapshot());
+            return converted;
+        } catch (Exception e) {
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getTotalCostForServiceJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
 
     public LifetimeEnrichedSnapshot updateAndCacheHistoricalServiceUsageForInstantCostPerUsage(final String serviceID) {
         Date before = new Date();

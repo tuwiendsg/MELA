@@ -450,6 +450,10 @@ public class CostEvalEngineTest {
         log.info("Radial : instantCost2");
         log.info("");
         log.info(converter.toJSONForRadialPieChart(instantCost2));
+        log.info("Tree view : totalCostEnrichedSnapshot");
+        log.info("");
+        log.info(converter.convertMonitoringSnapshotAndCompositionRules(totalCostEnrichedSnapshot,totalCostRules));
+        log.info("");
         log.info("ElasticitySpace : totalCostEnrichedSnapshot");
         log.info("");
         log.info(converter.convertElasticitySpace(space, service));

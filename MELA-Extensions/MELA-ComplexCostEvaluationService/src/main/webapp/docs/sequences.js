@@ -12,7 +12,11 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-//NOTICE: Work derived from Sun-Burst D3_JS example provided by http://bl.ocks.org/kerryrodden/7090426
+//NOTICE: Work derived from D3JS examples:
+//  - http://bl.ocks.org/kerryrodden/7090426
+//  - http://bl.ocks.org/dbuezas/9306799
+//  - http://www.jasondavies.com/coffee-wheel/
+
 
 
 // Dimensions of sunburst.
@@ -21,49 +25,54 @@
 
 // var elColors = ["#1C4946", "#1F7872", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"]
 //var elColors = ["#1C4946", "orange", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"]
-var elColors = ["orange", "#DEDBA7", "#1F7872"]
+var pieVisColors = ["orange", "#DEDBA7", "#1F7872"]
 
-var width;
-var height;
-var radius;
-var x;
-var y;
+var pieVisWidth;
+var pieVisHeight;
+var pieVisRadius;
+var pieX;
+var pieY;
 // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
 var b = {
     w: 75, h: 30, s: 3, t: 10
 };
 
 
-var fontSize = 20;
+var pieFontSize = 12;
 // Total size of all segments; we set this later, after loading the data.
-var totalSize = 0;
+var pieTotalSize = 0;
 
 
-var svg;
-var vis;
+var pieChartSVG;
+var pieChartVis;
 
-var partition = d3.layout.partition()
+var trailDiv;
+var pieDiv;
+
+var analyticsDiv;
+
+var piePartition = d3.layout.partition()
         .sort(null)
         .value(function (d) {
             return d.size;
         });
 
 
-var arc;
+var pieArc;
 
 function mapNodesToColor(d, selected) {
     if (selected) {
-        return elColors[0];
+        return pieVisColors[0];
     } else {
         if (d.level == "metric") {
-            return elColors[1];
+            return pieVisColors[1];
         } else {
-            return elColors[2];
+            return pieVisColors[2];
         }
     }
 }
 function mapTrailElementsToColor(d) {
-    return elColors[2];
+    return pieVisColors[2];
 }
 
 // Use d3.text and d3.csv.parseRows so that we do not need to have a header
@@ -75,137 +84,295 @@ function mapTrailElementsToColor(d) {
 //});
 
 // Main function to draw and set up the visualization, once we have the data.
-function createVisualization(json, divID, w, h) {
+function createVisualization(json, divID, w, h, trailDivID, analyticsDivID) {
 
-    width = w;
-    height = w;
 
-    radius = Math.min(width, height) / 2;
+    if (!trailDivID) {
+        trailDiv = d3.select("#" + divID).append("div").attr("id", "trailDiv");
+    } else {
+        trailDiv = d3.select("#" + trailDivID);
+    }
+    
+    if (!analyticsDivID) {
+        analyticsDiv = d3.select("#" + divID).append("div").attr("id", "analyticsDiv");
+    } else {
+        analyticsDiv = d3.select("#" + analyticsDivID);
+    }
 
-    x = d3.scale.linear().range([0, 2 * Math.PI]);
-    y = d3.scale.pow().exponent(0.9).domain([0, 1]).range([0, radius]);
 
-    arc = d3.svg.arc()
+    pieDiv = d3.select("#" + divID).append("div").attr("id", "ieDiv");
+
+    pieVisWidth = w;
+    pieVisHeight = w;
+
+    pieVisRadius = 0.5 * Math.min(pieVisWidth, pieVisHeight) / 2;
+
+    pieX = d3.scale.linear().range([0, 2 * Math.PI]);
+    pieY = d3.scale.pow().exponent(0.9).domain([0, 1]).range([0, pieVisRadius]);
+
+    pieArc = d3.svg.arc()
             .startAngle(function (d) {
-                return Math.max(0, Math.min(2 * Math.PI, x(d.x)));
+                return Math.max(0, Math.min(2 * Math.PI, pieX(d.x)));
             })
             .endAngle(function (d) {
-                return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx)));
+                return Math.max(0, Math.min(2 * Math.PI, pieX(d.x + d.dx)));
             })
             .innerRadius(function (d) {
-                return Math.max(0, d.y ? y(d.y) : d.y);
+                return Math.max(0, d.y ? pieY(d.y) : d.y);
             })
             .outerRadius(function (d) {
-                return Math.max(0, y(d.y + d.dy));
+                return Math.max(0, pieY(d.y + d.dy));
             });
 
-    svg = d3.select("#" + divID).append("svg:svg")
-            .attr("width", width)
-            .attr("height", height);
+    pieChartSVG = pieDiv.append("svg:svg")
+            .attr("width", pieVisWidth)
+            .attr("height", pieVisHeight);
+
+
+    // Basic setup of page elements.
+    initializeBreadcrumbTrail(pieVisWidth);
 
     drawPieChart(json);
 
 }
 
-function drawPieChart(json) {
-    vis = svg.append("svg:g")
-            .attr("id", "container")
-            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+var lineFunction = d3.svg.line()
+        .x(function (d) {
+            return d.x;
+        })
+        .y(function (d) {
+            return d.y;
+        })
+        .interpolate("linear");
 
-    // Basic setup of page elements.
-    initializeBreadcrumbTrail(width);
+function drawPieChart(json) {
+    pieChartVis = pieChartSVG.append("svg:g")
+            .attr("id", "container")
+            .attr("transform", "translate(" + pieVisWidth / 2 + "," + pieVisHeight / 2 + ")");
 //    drawLegend();
 //    d3.select("#togglelegend").on("click", toggleLegend);
 
     // Bounding circle underneath the sunburst, to make it easier to detect
     // when the mouse leaves the parent g.
-    vis.append("svg:circle")
-            .attr("r", radius)
+    pieChartVis.append("svg:circle")
+            .attr("r", pieVisRadius)
             .style("opacity", 0);
-
-    vis.on("click", clear);
-
+    pieChartVis.on("click", clear);
     // For efficiency, filter nodes to keep only those large enough to see.
-    var nodes = partition.nodes(json)
+    var nodes = piePartition.nodes(json)
             .filter(function (d) {
                 return (d.dx > 0.005); // 0.005 radians = 0.29 degrees
             });
-
     var padding = 1;
-
 //for each node, create arc, and add text to it as text path
+
+    var textLines = [];
     nodes.forEach(function (d) {
-        var path = vis.append("svg:path")
-                .attr("display", function () {
-                    return d.depth ? null : "none";
-                })
-                .attr("d", arc(d))
+        var path = pieChartVis.append("svg:path")
+
+                .attr("d", pieArc(d))
                 .attr("id", function () {
                     return "path_" + d.uniqueID;
                 })
                 .style("fill", function () {
                     return mapNodesToColor(d, false);
                 })
-                //.style("opacity", 1)
+                .style("stroke", function (d) {
+                    return "#787878";
+                })
                 .on("mouseover", mouseover);
 
-        var thing = vis.append("g")
+        var thing = pieChartVis.append("g")
                 .attr("id", function () {
                     return "text_" + d.name;
                 });
-//                .style("fill", "navy");
 
-        thing.append("text")
-                //compute width of ark to place text in middle of thickness
-                .attr("dy", function () {
-                    var inside = Math.max(0, d.y ? y(d.y) : d.y);
-                    var outsideRadius = Math.max(0, y(d.y + d.dy));
+        try {
+            var thingBoundingBox = path[0][0].getBBox();
+        } catch (error) {
+            console.log(error)
+        }
+        ;
 
-                    var thickness = outsideRadius - inside;
-                    return thickness / 2; //last1 0 is half of font size
-                })
-                .style("font-size", fontSize + "px")
-                .append("textPath")
+        //if this is SERVICE level, then do not draw the label.
+        if (d.level != "SERVICE") {
 
-                .attr("xlink:href", function () {
-                    return "#path_" + d.uniqueID;
-                })
-                //place text towards middle of arc
-                .attr("startOffset", "20%")
-                .attr("text-anchor", "middle")
 
-                .text(function () {
-                    return d.name;
-                });
+            //continue from http://bl.ocks.org/Caged/6476579 to add tooltips to small labels
+            var appendedText = thing.append("text")
+                    //compute width of ark to place text in middle of thickness
+                    .attr("dy", function () {
+                        var inside = Math.max(0, d.y ? pieY(d.y) : d.y);
+                        var outsideRadius = Math.max(0, pieY(d.y + d.dy));
+                        var thickness = outsideRadius - inside;
+                        return thickness / 2; //last1 0 is half of font size
+                    })
+                    .style("font-size", pieFontSize + "px")
+                    .append("textPath")
+
+                    .attr("xlink:href", function () {
+                        return "#path_" + d.uniqueID;
+                    })
+                    //place text towards middle of arc
+                    .attr("startOffset", "20%")
+                    .attr("text-anchor", "middle")
+
+                    .text(function () {
+                        if (thingBoundingBox) {
+                            boxWidth = Math.max(thingBoundingBox.width, thingBoundingBox.height);
+                            if (boxWidth >= d.name.length * pieFontSize * 2 / 3) {
+                                return d.name;
+                            } else {
+                                var splitMargin = (boxWidth - 3) / (pieFontSize * 2 / 3)
+                                return d.name.substring(0, splitMargin) + "...";
+                            }
+                        } else {
+                            return d.name;
+                        }
+                    })
+                    ;
+
+
+
+            var startAngle = Math.max(0, Math.min(2 * Math.PI, pieX(d.x)));
+
+            var endAngle = Math.max(0, Math.min(2 * Math.PI, pieX(d.x + d.dx)));
+
+            //to align all to outmost radius
+            var outmostNode = nodes[nodes.length - 1];
+
+            var outsideRadius = Math.max(0, pieY(outmostNode.y + outmostNode.dy));
+            var arcRadius = Math.max(0, pieY(d.y + d.dy));
+
+
+//        var middleOfArc = d3.interpolateNumber(a, b);
+
+            //text is placed on outsidemost ring
+            var textStartPoint = {x: 0, y: 0};
+            var arcStartPoint = {x: 0, y: 0};
+            var arcEndPoint = {x: 0, y: 0};
+
+            textStartPoint.x = outsideRadius;
+            textStartPoint.y = outsideRadius * Math.sin(startAngle) - 10;
+
+            arcStartPoint.x = arcRadius * Math.cos(startAngle) - 10;
+            arcStartPoint.y = arcRadius * Math.sin(startAngle);
+
+            arcEndPoint.x = arcRadius * Math.cos(endAngle);
+            arcEndPoint.y = arcRadius * Math.sin(endAngle);
+
+
+            if (startAngle > Math.PI) {
+                textStartPoint.x = -textStartPoint.x - d.name.length * pieFontSize / 2.5;
+                arcStartPoint.x = -arcStartPoint.x;
+
+            } else {
+                textStartPoint.x += 2 * pieFontSize;
+
+            }
+
+            var arcCenter = {x: arcStartPoint.x, y: textStartPoint.y};
+
+
+            //if no space to put text, put text near the drawing and draw a line to it
+            if (thingBoundingBox) {
+                boxWidth = Math.max(thingBoundingBox.width, thingBoundingBox.height);
+                if (boxWidth <= d.name.length * pieFontSize * 2 / 3) {
+
+                    //append line from text to its arc
+                    var lineData = [{x: textStartPoint.x, y: textStartPoint.y}, {x: arcStartPoint.x, y: arcStartPoint.y}];
+                    textLines.push({text: d.name, line: lineData});
+                }
+            }
+        }
 
     });
 
 
+    //append text
+//                thing.append("text")
+//                        .attr("dx", function () {
+//                            return textStartPoint.x;
+//                        })
+//                        .attr("dy", function () {
+//                            return textStartPoint.y;
+//                        }).attr("anchor", "left")
+//                        .text(d.name);
+
+    //if outer text labels overlap each other, we must redistribute them
+
+
+
+    for (var i = 0; i < textLines.length - 1; i++) {
+        //if next overlaps with current, push next down? or pull this up. no other option :P
+        var current = textLines[i].line;
+        var next = textLines[i + 1].line;
+        //try to keep a font size between them
+        //if both x coord have same sign
+        if ((next[0].x < 0 && current[0].x < 0) || (next[0].x > 0 && current[0].x > 0)) {
+            if (Math.abs(next[0].y) < Math.abs(current[0].y) + 2 * pieFontSize) {
+                next[0].y = current[0].y + pieFontSize;
+            }
+        }
+
+
+        var textWidth = textLines[i].text.length * pieFontSize / 2;
+        if (current[0].x >= 0) {
+            textWidth = -textWidth;
+        }
+        //must also do a nice line from the text
+        //so I insert a point to the other end of the text to underline it nicely
+
+        var newLineData = [current[0], {x: current[0].x + textWidth, y: current[0].y}, current[1]];
+        textLines[i].line = newLineData;
+
+    }
+
+    var lastElIndex = textLines.length - 1;
+    var textWidth = textLines[lastElIndex].text.length * pieFontSize / 2;
+    var newLineData = [textLines[lastElIndex].line[0], {x: textLines[lastElIndex].line[0].x + textWidth, y: textLines[lastElIndex].line[0].y}, textLines[lastElIndex].line[1]];
+    textLines[lastElIndex].line = newLineData;
+
+
+    textLines.forEach(function (d) {
+        pieChartVis.append("text")
+                .attr("dx", function () {
+                    return d.line[0].x;
+                })
+                .attr("dy", function () {
+                    return d.line[0].y;
+                }).attr("anchor", "left")
+                .text(d.text);
+
+//        //avoid underlining text
+//        if(d.line[0].x < 0){
+//            d.line = [d.line[1],d.line[2]];
+//        }
+        pieChartVis.append("path").attr("d", lineFunction(d.line))
+                .attr("stroke", "#383838")
+                .attr("stroke-width", 0.5)
+                .attr("fill", "none");
+        ;
+    });
+
 
 //has some needed side effects and the breadcrum/selection does not seem to work without
-    svg.selectAll("path").data(nodes);
-
-
-    var root = d3.layout.tree().nodes(json).reverse();
-
+    pieChartSVG.selectAll("path").data(nodes);
     // Get total size of the tree = value of root node from partition.
-    totalSize = root.value;
+    pieTotalSize = json.value;
 }
 
 function recreateVisualization(json) {
 
-    vis.remove();
+    pieChartVis.remove();
     drawPieChart(json);
     if (highlightedNode) {
         //need to find the updated node in current structure
 
         var nodesList = d3.layout.tree().nodes(json).reverse();
-
         var oldNodeAncestors = getAncestors(highlightedNode);
-
         //as struct might update, we need to check up to which node we highlight
         var nodeInUpdatedStructure;
-
         while (!nodeInUpdatedStructure && oldNodeAncestors.length > 0) {
 
             var currentTestedNode = oldNodeAncestors.pop();
@@ -220,11 +387,9 @@ function recreateVisualization(json) {
 
         if (!nodeInUpdatedStructure) {
             return;
-
         }
 
         var ancestors = getAncestors(nodeInUpdatedStructure);
-
         updateBreadcrumbs(ancestors, nodeInUpdatedStructure.size);
         //old unselected nodes need to be made with less opacity
         d3.selectAll("path")
@@ -233,15 +398,18 @@ function recreateVisualization(json) {
                     return mapNodesToColor(d, false);
                 });
 
-        vis.selectAll("path")
+        pieChartVis.selectAll("path")
                 .filter(function (node) {
                     return (ancestors.indexOf(node) >= 0);
                 })
                 //.style("opacity", 1)
                 .style("fill", function (d) {
                     return mapNodesToColor(d, true);
+                })
+                .style("stroke", function (d) {
+                    return "#787878";
                 });
-
+        ;
     }
 
 
@@ -249,41 +417,44 @@ function recreateVisualization(json) {
 // Fade all but the current sequence, and show it in the breadcrumb trail.
 function clear() {
 
+    treeVisualization.selectAll("path").filter(function (node) {
+        var nodeToShade = this;
+        if (node.type && node.type == "metric") {
 
+            nodeToShade.style.fill = "gray";
+        }
+
+
+    });
     d3.select("#percentage")
             .text("");
-
     d3.select("#explanation")
             .style("visibility", "");
-
-
     // Data join; key function combines name and depth (= position in sequence).
     var g = d3.select("#trail")
             .selectAll("g");
-
     g.remove();
-
     var percentageText = d3.select("#trail")
             .selectAll("#endlabel");
     percentageText.text("");
-
     // Fade all the segments.
-    d3.selectAll("path")
+
+    pieDiv.selectAll("path")
             //.style("opacity", 1)
             .style("fill", function (d) {
                 return mapNodesToColor(d, false);
+            })
+            .style("stroke", function (d) {
+                return "#787878";
             });
     ;
-
 }
 
 var highlightedNode;
-
 // Fade all but the current sequence, and show it in the breadcrumb trail.
 function mouseover(d) {
 
     highlightedNode = d;
-
 //  var percentage = (100 * d.value / totalSize).toPrecision(3);
     var percentage = d.displayValue;
     var percentageString = percentage;
@@ -293,23 +464,24 @@ function mouseover(d) {
 
     d3.select("#percentage")
             .text(percentageString);
-
     d3.select("#explanation")
             .style("visibility", "");
-
     var sequenceArray = getAncestors(d);
     updateBreadcrumbs(sequenceArray, percentageString);
-
     // Fade all the segments.
-    d3.selectAll("path")
+    pieDiv.selectAll("path")
+            //exclude paths which have no data attached, such as paths freom arc to text label
+            .filter(function (d) {
+                return d;
+            })
             //.style("opacity", 0.3)
             .style("fill", function (d) {
                 return mapNodesToColor(d, false);
             })
-            ;
 
+            ;
     // Then highlight only those that are an ancestor of the current segment.
-    vis.selectAll("path")
+    pieChartVis.selectAll("path")
             .filter(function (node) {
                 return (sequenceArray.indexOf(node) >= 0);
             })
@@ -317,20 +489,120 @@ function mouseover(d) {
             .style("fill", function (d) {
                 return mapNodesToColor(d, true);
             });
+//
+//    // Then highlight only those that are an ancestor of the current segment.
+//    treeVisualization.selectAll("path")
+//
+//            .style("fill", function (d) {
+//                if (d.type == "metric") {
+//                    return "gray";
+//                } else {
+//                    if (d.attention) {
+//                        return "#D13F31";
+//                    } else {
+//                        if (d.type == "SERVICE" || d.type == "SERVICE_TOPOLOGY" || d.type == "SERVICE_UNIT") {
+//                            return "#CCFFFF";
+//                        } else {
+//                            return "black";
+//                        }
+//                    }
+//                }
+//            }
+//            );
+
+
+//highlight selected path in tree vis
+    treeVisualization.selectAll("path").filter(function (node) {
+        var nodeToShade = this;
+        //when I highlight metric sources, i generate paths with no source nodes
+        if (node) {
+            //smt interesting hapends
+            //d3js returns my node "d" such as "metric with name etc", and as this the "path"
+            //so I use the node to check attributes, and the path to color
+
+            if (node.type && node.type == "metric") {
+                nodeToShade.style.fill = "gray";
+            }
+        }
+    });
+
+    var metricsToLink = [];
+    treeVisualization.selectAll("path").filter(function (node) {
+        var nodeToShade = this;
+        sequenceArray.forEach(function (ancestorNode) {
+
+//            if (node.type && node.type != "metric") {
+//                if (node.name && node.name == ancestorNode.name
+//                        && ancestorNode.type == node.level
+//                        && node.parent.name == ancestorNode.parent.name
+//                        && ancestorNode.parent.type == node.parent.level
+//                        ) {
+////                    nodeToShade.style.fill = "red";
+//                }
+//            } else 
+            if (node) {
+                if (node.type && node.type == "metric") {
+                    if (node.name && node.name.indexOf(ancestorNode.name) > -1
+                            && ancestorNode.type == node.level
+                            && node.parent.name == ancestorNode.parent.name
+                            && ancestorNode.parent.type == node.parent.level
+                            ) {
+                        nodeToShade.style.fill = "orange";
+                        metricsToLink.push(node);
+                    }
+                }
+            }
+        });
+    });
+
+//    treeVisualization.selectAll("path.metricLink").remove();
+
+//    //I need to go reverse and highloght all parents
+//    var lastMetric = metricsToLink[metricsToLink.length - 1];
+//
+//    highlightMetricsSourcesUntilSpecifiedNode(metricsToLink[0], lastMetric);
+////
+//    for (var i = 1; i < metricsToLink.length; i++) {
+//        drawMetricsLines(metricsToLink[i - 1], [metricsToLink[i]]);
+//    }
+
+
+//
+//    sequenceArray.forEach(function (ancestor) {
+//        nodes.forEach(function (node) {
+//            if (node.name.indexOf(ancestor.name) > -1
+//                    && node.type == ancestor.level
+//                    && node.parent.name.indexOf(ancestor.parent.name) > -1
+//                    && node.parent.type == ancestor.parent.level
+//                    ) {
+//
+//                treeVisualization.selectAll("path").filter(function (n) {
+//                    if (n.__data__) {
+//                        return n.__data__ == node;
+//                    } else {
+//                        return false;
+//                    }
+//                }).style("fill", function () {
+//                    return "red";
+//                });
+//            }
+//
+//        });
+//
+//    });
+
+
 }
 
 // Restore everything to full opacity when moving off the visualization.
 function mouseleave(d) {
 
     highlightedNode = null;
-
     // Hide the breadcrumb trail
     d3.select("#trail")
             .style("visibility", "hidden");
-
     // Deactivate all segments during transition.
     d3.selectAll("path").on("mouseover", null);
-
     // Transition each segment to full opacity and then reactivate it.
     d3.selectAll("path")
             .transition()
@@ -339,7 +611,6 @@ function mouseleave(d) {
             .each("end", function () {
                 d3.select(this).on("mouseover", mouseover);
             });
-
     d3.select("#explanation")
             .style("visibility", "hidden");
 }
@@ -349,9 +620,10 @@ function mouseleave(d) {
 function getAncestors(node) {
     var path = [];
     var current = node;
+    path.unshift(current);
     while (current.parent) {
-        path.unshift(current);
         current = current.parent;
+        path.unshift(current);
     }
     return path;
 }
@@ -364,12 +636,11 @@ function initializeBreadcrumbTrail(width) {
         oldTrail.remove();
     }
     // Add the svg area.
-    var trail = d3.select("#sequence")
+    var trail = trailDiv
             .append("svg:svg")
             .attr("width", width)
             .attr("height", 50)
             .attr("id", "trail");
-
     // Add the label at the end, for the percentage.
     trail.append("svg:text")
             .attr("id", "endlabel")
@@ -379,7 +650,7 @@ function initializeBreadcrumbTrail(width) {
 var trailPointsWidth = [];
 // Generate a string that describes the points of a breadcrumb polygon.
 function breadcrumbPoints(d, i) {
-    var nameSize = Math.max(d.name.length * fontSize / 2, b.w);
+    var nameSize = Math.max(d.name.length * pieFontSize * 2 / 3, b.w);
     if (i > 0 && trailPointsWidth[i - 1]) {
         trailPointsWidth[i] = (nameSize + trailPointsWidth[i - 1] + b.s);
     } else {
@@ -391,20 +662,18 @@ function breadcrumbPoints(d, i) {
     points.push(nameSize + b.t + "," + (b.h / 2));
     points.push(nameSize + "," + b.h);
     points.push("0," + b.h);
-
     if (i > 0) { // Leftmost breadcrumb; don't include 6th vertex.
         points.push(b.t + "," + (b.h / 2));
     }
 
     return points.join(" ");
-
 }
 
 // Update the breadcrumb trail to show the current sequence and percentage.
 function updateBreadcrumbs(nodeArray, percentageString) {
 
-    if (trailPointsWidth[trailPointsWidth.length - 1] > width) {
-        initializeBreadcrumbTrail(width + trailPointsWidth[trailPointsWidth.length - 1]);
+    if (trailPointsWidth[trailPointsWidth.length - 1] > pieVisWidth) {
+        initializeBreadcrumbTrail(trailPointsWidth[trailPointsWidth.length - 1] + trailPointsWidth.length * 20);
     }
 
     // Data join; key function combines name and depth (= position in sequence).
@@ -413,21 +682,16 @@ function updateBreadcrumbs(nodeArray, percentageString) {
             .data(nodeArray, function (d) {
                 return d.name + d.depth;
             });
-
     // Add breadcrumb and label for entering nodes.
     var entering = g.enter().append("svg:g");
-
-
     entering.append("svg:polygon")
             .attr("points", breadcrumbPoints)
             .style("fill", function (d) {
                 return mapTrailElementsToColor(d);
             });
-
-
     entering.append("svg:text")
             .attr("x", function (d) {
-                var nameSize = d.name.length * fontSize / 2;
+                var nameSize = d.name.length * pieFontSize * 2 / 3;
                 return Math.max((nameSize + b.t) / 2, b.w / 2);
             })
             .attr("y", b.h / 2)
@@ -436,7 +700,6 @@ function updateBreadcrumbs(nodeArray, percentageString) {
             .text(function (d) {
                 return d.name;
             });
-
     // Set position for entering and updating nodes.
     g.attr("transform", function (d, i) {
         if (i > 0) {
@@ -447,12 +710,10 @@ function updateBreadcrumbs(nodeArray, percentageString) {
         }
 
     });
-
     // Remove exiting nodes.
     g.exit().remove();
-
     // Now move and update the percentage at the end.
-    d3.select("#trail").select("#endlabel")
+    trailDiv.select("#endlabel")
             .attr("x", function (d) {
                 return(trailPointsWidth[nodeArray.length - 1] + b.h);
             })
@@ -460,11 +721,9 @@ function updateBreadcrumbs(nodeArray, percentageString) {
             .attr("dy", "0.35em")
             .attr("text-anchor", "middle")
             .text(percentageString);
-
     // Make the breadcrumb trail visible, if it's hidden.
     d3.select("#trail")
             .style("visibility", "");
-
 }
 //
 //function drawLegend() {

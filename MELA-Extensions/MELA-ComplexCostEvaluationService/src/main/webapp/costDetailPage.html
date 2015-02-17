@@ -41,11 +41,14 @@
         </style>
     </head>
     <body>
+
+        <div id="costDetailTreeView"></div>
+
+        <div id="costDetailWheelView"></div>
+
+
         <div id="back"><a href="./index.html"><img src="home.png" alt="&lt &lt Home"/></a></div>
-        <div id="A"></div>
-        <div id="chart"></div>
-        <div id="mydialog">
-        </div>
+        
         <div id="analytics"></div>
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -213,7 +216,7 @@
                     .size([height, width]);
 
             var diagonal = d3.svg.diagonal()
-                    .projection(function(d) {
+                    .projection(function (d) {
                         return [d.y, d.x];
                     });
 
@@ -247,7 +250,7 @@
                     .data(legend, String);
 
             legendCircles.enter().append("path")
-                    .attr("d", function(d, i) {
+                    .attr("d", function (d, i) {
                         if (d == "component") {
                             return "m " + (15 + legendleftX) + "," + (legendleftY + (i * 30) + 40) + " c 1.7265,0.251 5.7035,0.0355 4.8055,2.6145 -0.9305,2.0335 -3.066,3.827 0.214,4.8855 1.9925,0.6435 10.717,1.143 9.7905,-2.5835 -1.1255,-1.2255 -2.5535,-2.4125 -1.2315,-4.0245 2.8935,-0.552 5.8135,-0.9665 8.747,-1.2365 2.779,-0.2555 5.01138,-0.3785 7.80388,-0.3535 0,0 0.0342,-28.8233 0,-28.782 l -42.17988,0 c -0.7375,3.8525 -0.9175,8.9665 1.1535,10.61 3.0355,1.834 7.6995,-3.225 9.5015,0.7885 1.384,3.0825 -0.1075,8.324 -4.242,6.515 -4.9185,-2.1525 -7.189,0.88 -6.7055,6.19 0.1545,1.6955 0.472,3.214 0.701,4.702 3.891,-0.081 7.791,0.114 11.642,0.6745 z";
                         } else if (d == "metric") {
@@ -257,7 +260,7 @@
                         }
                     })
                     .attr("stroke", "#909090")
-                    .attr("fill", function(d) {
+                    .attr("fill", function (d) {
                         //                if (d == "component") {
                         //                    return "gray";
                         //                } else if (d == "metric") {
@@ -276,14 +279,14 @@
 
 
             legendNodes.enter().append("text")
-                    .attr("dx", function(d, i) {
+                    .attr("dx", function (d, i) {
                         if (d == "legend") {
                             return  legendleftX;
                         } else {
                             return  55 + legendleftX;
                         }
                     })
-                    .attr("dy", function(d, i) {
+                    .attr("dy", function (d, i) {
                         if (d == "legend") {
                             return  (legendleftY + (i * 30) + 30);
                         } else if (d == "component") {
@@ -294,14 +297,14 @@
                             return (legendleftY + (i * 30) + 45);
                         }
                     })
-                    .style("font-size", function(d) {
+                    .style("font-size", function (d) {
                         if (d == "legend") {
                             return  "16";
                         } else {
                             return "18";
                         }
                     })
-                    .text(function(d, i) {
+                    .text(function (d, i) {
                         return labels[i];
                     });
 
@@ -345,7 +348,7 @@
                 var nodes = tree.nodes(root).reverse();
 
                 //                // Normalize for fixed-depth.
-                nodes.forEach(function(d) {
+                nodes.forEach(function (d) {
                     if (d.type == "requirement") {
                         d.y = 0.8 * (d.depth * depth);
                     } else if (!d.type.match(/SERVIC.*|V.*/g) || (d.type == "requirement")) {
@@ -370,12 +373,12 @@
 
                 // Update the nodes…
                 var node = vis.selectAll("g.node")
-                        .data(nodes, function(d) {
+                        .data(nodes, function (d) {
                             return d.id || (d.id = ++i);
                         });
 
                 node.selectAll("text")
-                        .text(function(d) {
+                        .text(function (d) {
                             if (d.attention) {
                                 return d.name + ": " + d.actionName;
                             } else if (d.type == "VM") {
@@ -388,10 +391,10 @@
                 // Enter any new nodes at the parent's previous position.
                 var nodeEnter = node.enter().append("g")
                         .attr("class", "node")
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             return "translate(" + (d.parent.y0) + "," + d.parent.x0 + ")";
                         })
-                        .attr("display", function(d) {
+                        .attr("display", function (d) {
                             if (d.name == "SubComponents") {
                                 return "none";
                             } else {
@@ -399,7 +402,7 @@
                             }
                             ;
                         })
-                        .on("click", function(d) {
+                        .on("click", function (d) {
                             if (!d.type.match(/SERVIC.*|V.*/g)) {
                                 setSelectedMetricOneLevel(d);
                             }
@@ -411,7 +414,7 @@
 
 
                 nodeEnter.append("path")
-                        .attr("d", function(d) {
+                        .attr("d", function (d) {
                             if (d.type == "SERVICE" || d.type == "SERVICE_TOPOLOGY" || d.type == "SERVICE_UNIT") {
                                 return simpleComponentIcon;
                             }
@@ -437,7 +440,7 @@
                         )
                         .attr("stroke", "black")
                         .attr("stroke-width", 1)
-                        .attr("fill", function(d) {
+                        .attr("fill", function (d) {
                             if (d.type == "metric") {
                                 return "gray";
                             } else
@@ -445,7 +448,7 @@
                         });
 
                 nodeEnter.append("svn:image")
-                        .attr("xlink:href", function(d) {
+                        .attr("xlink:href", function (d) {
                             if (d.type == "VM") {
                                 return "./vm.png";
                             } else {
@@ -460,14 +463,14 @@
                 // Transition nodes to their new position.
                 var nodeUpdate = node.transition()
 
-                        .duration(function(d) {
+                        .duration(function (d) {
                             if (d.type.match(/SERVIC.*|V.*/g)) {
                                 return duration;
                             } else {
                                 return 0;
                             }
                         })
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             if (d.type != "requirement") {
                                 return "translate(" + d.y + "," + d.x + ")";
                             } else {
@@ -479,10 +482,10 @@
 
 
                 nodeUpdate.select("path")
-                        .attr("r", function(d) {
+                        .attr("r", function (d) {
                             return d.value ? 0 : 4.5;
                         })
-                        .style("stroke", function(d) {
+                        .style("stroke", function (d) {
                             if (d.attention) {
                                 return "#909090";
                             } else {
@@ -490,7 +493,7 @@
                             }
                             ;
                         })
-                        .style("fill", function(d) {
+                        .style("fill", function (d) {
                             if (d.type == "metric") {
                                 return "gray";
                             } else {
@@ -514,7 +517,7 @@
 
 
                 nodeUpdate.select("text")
-                        .attr("text-anchor", function(d) {
+                        .attr("text-anchor", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -529,7 +532,7 @@
 
                         })
 
-                        .attr("dy", function(d) {
+                        .attr("dy", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -546,7 +549,7 @@
                             return position;
 
                         })
-                        .attr("dx", function(d) {
+                        .attr("dx", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -564,14 +567,14 @@
                         })
 
 
-                        .style("font-size", function(d) {
+                        .style("font-size", function (d) {
                             return (d.type == "metric") ? 14 : 18;
                         })
-                        .attr("font-style", function(d) {
+                        .attr("font-style", function (d) {
                             return d.children ? "normal" : "italic";
                         })
                         .style("fill-opacity", 1)
-                        .text(function(d) {
+                        .text(function (d) {
                             if (d.attention) {
                                 return d.name + ": " + d.actionName;
                             } else if (d.type == "VM") {
@@ -583,53 +586,53 @@
 
                 // Transition exiting nodes to the parent's new position.
                 var nodeExit = node.exit().transition()
-                        .duration(function(d) {
+                        .duration(function (d) {
                             if (d.type.match(/SERVIC.*|V.*/g)) {
                                 return duration;
                             } else {
                                 return 0;
                             }
                         })
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             return "translate(" + source.y + "," + source.x + ")";
                         })
                         .remove();
 
                 nodeExit.select("circle")
-                        .attr("r", function(d) {
+                        .attr("r", function (d) {
                             return d.value ? 0 : 8;
                         });
 
                 nodeExit.select("text")
-                        .attr("text-anchor", function(d) {
+                        .attr("text-anchor", function (d) {
                             return d.value || d.ip || d.children ? "end" : "start";
                         })
                         .attr("dy", -5)
-                        .style("font-size", function(d) {
+                        .style("font-size", function (d) {
                             return (d.type == "metric") ? 14 : 18;
                         })
-                        .attr("font-style", function(d) {
+                        .attr("font-style", function (d) {
                             return d.children ? "normal" : "italic";
                         })
                         .style("fill-opacity", 1e-6);
 
                 nodeEnter.append("text")
-                        .attr("dx", function(d) {
+                        .attr("dx", function (d) {
                             return d.value ? 10 : 5;
                         })
-                        .attr("dy", function(d) {
+                        .attr("dy", function (d) {
                             return d.value ? 0 : 10;
                         })
-                        .style("font-size", function(d) {
+                        .style("font-size", function (d) {
                             return (d.type == "metric") ? 14 : 18;
                         })
-                        .attr("text-anchor", function(d) {
+                        .attr("text-anchor", function (d) {
                             return d.ip ? "end" : "start";
                         })
-                        .attr("font-style", function(d) {
+                        .attr("font-style", function (d) {
                             return d.children ? "normal" : "italic";
                         })
-                        .text(function(d) {
+                        .text(function (d) {
                             if (d.attention) {
                                 return d.name + ": " + d.actionName;
                             } else if (d.type == "VM") {
@@ -641,25 +644,25 @@
 
                 // Update the links…
                 var link = vis.selectAll("path.link")
-                        .data([], function(d) {
+                        .data([], function (d) {
                             return d.target.id;
                         });
                 link.exit().remove();
 
 
                 link = vis.selectAll("path.link")
-                        .data(tree.links(nodes), function(d) {
+                        .data(tree.links(nodes), function (d) {
                             return d.target.id;
                         });
 
                 // Enter any new links at the parent's previous position.
                 link.enter().insert("path", "g")
                         .attr("class", "link")
-                        .attr("d", function(d) {
+                        .attr("d", function (d) {
                             var o = {x: source.x, y: source.y};
                             return diagonal({source: o, target: o});
                         })
-                        .style("stroke-dasharray", function(d) {
+                        .style("stroke-dasharray", function (d) {
                             if (d.target.type == "metric") {
                                 return "0";
                             }
@@ -673,7 +676,7 @@
                                 return "1";
                             }
                         })
-                        .style("stroke", function(d) {
+                        .style("stroke", function (d) {
                             if (d.target.type == "requirement") {
                                 if (d.target.attention) {
                                     return "#E00000";
@@ -685,7 +688,7 @@
                                 return "#ccc";
                             }
                         })
-                        .style("stroke-width", function(d) {
+                        .style("stroke-width", function (d) {
                             if (d.target.type == "requirement") {
                                 return "1";
                             }
@@ -706,14 +709,14 @@
                 // Transition exiting nodes to the parent's new position.
                 link.exit().transition()
                         .duration(0)
-                        .attr("d", function(d) {
+                        .attr("d", function (d) {
                             var o = {x: source.x, y: source.y};
                             return diagonal({source: o, target: o});
                         })
                         .remove();
 
                 // Stash the old positions for transition.
-                nodes.forEach(function(d) {
+                nodes.forEach(function (d) {
                     d.x0 = d.x;
                     d.y0 = d.y;
                 });
@@ -725,7 +728,7 @@
                 var nodes = tree.nodes(root).reverse();
 
                 // Normalize for fixed-depth.
-                nodes.forEach(function(d) {
+                nodes.forEach(function (d) {
                     if (d.type == "requirement") {
                         d.y = 0.8 * (d.depth * depth);
                     } else if (!d.type.match(/SERVIC.*|V.*/g)) {
@@ -758,7 +761,7 @@
 
                 // Update the nodes…
                 var node = vis.selectAll("g.node")
-                        .data(nodes, function(d) {
+                        .data(nodes, function (d) {
                             return d.id || (d.id = ++i);
                         });
 
@@ -766,7 +769,7 @@
                 // Enter any new nodes at the parent's previous position.
                 var nodeEnter = node.enter().append("g")
                         .attr("class", "node")
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             //                    if (d.type != "requirement") {
                             return "translate(" + source.y + "," + source.x + ")";
                             //                    }
@@ -774,14 +777,14 @@
                             //                        return "translate(" + (d.parent.y0) + "," + d.parent.x0 + ")";
                             //                    }
                         })
-                        .attr("display", function(d) {
+                        .attr("display", function (d) {
                             if (d.name == "SubComponents") {
                                 return "none";
                             } else {
                                 return "yes"
                             }
                         })
-                        .on("click", function(d) {
+                        .on("click", function (d) {
                             if (!d.type.match(/SERVIC.*|V.*/g)) {
                                 setSelectedMetricOneLevel(d);
                             }
@@ -792,7 +795,7 @@
                         .on("dblclick", setSelectedMetric);
 
                 nodeEnter.append("path")
-                        .attr("d", function(d) {
+                        .attr("d", function (d) {
                             if (d.type == "SERVICE" || d.type == "SERVICE_TOPOLOGY" || d.type == "SERVICE_UNIT") {
                                 return simpleComponentIcon;
                             }
@@ -818,7 +821,7 @@
                         )
                         .attr("stroke", "black")
                         .attr("stroke-width", 1)
-                        .attr("fill", function(d) {
+                        .attr("fill", function (d) {
                             if (d.type == "metric") {
                                 return "red";
                             }
@@ -828,7 +831,7 @@
                         });
 
                 nodeEnter.append("svn:image")
-                        .attr("xlink:href", function(d) {
+                        .attr("xlink:href", function (d) {
                             if (d.type == "VM") {
                                 return "./vm.png";
                             } else {
@@ -842,7 +845,7 @@
 
 
                 nodeEnter.append("text")
-                        .attr("text-anchor", function(d) {
+                        .attr("text-anchor", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -863,7 +866,7 @@
 
                         })
 
-                        .attr("dy", function(d) {
+                        .attr("dy", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -880,7 +883,7 @@
                             return position;
 
                         })
-                        .attr("dx", function(d) {
+                        .attr("dx", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -896,14 +899,14 @@
                             return position;
 
                         })
-                        .style("font-size", function(d) {
+                        .style("font-size", function (d) {
                             return (d.type == "metric") ? 14 : 19;
                         })
-                        .attr("font-style", function(d) {
+                        .attr("font-style", function (d) {
                             return d.children ? "normal" : "italic";
                         })
                         .style("fill-opacity", 1e-6)
-                        .text(function(d) {
+                        .text(function (d) {
                             if (d.attention) {
                                 return d.name + ": " + d.actionName;
                             } else if (d.type == "VM") {
@@ -918,7 +921,7 @@
                 var nodeUpdate = node.transition()
 
                         .duration(duration)
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             //                    if (d.type != "requirement") {
                             return "translate(" + d.y + "," + d.x + ")";
                             //                    } else {
@@ -929,10 +932,10 @@
                 //console.log(node.name)
 
                 nodeUpdate.select("circle")
-                        .attr("r", function(d) {
+                        .attr("r", function (d) {
                             return d.value ? 0 : 8;
                         })
-                        .style("stroke", function(d) {
+                        .style("stroke", function (d) {
                             if (d.attention) {
                                 return "#909090";
                             } else {
@@ -940,7 +943,7 @@
                             }
                             ;
                         })
-                        .style("fill", function(d) {
+                        .style("fill", function (d) {
                             if (d.attention) {
                                 return "#E00000";
                             } else {
@@ -949,10 +952,10 @@
                         });
 
                 nodeUpdate.select("rect")
-                        .attr("r", function(d) {
+                        .attr("r", function (d) {
                             return d.value ? 0 : 4.5;
                         })
-                        .style("stroke", function(d) {
+                        .style("stroke", function (d) {
                             if (d.attention) {
                                 return "#909090";
                             } else {
@@ -960,7 +963,7 @@
                             }
                             ;
                         })
-                        .style("fill", function(d) {
+                        .style("fill", function (d) {
                             if (d.attention) {
                                 return "#FF6666";
                             } else {
@@ -969,7 +972,7 @@
                         });
 
                 nodeUpdate.select("text")
-                        .attr("text-anchor", function(d) {
+                        .attr("text-anchor", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -990,7 +993,7 @@
 
                         })
 
-                        .attr("dy", function(d) {
+                        .attr("dy", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -1007,7 +1010,7 @@
                             return position;
 
                         })
-                        .attr("dx", function(d) {
+                        .attr("dx", function (d) {
                             var position = 0;
                             switch (d.type) {
                                 case "SERVICE":
@@ -1024,10 +1027,10 @@
 
                         })
 
-                        .style("font-size", function(d) {
+                        .style("font-size", function (d) {
                             return (d.type == "metric") ? 14 : 19;
                         })
-                        .attr("font-style", function(d) {
+                        .attr("font-style", function (d) {
                             return d.children ? "normal" : "italic";
                         })
                         .style("fill-opacity", 1);
@@ -1035,25 +1038,25 @@
                 // Transition exiting nodes to the parent's new position.
                 var nodeExit = node.exit().transition()
                         .duration(duration)
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             return "translate(" + source.y + "," + source.x + ")";
                         })
                         .remove();
 
                 nodeExit.select("circle")
-                        .attr("r", function(d) {
+                        .attr("r", function (d) {
                             return d.value ? 0 : 8;
                         });
 
                 nodeExit.select("text")
-                        .attr("text-anchor", function(d) {
+                        .attr("text-anchor", function (d) {
                             return   d.ip || d.children ? "end" : "start";
                         })
                         .attr("dy", -5)
-                        .style("font-size", function(d) {
+                        .style("font-size", function (d) {
                             return (d.type == "metric") ? 14 : 19;
                         })
-                        .attr("font-style", function(d) {
+                        .attr("font-style", function (d) {
                             return d.children ? "normal" : "italic";
                         })
                         .style("fill-opacity", 1e-6);
@@ -1061,14 +1064,14 @@
 
                 // Update the links…
                 var link = vis.selectAll("path.link")
-                        .data([], function(d) {
+                        .data([], function (d) {
                             return d.target.id;
                         });
                 link.exit().remove();
 
 
                 link = vis.selectAll("path.link")
-                        .data(tree.links(nodes), function(d) {
+                        .data(tree.links(nodes), function (d) {
                             return d.target.id;
                         });
 
@@ -1076,7 +1079,7 @@
                 // Enter any new links at the parent's previous position.
                 link.enter().insert("path", "g")
                         .attr("class", "link")
-                        .attr("d", function(d) {
+                        .attr("d", function (d) {
                             if (d.target.type == "metric") {
                                 var o = {x: source.x, y: source.y};
                                 return diagonal({source: o, target: o});
@@ -1085,7 +1088,7 @@
                                 return diagonal({source: o, target: o});
                             }
                         })
-                        .style("stroke-dasharray", function(d) {
+                        .style("stroke-dasharray", function (d) {
                             if (d.target.type == "metric") {
                                 return "0";
                             }
@@ -1099,7 +1102,7 @@
                                 return "1";
                             }
                         })
-                        .style("stroke", function(d) {
+                        .style("stroke", function (d) {
                             if (d.target.type == "requirement") {
                                 if (d.target.attention) {
                                     return "#E00000";
@@ -1111,7 +1114,7 @@
                                 return "#ccc";
                             }
                         })
-                        .style("stroke-width", function(d) {
+                        .style("stroke-width", function (d) {
                             if (d.target.type == "requirement") {
                                 return "1";
                             }
@@ -1132,14 +1135,14 @@
                 // Transition exiting nodes to the parent's new position.
                 link.exit().transition()
                         .duration(duration)
-                        .attr("d", function(d) {
+                        .attr("d", function (d) {
                             var o = {x: source.x, y: source.y};
                             return diagonal({source: o, target: o});
                         })
                         .remove();
 
                 // Stash the old positions for transition.
-                nodes.forEach(function(d) {
+                nodes.forEach(function (d) {
                     d.x0 = d.x;
                     d.y0 = d.y;
                 });
@@ -1148,152 +1151,152 @@
 
             //open el Space only for non VMs
             function click(d) {
-                if (d.type != "VM") {
-                    $("#mydialog").html("Please select information to display");
-
-                    $("#mydialog").dialog({
-                        resizable: false,
-                        width: 420,
-                        modal: true,
-                        buttons: {
-                            'Elasticity Space': function() {
-                                var divID = serviceID + "_" + d.name + "_" + d.type + '_space';
-                                var iframeID = serviceID + "_" + d.name + "_" + d.type + '_space_frame';
-
-                                var iframe = document.createElement('iframe');
-
-                                iframe.setAttribute('src', "elasticitySpace.html?" + serviceID + "&" + d.name + "&" + d.type);
-                                iframe.setAttribute('style', 'width:100%; height:100%');
-                                iframe.setAttribute('id', iframeID);
-
-                                var frameDiv = document.createElement('div');
-                                frameDiv.setAttribute('id', divID);
-                                document.getElementById("analytics").appendChild(frameDiv);
-
-                                var table = document.createElement('table');
-                                frameDiv.appendChild(table);
-
-                                var nameH = document.createElement('h2');
-                                nameH.innerHTML = "Elasticity Space  for " + d.name;
-                                var titleRow = document.createElement('tr');
-
-
-
-                                var closeImage = document.createElement('img');
-                                closeImage.setAttribute('src', "close.png");
-                                closeImage.onclick = function() {
-                                    var parent = document.getElementById("analytics");
-                                    parent.removeChild(document.getElementById(divID));
-                                };
-
-
-                                var resizeImage = document.createElement('img');
-                                resizeImage.setAttribute('src', "resize.png");
-                                resizeImage.onclick = function() {
-                                    var thisFrame = document.getElementById(iframeID);
-                                    newheight = document.getElementById(iframeID).contentWindow.document.body.scrollHeight;
-                                    newwidth = document.getElementById(iframeID).contentWindow.document.body.scrollWidth;
-                                    thisFrame.setAttribute('style', 'width:' + newwidth + 'px; height:' + newheight + 'px');
-                                };
-
-
-                                var closeImageTD = document.createElement('td')
-                                closeImageTD.appendChild(closeImage);
-
-                                var resizeImageTD = document.createElement('td')
-                                resizeImageTD.appendChild(resizeImage);
-
-
-                                var nameHTD = document.createElement('td')
-                                nameHTD.appendChild(nameH);
-
-                                titleRow.appendChild(closeImageTD);
-                                titleRow.appendChild(resizeImageTD);
-                                titleRow.appendChild(nameHTD);
-                                table.appendChild(titleRow);
-
-
-                                frameDiv.appendChild(iframe);
-                                //do something
-                                //
-//                              
-
-//                                        var win = window.open("elasticitySpace.html?" + serviceID + "&" + d.name + "&" + d.type, '_blank');
-                                $(this).dialog('close');
-                            },
-                            'Elasticity Pathway': function() {
-
-
-
-                                var divID = serviceID + "_" + d.name + "_" + d.type + '_pathway';
-                                var iframeID = serviceID + "_" + d.name + "_" + d.type + '_pathway_frame';
-
-                                var iframe = document.createElement('iframe');
-
-                                iframe.setAttribute('src', "elasticityPathway.html?" + serviceID + "&" + d.name + "&" + d.type);
-                                iframe.setAttribute('style', 'width:100%; height:100%');
-                                iframe.setAttribute('id', iframeID);
-
-                                var frameDiv = document.createElement('div');
-                                frameDiv.setAttribute('id', divID);
-                                document.getElementById("analytics").appendChild(frameDiv);
-
-                                var table = document.createElement('table');
-                                frameDiv.appendChild(table);
-
-                                var nameH = document.createElement('h2');
-                                nameH.innerHTML = "Elasticity Pathway  for " + d.name;
-                                var titleRow = document.createElement('tr');
-
-
-
-                                var closeImage = document.createElement('img');
-                                closeImage.setAttribute('src', "close.png");
-                                closeImage.onclick = function() {
-                                    var parent = document.getElementById("analytics");
-                                    parent.removeChild(document.getElementById(divID));
-                                };
-
-
-                                var resizeImage = document.createElement('img');
-                                resizeImage.setAttribute('src', "resize.png");
-                                resizeImage.onclick = function() {
-                                    var thisFrame = document.getElementById(iframeID);
-                                    newheight = document.getElementById(iframeID).contentWindow.document.body.scrollHeight;
-                                    newwidth = document.getElementById(iframeID).contentWindow.document.body.scrollWidth;
-                                    thisFrame.setAttribute('style', 'width:' + newwidth + 'px; height:' + 2 * newheight + 'px');
-                                };
-
-
-                                var closeImageTD = document.createElement('td')
-                                closeImageTD.appendChild(closeImage);
-
-                                var resizeImageTD = document.createElement('td')
-                                resizeImageTD.appendChild(resizeImage);
-
-
-                                var nameHTD = document.createElement('td')
-                                nameHTD.appendChild(nameH);
-
-                                titleRow.appendChild(closeImageTD);
-                                titleRow.appendChild(resizeImageTD);
-                                titleRow.appendChild(nameHTD);
-                                table.appendChild(titleRow);
-
-
-                                frameDiv.appendChild(iframe);
-
-                                $(this).dialog('close');
-                            }
-//                            ,
-//                            'Cancel': function() {
+//                if (d.type != "VM") {
+//                    $("#mydialog").html("Please select information to display");
+//
+//                    $("#mydialog").dialog({
+//                        resizable: false,
+//                        width: 420,
+//                        modal: true,
+//                        buttons: {
+//                            'Elasticity Space': function () {
+//                                var divID = serviceID + "_" + d.name + "_" + d.type + '_space';
+//                                var iframeID = serviceID + "_" + d.name + "_" + d.type + '_space_frame';
+//
+//                                var iframe = document.createElement('iframe');
+//
+//                                iframe.setAttribute('src', "elasticitySpace.html?" + serviceID + "&" + d.name + "&" + d.type);
+//                                iframe.setAttribute('style', 'width:100%; height:100%');
+//                                iframe.setAttribute('id', iframeID);
+//
+//                                var frameDiv = document.createElement('div');
+//                                frameDiv.setAttribute('id', divID);
+//                                document.getElementById("analytics").appendChild(frameDiv);
+//
+//                                var table = document.createElement('table');
+//                                frameDiv.appendChild(table);
+//
+//                                var nameH = document.createElement('h2');
+//                                nameH.innerHTML = "Elasticity Space  for " + d.name;
+//                                var titleRow = document.createElement('tr');
+//
+//
+//
+//                                var closeImage = document.createElement('img');
+//                                closeImage.setAttribute('src', "close.png");
+//                                closeImage.onclick = function () {
+//                                    var parent = document.getElementById("analytics");
+//                                    parent.removeChild(document.getElementById(divID));
+//                                };
+//
+//
+//                                var resizeImage = document.createElement('img');
+//                                resizeImage.setAttribute('src', "resize.png");
+//                                resizeImage.onclick = function () {
+//                                    var thisFrame = document.getElementById(iframeID);
+//                                    newheight = document.getElementById(iframeID).contentWindow.document.body.scrollHeight;
+//                                    newwidth = document.getElementById(iframeID).contentWindow.document.body.scrollWidth;
+//                                    thisFrame.setAttribute('style', 'width:' + newwidth + 'px; height:' + newheight + 'px');
+//                                };
+//
+//
+//                                var closeImageTD = document.createElement('td')
+//                                closeImageTD.appendChild(closeImage);
+//
+//                                var resizeImageTD = document.createElement('td')
+//                                resizeImageTD.appendChild(resizeImage);
+//
+//
+//                                var nameHTD = document.createElement('td')
+//                                nameHTD.appendChild(nameH);
+//
+//                                titleRow.appendChild(closeImageTD);
+//                                titleRow.appendChild(resizeImageTD);
+//                                titleRow.appendChild(nameHTD);
+//                                table.appendChild(titleRow);
+//
+//
+//                                frameDiv.appendChild(iframe);
+//                                //do something
+//                                //
+////                              
+//
+////                                        var win = window.open("elasticitySpace.html?" + serviceID + "&" + d.name + "&" + d.type, '_blank');
+//                                $(this).dialog('close');
+//                            },
+//                            'Elasticity Pathway': function () {
+//
+//
+//
+//                                var divID = serviceID + "_" + d.name + "_" + d.type + '_pathway';
+//                                var iframeID = serviceID + "_" + d.name + "_" + d.type + '_pathway_frame';
+//
+//                                var iframe = document.createElement('iframe');
+//
+//                                iframe.setAttribute('src', "elasticityPathway.html?" + serviceID + "&" + d.name + "&" + d.type);
+//                                iframe.setAttribute('style', 'width:100%; height:100%');
+//                                iframe.setAttribute('id', iframeID);
+//
+//                                var frameDiv = document.createElement('div');
+//                                frameDiv.setAttribute('id', divID);
+//                                document.getElementById("analytics").appendChild(frameDiv);
+//
+//                                var table = document.createElement('table');
+//                                frameDiv.appendChild(table);
+//
+//                                var nameH = document.createElement('h2');
+//                                nameH.innerHTML = "Elasticity Pathway  for " + d.name;
+//                                var titleRow = document.createElement('tr');
+//
+//
+//
+//                                var closeImage = document.createElement('img');
+//                                closeImage.setAttribute('src', "close.png");
+//                                closeImage.onclick = function () {
+//                                    var parent = document.getElementById("analytics");
+//                                    parent.removeChild(document.getElementById(divID));
+//                                };
+//
+//
+//                                var resizeImage = document.createElement('img');
+//                                resizeImage.setAttribute('src', "resize.png");
+//                                resizeImage.onclick = function () {
+//                                    var thisFrame = document.getElementById(iframeID);
+//                                    newheight = document.getElementById(iframeID).contentWindow.document.body.scrollHeight;
+//                                    newwidth = document.getElementById(iframeID).contentWindow.document.body.scrollWidth;
+//                                    thisFrame.setAttribute('style', 'width:' + newwidth + 'px; height:' + 2 * newheight + 'px');
+//                                };
+//
+//
+//                                var closeImageTD = document.createElement('td')
+//                                closeImageTD.appendChild(closeImage);
+//
+//                                var resizeImageTD = document.createElement('td')
+//                                resizeImageTD.appendChild(resizeImage);
+//
+//
+//                                var nameHTD = document.createElement('td')
+//                                nameHTD.appendChild(nameH);
+//
+//                                titleRow.appendChild(closeImageTD);
+//                                titleRow.appendChild(resizeImageTD);
+//                                titleRow.appendChild(nameHTD);
+//                                table.appendChild(titleRow);
+//
+//
+//                                frameDiv.appendChild(iframe);
+//
 //                                $(this).dialog('close');
 //                            }
-                        }
-                    });
-
-                    //var win = window.open("elasticityPathway.html?"+ serviceID + "&" + d.name + "&" + d.type, '_blank');
-                }
+////                            ,
+////                            'Cancel': function() {
+////                                $(this).dialog('close');
+////                            }
+//                        }
+//                    });
+//
+//                    //var win = window.open("elasticityPathway.html?"+ serviceID + "&" + d.name + "&" + d.type, '_blank');
+//                }
             }
 
             var fullPath = false;
@@ -1352,7 +1355,7 @@
                             .attr("class", "metricLink")
                             .attr("startAngle", "45")
 
-                            .attr("d", function(d) {
+                            .attr("d", function (d) {
                                 var start = {x: source.x, y: source.y};
                                 var target = {x: child.x, y: child.y};
 
@@ -1610,9 +1613,9 @@
                             var change = -1;
                             updateTextOnNode(root, new_root, change);
                             //if (change == -1) {
-                                updateText(root);
-                           // } else {
-                           //     update(new_root);
+                            updateText(root);
+                            // } else {
+                            //     update(new_root);
                             //}
                         }
 
