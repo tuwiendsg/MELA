@@ -546,6 +546,11 @@ public class PersistenceDelegate {
 
         if (jdbcTemplate.queryForObject(checkIfExistsSql, rowMapper, serviceID) == 1) {
             {
+                log.debug("Removing InstantCostElasticityPathway for " + serviceID);
+                String sql = "delete from InstantCostElasticitySpace where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
+            {
                 log.debug("Removing InstantCostElasticitySpace for " + serviceID);
                 String sql = "delete from InstantCostElasticitySpace where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
@@ -566,30 +571,13 @@ public class PersistenceDelegate {
                 String sql = "delete from CaschedHistoricalUsage where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
-
             {
-                log.debug("Removing RawCollectedData for " + serviceID);
-                String sql = "delete from RawCollectedData where monSeqID= ?";
+                log.debug("Removing CaschedCompleteHistoricalUsage for " + serviceID);
+                String sql = "delete from CaschedCompleteHistoricalUsage where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
 
-            {
-                log.debug("Removing Configuration for " + serviceID);
-                String sql = "delete from Configuration where monSeqID= ?";
-                jdbcTemplate.update(sql, serviceID);
-            }
-
-            {
-                log.debug("Removing Timestamp for " + serviceID);
-                String sql = "delete from Timestamp where monSeqID= ?";
-                jdbcTemplate.update(sql, serviceID);
-            }
-
-            {
-                log.debug("Removing sequenceId from MonitoringSeq");
-                String sql = "delete from MonitoringSeq where ID= ?";
-                jdbcTemplate.update(sql, serviceID);
-            }
+             persistenceSQLAccess.removeMonitoringSequenceId(serviceID);
         } else {
             log.debug("sequenceId " + serviceID + " not found from in MontoringSeq");
         }

@@ -317,7 +317,7 @@ public class CompositionOperation implements Serializable {
                     }
 
                     if (secondOperand != 0) {
-                        metricValue.setValue(firstOperand);
+                        metricValue.setValue(firstOperand / secondOperand);
                     } else {
                         metricValue.setValue(firstOperand);
                     }
@@ -645,6 +645,11 @@ public class CompositionOperation implements Serializable {
 
     public CompositionOperation withSubOperations(final ArrayList<CompositionOperation> subOperations) {
         this.subOperations = subOperations;
+        return this;
+    }
+
+    public CompositionOperation withSubOperation(CompositionOperation subOperation) {
+        this.subOperations.add(subOperation);
         return this;
     }
 

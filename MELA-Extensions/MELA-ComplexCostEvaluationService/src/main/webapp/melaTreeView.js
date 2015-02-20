@@ -140,16 +140,16 @@ var spaceType;
 var serviceID;
 function setupTreeView(service, targetDIV_ID, w, h, type) {
     serviceID = this.service;
-    if(!spaceType){
+    if (!spaceType) {
         spaceType = "instant";
-    }else{
+    } else {
         spaceType = type;
     }
 
     width = w;
     height = h;
     i = 0;
-    duration = 500;
+    duration = 0;
     depth = width / 4.5;
 
     tree = d3.layout.tree()
@@ -378,9 +378,24 @@ function update(source) {
             .attr("stroke-width", 1)
             .style("fill", function (d) {
                 if (d.attention) {
-                    return "#FF6666";
-                } else {
-                    return "#CCFFFF";
+                    return "#D13F31";
+                } else if (d.type) {
+                    if (d.type == "metric") {
+                        if (d.category == "COST") {
+                            return "#FFE773";
+                        } else if (d.type == "requirement") {
+                            if (d.fulfilled) {
+                                return "#1F7872"
+                            } else {
+                                return "#D13F31";
+                            }
+                        } else {
+                            return "gray";
+                        }
+                    }
+                    else {
+                        return "#72B095";
+                    }
                 }
             });
 
@@ -432,25 +447,29 @@ function update(source) {
                 ;
             })
             .style("fill", function (d) {
-                if (d.type == "metric") {
-                    return "gray";
-                } else {
-                    if (d.attention) {
-                        return "#D13F31";
-                    } else {
-                        if (d.type == "requirement") {
+                if (d.attention) {
+                    return "#D13F31";
+                } else if (d.type) {
+                    if (d.type == "metric") {
+                        if (d.category == "COST") {
+                            return "#FFE773";
+                        } else if (d.type == "requirement") {
                             if (d.fulfilled) {
                                 return "#1F7872"
                             } else {
                                 return "#D13F31";
                             }
-
                         } else {
-                            return "#72B095";
+                            return "gray";
                         }
                     }
+                    else {
+                        return "#72B095";
+                    }
                 }
+
             }
+
             );
 
 
@@ -1098,7 +1117,7 @@ function openElasticitySpaceOrPathway(d) {
 
                     var iframe = document.createElement('iframe');
 
-                    iframe.setAttribute('src', "elasticitySpace.html?" + serviceID + "&" + d.name + "&" + d.type + "&" +  spaceType);
+                    iframe.setAttribute('src', "elasticitySpace.html?" + serviceID + "&" + d.name + "&" + d.type + "&" + spaceType);
                     iframe.setAttribute('style', 'width:100%; height:100%');
                     iframe.setAttribute('id', iframeID);
 
@@ -1225,5 +1244,6 @@ function openElasticitySpaceOrPathway(d) {
         //var win = window.open("elasticityPathway.html?"+ serviceID + "&" + d.name + "&" + d.type, '_blank');
     }
 }
+
 
 

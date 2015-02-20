@@ -141,6 +141,10 @@ public class CostEvalManager {
     public void setPersistenceDelegate(PersistenceDelegate persistenceDelegate) {
         this.persistenceDelegate = persistenceDelegate;
     }
+    
+    public void removeService(String serviceID){
+          this.persistenceDelegate.removeService(serviceID);
+    }
 
     @PostConstruct
     public void init() {
@@ -439,6 +443,7 @@ public class CostEvalManager {
         }
 
     }
+
     public String getTotalCostForServiceJSON(String serviceID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
@@ -446,14 +451,14 @@ public class CostEvalManager {
         if (cfg == null) {
             return "{nothing}";
         }
-        LifetimeEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID);
-
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalCostSnapshot(serviceID);
+        serviceUsageSnapshot.getCostCompositionRules().getCompositionRules().addAll(cfg.getCompositionRulesConfiguration().getMetricCompositionRules().getCompositionRules());
         if (serviceUsageSnapshot == null) {
             return "{nothing}";
         }
 
         try {
-            String converted = jsonConverter.convertMonitoringSnapshot(serviceUsageSnapshot.getSnapshot());
+            String converted = CostJSONConverter.convertMonitoringSnapshotAndCompositionRules(serviceUsageSnapshot.getSnapshot(), serviceUsageSnapshot.getCostCompositionRules());
             return converted;
         } catch (Exception e) {
             return e.getMessage();
@@ -463,6 +468,7 @@ public class CostEvalManager {
         }
 
     }
+
     public String getTotalCostForServiceJSONAsPieChart(String serviceID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
@@ -470,7 +476,7 @@ public class CostEvalManager {
         if (cfg == null) {
             return "{nothing}";
         }
-        LifetimeEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID);
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalCostSnapshot(serviceID);
 
         if (serviceUsageSnapshot == null) {
             return "{nothing}";
@@ -509,9 +515,6 @@ public class CostEvalManager {
             if (previouselyDeterminedUsage == null) {
                 ServiceMonitoringSnapshot data = allMonData.remove(0);
                 previouselyDeterminedUsage = new LifetimeEnrichedSnapshot().withSnapshot(data).withLastUpdatedTimestampID(data.getTimestampID());
-            } else {
-                log.debug("Nothing cached or monitored for Service ID  {}", serviceID);
-                return null;
             }
 
             //as I extract 1000 entries at a time to avoid memory overflow, I need to read the rest
@@ -556,7 +559,7 @@ public class CostEvalManager {
             LifetimeEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(previouselyDeterminedUsage);
 
             //compute composition rules to create instant cost based on total usage so far
-            CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCost(cloudProvidersMap, cfg.getServiceConfiguration(), cleanedCostSnapshot, serviceID);
+            CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCost(cloudProvidersMap, cfg.getServiceConfiguration(), cleanedCostSnapshot, monitoringSnapshot.getTimestamp());
             ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, monitoringSnapshot);
 
             //persist instant cost
@@ -566,7 +569,7 @@ public class CostEvalManager {
             //retrieve the previousely computed total usage, as the computation of the instant cost destr
 //            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
             //create rules for metrics for total cost based on usage so far
-            CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCost(cloudProvidersMap, previouselyDeterminedUsage, serviceID);
+            CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCost(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot.getTimestamp());
             ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
 
 //            persist mon snapshot enriched with total cost
@@ -580,6 +583,7 @@ public class CostEvalManager {
         return previouselyDeterminedUsage;
     }
 
+    //TODO: update and get instant cost
     public ElasticitySpace updateAndGetInstantCostElasticitySpace(String serviceID) {
         Date before = new Date();
 
@@ -606,24 +610,26 @@ public class CostEvalManager {
 
             //if space is null, compute it from all aggregated monitored data recorded so far
             List<CostEnrichedSnapshot> enrichedCostSnapshots = persistenceDelegate.extractInstantUsageSnapshot(serviceID);
+            if (!enrichedCostSnapshots.isEmpty()) {
 
-            List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<>();
-            for (CostEnrichedSnapshot snapshot : enrichedCostSnapshots) {
-                dataFromTimestamp.add(snapshot.getSnapshot());
+                List<ServiceMonitoringSnapshot> dataFromTimestamp = new ArrayList<>();
+                for (CostEnrichedSnapshot snapshot : enrichedCostSnapshots) {
+                    dataFromTimestamp.add(snapshot.getSnapshot());
+                }
+
+                ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
+                fct.setRequirements(requirements);
+
+                fct.trainElasticitySpace(dataFromTimestamp);
+                space = fct.getElasticitySpace();
+
+                //set to the new space the timespaceID of the last snapshot monitored data used to compute it
+                space.setStartTimestampID(dataFromTimestamp.get(0).getTimestampID());
+                space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
+
+                //persist cached space
+                persistenceDelegate.persistInstantCostElasticitySpace(space, serviceID);
             }
-
-            ElasticitySpaceFunction fct = new ElSpaceDefaultFunction(serviceConfiguration);
-            fct.setRequirements(requirements);
-
-            fct.trainElasticitySpace(dataFromTimestamp);
-            space = fct.getElasticitySpace();
-
-            //set to the new space the timespaceID of the last snapshot monitored data used to compute it
-            space.setStartTimestampID(dataFromTimestamp.get(0).getTimestampID());
-            space.setEndTimestampID(dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID());
-
-            //persist cached space
-            persistenceDelegate.persistInstantCostElasticitySpace(space, serviceID);
         } else {
             //else read max 1000 monitoring data records at a time, train space, and repeat as needed
 

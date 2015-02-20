@@ -280,4 +280,14 @@ public class CostEvalService {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    /**
+     * @param serviceID the service to be removed
+     */
+    @DELETE
+    @Path("/{serviceID}")
+    @Consumes("application/xml")
+    public void removeServiceDescription(@PathParam("serviceID") String serviceID) {
+        costEvalManager.removeService(serviceID);
+    }
+
 }

@@ -49,7 +49,7 @@ var pieChartVis;
 var trailDiv;
 var pieDiv;
 
-var analyticsDiv;
+//var analyticsDiv;
 
 var piePartition = d3.layout.partition()
         .sort(null)
@@ -64,7 +64,7 @@ function mapNodesToColor(d, selected) {
     if (selected) {
         return pieVisColors[0];
     } else {
-        if (d.level == "metric") {
+        if (d && d.level == "metric") {
             return pieVisColors[1];
         } else {
             return pieVisColors[2];
@@ -84,7 +84,7 @@ function mapTrailElementsToColor(d) {
 //});
 
 // Main function to draw and set up the visualization, once we have the data.
-function createVisualization(json, divID, w, h, trailDivID, analyticsDivID) {
+function setupPieVisualization(divID, trailDivID, w, h) {//, analyticsDivID) {
 
 
     if (!trailDivID) {
@@ -92,12 +92,12 @@ function createVisualization(json, divID, w, h, trailDivID, analyticsDivID) {
     } else {
         trailDiv = d3.select("#" + trailDivID);
     }
-    
-    if (!analyticsDivID) {
-        analyticsDiv = d3.select("#" + divID).append("div").attr("id", "analyticsDiv");
-    } else {
-        analyticsDiv = d3.select("#" + analyticsDivID);
-    }
+//
+//    if (!analyticsDivID) {
+//        analyticsDiv = d3.select("#" + divID).append("div").attr("id", "analyticsDiv");
+//    } else {
+//        analyticsDiv = d3.select("#" + analyticsDivID);
+//    }
 
 
     pieDiv = d3.select("#" + divID).append("div").attr("id", "ieDiv");
@@ -132,7 +132,14 @@ function createVisualization(json, divID, w, h, trailDivID, analyticsDivID) {
     // Basic setup of page elements.
     initializeBreadcrumbTrail(pieVisWidth);
 
-    drawPieChart(json);
+    pieChartVis = pieChartSVG.append("svg:g")
+            .attr("id", "container")
+            .attr("transform", "translate(" + pieVisWidth / 2 + "," + pieVisHeight / 2 + ")");
+    pieChartVis.append("svg:circle")
+            .attr("r", pieVisRadius)
+            .style("opacity", 0);
+    pieChartVis.on("click", clear);
+
 
 }
 
@@ -146,18 +153,15 @@ var lineFunction = d3.svg.line()
         .interpolate("linear");
 
 function drawPieChart(json) {
+
     pieChartVis = pieChartSVG.append("svg:g")
             .attr("id", "container")
             .attr("transform", "translate(" + pieVisWidth / 2 + "," + pieVisHeight / 2 + ")");
-//    drawLegend();
-//    d3.select("#togglelegend").on("click", toggleLegend);
-
-    // Bounding circle underneath the sunburst, to make it easier to detect
-    // when the mouse leaves the parent g.
     pieChartVis.append("svg:circle")
             .attr("r", pieVisRadius)
             .style("opacity", 0);
     pieChartVis.on("click", clear);
+
     // For efficiency, filter nodes to keep only those large enough to see.
     var nodes = piePartition.nodes(json)
             .filter(function (d) {
@@ -328,33 +332,34 @@ function drawPieChart(json) {
 
     }
 
-    var lastElIndex = textLines.length - 1;
-    var textWidth = textLines[lastElIndex].text.length * pieFontSize / 2;
-    var newLineData = [textLines[lastElIndex].line[0], {x: textLines[lastElIndex].line[0].x + textWidth, y: textLines[lastElIndex].line[0].y}, textLines[lastElIndex].line[1]];
-    textLines[lastElIndex].line = newLineData;
+    if (textLines.length > 0) {
+        var lastElIndex = textLines.length - 1;
+        var textWidth = textLines[lastElIndex].text.length * pieFontSize / 2;
+        var newLineData = [textLines[lastElIndex].line[0], {x: textLines[lastElIndex].line[0].x + textWidth, y: textLines[lastElIndex].line[0].y}, textLines[lastElIndex].line[1]];
+        textLines[lastElIndex].line = newLineData;
 
 
-    textLines.forEach(function (d) {
-        pieChartVis.append("text")
-                .attr("dx", function () {
-                    return d.line[0].x;
-                })
-                .attr("dy", function () {
-                    return d.line[0].y;
-                }).attr("anchor", "left")
-                .text(d.text);
+        textLines.forEach(function (d) {
+            pieChartVis.append("text")
+                    .attr("dx", function () {
+                        return d.line[0].x;
+                    })
+                    .attr("dy", function () {
+                        return d.line[0].y;
+                    }).attr("anchor", "left")
+                    .text(d.text);
 
 //        //avoid underlining text
 //        if(d.line[0].x < 0){
 //            d.line = [d.line[1],d.line[2]];
 //        }
-        pieChartVis.append("path").attr("d", lineFunction(d.line))
-                .attr("stroke", "#383838")
-                .attr("stroke-width", 0.5)
-                .attr("fill", "none");
-        ;
-    });
-
+            pieChartVis.append("path").attr("d", lineFunction(d.line))
+                    .attr("stroke", "#383838")
+                    .attr("stroke-width", 0.5)
+                    .attr("fill", "none");
+            ;
+        });
+    }
 
 //has some needed side effects and the breadcrum/selection does not seem to work without
     pieChartSVG.selectAll("path").data(nodes);
@@ -362,7 +367,7 @@ function drawPieChart(json) {
     pieTotalSize = json.value;
 }
 
-function recreateVisualization(json) {
+function updatePieVisualization(json) {
 
     pieChartVis.remove();
     drawPieChart(json);
@@ -392,7 +397,7 @@ function recreateVisualization(json) {
         var ancestors = getAncestors(nodeInUpdatedStructure);
         updateBreadcrumbs(ancestors, nodeInUpdatedStructure.size);
         //old unselected nodes need to be made with less opacity
-        d3.selectAll("path")
+        pieChartVis.selectAll("path")
                 //.style("opacity", 0.3)
                 .style("fill", function (d) {
                     return mapNodesToColor(d, false);
@@ -419,11 +424,14 @@ function clear() {
 
     treeVisualization.selectAll("path").filter(function (node) {
         var nodeToShade = this;
-        if (node.type && node.type == "metric") {
-
-            nodeToShade.style.fill = "gray";
+        if (node.level && node.level == "metric") {
+            if (node.category == "COST") {
+                nodeToShade.style.fill = "#FFE773";
+            } else {
+                nodeToShade.style.fill = "gray";
+            }
         }
-
+ 
 
     });
     d3.select("#percentage")
@@ -521,7 +529,12 @@ function mouseover(d) {
             //so I use the node to check attributes, and the path to color
 
             if (node.type && node.type == "metric") {
-                nodeToShade.style.fill = "gray";
+                if (node.category == "COST") {
+                    nodeToShade.style.fill = "#FFE773";
+                } else {
+                    nodeToShade.style.fill = "gray";
+                }
+
             }
         }
     });
@@ -671,9 +684,9 @@ function breadcrumbPoints(d, i) {
 
 // Update the breadcrumb trail to show the current sequence and percentage.
 function updateBreadcrumbs(nodeArray, percentageString) {
-
-    if (trailPointsWidth[trailPointsWidth.length - 1] > pieVisWidth) {
-        initializeBreadcrumbTrail(trailPointsWidth[trailPointsWidth.length - 1] + trailPointsWidth.length * 20);
+    var computedNeededWidth = trailPointsWidth[trailPointsWidth.length - 1] + percentageString.length * pieFontSize * 2 / 3 + 2 * b.h;
+    if (computedNeededWidth > pieVisWidth) {
+        initializeBreadcrumbTrail(computedNeededWidth);
     }
 
     // Data join; key function combines name and depth (= position in sequence).
@@ -715,7 +728,7 @@ function updateBreadcrumbs(nodeArray, percentageString) {
     // Now move and update the percentage at the end.
     trailDiv.select("#endlabel")
             .attr("x", function (d) {
-                return(trailPointsWidth[nodeArray.length - 1] + b.h);
+                return(trailPointsWidth[nodeArray.length - 1] + 2 * b.h);
             })
             .attr("y", b.h / 2)
             .attr("dy", "0.35em")
@@ -771,4 +784,4 @@ function updateBreadcrumbs(nodeArray, percentageString) {
 //        legend.style("visibility", "hidden");
 //    }
 //}
- 
+

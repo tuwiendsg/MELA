@@ -26,6 +26,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.Monitore
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,9 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
     static final Logger log = LoggerFactory.getLogger(DataAccessWithUnguidedAutoStructureDetection.class);
 
     public DataAccessWithUnguidedAutoStructureDetection() {
-
+        if(dataFreshnessAnalysisEngine == null){
+            dataFreshnessAnalysisEngine = new DefaultFreshnessAnalysisEngine();
+        }
     }
 
     public DataFreshnessAnalysisEngine getDataFreshnessAnalysisEngine() {

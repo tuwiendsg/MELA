@@ -18,9 +18,7 @@
     <!-- MELA properties -->
     <context:property-placeholder location="file:./config/mela-data-service.properties"/>
 
-    <bean id="dataFreshnessAnalysisEngine" class="at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine">
-    </bean>
-    
+   
     <!--     JMS stuff 
     -->    
     <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
@@ -130,6 +128,10 @@
     </beans>
     
     <beans>
+        
+        <bean id="dataFreshnessAnalysisEngine" class="at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine"/>
+       
+    
         <!-- Adds annotated spring beans -->
         <context:component-scan base-package="at.ac.tuwien.dsg"/>
      

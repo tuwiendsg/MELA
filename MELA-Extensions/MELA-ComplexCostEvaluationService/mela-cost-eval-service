@@ -1,5 +1,5 @@
 ### BEGIN INIT INFO
-# Provides:          mela-analysis-service
+# Provides:          mela-cost-service
 # Required-Start:
 # Required-Stop:
 # Default-Start:     2 3 4 5
@@ -11,12 +11,12 @@
 RUN_MODE="daemons"
 
 JAVA=$(which java)
-NAME=mela-analysis-service
+NAME=mela-cost-service
 DAEMONDIR=./
-DAEMON=MELA-SpaceAndPathwayAnalysisService-3.0-SNAPSHOT-war-exec.jar
+DAEMON=MELA-ComplexCostEvaluationService-3.0-SNAPSHOT-war-exec.jar
 PIDDIR=/tmp/
-PIDFILE=$PIDDIR/mela-analysis-service.pid
-MELA_HTTP_PORT=8081
+PIDFILE=$PIDDIR/mela-cost-service.pid
+MELA_HTTP_PORT=8480
 LOG_DIR=/tmp/mela
 #PROFILES=MYSQL
 #PROFILES=H2
@@ -30,7 +30,7 @@ test -x $JAVA -a -f $DAEMONDIR/$DAEMON || exit 0
 
 case "$1" in
 	start)
-		log_daemon_msg "Starting Mela-AnalysisService daemon"
+		log_daemon_msg "Starting Mela-costService daemon"
 		log_progress_msg "mela"
 		# Make sure we have our PIDDIR, even if it's on a tmpfs
 		# install -o root -g root -m 755 -d $PIDDIR
@@ -41,7 +41,7 @@ case "$1" in
 		log_end_msg 0
 		;;
 	stop)
-		log_daemon_msg "Stopping Mela-AnalysisService daemon"
+		log_daemon_msg "Stopping Mela-costService daemon"
 		log_progress_msg "mela"
 
 		start-stop-daemon --stop --quiet --pidfile $PIDFILE
@@ -64,9 +64,9 @@ case "$1" in
 		pidofproc -p $PIDFILE $JAVA >/dev/null
 		status=$?
 		if [ $status -eq 0 ]; then
-			log_success_msg "Mela-AnalysisService is running"
+			log_success_msg "Mela-costService is running"
 		else
-			log_failure_msg "Mela-AnalysisService is not running"
+			log_failure_msg "Mela-costService is not running"
 		fi
 		exit $status
 		;;

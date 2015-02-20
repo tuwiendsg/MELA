@@ -37,8 +37,10 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -49,9 +51,13 @@ import org.springframework.stereotype.Service;
 public class DataAccessWithManualStructureManagement extends AbstractDataAccess {
 
     private static final MonitoredElement ALL_VMS = new MonitoredElement("-");
+
     @Autowired
     private DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine;
 
+//    {
+//        dataFreshnessAnalysisEngine = new DefaultFreshnessAnalysisEngine();
+//    }
     /**
      * Left as this in case we want to limit in the future the nr of DataAccess
      * instances we create and maybe use a pool of instances
@@ -59,12 +65,13 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
      * @return
      */
     public static DataAccessWithManualStructureManagement createInstance() {
-
         return new DataAccessWithManualStructureManagement();
     }
 
     private DataAccessWithManualStructureManagement() {
-
+        if (dataFreshnessAnalysisEngine == null) {
+            dataFreshnessAnalysisEngine = new DefaultFreshnessAnalysisEngine();
+        }
     }
 
     public DataFreshnessAnalysisEngine getDataFreshnessAnalysisEngine() {

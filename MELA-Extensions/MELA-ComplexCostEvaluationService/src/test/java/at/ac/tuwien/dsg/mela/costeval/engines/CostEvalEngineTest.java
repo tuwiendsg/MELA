@@ -75,7 +75,6 @@ public class CostEvalEngineTest {
 
     private PersistenceSQLAccess generalAccess;
 
-    private org.hsqldb.Server server;
 
     public CostEvalEngineTest() {
     }
@@ -92,35 +91,14 @@ public class CostEvalEngineTest {
     @Before
     public void setUp() {
         try {
-            server = new org.hsqldb.Server();
-            server.setLogWriter(null);
-            server.setRestartOnShutdown(false);
-            server.setNoSystemExit(true);
-            server.setPort(9001);
 
-            if (System.getProperty("os.name").contains("Windows")) {
-                server.setDatabasePath(0, "C:\\Windows\\Temp\\mela_test_cost");
-            } else {
-                server.setDatabasePath(0, "/tmp/test/mela_cost");
-            }
-
-            server.setDatabaseName(0, "mela");
-
+            //run hsql in memory only for testing purposes
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setUrl("jdbc:hsqldb:hsql://localhost:9001/mela;hsqldb.cache_rows=100;hsqldb.log_data=false");
+            dataSource.setUrl("jdbc:hsqldb:mem:mela-test-db");
             dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
             dataSource.setUsername("sa");
             dataSource.setPassword("");
-
-            log.debug("HSQL Database path: " + server.getDatabasePath(0, true));
-            log.info("Starting HSQL Server database '" + server.getDatabaseName(0, true) + "' listening on port: "
-                    + server.getPort());
-            server.start();
-            // server.start() is synchronous; so we should expect online status from server.
-            Assert.isTrue(server.getState() == ServerConstants.SERVER_STATE_ONLINE,
-                    "HSQLDB could not be started. Maybe another instance is already running on " + server.getAddress()
-                    + ":" + server.getPort() + " ?");
-            log.info("Started HSQL Server");
+ 
 
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
@@ -128,7 +106,7 @@ public class CostEvalEngineTest {
             BufferedReader reader = null;
             try {
 
-                reader = new BufferedReader(new FileReader("src/test/java/resources/create-initial-db-schema.sql"));
+                reader = new BufferedReader(new FileReader("src/test/resources/create-initial-db-schema.sql"));
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(CostEvalEngineTest.class.getName()).log(Level.SEVERE, null, ex);
                 fail(ex.getMessage());
@@ -156,7 +134,7 @@ public class CostEvalEngineTest {
     @After
     public void tearDown() {
 
-        server.shutdown();
+ 
     }
 
     /**
@@ -267,7 +245,7 @@ public class CostEvalEngineTest {
         {
             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
 //            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(1).withFreshness(80d));
-            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(1).withFreshness(50d));
+            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(1.0).withFreshness(50d));
 
             MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
             unitMonSnapshpot.addChild(elementMonitoringSnapshot);
@@ -320,7 +298,7 @@ public class CostEvalEngineTest {
         {
             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
 //            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(2).withFreshness(80d));
-            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(2).withFreshness(50d));
+            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(2.0).withFreshness(50d));
 
             MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
             unitMonSnapshpot.addChild(elementMonitoringSnapshot);
@@ -376,7 +354,7 @@ public class CostEvalEngineTest {
 
             MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(newVM);
 //            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(10).withFreshness(80d));
-            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(100).withFreshness(50d));
+            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(100.0).withFreshness(50d));
 
             MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
             unitMonSnapshpot.addChild(elementMonitoringSnapshot);
@@ -399,7 +377,7 @@ public class CostEvalEngineTest {
 //        assertEquals(new MetricValue(3), totalServiceUsage3.getSnapshot().getMonitoredData(vm).getMetricValue(instanceMetric));
 //        assertEquals(new MetricValue(1), totalServiceUsage3.getSnapshot().getMonitoredData(newVM).getMetricValue(instanceMetric));
         assertEquals(new MetricValue(3.0), totalServiceUsage3.getSnapshot().getMonitoredData(vm).getMetricValue(usageMetric));
-        assertEquals(new MetricValue(100), totalServiceUsage3.getSnapshot().getMonitoredData(newVM).getMetricValue(usageMetric));
+        assertEquals(new MetricValue(100.0), totalServiceUsage3.getSnapshot().getMonitoredData(newVM).getMetricValue(usageMetric));
 
         CompositionRulesBlock totalCostRules = instance.createCompositionRulesForTotalCost(cloudProvidersMap, totalServiceUsage3, totalServiceUsage3.getSnapshot().getTimestamp());
         ServiceMonitoringSnapshot totalCostEnrichedSnapshot = instance.applyCompositionRules(totalCostRules, totalServiceUsage3.getSnapshot());
@@ -437,7 +415,6 @@ public class CostEvalEngineTest {
         assertFalse(elasticityPathway.getPathway().isEmpty());
 
         log.info("Situations for VM " + elasticityPathway.getPathway(vm).getSituationGroups().size());
-        persistenceDelegate.removeService(service.getId());
 
         CostJSONConverter converter = new CostJSONConverter();
 

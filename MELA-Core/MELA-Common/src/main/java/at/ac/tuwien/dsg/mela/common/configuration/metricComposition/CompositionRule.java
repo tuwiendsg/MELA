@@ -200,6 +200,11 @@ public class CompositionRule implements Serializable {
         return this;
     }
 
+    public CompositionRule withTargetMonitoredElementID(String targetMonitoredElementID) {
+        this.targetMonitoredElementIDs.add(targetMonitoredElementID);
+        return this;
+    }
+
     public CompositionRule withResultingMetric(final Metric resultingMetric) {
         this.resultingMetric = resultingMetric;
         return this;

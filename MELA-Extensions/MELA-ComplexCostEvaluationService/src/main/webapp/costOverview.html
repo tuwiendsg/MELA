@@ -11,12 +11,12 @@
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-        <script src="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"></script>
+
         <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
         <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
         <script src="http://d3js.org/d3.v3.js"></script>
 
-        <link href="css/toastr.css" rel="stylesheet"/>
+        <link href="docs/css/toastr.css" rel="stylesheet"/>
 
         <style type="text/css">
 
@@ -81,97 +81,83 @@
             </table>
         </div>
 
+
+        <script type="text/javascript" src="docs/spin.js" ></script>
+        <script type="text/javascript" src="docs/sequences.js"></script>
+        <script type="text/javascript" src="melaTreeView.js"></script>
+
+
         <script type="text/javascript" >
             var query = window.location.search.substring(1);
             var vars = query.split("&");
             var serviceID = vars[0];
-        </script>
 
+            setupTreeView(vars[0], "treeView", window.innerWidth * 2 / 3, window.innerHeight  * 2 / 3, vars[1]);
+            setupPieVisualization("wheelView", "trailDiv",  window.innerWidth  /2, window.innerHeight  * 2 / 3);
 
-        <script type="text/javascript" src="docs/spin.js" ></script>
-        <script type="text/javascript" src="docs/sequences.js"></script>
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            var serviceID = vars[0];
 
-        <script type="text/javascript" src="melaTreeView.js"></script>
-
-        <script type="text/javascript" >
-//            d3.json("test.json", function (error, root) {
-//                var json = root;
-//                createVisualization(json, "wheelView", window.innerWidth / 3, 200, "trailDiv", "analytics");
-//            });
-        </script> 
-
-        <script type="text/javascript" >
-            setupTreeView(vars[0], "treeView", window.innerWidth * 2 / 3, window.innerHeight / 2, vars[1]);
-//
-//            d3.json("tree.json", function (error, root) {
-//                var json = root;
-//                updateTreeView(json);
-//            });
-        </script>
-
-
-        <script type="text/javascript" >
+            var reqDataTreeViewMonitoringDataObject;
+            var reqDataPieViewMonitoringDataObject;
+            
             function refreshMonitoringDataTreeView() {
-                reqMonitoringDataObject = null;
+                reqDataTreeViewMonitoringDataObject = null;
                 if (window.XMLHttpRequest) {
-                    reqMonitoringDataObject = new XMLHttpRequest();
+                    reqDataTreeViewMonitoringDataObject = new XMLHttpRequest();
                 } else {
-                    reqMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
+                    reqDataTreeViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
                 }
-                reqMonitoringDataObject.onreadystatechange = processMonitoringDataResponse;
-                reqMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/total/json/tree", true);
-                reqMonitoringDataObject.send(null);
+                reqDataTreeViewMonitoringDataObject.onreadystatechange = processMonitoringDataTreeViewResponse;
+                reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/total/json/tree", true);
+                reqDataTreeViewMonitoringDataObject.send(null);
             }
 
-            function processMonitoringDataResponse() {
-                if (reqMonitoringDataObject.readyState == 4) {
-                    try {
-                        var retrievedData = JSON.parse(reqMonitoringDataObject.responseText);
-                        updateTreeView(retrievedData);
+            function processMonitoringDataTreeViewResponse() {
+                if (reqDataTreeViewMonitoringDataObject.readyState == 4) {
 
-                    } catch (error) {
-                        console.log("Error encountered when processing metrics");
-                        window.location.href = "./index.html";
-                    }
+                    var retrievedData = JSON.parse(reqDataTreeViewMonitoringDataObject.responseText);
+                    updateTreeView(retrievedData);
+
                     setTimeout(refreshMonitoringDataTreeView, 5000);
                 }
             }
 
             refreshMonitoringDataTreeView();
-        </script>
-        <script type="text/javascript" >
+
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            var serviceID = vars[0];
+
             function refreshMonitoringDataPieView() {
-                reqMonitoringDataObject = null;
+                reqDataPieViewMonitoringDataObject = null;
                 if (window.XMLHttpRequest) {
-                    reqMonitoringDataObject = new XMLHttpRequest();
+                    reqDataPieViewMonitoringDataObject = new XMLHttpRequest();
                 } else {
-                    reqMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
+                    reqDataPieViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
                 }
-                reqMonitoringDataObject.onreadystatechange = processMonitoringDataResponse;
-                reqMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/total/json/piechart", true);
-                reqMonitoringDataObject.send(null);
+                reqDataPieViewMonitoringDataObject.onreadystatechange = processMonitoringDataDataPieViewResponse;
+                reqDataPieViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/total/json/piechart", true);
+                reqDataPieViewMonitoringDataObject.send(null);
             }
 
-            function processMonitoringDataResponse() {
-                if (reqMonitoringDataObject.readyState == 4) {
-                    try {
-                        var retrievedData = JSON.parse(reqMonitoringDataObject.responseText);
-                        createVisualization(retrievedData);
+            function processMonitoringDataDataPieViewResponse() {
+                if (reqDataPieViewMonitoringDataObject.readyState == 4) {
 
-                    } catch (error) {
-                        console.log("Error encountered when processing metrics");
-                        window.location.href = "./index.html";
-                    }
-                    setTimeout(refreshMonitoringDataTreeView, 5000);
+                    var retrievedData = JSON.parse(reqDataPieViewMonitoringDataObject.responseText);
+                    updatePieVisualization(retrievedData);
+
+
+                    setTimeout(refreshMonitoringDataPieView, 5000);
                 }
             }
 
             refreshMonitoringDataPieView();
-            refreshMonitoringDataTreeView();
+
         </script>
 
- 
+
 
     </body>
 </html>
- 

@@ -43,6 +43,7 @@ import at.ac.tuwien.dsg.mela.common.utils.perfMonitoring.MELAPerfMonitor;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
 
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceDelegate;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,9 @@ public class DataCollectionService {
 
     @Autowired
     private XmlConverter xmlConverter;
+
+    @Value("#{dataFreshnessAnalysisEngine}")
+    private DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine;
 
     static final Logger log = LoggerFactory.getLogger(DataCollectionService.class);
     static final Logger performanceLog = LoggerFactory.getLogger("PerformanceLogger");

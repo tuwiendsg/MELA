@@ -1,0 +1,39 @@
+
+
+#wpmem_login legend,  #wpmem_reg legend{  padding-bottom:5px;  font-family: 'PT Sans', sans-serif;   color:#868585; position:relative; top:-10px;  font-size: 24px;}
+#wpmem_login label,  #wpmem_reg label{ color:#999;}
+
+input.buttons { float:left; margin:30px 50px 20px 0px; }
+
+
+
+#wpmem_login .clear, #wpmem_reg .clear { clear:both;}
+#wpmem_login small, #wpmem_reg small { display:none;}
+
+input.buttons {
+  display: block;
+  font-family: 'PT Sans', sans-serif;
+  font-weight:900;
+  padding: 4px 10px 4px;
+  margin-bottom: 0;
+  font-size: 18px;
+  line-height: 18px;
+  color: #fff;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #0098D2;
+border:none;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 6px;
+  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+  -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+  *margin-left: .3em;
+}
+
+input.buttons:hover {
+  background-color: #007EA8;
+  }

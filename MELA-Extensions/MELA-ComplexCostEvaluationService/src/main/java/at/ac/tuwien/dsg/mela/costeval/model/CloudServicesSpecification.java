@@ -48,6 +48,11 @@ public class CloudServicesSpecification {
         return this;
     }
 
+    public CloudServicesSpecification withCloudProvider(final CloudProvider cloudProvider) {
+        this.cloudProviders.add(cloudProvider);
+        return this;
+    }
+
     public List<CloudProvider> getCloudProviders() {
         return cloudProviders;
     }
@@ -63,6 +68,5 @@ public class CloudServicesSpecification {
     public void removeCloudProvider(CloudProvider cloudProvider) {
         this.cloudProviders.remove(cloudProvider);
     }
-   
 
 }

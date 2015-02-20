@@ -538,7 +538,7 @@ public class CostEvalEngine {
                                             //I.E. a pkts_out/s will be multiplied with 60
                                             //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
                                             //this works as we assume we target only metrics which change in time using PER USAGE cost functions
-                                            String timePeriod = "s";
+                                            String timePeriod = "";
 
                                             if (element.getCostMetric().getMeasurementUnit().contains("/")) {
                                                 timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
@@ -555,8 +555,10 @@ public class CostEvalEngine {
                                             //convert to seconds
                                             Long periodsBetweenPrevAndCurrentTimestamp = 0l;
 
-                                            //must standardise these somehow
-                                            if (timePeriod.equals("s")) {
+                                           //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up hsitorical usage by itself
+                                            if (timePeriod.length() == 0) {
+                                                continue;
+                                            } else if (timePeriod.equals("s")) {
                                                 periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
                                             } else if (timePeriod.equals("m")) {
                                                 periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
@@ -566,7 +568,7 @@ public class CostEvalEngine {
                                                 periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
                                             }
 
-                                            //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up hsitorical usage by itself
+                                            
                                             if (periodsBetweenPrevAndCurrentTimestamp <= 1) {
                                                 usageSoFarForMetric.sum(previousElementValue);
 
