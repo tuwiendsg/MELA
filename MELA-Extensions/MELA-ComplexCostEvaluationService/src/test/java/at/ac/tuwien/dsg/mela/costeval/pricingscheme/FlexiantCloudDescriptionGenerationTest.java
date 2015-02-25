@@ -35,9 +35,10 @@ import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
 import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ElasticityCapability;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -224,7 +225,10 @@ public class FlexiantCloudDescriptionGenerationTest {
 
             for (PricingHelper helper : vmCosts) {
 
-                ServiceUnit unit = new ServiceUnit("IaaS", "VM", "" + helper.CPU + "CPU" + helper.RAM)
+                CloudOfferedService unit = new CloudOfferedService()
+                        .withCategory("IaaS")
+                        .withSubcategory("VM")
+                        .withName("" + helper.CPU + "CPU" + helper.RAM)
                         .withUuid(UUID.fromString("20000000-0000-0000-0000-00000000000" + index++));
 
                 unit.withCostFunction(new CostFunction(unit.getName())
@@ -238,13 +242,13 @@ public class FlexiantCloudDescriptionGenerationTest {
                         ).withCostElement(diskUsageCostElement)
                 );
 
-                provider.addServiceUnit(unit);
+                provider.addCloudOfferedService(unit);
             }
 
             //network cost
             {
 
-                ServiceUnit unit = new ServiceUnit("IaaS", "Network", "PublicVLAN")
+                CloudOfferedService unit = new CloudOfferedService("IaaS", "Network", "PublicVLAN")
                         .withUuid(UUID.fromString("30000000-0000-0000-0000-000000000001"));
 
                 unit.withCostFunction(new CostFunction(unit.getName())
@@ -270,13 +274,13 @@ public class FlexiantCloudDescriptionGenerationTest {
                         )
                 );
 
-                provider.addServiceUnit(unit);
+                provider.addCloudOfferedService(unit);
             }
 
             //image storage cost
             {
 
-                ServiceUnit unit = new ServiceUnit("IaaS", "Misc", "ImageStorage")
+                CloudOfferedService unit = new CloudOfferedService("IaaS", "Misc", "ImageStorage")
                         .withUuid(UUID.fromString("40000000-0000-0000-0000-000000000001"));
 
                 unit.withCostFunction(new CostFunction(unit.getName())
@@ -289,7 +293,7 @@ public class FlexiantCloudDescriptionGenerationTest {
                         )
                 );
 
-                provider.addServiceUnit(unit);
+                provider.addCloudOfferedService(unit);
             }
 
             MonitoredElement service = new MonitoredElement("Service").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE)
@@ -361,7 +365,7 @@ public class FlexiantCloudDescriptionGenerationTest {
                 m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
                 m.marshal(cloudServicesSpecification, new FileWriter("src/test/resources/cloudServicesSpecification.xml"));
             }
-            
+
             JAXBContext rulesContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
 
             CompositionRulesConfiguration compositionRulesConfiguration = (CompositionRulesConfiguration) rulesContext.createUnmarshaller()
@@ -523,6 +527,25 @@ public class FlexiantCloudDescriptionGenerationTest {
 //            ServiceMonitoringSnapshot enrichedSnapshot = aggregationEngine.enrichMonitoringData(compositionRulesConfiguration, monitoringSnapshot);
 // 
         }
+//
+//        CloudOfferedService service = new CloudOfferedService()
+//                .withUuid(UUID) 
+//                .withName("Name")
+//                .withCategory("CategoryName")
+//                .withSubcategory("SubcategoryName")
+////                
+//                .withCostFunction(new CostFunction()
+//                    .withAppliedIfServiceInstanceUses(List<Unit>)
+//                    .withCostElement(new CostElement()
+//                            .withCostMetric(new Metric("name", "unit/time", Metric.MetricType))
+//                            .withBillingPeriod(CostElement.BillingPeriod)
+//                            .withType(CostElement.Type.PERIODIC)
+//                            .withCostInterval(new MetricValue(FirstIntervalValue), costUnits)
+//                            .withCostInterval(new MetricValue(SecondIntervalValue), costUnits)
+//                            .withCostInterval(...
+//                    ).withCostElement(...
+//                     
+//        );
 
     }
 }

@@ -8,7 +8,7 @@ import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.ServiceUnitDAO;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,7 +73,7 @@ public class CloudProviderFromFileDAOTest extends TestCase {
         //to get individual data you use DAOS
 //        from at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos
         for (CloudProvider cloudProvider : CloudProviderDAO.getAllCloudProviders(access.getGraphDatabaseService())) {
-            for (ServiceUnit unit : ServiceUnitDAO.getCloudServiceUnitsForCloudProviderNode(cloudProvider.getId(), access.getGraphDatabaseService())) {
+            for (CloudOfferedService unit : ServiceUnitDAO.getCloudServiceUnitsForCloudProviderNode(cloudProvider.getId(), access.getGraphDatabaseService())) {
                 System.out.println(unit.getId() + " " + unit.getName());
             }
         }

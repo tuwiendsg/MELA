@@ -268,12 +268,10 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
         for (Action action : executingActions) {
             clone.executingActions.add(action.clone());
         }
-
         
         for (MonitoredElementMonitoringSnapshot child : children) {
             clone.children.add(child.clone());
         }
-        
     
         return clone;
     }

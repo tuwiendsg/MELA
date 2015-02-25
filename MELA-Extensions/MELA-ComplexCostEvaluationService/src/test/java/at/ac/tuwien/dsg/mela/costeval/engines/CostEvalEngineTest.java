@@ -40,7 +40,7 @@ import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -75,7 +75,6 @@ public class CostEvalEngineTest {
 
     private PersistenceSQLAccess generalAccess;
 
-
     public CostEvalEngineTest() {
     }
 
@@ -98,7 +97,6 @@ public class CostEvalEngineTest {
             dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
             dataSource.setUsername("sa");
             dataSource.setPassword("");
- 
 
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
@@ -134,7 +132,6 @@ public class CostEvalEngineTest {
     @After
     public void tearDown() {
 
- 
     }
 
     /**
@@ -154,7 +151,7 @@ public class CostEvalEngineTest {
         cloudServicesSpecification.addCloudProvider(provider);
 
         {
-            ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.small");
+            CloudOfferedService unit = new CloudOfferedService("IaaS", "VM", "m1.small");
             unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000000"));
 
             //VM COST
@@ -173,16 +170,16 @@ public class CostEvalEngineTest {
                 vmCost.addCostElement(usageCostElement);
             }
 
-            provider.addServiceUnit(unit);
+            provider.addCloudOfferedService(unit);
 
         }
 
-        Map<UUID, Map<UUID, ServiceUnit>> cloudProvidersMap = new HashMap<UUID, Map<UUID, ServiceUnit>>();
+        Map<UUID, Map<UUID, CloudOfferedService>> cloudProvidersMap = new HashMap<UUID, Map<UUID, CloudOfferedService>>();
 
-        Map<UUID, ServiceUnit> cloudUnits = new HashMap<UUID, ServiceUnit>();
+        Map<UUID, CloudOfferedService> cloudUnits = new HashMap<UUID, CloudOfferedService>();
         cloudProvidersMap.put(UUID.fromString("251ed7c7-aa4d-49d4-b42b-7efefd970d6b"), cloudUnits);
 
-        for (ServiceUnit unit : provider.getServiceUnits()) {
+        for (CloudOfferedService unit : provider.getCloudOfferedServices()) {
             cloudUnits.put(unit.getUuid(), unit);
         }
 
@@ -268,7 +265,11 @@ public class CostEvalEngineTest {
                 .withtLastUpdatedTimestampID(monitoringSnapshot1.getTimestampID());
 
         //test1
-        LifetimeEnrichedSnapshot totalUsageSnapshot = instance.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, serviceUsageSnapshot1, monitoringSnapshot2);
+        LifetimeEnrichedSnapshot totalUsageSnapshot = instance.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, serviceUsageSnapshot1.clone(), monitoringSnapshot2);
+
+        persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId(), totalUsageSnapshot);
+
+        totalUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId());
 
 //        assertEquals(new MetricValue(1), totalUsageSnapshot.getSnapshot().getMonitoredData(vm).getMetricValue(instanceMetric));
         assertEquals(new MetricValue(1.0), totalUsageSnapshot.getSnapshot().getMonitoredData(vm).getMetricValue(usageMetric));
@@ -323,6 +324,8 @@ public class CostEvalEngineTest {
 
         persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId(), totalServiceUsage2);
 
+        totalServiceUsage2 = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId());
+
         LifetimeEnrichedSnapshot instantCostCleaned2 = instance.cleanUnusedServices(totalServiceUsage2);
 
         generalAccess.writeInTimestamp("" + totalServiceUsage2.getLastUpdatedTimestampID(), service, service.getId());
@@ -373,6 +376,9 @@ public class CostEvalEngineTest {
         }
 
         LifetimeEnrichedSnapshot totalServiceUsage3 = instance.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, totalServiceUsage2, monitoringSnapshot4);
+        persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId(), totalServiceUsage3);
+
+        totalServiceUsage3 = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId());
 
 //        assertEquals(new MetricValue(3), totalServiceUsage3.getSnapshot().getMonitoredData(vm).getMetricValue(instanceMetric));
 //        assertEquals(new MetricValue(1), totalServiceUsage3.getSnapshot().getMonitoredData(newVM).getMetricValue(instanceMetric));
@@ -429,7 +435,7 @@ public class CostEvalEngineTest {
         log.info(converter.toJSONForRadialPieChart(instantCost2));
         log.info("Tree view : totalCostEnrichedSnapshot");
         log.info("");
-        log.info(converter.convertMonitoringSnapshotAndCompositionRules(totalCostEnrichedSnapshot,totalCostRules));
+        log.info(converter.convertMonitoringSnapshotAndCompositionRules(totalCostEnrichedSnapshot, totalCostRules));
         log.info("");
         log.info("ElasticitySpace : totalCostEnrichedSnapshot");
         log.info("");

@@ -20,7 +20,7 @@
 package at.ac.tuwien.dsg.mela.costeval.model;
 
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;

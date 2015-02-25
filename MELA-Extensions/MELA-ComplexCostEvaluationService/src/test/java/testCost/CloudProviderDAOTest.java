@@ -14,7 +14,7 @@ import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ElasticityCapability;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Quality;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Resource;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
 import java.io.File;
 import java.io.FileInputStream;
@@ -91,8 +91,8 @@ public class CloudProviderDAOTest extends TestCase {
 //            }
             //EBS
             {
-                ServiceUnit utility = new ServiceUnit("IaaS", "Storage", "EBS");
-                cloudProvider.addServiceUnit(utility);
+                CloudOfferedService utility = new CloudOfferedService("IaaS", "Storage", "EBS");
+                cloudProvider.addCloudOfferedService(utility);
 
                 //utility quality
                 Quality stdQuality = new Quality("I/O Performance");
@@ -157,8 +157,8 @@ public class CloudProviderDAOTest extends TestCase {
 //
             //m1.large
             {
-                ServiceUnit utility = new ServiceUnit("IaaS", "VM", "m1.large");
-                cloudProvider.addServiceUnit(utility);
+                CloudOfferedService utility = new CloudOfferedService("IaaS", "VM", "m1.large");
+                cloudProvider.addCloudOfferedService(utility);
 
                 {
                     Resource resource = new Resource("Computing");
@@ -218,7 +218,7 @@ public class CloudProviderDAOTest extends TestCase {
                 }
 
                 {
-                    ServiceUnit sUtility = new ServiceUnit("IaaS", "Storage", "EBS");
+                    CloudOfferedService sUtility = new CloudOfferedService("IaaS", "Storage", "EBS");
                     //utility elasticity charact for resource" lets the utility choose between diff resource values
                     {
                         ElasticityCapability characteristic = new ElasticityCapability("StorageElCapability");
@@ -244,7 +244,7 @@ public class CloudProviderDAOTest extends TestCase {
                         hourlyCost.addCostInterval(new MetricValue(1), 0.24);
                         onDemandCost.addCostElement(hourlyCost);
                     }
-                    onDemandCost.addUtilityAppliedInConjunctionWith(reservationScheme);
+                    onDemandCost.addAppliedIfServiceInstanceUses(reservationScheme);
                     utility.addCostFunction(onDemandCost);
                 }
 
@@ -261,7 +261,7 @@ public class CloudProviderDAOTest extends TestCase {
                         hourlyCost.addCostInterval(new MetricValue(1), 0.026);
                         spotCost.addCostElement(hourlyCost);
                     }
-                    spotCost.addUtilityAppliedInConjunctionWith(reservationScheme);
+                    spotCost.addAppliedIfServiceInstanceUses(reservationScheme);
 
                     utility.addCostFunction(spotCost);
                 }
@@ -284,7 +284,7 @@ public class CloudProviderDAOTest extends TestCase {
                         hourlyCost.addCostInterval(new MetricValue(1), 0.13);
                         _1YearReservedCost.addCostElement(hourlyCost);
                     }
-                    _1YearReservedCost.addUtilityAppliedInConjunctionWith(reservationScheme);
+                    _1YearReservedCost.addAppliedIfServiceInstanceUses(reservationScheme);
 
                     utility.addCostFunction(_1YearReservedCost);
 
@@ -307,7 +307,7 @@ public class CloudProviderDAOTest extends TestCase {
                         hourlyCost.addCostInterval(new MetricValue(1), 0.13);
                         _1YearReservedCost.addCostElement(hourlyCost);
                     }
-                    _1YearReservedCost.addUtilityAppliedInConjunctionWith(reservationScheme);
+                    _1YearReservedCost.addAppliedIfServiceInstanceUses(reservationScheme);
                 }
                 {
                     Resource reservationScheme = new Resource("ReservationScheme");
@@ -327,7 +327,7 @@ public class CloudProviderDAOTest extends TestCase {
                         hourlyCost.addCostInterval(new MetricValue(1), 0.056);
                         _1YearReservedCost.addCostElement(hourlyCost);
                     }
-                    _1YearReservedCost.addUtilityAppliedInConjunctionWith(reservationScheme);
+                    _1YearReservedCost.addAppliedIfServiceInstanceUses(reservationScheme);
 
                     utility.addCostFunction(_1YearReservedCost);
                 }
@@ -350,7 +350,7 @@ public class CloudProviderDAOTest extends TestCase {
                         hourlyCost.addCostInterval(new MetricValue(1), 0.108);
                         _2YearsReservedCost.addCostElement(hourlyCost);
                     }
-                    _2YearsReservedCost.addUtilityAppliedInConjunctionWith(reservationScheme);
+                    _2YearsReservedCost.addAppliedIfServiceInstanceUses(reservationScheme);
                     utility.addCostFunction(_2YearsReservedCost);
                 }
                 {
@@ -371,7 +371,7 @@ public class CloudProviderDAOTest extends TestCase {
                         hourlyCost.addCostInterval(new MetricValue(1), 0.064);
                         _2YearsReservedCost.addCostElement(hourlyCost);
                     }
-                    _2YearsReservedCost.addUtilityAppliedInConjunctionWith(reservationScheme);
+                    _2YearsReservedCost.addAppliedIfServiceInstanceUses(reservationScheme);
                     utility.addCostFunction(_2YearsReservedCost);
                 }
                 {
@@ -392,7 +392,7 @@ public class CloudProviderDAOTest extends TestCase {
                         hourlyCost.addCostInterval(new MetricValue(1), 0.046);
                         _2YearsReservedCost.addCostElement(hourlyCost);
                     }
-                    _2YearsReservedCost.addUtilityAppliedInConjunctionWith(reservationScheme);
+                    _2YearsReservedCost.addAppliedIfServiceInstanceUses(reservationScheme);
                     utility.addCostFunction(_2YearsReservedCost);
 
                 }
@@ -484,7 +484,7 @@ public class CloudProviderDAOTest extends TestCase {
         //to get individual data you use DAOS
 //        from at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos
         for (CloudProvider cloudProvider : CloudProviderDAO.getAllCloudProviders(access.getGraphDatabaseService())) {
-            for (ServiceUnit unit : ServiceUnitDAO.getCloudServiceUnitsForCloudProviderNode(cloudProvider.getId(), access.getGraphDatabaseService())) {
+            for (CloudOfferedService unit : ServiceUnitDAO.getCloudServiceUnitsForCloudProviderNode(cloudProvider.getId(), access.getGraphDatabaseService())) {
                 System.out.println(unit.getId() + " " + unit.getName());
             }
         }

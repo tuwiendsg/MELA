@@ -62,8 +62,6 @@ public class TestDataCollectionAndAggregation {
 //    @Value("#{persistenceDelegate}")
     private PersistenceSQLAccess persistenceDelegate;
 
-    private org.hsqldb.Server server;
-
     public TestDataCollectionAndAggregation() {
     }
 
@@ -79,35 +77,13 @@ public class TestDataCollectionAndAggregation {
     @Before
     public void setUp() {
         try {
-            server = new org.hsqldb.Server();
-            server.setLogWriter(null);
-            server.setRestartOnShutdown(false);
-            server.setNoSystemExit(true);
-            server.setPort(9001);
-
-            if (System.getProperty("os.name").contains("Windows")) {
-                server.setDatabasePath(0, "C:\\Windows\\Temp\\mela_test_data_service");
-            } else {
-                server.setDatabasePath(0, "/tmp/test/mela_data_service");
-            }
-            server.setDatabaseName(0, "mela");
-
+             //run hsql in memory only for testing purposes
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setUrl("jdbc:hsqldb:hsql://localhost:9001/mela;hsqldb.cache_rows=100;hsqldb.log_data=false");
+            dataSource.setUrl("jdbc:hsqldb:mem:mela-test-db");
             dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
             dataSource.setUsername("sa");
             dataSource.setPassword("");
-
-            log.debug("HSQL Database path: " + server.getDatabasePath(0, true));
-            log.info("Starting HSQL Server database '" + server.getDatabaseName(0, true) + "' listening on port: "
-                    + server.getPort());
-            server.start();
-            // server.start() is synchronous; so we should expect online status from server.
-            Assert.isTrue(server.getState() == ServerConstants.SERVER_STATE_ONLINE,
-                    "HSQLDB could not be started. Maybe another instance is already running on " + server.getAddress()
-                    + ":" + server.getPort() + " ?");
-            log.info("Started HSQL Server");
-
+ 
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
             //read content of sql schema
@@ -137,7 +113,6 @@ public class TestDataCollectionAndAggregation {
 
     @After
     public void tearDown() {
-        server.shutdown();
     }
 
     /**

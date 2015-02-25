@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 
 import java.util.List;
 
@@ -149,10 +149,17 @@ public class CostEvalService {
     }
 
     @GET
-    @Path("/{serviceID}/cost/instant/json")
+    @Path("/{serviceID}/cost/instant/json/tree")
     @Produces("application/json")
     public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getInstantCostJSON(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/instant/json/piechart")
+    @Produces("application/json")
+    public String getInstantCostForServiceJSONAsPieChart(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getInstantCostForServiceJSONAsPieChart(serviceID);
     }
 
     @GET

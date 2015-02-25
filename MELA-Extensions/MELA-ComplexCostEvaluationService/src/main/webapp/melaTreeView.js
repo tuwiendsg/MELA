@@ -26,85 +26,6 @@ function contains(children, child) {
     return -1;
 }
 
-function updateTextOnNode(node, new_root, change) {
-
-    if (node.actionName || new_root.actionName) {
-        //node.name = new_root.name + ": " + new_root.actionName;
-        node.attention = new_root.attention;
-        node.actionName = new_root.actionName;
-    }
-
-    node.name = new_root.name;
-    if (!node.children) {
-        node.children = [];
-    }
-
-
-    //check if some new nodes have appeared
-    if (node.children.length < new_root.children.length) {
-        //for all new children
-        for (var index = 0; index < new_root.children.length; index++) {
-            //if the children are not metrics
-            if (new_root.children[index].type.match(/SERVIC.*|V.*/g)) {
-                //if new root child DOES NOT ALLREADY EXIST
-                if (contains(node.children, new_root.children[index]) == -1) {
-                    node.children.push(new_root.children[index]);
-                    update(node);
-                    change = 0;
-                }
-            }
-        }
-    }
-
-    //check if nodes need to be removed
-    if (node.children.length > new_root.children.length) {
-        for (var index = 0; index < node.children.length; index++) {
-            if (node.children[index].type.match(/SERVIC.*|V.*/g)) {
-                if (contains(new_root.children, node.children[index]) == -1) {
-                    node.children.splice(index, 1);
-                    change = 0;
-                }
-            }
-        }
-    }
-
-    //remove all metrics, requirements and conditions so that they can be updated
-    for (var index = 0; index < node.children.length; index++) {
-        var oldEntry = node.children[index];
-        if (!oldEntry.type.match(/SERVIC.*|V.*/g)) {
-            node.children.splice(index, 1);
-            //start over
-            index = -1;
-        }
-    }
-
-
-    //add all new metrics so that they can be updated
-    for (var index = 0; index < new_root.children.length; index++) {
-        var newEntry = new_root.children[index];
-        if (!newEntry.type.match(/SERVIC.*|V.*/g)) {
-            node.children.push(newEntry);
-        }
-    }
-
-    //update all children not metrics
-    for (var index = 0; index < node.children.length; index++) {
-        var oldEntry = node.children[index];
-        if (oldEntry.type.match(/SERVIC.*|V.*/g)) {
-            //find the element int the new children that matches this
-            for (var indexNew = 0; indexNew < new_root.children.length; indexNew++) {
-                var newEntry = new_root.children[indexNew];
-                if (newEntry.type.match(/SERVIC.*|V.*/g)) {
-                    if (oldEntry.name == newEntry.name) {
-                        updateTextOnNode(oldEntry, newEntry);
-                    }
-                }
-            }
-        }
-    }
-
-}
-
 
 var selectedMetric;
 var simpleComponentIcon = "m 5,10 c 1.7265,0.251 5.7035,0.0355 4.8055,2.6145 -0.9305,2.0335 -3.066,3.827 0.214,4.8855 1.9925,0.6435 10.717,1.143 9.7905,-2.5835 -1.1255,-1.2255 -2.5535,-2.4125 -1.2315,-4.0245 2.8935,-0.552 5.8135,-0.9665 8.747,-1.2365 2.779,-0.2555 5.01138,-0.3785 7.80388,-0.3535 0,0 0.0342,-28.8233 0,-28.782 l -42.17988,0 c -0.7375,3.8525 -0.9175,8.9665 1.1535,10.61 3.0355,1.834 7.6995,-3.225 9.5015,0.7885 1.384,3.0825 -0.1075,8.324 -4.242,6.515 -4.9185,-2.1525 -7.189,0.88 -6.7055,6.19 0.1545,1.6955 0.472,3.214 0.701,4.702 3.891,-0.081 7.791,0.114 11.642,0.6745 z";
@@ -135,9 +56,11 @@ var basisLineFunction = d3.svg.line()
 var treeVisualisationMargin = {top: 10, right: 0, bottom: 20, left: 10};
 var tree;
 var treeVisualization;
+var treeVisualizationRoot;
 var treeRootNode;
 var spaceType;
 var serviceID;
+
 function setupTreeView(service, targetDIV_ID, w, h, type) {
     serviceID = this.service;
     if (!spaceType) {
@@ -155,7 +78,9 @@ function setupTreeView(service, targetDIV_ID, w, h, type) {
     tree = d3.layout.tree()
             .size([height, width]);
 
-    treeVisualization = d3.select("#" + targetDIV_ID).append("svg")
+    treeVisualizationRoot = d3.select("#" + targetDIV_ID);
+            
+     treeVisualization = treeVisualizationRoot.append("svg")
             .attr("width", width + treeVisualisationMargin.right + treeVisualisationMargin.left)
             .attr("height", height + treeVisualisationMargin.top + treeVisualisationMargin.bottom)
             .append("g")
@@ -204,6 +129,15 @@ function clean(d, nodeType) {
 
 
 function update(source) {
+    
+    treeVisualizationRoot.selectAll("svg").remove();
+           
+    treeVisualization = treeVisualizationRoot.append("svg")
+            .attr("width", width + treeVisualisationMargin.right + treeVisualisationMargin.left)
+            .attr("height", height + treeVisualisationMargin.top + treeVisualisationMargin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + treeVisualisationMargin.left + "," + treeVisualisationMargin.top + ")");
+    
 
     // Compute the new tree layout.
     var nodes = tree.nodes(treeRootNode).reverse();
@@ -427,13 +361,8 @@ function update(source) {
                 } else {
                     return "translate(" + d.y + "," + d.x + ")";
                 }
-            })
-
-    //console.log(node.name)
-
-
-
-
+            });
+ 
     nodeUpdate.select("path")
             .attr("r", function (d) {
                 return 4.5;
@@ -474,62 +403,9 @@ function update(source) {
 
 
     // Transition exiting nodes to the parent's new position.
-    var nodeExit = node.exit().transition()
-            .duration(function (d) {
-                if (d.type.match(/SERVIC.*|V.*/g)) {
-                    return duration;
-                } else {
-                    return 0;
-                }
-            })
-            .attr("transform", function (d) {
-                return "translate(" + source.y + "," + source.x + ")";
-            })
+    var nodeExit = node.exit()
             .remove();
-
-    nodeExit.select("circle")
-            .attr("r", function (d) {
-                return d.value ? 0 : 8;
-            });
-
-    nodeExit.select("text")
-            .attr("text-anchor", function (d) {
-                return d.value || d.ip || d.children ? "end" : "start";
-            })
-            .attr("dy", -5)
-            .style("font-size", function (d) {
-                return (d.type == "metric") ? 14 : 18;
-            })
-            .attr("font-style", function (d) {
-                return d.children ? "normal" : "italic";
-            })
-            .style("fill-opacity", 1e-6);
-//
-//    nodeEnter.append("text")
-//            .attr("dx", function (d) {
-//                return d.value ? 10 : 5;
-//            })
-//            .attr("dy", function (d) {
-//                return d.value ? 0 : 10;
-//            })
-//            .style("font-size", function (d) {
-//                return (d.type == "metric") ? 14 : 18;
-//            })
-//            .attr("text-anchor", function (d) {
-//                return d.ip ? "end" : "start";
-//            })
-//            .attr("font-style", function (d) {
-//                return d.children ? "normal" : "italic";
-//            })
-//            .text(function (d) {
-//                if (d.attention) {
-//                    return d.name + ": " + d.actionName;
-//                } else if (d.type == "VM") {
-//                    return d.name;
-//                } else {
-//                    return d.name;
-//                }
-//            });
+ 
 
     // Update the links…
     var link = treeVisualization.selectAll("path.link")

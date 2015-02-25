@@ -12,7 +12,7 @@ import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -51,7 +51,7 @@ public class SimpleCostDescriptionTest extends TestCase {
         cloudServicesSpecification.addCloudProvider(provider);
 
         {
-            ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.small");
+            CloudOfferedService unit = new CloudOfferedService("IaaS", "VM", "m1.small");
             unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000000"));
 
             //VM COST
@@ -63,12 +63,12 @@ public class SimpleCostDescriptionTest extends TestCase {
                 unit.addCostFunction(vmCost);
             }
 
-            provider.addServiceUnit(unit);
+            provider.addCloudOfferedService(unit);
 
         }
 
         {
-            ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.medium");
+            CloudOfferedService unit = new CloudOfferedService("IaaS", "VM", "m1.medium");
             unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000001"));
             //VM COST
             {
@@ -79,12 +79,12 @@ public class SimpleCostDescriptionTest extends TestCase {
                 unit.addCostFunction(vmCost);
             }
 
-            provider.addServiceUnit(unit);
+            provider.addCloudOfferedService(unit);
 
         }
 
         {
-            ServiceUnit unit = new ServiceUnit("IaaS", "VM", "m1.large");
+            CloudOfferedService unit = new CloudOfferedService("IaaS", "VM", "m1.large");
             unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000002"));
             //VM COST
             {
@@ -95,11 +95,11 @@ public class SimpleCostDescriptionTest extends TestCase {
                 unit.addCostFunction(vmCost);
             }
 
-            provider.addServiceUnit(unit);
+            provider.addCloudOfferedService(unit);
 
         }
         {
-            ServiceUnit unit = new ServiceUnit("MaaS", "Network", "network");
+            CloudOfferedService unit = new CloudOfferedService("MaaS", "Network", "network");
             unit.withUuid(UUID.fromString("38400000-8cf0-11bd-b23e-000000000003"));
             //Data Transfer
             {
@@ -110,7 +110,7 @@ public class SimpleCostDescriptionTest extends TestCase {
                 cost.addCostElement(costElement);
                 unit.addCostFunction(cost);
             }
-            provider.addServiceUnit(unit);
+            provider.addCloudOfferedService(unit);
         }
 
         {

@@ -99,6 +99,7 @@ function setupPieVisualization(divID, trailDivID, w, h) {//, analyticsDivID) {
 //        analyticsDiv = d3.select("#" + analyticsDivID);
 //    }
 
+    b.h = Math.max(w / 20, 30);
 
     pieDiv = d3.select("#" + divID).append("div").attr("id", "ieDiv");
 
@@ -224,7 +225,7 @@ function drawPieChart(json) {
                     .text(function () {
                         if (thingBoundingBox) {
                             boxWidth = Math.max(thingBoundingBox.width, thingBoundingBox.height);
-                            if (boxWidth >= d.name.length * pieFontSize * 2 / 3) {
+                            if (boxWidth >= d.name.length * pieFontSize / 2) {
                                 return d.name;
                             } else {
                                 var splitMargin = (boxWidth - 3) / (pieFontSize * 2 / 3)
@@ -242,22 +243,30 @@ function drawPieChart(json) {
 
             var endAngle = Math.max(0, Math.min(2 * Math.PI, pieX(d.x + d.dx)));
 
-            //to align all to outmost radius
-            var outmostNode = nodes[nodes.length - 1];
+
+            var outmostNode = nodes.slice(0).sort(function (a, b) {
+                return a.depth > b.depth;
+            })[0];
 
             var outsideRadius = Math.max(0, pieY(outmostNode.y + outmostNode.dy));
+
             var arcRadius = Math.max(0, pieY(d.y + d.dy));
 
 
 //        var middleOfArc = d3.interpolateNumber(a, b);
 
             //text is placed on outsidemost ring
+
+            var parentTextpath = pieDiv.select("#path_" + d.uniqueID)[0][0];
+            var parentTextPathMiddlePoint = parentTextpath.getPointAtLength(parentTextpath.getTotalLength() / 3);
+
             var textStartPoint = {x: 0, y: 0};
             var arcStartPoint = {x: 0, y: 0};
             var arcEndPoint = {x: 0, y: 0};
 
             textStartPoint.x = outsideRadius;
-            textStartPoint.y = outsideRadius * Math.sin(startAngle) - 10;
+
+            textStartPoint.y = parentTextPathMiddlePoint.y;
 
             arcStartPoint.x = arcRadius * Math.cos(startAngle) - 10;
             arcStartPoint.y = arcRadius * Math.sin(startAngle);
@@ -266,16 +275,16 @@ function drawPieChart(json) {
             arcEndPoint.y = arcRadius * Math.sin(endAngle);
 
 
-            if (startAngle > Math.PI) {
-                textStartPoint.x = -textStartPoint.x - d.name.length * pieFontSize / 2.5;
+            if (parentTextPathMiddlePoint.x <= 0) {
+                textStartPoint.x = -outsideRadius;
                 arcStartPoint.x = -arcStartPoint.x;
 
             } else {
-                textStartPoint.x += 2 * pieFontSize;
-
+                textStartPoint.x = outsideRadius;
             }
 
             var arcCenter = {x: arcStartPoint.x, y: textStartPoint.y};
+            arcStartPoint = {x: parentTextPathMiddlePoint.x, y: parentTextPathMiddlePoint.y};
 
 
             //if no space to put text, put text near the drawing and draw a line to it
@@ -304,39 +313,55 @@ function drawPieChart(json) {
 //                        .text(d.name);
 
     //if outer text labels overlap each other, we must redistribute them
+    //if in same side of the pie, move them to have on vertical at least 2 font sizes
+    //so first we split ones in left, and right, and rearrange them
 
 
+    var leftSizeUpperLines = textLines
+            .filter(function (l) {
+                return l.line[0].x < 0 && l.line[0].y < 0;
+            })
+            .sort(function (a, b) {
+                return a.line[0].y < b.line[0].y;
+            });
 
-    for (var i = 0; i < textLines.length - 1; i++) {
-        //if next overlaps with current, push next down? or pull this up. no other option :P
-        var current = textLines[i].line;
-        var next = textLines[i + 1].line;
-        //try to keep a font size between them
-        //if both x coord have same sign
-        if ((next[0].x < 0 && current[0].x < 0) || (next[0].x > 0 && current[0].x > 0)) {
-            if (Math.abs(next[0].y) < Math.abs(current[0].y) + 2 * pieFontSize) {
-                next[0].y = current[0].y + pieFontSize;
-            }
+    var leftSizeLowerLines = textLines.filter(function (l) {
+        return l.line[0].x < 0 && l.line[0].y >= 0;
+    });
+
+    var rightSizeLinesUpper = textLines
+            .filter(function (l) {
+                return l.line[0].x >= 0 && l.line[0].y < 0;
+            })
+            .sort(function (a, b) {
+                return a.line[0].y < b.line[0].y;
+            });
+    ;
+
+    var rightSizeLinesLower = textLines.filter(function (l) {
+        return l.line[0].x >= 0 && l.line[0].y >= 0;
+    });
+
+    shiftOverlappingCoordinates(leftSizeUpperLines, -pieFontSize);
+    shiftOverlappingCoordinates(leftSizeLowerLines, pieFontSize);
+
+    shiftOverlappingCoordinates(rightSizeLinesUpper, -pieFontSize);
+    shiftOverlappingCoordinates(rightSizeLinesLower, pieFontSize);
+
+
+    textLines = textLines.sort(function (a, b) {
+        if (a.line[0].y > 0 && b.line[0].y) {
+            return a.line[0].y < b.line[0].y;
+        } else {
+            return a.line[0].y > b.line[0].y;
         }
-
-
-        var textWidth = textLines[i].text.length * pieFontSize / 2;
-        if (current[0].x >= 0) {
-            textWidth = -textWidth;
-        }
-        //must also do a nice line from the text
-        //so I insert a point to the other end of the text to underline it nicely
-
-        var newLineData = [current[0], {x: current[0].x + textWidth, y: current[0].y}, current[1]];
-        textLines[i].line = newLineData;
-
-    }
+    });
 
     if (textLines.length > 0) {
-        var lastElIndex = textLines.length - 1;
-        var textWidth = textLines[lastElIndex].text.length * pieFontSize / 2;
-        var newLineData = [textLines[lastElIndex].line[0], {x: textLines[lastElIndex].line[0].x + textWidth, y: textLines[lastElIndex].line[0].y}, textLines[lastElIndex].line[1]];
-        textLines[lastElIndex].line = newLineData;
+//        var lastElIndex = textLines.length - 1;
+//        var textWidth = textLines[lastElIndex].text.length * pieFontSize / 2;
+//        var newLineData = [textLines[lastElIndex].line[0], {x: textLines[lastElIndex].line[0].x + textWidth, y: textLines[lastElIndex].line[0].y}, textLines[lastElIndex].line[1]];
+//        textLines[lastElIndex].line = newLineData;
 
 
         textLines.forEach(function (d) {
@@ -346,16 +371,25 @@ function drawPieChart(json) {
                     })
                     .attr("dy", function () {
                         return d.line[0].y;
-                    }).attr("anchor", "left")
-                    .text(d.text);
+                    })
+                    .attr("text-anchor", function () {
+                        if (d.line[0].x <= 0) {
+                            return "end";
+                        } else {
+                            return "start";
+                        }
+                    })
+                    .text(d.text)
+                    .style("font-size", pieFontSize + "px")
+                    ;
 
 //        //avoid underlining text
 //        if(d.line[0].x < 0){
 //            d.line = [d.line[1],d.line[2]];
 //        }
             pieChartVis.append("path").attr("d", lineFunction(d.line))
-                    .attr("stroke", "#383838")
-                    .attr("stroke-width", 0.5)
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 1)
                     .attr("fill", "none");
             ;
         });
@@ -363,8 +397,35 @@ function drawPieChart(json) {
 
 //has some needed side effects and the breadcrum/selection does not seem to work without
     pieChartSVG.selectAll("path").data(nodes);
-    // Get total size of the tree = value of root node from partition.
+// Get total size of the tree = value of root node from partition.
     pieTotalSize = json.value;
+}
+
+
+/**
+ * 
+ * @param {type} lines lines to shift if they overlap
+ * @param {shiftAmount} shiftSign if the shift should be done back (if shiftAmount is negative)
+ * @returns {undefined}
+ */
+function shiftOverlappingCoordinates(lines, shiftAmount) {
+
+    for (var i = 0; i < lines.length - 1; i++) {
+        var current = lines[i].line;
+        var next = lines[i + 1].line;
+        //try to keep a font size between them
+        //if both x coord have same sign
+
+        if (Math.abs(next[0].y) < Math.abs(current[0].y + shiftAmount)) {
+            next[0].y = next[0].y + shiftAmount;
+            for (var j = i + 2; j < lines.length; j++) {
+                lines[j].line[0].y = lines[j].line[0].y + shiftAmount;
+            }
+        }
+
+    }
+
+
 }
 
 function updatePieVisualization(json) {
@@ -372,6 +433,7 @@ function updatePieVisualization(json) {
     pieChartVis.remove();
     drawPieChart(json);
     if (highlightedNode) {
+       
         //need to find the updated node in current structure
 
         var nodesList = d3.layout.tree().nodes(json).reverse();
@@ -396,44 +458,45 @@ function updatePieVisualization(json) {
 
         var ancestors = getAncestors(nodeInUpdatedStructure);
         updateBreadcrumbs(ancestors, nodeInUpdatedStructure.size);
-        //old unselected nodes need to be made with less opacity
-        pieChartVis.selectAll("path")
-                //.style("opacity", 0.3)
-                .style("fill", function (d) {
-                    return mapNodesToColor(d, false);
-                });
 
-        pieChartVis.selectAll("path")
-                .filter(function (node) {
-                    return (ancestors.indexOf(node) >= 0);
-                })
-                //.style("opacity", 1)
-                .style("fill", function (d) {
-                    return mapNodesToColor(d, true);
-                })
-                .style("stroke", function (d) {
-                    return "#787878";
-                });
-        ;
+//        pieChartVis.selectAll("path")
+//
+//                .filter(function (d) {
+//                    return d;
+//                })
+//                //.style("opacity", 1)
+//                .style("fill", function (d) {
+//                    return mapNodesToColor(d, true);
+//                })
+//                .style("stroke", function (d) {
+//                    return "#787878";
+//                });
+     
+       mouseover(nodeInUpdatedStructure);
+       
     }
+    
+    
 
 
 }
 // Fade all but the current sequence, and show it in the breadcrumb trail.
 function clear() {
 
-    treeVisualization.selectAll("path").filter(function (node) {
-        var nodeToShade = this;
-        if (node.level && node.level == "metric") {
-            if (node.category == "COST") {
-                nodeToShade.style.fill = "#FFE773";
-            } else {
-                nodeToShade.style.fill = "gray";
+    if (treeVisualization) {
+        treeVisualization.selectAll("path").filter(function (node) {
+            var nodeToShade = this;
+            if (node.level && node.level == "metric") {
+                if (node.category == "COST") {
+                    nodeToShade.style.fill = "#FFE773";
+                } else {
+                    nodeToShade.style.fill = "gray";
+                }
             }
-        }
- 
 
-    });
+
+        });
+    }
     d3.select("#percentage")
             .text("");
     d3.select("#explanation")
@@ -448,7 +511,9 @@ function clear() {
     // Fade all the segments.
 
     pieDiv.selectAll("path")
-            //.style("opacity", 1)
+            .filter(function (d) {
+                return d;
+            })
             .style("fill", function (d) {
                 return mapNodesToColor(d, false);
             })
@@ -652,12 +717,12 @@ function initializeBreadcrumbTrail(width) {
     var trail = trailDiv
             .append("svg:svg")
             .attr("width", width)
-            .attr("height", 50)
+            .attr("height", b.h)
             .attr("id", "trail");
     // Add the label at the end, for the percentage.
     trail.append("svg:text")
             .attr("id", "endlabel")
-            .style("fill", "#000");
+            .style("fill", "#000").style("font-size", pieFontSize + "px");
 }
 
 var trailPointsWidth = [];
@@ -709,6 +774,7 @@ function updateBreadcrumbs(nodeArray, percentageString) {
             })
             .attr("y", b.h / 2)
             .attr("dy", "0.35em")
+            .style("font-size", pieFontSize + "px")
             .attr("text-anchor", "middle")
             .text(function (d) {
                 return d.name;

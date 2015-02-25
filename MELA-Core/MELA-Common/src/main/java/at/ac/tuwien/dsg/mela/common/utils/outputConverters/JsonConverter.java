@@ -451,7 +451,9 @@ public class JsonConverter {
                 JSONArray metrics = new JSONArray();
                 if (monitoredData.containsKey(element.getLevel())) {
                     MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = monitoredData.get(element.getLevel()).get(element);
-
+                    if(monitoredElementMonitoringSnapshot == null){
+                        continue;
+                    }
                     List<Action> actions = monitoredElementMonitoringSnapshot.getExecutingActions();
                     //currently showing only first action
                     String actionsName = "";

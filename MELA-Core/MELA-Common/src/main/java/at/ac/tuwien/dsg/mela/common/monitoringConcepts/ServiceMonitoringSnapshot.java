@@ -354,25 +354,39 @@ public class ServiceMonitoringSnapshot implements Serializable {
         clone.timestamp = "" + timestamp;
         clone.timestampID = timestampID;
 
-        MonitoredElementMonitoringSnapshot serviceSnapshot = this.getMonitoredData(this.getMonitoredService()).clone();
-        
+        MonitoredElement service = this.getMonitoredService().clone();
+        MonitoredElementMonitoringSnapshot serviceSnapshot = monitoredData.get(service.getLevel()).get(service).clone();
+
         Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> clonedMonitoredData = new HashMap<>();
 
+        //udate the cloned snapshot with cloned service
         for (MonitoredElementMonitoringSnapshot elementMonitoringSnapshot : serviceSnapshot) {
 
-            MonitoredElement element = elementMonitoringSnapshot.getMonitoredElement();
+            MonitoredElement clonedElement = null;
 
-            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> elementClonedData;
-
-            if (clonedMonitoredData.containsKey(element.getLevel())) {
-                elementClonedData = clonedMonitoredData.get(element.getLevel());
-            } else {
-                elementClonedData = new HashMap<>();
-                clonedMonitoredData.put(element.getLevel(), elementClonedData);
+            {
+                MonitoredElement element = elementMonitoringSnapshot.getMonitoredElement();
+                //search the coresponding element in the cloned service
+                for (MonitoredElement me : service) {
+                    if (element.equals(me)) {
+                        clonedElement = element;
+                        //update cloned element on snapshot
+                        elementMonitoringSnapshot.withMonitoredElement(clonedElement);
+                    }
+                }
             }
 
-            elementClonedData.put(element, elementMonitoringSnapshot);
+            //if clonedMonitoredData is null, then we had a big problem in cloning the MonitoredElement, so 
+            //no check here, as the error, if appears, show code bug
+            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> levelData;
+            if (clonedMonitoredData.containsKey(clonedElement.getLevel())) {
+                levelData = clonedMonitoredData.get(clonedElement.getLevel());
+            } else {
+                levelData = new HashMap<>();
+                clonedMonitoredData.put(clonedElement.getLevel(), levelData);
+            }
 
+            levelData.put(clonedElement, elementMonitoringSnapshot);
         }
 
         clone.monitoredData = clonedMonitoredData;
