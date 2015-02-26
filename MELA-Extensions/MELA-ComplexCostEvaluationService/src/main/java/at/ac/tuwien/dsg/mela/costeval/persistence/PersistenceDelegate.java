@@ -577,11 +577,44 @@ public class PersistenceDelegate {
                 jdbcTemplate.update(sql, serviceID);
             }
 
-             persistenceSQLAccess.removeMonitoringSequenceId(serviceID);
+            persistenceSQLAccess.removeMonitoringSequenceId(serviceID);
         } else {
             log.debug("sequenceId " + serviceID + " not found from in MontoringSeq");
         }
 
+    }
+
+    public List<ServiceMonitoringSnapshot> extractStructuredMonitoringData(int timestamp, String monitoringSequenceID) {
+        return persistenceSQLAccess.extractStructuredMonitoringData(timestamp, monitoringSequenceID);
+    }
+
+    public List<ServiceMonitoringSnapshot> extractStructuredMonitoringDataFromTimestamp(long timestamp, String monitoringSequenceID) {
+
+        return persistenceSQLAccess.extractStructuredMonitoringDataFromTimestamp(timestamp, monitoringSequenceID);
+
+    }
+
+    public List<ServiceMonitoringSnapshot> extractStructuredMonitoringData(String monitoringSequenceID) {
+        return persistenceSQLAccess.extractStructuredMonitoringData(monitoringSequenceID);
+
+    }
+
+    public void writeMonitoringSequenceId(String sequenceId) {
+        persistenceSQLAccess.writeMonitoringSequenceId(sequenceId);
+    }
+
+    /**
+     * @param monitoringSequenceID IF of the service for which configuration
+     * will be stored
+     * @param configurationXMLRepresentation the used MELA configuration to be
+     * persisted in XML and reused
+     */
+    public void writeConfiguration(String monitoringSequenceID, final ConfigurationXMLRepresentation configurationXMLRepresentation) {
+        persistenceSQLAccess.writeConfiguration(monitoringSequenceID, configurationXMLRepresentation);
+    }
+    
+    public void writeInTimestamp(String timestamp, MonitoredElement serviceStructure, String monitoringSequenceID) {
+       persistenceSQLAccess.writeInTimestamp(timestamp, serviceStructure, monitoringSequenceID);
     }
 
 }

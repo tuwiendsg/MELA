@@ -34,9 +34,7 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
-
-import java.util.List;
+import org.apache.cxf.common.i18n.UncheckedException;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -295,6 +293,28 @@ public class CostEvalService {
     @Consumes("application/xml")
     public void removeServiceDescription(@PathParam("serviceID") String serviceID) {
         costEvalManager.removeService(serviceID);
+    }
+
+    /**
+     * Used to replay existing monitoring information with this updated list of
+     * cloud offered services So only the cloud offered services are replaced.
+     * As after elasticity actions, you might have added/removed VMs To work OK,
+     * you need to provide the complete description here, containing all VMs
+     * ever used by the service. Using this struct, for each stored service
+     * structure before, we fo for each element, if exists in submitted struct,
+     * set updated services. Otherwise, delete any used services.
+     *
+     * @param element the service topology to be monitored
+     */
+    @PUT
+    @Path("/service/emulate/{newName}")
+    @Consumes("application/xml")
+    public void putServiceDescription(MonitoredElement element, @PathParam("newName") String newname) {
+        if (element != null) {
+            costEvalManager.emulateServiceWithOtherUsedCloudOfferedServices(element, newname);
+        } else {
+            throw new UncheckedException(new Throwable("Supplied Monitored Element is null"));
+        }
     }
 
 }

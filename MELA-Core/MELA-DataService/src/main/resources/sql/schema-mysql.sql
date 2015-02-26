@@ -9,6 +9,7 @@ drop table IF EXISTS ElasticitySpace;
 drop table IF EXISTS AggregatedData;
 drop table IF EXISTS Configuration;
 drop table IF EXISTS RawCollectedData;
+drop table IF EXISTS StructuredCollectedData;
 drop table IF EXISTS Timestamp;
 drop table IF EXISTS MonitoringSeq;
 
@@ -17,6 +18,7 @@ create table Timestamp (ID int AUTO_INCREMENT PRIMARY KEY, monSeqID VARCHAR(200)
 create table RawCollectedData (ID int AUTO_INCREMENT PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), metrictype VARCHAR(20), value VARCHAR(50),  monitoredElementID VARCHAR (50), monitoredElementLevel VARCHAR (50), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID));
 create table Configuration (ID int AUTO_INCREMENT PRIMARY KEY, monSeqID VARCHAR(200),configuration LONGTEXT, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID));
 create table AggregatedData (ID int AUTO_INCREMENT PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  LONGBLOB, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
+create table StructuredCollectedData (ID int AUTO_INCREMENT PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  LONGBLOB, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
 create table ElasticitySpace (ID int AUTO_INCREMENT PRIMARY KEY, monSeqID VARCHAR(200),  startTimestampID int, endTimestampID int, elasticitySpace  LONGBLOB, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (startTimestampID) REFERENCES Timestamp(ID), FOREIGN KEY (endTimestampID) REFERENCES Timestamp(ID) );
 create table ElasticityPathway (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticityPathway  LONGBLOB, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
 create table ElasticityDependency (ID int AUTO_INCREMENT PRIMARY KEY, monSeqID VARCHAR(200), startTimestampID int, endTimestampID int, elasticityDependency LONGTEXT, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (startTimestampID) REFERENCES Timestamp(ID), FOREIGN KEY (endTimestampID) REFERENCES Timestamp(ID) );

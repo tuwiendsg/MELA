@@ -1,24 +1,18 @@
-drop table IF EXISTS InstantCostElasticitySpace
-drop table IF EXISTS TotalCostHistory
-drop table IF EXISTS InstantCostHistory
-drop table IF EXISTS CaschedHistoricalUsage
-drop table IF EXISTS CaschedCompleteHistoricalUsage
-drop table IF EXISTS Configuration
-drop table IF EXISTS RawCollectedData
-drop table IF EXISTS Timestamp
-drop table IF EXISTS MonitoringSeq
-
-create CACHED table IF NOT EXISTS MonitoringSeq (ID VARCHAR(200) PRIMARY KEY)
-create CACHED table IF NOT EXISTS Timestamp (ID int IDENTITY, monSeqID VARCHAR(200), timestamp BIGINT, serviceStructure LONGVARCHAR )
-create CACHED table IF NOT EXISTS RawCollectedData (ID int IDENTITY, monSeqID VARCHAR(200), timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), metrictype VARCHAR(20), value VARCHAR(50),  monitoredElementID VARCHAR (50), monitoredElementLevel VARCHAR (50))
-create CACHED table IF NOT EXISTS Configuration (ID int IDENTITY, monSeqID VARCHAR(200),configuration LONGVARCHAR);
-create CACHED table IF NOT EXISTS CaschedHistoricalUsage (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  OTHER);
-create CACHED table IF NOT EXISTS CaschedCompleteHistoricalUsage (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  OTHER);
-create CACHED table IF NOT EXISTS InstantCostHistory (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  OTHER);
-create CACHED table IF NOT EXISTS TotalCostHistory (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  OTHER);
-create CACHED table IF NOT EXISTS InstantCostElasticitySpace (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200),  startTimestampID int, endTimestampID int, elasticitySpace OTHER)
-create CACHED table IF NOT EXISTS InstantCostElasticityPathway (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200),  timestampID int, elasticityPathway OTHER )
-
-
+ create CACHED table MonitoringSeq (ID VARCHAR(200) PRIMARY KEY)
+create CACHED table Timestamp (ID int IDENTITY, monSeqID VARCHAR(200), timestamp BIGINT, serviceStructure LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID) )
+create CACHED table RawCollectedData (ID int IDENTITY, monSeqID VARCHAR(200), timestampID int, metricName VARCHAR(100), metricUnit VARCHAR(100), metrictype VARCHAR(20), value VARCHAR(50),  monitoredElementID VARCHAR (50), monitoredElementLevel VARCHAR (50), FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID))
+create CACHED table StructuredCollectedData (ID int IDENTITY, monSeqID VARCHAR(200), timestampID int, data OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
+create CACHED table Configuration (ID int IDENTITY, monSeqID VARCHAR(200),configuration LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID))
+create CACHED table AggregatedData (ID int IDENTITY, monSeqID VARCHAR(200), timestampID int, data OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
+create CACHED table ElasticitySpace (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200),  startTimestampID int, endTimestampID int, elasticitySpace OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (startTimestampID) REFERENCES Timestamp(ID), FOREIGN KEY (endTimestampID) REFERENCES Timestamp(ID) )
+create CACHED table ElasticityPathway (monSeqID VARCHAR(200) PRIMARY KEY, timestampID int, elasticityPathway OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
+create CACHED table ElasticityDependency (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), startTimestampID int, endTimestampID int, elasticityDependency LONGVARCHAR, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (startTimestampID) REFERENCES Timestamp(ID), FOREIGN KEY (endTimestampID) REFERENCES Timestamp(ID) )
+create CACHED table Events (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), event VARCHAR(200), flag VARCHAR(10))
+create CACHED table  CaschedHistoricalUsage (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
+create CACHED table  CaschedCompleteHistoricalUsage (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
+create CACHED table  InstantCostHistory (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
+create CACHED table  TotalCostHistory (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, data  OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) );
+create CACHED table  InstantCostElasticitySpace (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200),  startTimestampID int, endTimestampID int, elasticitySpace OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (startTimestampID) REFERENCES Timestamp(ID), FOREIGN KEY (endTimestampID) REFERENCES Timestamp(ID) )
+create CACHED table  InstantCostElasticityPathway (ID int IDENTITY PRIMARY KEY, monSeqID VARCHAR(200), timestampID int, elasticityPathway OTHER, FOREIGN KEY (monSeqID) REFERENCES MonitoringSeq(ID), FOREIGN KEY (timestampID) REFERENCES Timestamp(ID) )
 
 

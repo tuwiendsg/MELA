@@ -19,6 +19,7 @@
  */
 package at.ac.tuwien.dsg.mela.costeval.control;
 
+import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.XmlConverter;
@@ -43,6 +44,7 @@ import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import at.ac.tuwien.dsg.quelle.descriptionParsers.CloudDescriptionParser;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
+import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import org.apache.cxf.common.i18n.UncheckedException;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -103,6 +106,9 @@ public class CostEvalManager {
     @Autowired
     private ApplicationContext context;
 
+    @Autowired
+    private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
+
     private ExecutorService threadExecutorService;
 
 //    //TODO: persist this
@@ -141,9 +147,9 @@ public class CostEvalManager {
     public void setPersistenceDelegate(PersistenceDelegate persistenceDelegate) {
         this.persistenceDelegate = persistenceDelegate;
     }
-    
-    public void removeService(String serviceID){
-          this.persistenceDelegate.removeService(serviceID);
+
+    public void removeService(String serviceID) {
+        this.persistenceDelegate.removeService(serviceID);
     }
 
     @PostConstruct
@@ -493,6 +499,7 @@ public class CostEvalManager {
         }
 
     }
+
     public String getInstantCostForServiceJSONAsPieChart(String serviceID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
@@ -593,7 +600,6 @@ public class CostEvalManager {
             //retrieve the previousely computed total usage, as the computation of the instant cost destr
 //            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
             //create rules for metrics for total cost based on usage so far
-            
             CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCost(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot.getTimestamp());
             ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
 
@@ -955,4 +961,187 @@ public class CostEvalManager {
         }
         return array.toJSONString();
     }
+
+    public void emulateServiceWithOtherUsedCloudOfferedServices(MonitoredElement service, String newname) {
+        Date before = new Date();
+        Map<MonitoredElement, List<UsedCloudOfferedService>> usedServicesMap = new HashMap<>();
+        for (MonitoredElement element : service) {
+            usedServicesMap.put(element, element.getCloudOfferedServices());
+        }
+
+        //get allready monitored service
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(service.getId());
+        if (cfg == null) {
+            throw new UncheckedException(new Throwable("Service with ID " + service.getId() + " not found in mon data"));
+        }
+
+        final List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+            throw new UncheckedException(new Throwable("No cloud providers found in repository. Cannot compute cost"));
+
+        }
+
+        Map<UUID, Map<UUID, CloudOfferedService>> cloudProvidersMap = costEvalEngine.cloudProvidersToMap(cloudProviders);
+
+        CompositionRulesConfiguration compositionRulesConfiguration = cfg.getCompositionRulesConfiguration();
+
+        //for each Structured Monitoring Information Stored, we need to extract it, update used services, aggregate it, then apply cost rules
+        MonitoredElement prevService = cfg.getServiceConfiguration();
+
+        //if space is not null, update it with new data
+        List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceDelegate.extractStructuredMonitoringData(prevService.getId());
+
+        //extract usage so far only once, and just add to it.
+        LifetimeEnrichedSnapshot usageSoFar = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(newname);
+        persistenceDelegate.writeMonitoringSequenceId(newname);
+        persistenceDelegate.writeConfiguration(newname, new ConfigurationXMLRepresentation().withServiceConfiguration(prevService.clone().withId(newname)).withCompositionRulesConfiguration(cfg.getCompositionRulesConfiguration()).withRequirements(cfg.getRequirements()));
+
+        //as the above method retrieves in steps of 1000 the data to avoids killing the HSQL
+        while (!dataFromTimestamp.isEmpty()) {
+            //gets data after the supplied timestamp
+
+            int nextTimestamp = dataFromTimestamp.get(dataFromTimestamp.size() - 1).getTimestampID();
+            for (ServiceMonitoringSnapshot snapshot : dataFromTimestamp) {
+                MonitoredElement snapshotServicfCFG = snapshot.getMonitoredService();
+                MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = snapshot.getMonitoredData(snapshotServicfCFG);
+                //change used cloud services
+                for (MonitoredElement element : snapshotServicfCFG) {
+                    if (usedServicesMap.containsKey(element)) {
+                        element.setCloudOfferedServices(usedServicesMap.get(element));
+                    } else {
+                        //maybe in this proposed structure the element does not use services anymore
+                        element.getCloudOfferedServices().clear();
+                    }
+                }
+                snapshot.getMonitoredData().remove(MonitoredElement.MonitoredElementLevel.SERVICE);
+                snapshotServicfCFG.setId(newname);
+                elementMonitoringSnapshot.withMonitoredElement(snapshotServicfCFG);
+                snapshot.addMonitoredData(elementMonitoringSnapshot);
+
+                //persist new added struct
+                persistenceDelegate.writeInTimestamp(snapshot.getTimestamp(), snapshotServicfCFG, newname);
+//aggregate struct data
+                ServiceMonitoringSnapshot aggregated = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, snapshot);
+                //update total usage
+                LifetimeEnrichedSnapshot updatedUsage;
+                if (usageSoFar == null) {
+                    updatedUsage = new LifetimeEnrichedSnapshot().withSnapshot(aggregated).withLastUpdatedTimestampID(aggregated.getTimestampID());
+                } else {
+                    updatedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, usageSoFar, aggregated);
+                }
+                //persist instant cost
+                LifetimeEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(updatedUsage);
+
+                //compute composition rules to create instant cost based on total usage so far
+                CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCost(cloudProvidersMap, cfg.getServiceConfiguration(), cleanedCostSnapshot, aggregated.getTimestamp());
+                ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, aggregated);
+
+                //persist instant cost
+                persistenceDelegate.persistInstantCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(block)
+                        .withLastUpdatedTimestampID(enrichedSnapshot.getTimestampID()).withSnapshot(enrichedSnapshot));
+
+                //create rules for metrics for total cost based on usage so far
+                CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCost(cloudProvidersMap, updatedUsage, aggregated.getTimestamp());
+                ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, updatedUsage.getSnapshot());
+
+                //persist mon snapshot enriched with total cost 
+                persistenceDelegate.persistTotalCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(totalCostBlock)
+                        .withLastUpdatedTimestampID(snapshotWithTotalCost.getTimestampID()).withSnapshot(snapshotWithTotalCost));
+
+            }
+            //continue
+
+            dataFromTimestamp = persistenceDelegate.extractStructuredMonitoringData(nextTimestamp, prevService.getId());
+
+        }
+
+        //update elasticity space for instant and total cost
+        updateAndGetInstantCostElasticitySpace(newname);
+
+        //update instant and total cost elasticity spaces and persist them
+//        ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceDelegate.extractLatestMonitoringData(cfg.getServiceConfiguration().getId());
+        Date after = new Date();
+        log.debug("emulateServiceWithOtherUsedCloudOfferedServices:  " + new Date(after.getTime() - before.getTime()).getTime());
+
+    }
+
+    public CostEvalManager withInstantMonitoringDataAnalysisEngine(final InstantMonitoringDataAnalysisEngine instantMonitoringDataAnalysisEngine) {
+        this.instantMonitoringDataAnalysisEngine = instantMonitoringDataAnalysisEngine;
+        return this;
+    }
+
+    public CostEvalManager withCostEvalEngine(final CostEvalEngine costEvalEngine) {
+        this.costEvalEngine = costEvalEngine;
+        return this;
+    }
+
+    public CostEvalManager withPersistenceDelegate(final PersistenceDelegate persistenceDelegate) {
+        this.persistenceDelegate = persistenceDelegate;
+        return this;
+    }
+
+    public CostEvalManager withJsonConverter(final CostJSONConverter jsonConverter) {
+        this.jsonConverter = jsonConverter;
+        return this;
+    }
+
+    public CostEvalManager withXmlConverter(final XmlConverter xmlConverter) {
+        this.xmlConverter = xmlConverter;
+        return this;
+    }
+
+    public CostEvalManager withDataAccess(final DataAccess dataAccess) {
+        this.dataAccess = dataAccess;
+        return this;
+    }
+
+    public CostEvalManager withContext(final ApplicationContext context) {
+        this.context = context;
+        return this;
+    }
+
+    public CostEvalManager withInstantMonitoringDataEnrichmentEngine(final DataAggregationEngine instantMonitoringDataEnrichmentEngine) {
+        this.instantMonitoringDataEnrichmentEngine = instantMonitoringDataEnrichmentEngine;
+        return this;
+    }
+
+    public CostEvalManager withThreadExecutorService(final ExecutorService threadExecutorService) {
+        this.threadExecutorService = threadExecutorService;
+        return this;
+    }
+
+    public CostEvalManager withCachingIntervalInSeconds(final int cachingIntervalInSeconds) {
+        this.cachingIntervalInSeconds = cachingIntervalInSeconds;
+        return this;
+    }
+
+    public void setInstantMonitoringDataAnalysisEngine(InstantMonitoringDataAnalysisEngine instantMonitoringDataAnalysisEngine) {
+        this.instantMonitoringDataAnalysisEngine = instantMonitoringDataAnalysisEngine;
+    }
+
+    public void setCostEvalEngine(CostEvalEngine costEvalEngine) {
+        this.costEvalEngine = costEvalEngine;
+    }
+
+    public void setJsonConverter(CostJSONConverter jsonConverter) {
+        this.jsonConverter = jsonConverter;
+    }
+
+    public void setXmlConverter(XmlConverter xmlConverter) {
+        this.xmlConverter = xmlConverter;
+    }
+
+    public void setDataAccess(DataAccess dataAccess) {
+        this.dataAccess = dataAccess;
+    }
+
+    public void setInstantMonitoringDataEnrichmentEngine(DataAggregationEngine instantMonitoringDataEnrichmentEngine) {
+        this.instantMonitoringDataEnrichmentEngine = instantMonitoringDataEnrichmentEngine;
+    }
+
+    public void setThreadExecutorService(ExecutorService threadExecutorService) {
+        this.threadExecutorService = threadExecutorService;
+    }
+
 }

@@ -228,7 +228,7 @@ function drawPieChart(json) {
                             if (boxWidth >= d.name.length * pieFontSize / 2) {
                                 return d.name;
                             } else {
-                                var splitMargin = (boxWidth - 3) / (pieFontSize * 2 / 3)
+                                var splitMargin = (boxWidth - 3) / (pieFontSize * 2 / 3);
                                 return d.name.substring(0, splitMargin) + "...";
                             }
                         } else {
@@ -276,11 +276,11 @@ function drawPieChart(json) {
 
 
             if (parentTextPathMiddlePoint.x <= 0) {
-                textStartPoint.x = -outsideRadius;
+                textStartPoint.x = -outsideRadius - 30;
                 arcStartPoint.x = -arcStartPoint.x;
 
             } else {
-                textStartPoint.x = outsideRadius;
+                textStartPoint.x = outsideRadius + 30;
             }
 
             var arcCenter = {x: arcStartPoint.x, y: textStartPoint.y};
@@ -288,9 +288,11 @@ function drawPieChart(json) {
 
 
             //if no space to put text, put text near the drawing and draw a line to it
+
             if (thingBoundingBox) {
+
                 boxWidth = Math.max(thingBoundingBox.width, thingBoundingBox.height);
-                if (boxWidth <= d.name.length * pieFontSize * 2 / 3) {
+                if (boxWidth <= d.name.length * pieFontSize * 2) {
 
                     //append line from text to its arc
                     var lineData = [{x: textStartPoint.x, y: textStartPoint.y}, {x: arcStartPoint.x, y: arcStartPoint.y}];
@@ -433,7 +435,7 @@ function updatePieVisualization(json) {
     pieChartVis.remove();
     drawPieChart(json);
     if (highlightedNode) {
-       
+
         //need to find the updated node in current structure
 
         var nodesList = d3.layout.tree().nodes(json).reverse();
@@ -471,12 +473,12 @@ function updatePieVisualization(json) {
 //                .style("stroke", function (d) {
 //                    return "#787878";
 //                });
-     
-       mouseover(nodeInUpdatedStructure);
-       
+
+        mouseover(nodeInUpdatedStructure);
+
     }
-    
-    
+
+
 
 
 }

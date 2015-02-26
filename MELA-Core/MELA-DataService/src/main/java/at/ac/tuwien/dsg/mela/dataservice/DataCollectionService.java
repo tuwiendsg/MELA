@@ -616,7 +616,13 @@ public class DataCollectionService {
                     if (serviceConfigurations.containsKey(serviceID)) {
                         log.debug("Refreshing data");
                         ServiceMonitoringSnapshot monitoringData = getRawMonitoringData(serviceID);
-
+                        {
+                            Date beforeTimestamp = new Date();
+                            persistenceSQLAccess.writeStructuredMonitoringData(monitoringData.getTimestamp(), monitoringData, serviceID);
+                            Date afterTimestamp = new Date();
+                            performanceLog.debug("StructuredMonitoringData persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
+                        }
+                        
                         if (monitoringData != null) {
                             List<ServiceMonitoringSnapshot> dataToAggregate = null;
 
