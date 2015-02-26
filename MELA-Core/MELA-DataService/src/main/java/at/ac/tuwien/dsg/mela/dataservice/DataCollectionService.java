@@ -370,6 +370,7 @@ public class DataCollectionService {
 
         if (!serviceConfigurations.containsKey(serviceID)) {
             log.error("Service with id \"" + serviceID + "\" not found");
+            compositionRulesConfigurations.put(serviceID, compositionRulesConfiguration);
             return;
         }
         MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
@@ -616,15 +617,28 @@ public class DataCollectionService {
                     if (serviceConfigurations.containsKey(serviceID)) {
                         log.debug("Refreshing data");
                         ServiceMonitoringSnapshot monitoringData = getRawMonitoringData(serviceID);
-                        {
-                            Date beforeTimestamp = new Date();
-                            persistenceSQLAccess.writeStructuredMonitoringData(monitoringData.getTimestamp(), monitoringData, serviceID);
-                            Date afterTimestamp = new Date();
-                            performanceLog.debug("StructuredMonitoringData persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
-                        }
-                        
+
                         if (monitoringData != null) {
                             List<ServiceMonitoringSnapshot> dataToAggregate = null;
+
+                            // write monitoring data in sql
+                            Date before = new Date();
+                            String timestamp = "" + new Date().getTime();
+
+                            Date beforePersisting = new Date();
+                            MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
+
+                            Date beforeTimestamp = new Date();
+                            persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration, serviceConfiguration.getId());
+                            Date afterTimestamp = new Date();
+                            performanceLog.debug("Timestamp persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
+
+                            {
+                                Date beforeStructured = new Date();
+                                persistenceSQLAccess.writeStructuredMonitoringData(timestamp, monitoringData, serviceID);
+                                Date afterStructured = new Date();
+                                performanceLog.debug("StructuredMonitoringData persistence time in ms:  " + new Date(afterStructured.getTime() - beforeStructured.getTime()).getTime());
+                            }
 
                             if (historicalMonitoringDatas.containsKey(serviceID)) {
                                 dataToAggregate = historicalMonitoringDatas.get(serviceID);
@@ -652,18 +666,6 @@ public class DataCollectionService {
                                 latestMonitoringData.setExecutingActions(actionsInExecution.get(serviceID));
                             }
 
-                            // write monitoring data in sql
-                            Date before = new Date();
-                            String timestamp = "" + new Date().getTime();
-
-                            Date beforePersisting = new Date();
-                            MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
-
-                            Date beforeTimestamp = new Date();
-                            persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration, serviceConfiguration.getId());
-                            Date afterTimestamp = new Date();
-
-                            performanceLog.debug("Timestamp persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
                             perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
                             //add same timestamp on all mon data
                             //this is something as a short-hand solution

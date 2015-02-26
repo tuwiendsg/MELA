@@ -226,9 +226,11 @@ function drawPieChart(json) {
                         if (thingBoundingBox) {
                             boxWidth = Math.max(thingBoundingBox.width, thingBoundingBox.height);
                             if (boxWidth >= d.name.length * pieFontSize / 2) {
+                                d.shortened = false;
                                 return d.name;
                             } else {
                                 var splitMargin = (boxWidth - 3) / (pieFontSize * 2 / 3);
+                                d.shortened = true;
                                 return d.name.substring(0, splitMargin) + "...";
                             }
                         } else {
@@ -292,7 +294,7 @@ function drawPieChart(json) {
             if (thingBoundingBox) {
 
                 boxWidth = Math.max(thingBoundingBox.width, thingBoundingBox.height);
-                if (boxWidth <= d.name.length * pieFontSize * 2) {
+                if (boxWidth <= d.name.length * pieFontSize * 2 && d.shortened) {
 
                     //append line from text to its arc
                     var lineData = [{x: textStartPoint.x, y: textStartPoint.y}, {x: arcStartPoint.x, y: arcStartPoint.y}];

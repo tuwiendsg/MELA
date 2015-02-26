@@ -164,6 +164,11 @@ public class PersistenceSQLAccess {
                 String sql = "delete from RawCollectedData where monSeqID= ?";
                 jdbcTemplate.update(sql, serviceID);
             }
+            {
+                log.debug("Removing StructuredCollectedData for " + serviceID);
+                String sql = "delete from StructuredCollectedData where monSeqID= ?";
+                jdbcTemplate.update(sql, serviceID);
+            }
 
             {
                 log.debug("Removing Timestamp for " + serviceID);
@@ -240,6 +245,22 @@ public class PersistenceSQLAccess {
 
         jdbcTemplate.update(sql, monitoringSnapshot, monitoringSequenceID, timestamp, monitoringSequenceID);
     }
+    
+    /**
+     * Aimed for writing structrued mon data, but NOT aggregated. Usefull in replaying mon data.
+     * @param timestamp
+     * @param monitoringSnapshot
+     * @param monitoringSequenceID 
+     */
+    public void writeStructuredMonitoringData(String timestamp, ServiceMonitoringSnapshot monitoringSnapshot, String monitoringSequenceID) {
+        // if the firstMonitoringSequenceTimestamp is null, insert new
+        // monitoring sequence
+        String sql = "INSERT INTO StructuredCollectedData (data, monSeqID, timestampID) "
+                + "VALUES (?, ?, (SELECT ID from Timestamp where timestamp=? AND monSeqID=?))";
+
+        jdbcTemplate.update(sql, monitoringSnapshot, monitoringSequenceID, timestamp, monitoringSequenceID);
+    }
+  
 
     public void writeElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
 
@@ -489,6 +510,21 @@ public class PersistenceSQLAccess {
         return jdbcTemplate.query(sql, rowMapper, timestamp+"",  monitoringSequenceID);
 
     }
+  public List<ServiceMonitoringSnapshot> extractStructuredMonitoringDataFromTimestamp(long timestamp, String monitoringSequenceID) {
+
+        String sql = "SELECT StructuredCollectedData.timestampID, Timestamp.timestamp, StructuredCollectedData.data from StructuredCollectedData INNER JOIN Timestamp "
+                + "ON StructuredCollectedData.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
+                + "AND StructuredCollectedData.monSeqID=?;";
+
+        RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
+            public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToSnapshot(rs);
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, timestamp+"",  monitoringSequenceID);
+
+    }
   
     public List<ServiceMonitoringSnapshot> extractMonitoringDataByTimeInterval(long timestamp, long endTimestampID, String monitoringSequenceID) {
 
@@ -555,6 +591,18 @@ public class PersistenceSQLAccess {
 
         return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, timestamp);
     }
+    
+    public List<ServiceMonitoringSnapshot> extractStructuredMonitoringData(int timestamp, String monitoringSequenceID) {
+        String sql = "SELECT StructuredCollectedData.timestampID, Timestamp.timestamp, StructuredCollectedData.data from StructuredCollectedData INNER JOIN Timestamp "
+                + "ON StructuredCollectedData.timestampID= Timestamp.ID where StructuredCollectedData.monSeqID=? and StructuredCollectedData.timestampID > ? LIMIT 1000;";
+        RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
+            public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToSnapshot(rs);
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, timestamp);
+    }
 
     /**
      * @return returns maximum count elements
@@ -562,6 +610,23 @@ public class PersistenceSQLAccess {
     public List<ServiceMonitoringSnapshot> extractMonitoringData(String monitoringSequenceID) {
         String sql = "SELECT AggregatedData.timestampID, Timestamp.timestamp, AggregatedData.data from AggregatedData INNER JOIN Timestamp "
                 + "ON AggregatedData.timestampID= Timestamp.ID where AggregatedData.monSeqID=? LIMIT 1000;";
+        RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
+            public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToSnapshot(rs);
+
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
+
+    }
+
+    /**
+     * @return returns maximum count elements
+     */
+    public List<ServiceMonitoringSnapshot> extractStructuredMonitoringData(String monitoringSequenceID) {
+        String sql = "SELECT StructuredCollectedData.timestampID, Timestamp.timestamp, StructuredCollectedData.data from StructuredCollectedData INNER JOIN Timestamp "
+                + "ON StructuredCollectedData.timestampID= Timestamp.ID where StructuredCollectedData.monSeqID=? LIMIT 1000;";
         RowMapper<ServiceMonitoringSnapshot> rowMapper = new RowMapper<ServiceMonitoringSnapshot>() {
             public ServiceMonitoringSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return mapToSnapshot(rs);
