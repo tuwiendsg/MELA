@@ -16,7 +16,6 @@ function include(filename)
 //include("http://code.jquery.com/ui/1.11.1/jquery-ui.js");
 //include("http://d3js.org/d3.v3.js");
 
-
 function contains(children, child) {
     for (var index = 0; index < children.length; index++) {
         if (children[index].name == child.name) {
@@ -79,15 +78,14 @@ function setupTreeView(service, targetDIV_ID, w, h, type) {
             .size([height, width]);
 
     treeVisualizationRoot = d3.select("#" + targetDIV_ID);
-            
-     treeVisualization = treeVisualizationRoot.append("svg")
+
+    treeVisualization = treeVisualizationRoot.append("svg")
             .attr("width", width + treeVisualisationMargin.right + treeVisualisationMargin.left)
             .attr("height", height + treeVisualisationMargin.top + treeVisualisationMargin.bottom)
             .append("g")
             .attr("transform", "translate(" + treeVisualisationMargin.left + "," + treeVisualisationMargin.top + ")");
 
 }
-
 
 
 var colors = ["#E00000", "#CCFFFF"];
@@ -129,15 +127,15 @@ function clean(d, nodeType) {
 
 
 function update(source) {
-    
+
     treeVisualizationRoot.selectAll("svg").remove();
-           
+
     treeVisualization = treeVisualizationRoot.append("svg")
             .attr("width", width + treeVisualisationMargin.right + treeVisualisationMargin.left)
             .attr("height", height + treeVisualisationMargin.top + treeVisualisationMargin.bottom)
             .append("g")
             .attr("transform", "translate(" + treeVisualisationMargin.left + "," + treeVisualisationMargin.top + ")");
-    
+
 
     // Compute the new tree layout.
     var nodes = tree.nodes(treeRootNode).reverse();
@@ -217,6 +215,9 @@ function update(source) {
                     case "metric":
                         position = "start";
                         break;
+                    case "UsedService":
+                        position = "start";
+                        break;
                     default:
                         position = "end";
                         break;
@@ -233,6 +234,9 @@ function update(source) {
                         position = -25;
                         break;
                     case "VM":
+                        position = -15;
+                        break;
+                    case "UsedService":
                         position = -15;
                         break;
                     default:
@@ -254,6 +258,9 @@ function update(source) {
                         break;
                     case "metric":
                         position = 5;
+                        break;
+                    case "UsedService":
+                        position = 0;
                         break;
                     default:
                         position = -15;
@@ -341,6 +348,8 @@ function update(source) {
             .attr("xlink:href", function (d) {
                 if (d.type == "VM") {
                     return "./vm.png";
+                } else if (d.type == "UsedService") {
+                    return "./service.png";
                 } else {
                     return null;
                 }
@@ -362,7 +371,7 @@ function update(source) {
                     return "translate(" + d.y + "," + d.x + ")";
                 }
             });
- 
+
     nodeUpdate.select("path")
             .attr("r", function (d) {
                 return 4.5;
@@ -405,7 +414,7 @@ function update(source) {
     // Transition exiting nodes to the parent's new position.
     var nodeExit = node.exit()
             .remove();
- 
+
 
     // Update the links…
     var link = treeVisualization.selectAll("path.link")

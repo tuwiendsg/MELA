@@ -16,24 +16,26 @@
  */
 package at.ac.tuwien.dsg.mela.costeval.utils.conversion;
 
-import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
+import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter;
-import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
-import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import static scala.tools.scalap.scalax.rules.scalasig.ScalaSigParsers.entry;
+import static scala.util.parsing.json.JSON.root;
 
 /**
  *
@@ -183,6 +185,88 @@ public class CostJSONConverter extends JsonConverter {
         }
 
         return root.toJSONString();
+    }
+
+    public static String convertServiceStructureSnapshot(MonitoredElement rootElement, Map<UUID, Map<UUID, CloudOfferedService>> cloudServices) {
+
+        if (rootElement == null) {
+            return "";
+        }
+
+        JSONObject root = new JSONObject();
+        root.put("name", rootElement.getId());
+        root.put("type", "" + rootElement.getLevel());
+
+        //going trough the serviceStructure element tree in a BFS manner
+        List<MyPair> processing = new ArrayList<>();
+        processing.add(new MyPair(rootElement, root));
+
+        while (!processing.isEmpty()) {
+            MyPair myPair = processing.remove(0);
+            JSONObject object = myPair.jsonObject;
+            MonitoredElement element = myPair.MonitoredElement;
+
+            JSONArray children = (JSONArray) object.get("children");
+            if (children == null) {
+                children = new JSONArray();
+
+            }
+
+            //add children
+            for (MonitoredElement child : element.getContainedElements()) {
+                JSONObject childElement = new JSONObject();
+                childElement.put("name", child.getId());
+                childElement.put("type", "" + child.getLevel());
+                JSONArray childrenChildren = new JSONArray();
+                childElement.put("children", childrenChildren);
+                processing.add(new MyPair(child, childElement));
+                children.add(childElement);
+            }
+
+            for (UsedCloudOfferedService usedService : element.getCloudOfferedServices()) {
+                CloudOfferedService service;
+                if (cloudServices.containsKey(usedService.getCloudProviderID())) {
+                    Map<UUID, CloudOfferedService> cloudOfferedServices = cloudServices.get(usedService.getCloudProviderID());
+                    if (cloudOfferedServices.containsKey(usedService.getId())) {
+                        service = cloudOfferedServices.get(usedService.getId());
+                    } else {
+                        logger.error("Cloud Provider {}{}  not containing service {}{} in providers", new Object[]{usedService.getCloudProviderName(), usedService.getCloudProviderID(), usedService.getName(), usedService.getId()});
+                        continue;
+                    }
+                } else {
+                    logger.error("Cloud Provider {}{} not found in providers", new Object[]{usedService.getCloudProviderName(), usedService.getCloudProviderID()});
+                    continue;
+                }
+
+                JSONObject offeredServiceObject = new JSONObject();
+
+                offeredServiceObject.put("name", service.getCategory() + "." + service.getSubcategory() + "." + service.getName());
+                offeredServiceObject.put("type", "UsedService");
+                children.add(offeredServiceObject);
+            }
+
+            if (children.size() > 0) {
+                object.put("children", children);
+            }
+
+        }
+
+        return root.toJSONString();
+
+    }
+
+    private static class MyPair {
+
+        public MonitoredElement MonitoredElement;
+        public JSONObject jsonObject;
+
+        private MyPair() {
+        }
+
+        public MyPair(MonitoredElement MonitoredElement, JSONObject jsonObject) {
+            this.MonitoredElement = MonitoredElement;
+            this.jsonObject = jsonObject;
+        }
     }
 
 }

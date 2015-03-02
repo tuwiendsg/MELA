@@ -363,7 +363,7 @@ public class FlexiantCloudDescriptionGenerationTest {
                 //persist structure
                 Marshaller m = elementContext.createMarshaller();
                 m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                m.marshal(cloudServicesSpecification, new FileWriter("src/test/resources/cloudServicesSpecification.xml"));
+                m.marshal(cloudServicesSpecification, new FileWriter("src/test/resources/FLEXIANT_cloudServicesSpecification.xml"));
             }
 
             JAXBContext rulesContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);

@@ -50,14 +50,14 @@ import org.slf4j.LoggerFactory;
 @Provider
 @Path("/")
 @Api(value = "/", description = "The ElasticityAnalysisService is the entry point for all elasticity related monitoring data")
-public class ConfigurationService {
+public class DataService {
 
-    static final org.slf4j.Logger log = LoggerFactory.getLogger(ConfigurationService.class);
+    static final org.slf4j.Logger log = LoggerFactory.getLogger(DataService.class);
 
     @Autowired
     private DataCollectionService collectionService;
 
-    public ConfigurationService() {
+    public DataService() {
     }
 
     /**

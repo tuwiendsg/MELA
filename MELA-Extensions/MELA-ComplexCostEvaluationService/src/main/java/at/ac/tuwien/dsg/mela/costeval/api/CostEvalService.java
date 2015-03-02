@@ -50,6 +50,15 @@ public class CostEvalService {
 
     public CostEvalService() {
     }
+    
+    
+     @GET
+    @Path("/{serviceID}/structure/json")
+    @Produces("application/json")
+    public String getStructureWithUsedCloudOfferedServices(@PathParam("serviceID") String serviceID) {
+        return  costEvalManager.getStructureWithUsedCloudOfferedServices(serviceID);
+    }
+
 
     /**
      * Method for retrieving an easy to display JSON string of the latest

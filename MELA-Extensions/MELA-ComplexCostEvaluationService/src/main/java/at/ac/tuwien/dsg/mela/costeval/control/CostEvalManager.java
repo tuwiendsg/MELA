@@ -384,6 +384,21 @@ public class CostEvalManager {
         }
     }
 
+    public String getStructureWithUsedCloudOfferedServices(String serviceID) {
+
+        Date before = new Date();
+
+        MonitoredElement structure = persistenceDelegate.getLatestConfiguration(serviceID).getServiceConfiguration();
+        if (structure == null) {
+            return "{nothing}";
+        }
+
+        String converted = CostJSONConverter.convertServiceStructureSnapshot(structure, costEvalEngine.cloudProvidersToMap(CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService())));
+
+        Date after = new Date();
+        return converted;
+    }
+
     public MonitoredElementMonitoringSnapshot getLatestMonitoringData(String serviceID, MonitoredElement element) {
         ConfigurationXMLRepresentation cxmlr = persistenceDelegate.getLatestConfiguration(serviceID);
         if (cxmlr == null) {
@@ -1021,7 +1036,7 @@ public class CostEvalManager {
 
                 //persist new added struct
                 persistenceDelegate.writeInTimestamp(snapshot.getTimestamp(), snapshotServicfCFG, newname);
-//aggregate struct data
+                //aggregate struct data
                 ServiceMonitoringSnapshot aggregated = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, snapshot);
                 //update total usage
                 LifetimeEnrichedSnapshot updatedUsage;
