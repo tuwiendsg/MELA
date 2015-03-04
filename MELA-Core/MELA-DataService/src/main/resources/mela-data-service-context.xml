@@ -137,7 +137,7 @@
      
         <jaxrs:server id="customerService" address="/">
             <jaxrs:serviceBeans>
-                <ref bean="configurationService"/>
+                <ref bean="dataService"/>
                 <bean id="swaggerResourceJSON" class="com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON"/>
             </jaxrs:serviceBeans>
             <jaxrs:features>

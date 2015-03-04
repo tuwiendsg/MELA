@@ -50,6 +50,9 @@ public class UsedCloudOfferedService implements Serializable {
     @XmlAttribute(name = "uuid", required = true)
     private UUID id;
 
+    @XmlAttribute(name = "instanceUUID", required = true)
+    private UUID instanceUUID;
+
     @XmlAttribute(name = "name", required = true)
     private String name;
 
@@ -152,6 +155,14 @@ public class UsedCloudOfferedService implements Serializable {
         return true;
     }
 
+    public UUID getInstanceUUID() {
+        return instanceUUID;
+    }
+
+    public void setInstanceUUID(UUID instanceUUID) {
+        this.instanceUUID = instanceUUID;
+    }
+
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
@@ -179,6 +190,11 @@ public class UsedCloudOfferedService implements Serializable {
 
     public UsedCloudOfferedService withResourceProperties(final Map<Metric, MetricValue> resourceProperties) {
         this.resourceProperties = resourceProperties;
+        return this;
+    }
+
+    public UsedCloudOfferedService withInstanceUUID(final UUID instanceUUID) {
+        this.instanceUUID = instanceUUID;
         return this;
     }
 

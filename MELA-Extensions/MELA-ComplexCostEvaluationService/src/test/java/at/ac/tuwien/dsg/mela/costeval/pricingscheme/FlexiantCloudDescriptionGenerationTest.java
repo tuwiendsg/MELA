@@ -38,16 +38,21 @@ import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
 import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine;
+import at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ElasticityCapability;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.UUID;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -176,19 +181,29 @@ public class FlexiantCloudDescriptionGenerationTest {
         cloudServicesSpecification.addCloudProvider(provider);
 
         {
+            //storage service
+            {
 
-            CostElement diskSizeCostElement = new CostElement("diskSizeCost")
-                    .withCostMetric(new Metric("diskSize", "GB", Metric.MetricType.COST)) // needs to be converted from disk_total in Ganglia
-                    .withBillingPeriod(CostElement.BillingPeriod.DAY)
-                    .withType(CostElement.Type.PERIODIC)
-                    //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
-                    .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5 / 30d);
+                CloudOfferedService unit = new CloudOfferedService()
+                        .withCategory("IaaS")
+                        .withSubcategory("VM")
+                        .withName("CloudStorage")
+                        .withUuid(UUID.fromString("30000000-0000-0000-0000-000000000002"));
+                unit.withCostFunction(new CostFunction(unit.getName())
+                        .withCostElement(new CostElement("diskSizeCost")
+                                .withCostMetric(new Metric("diskSize", "GB", Metric.MetricType.COST)) // needs to be converted from disk_total in Ganglia
+                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withType(CostElement.Type.PERIODIC)
+                                //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
+                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24))
+                        .withCostElement(new CostElement("diskUsageCost")
+                                .withCostMetric(new Metric("I/ODataSize", "GB", Metric.MetricType.COST)) //todo Write Ganglia Plug-in for IOStat
+                                .withType(CostElement.Type.USAGE)
+                                //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
+                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d)));
+                provider.addCloudOfferedService(unit);
 
-            CostElement diskUsageCostElement = new CostElement("diskUsageCost")
-                    .withCostMetric(new Metric("I/ODataSize", "GB", Metric.MetricType.COST)) //todo Write Ganglia Plug-in for IOStat
-                    .withType(CostElement.Type.USAGE)
-                    //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
-                    .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d);
+            }
 
 //            RAM	CPU Cores	Units per hour
 //            0.5Gb	1               2
@@ -238,8 +253,7 @@ public class FlexiantCloudDescriptionGenerationTest {
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
                                 .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), helper.unitsPerHour)
-                        ).withCostElement(diskSizeCostElement
-                        ).withCostElement(diskUsageCostElement)
+                        )
                 );
 
                 provider.addCloudOfferedService(unit);
@@ -286,10 +300,10 @@ public class FlexiantCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("imageStorageCost")
                                 .withCostMetric(new Metric("imageSize", "GB", Metric.MetricType.COST)) // needs to be converted from disk_total in Ganglia
-                                .withBillingPeriod(CostElement.BillingPeriod.DAY)
+                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB of stored Image Size no mather how many GBs no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5 / 30d)
+                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5 / 30d / 24)
                         )
                 );
 
@@ -359,11 +373,11 @@ public class FlexiantCloudDescriptionGenerationTest {
             }
 
             {
-                JAXBContext elementContext = JAXBContext.newInstance(CloudServicesSpecification.class);
+                JAXBContext elementContext = JAXBContext.newInstance(CloudProvider.class);
                 //persist structure
                 Marshaller m = elementContext.createMarshaller();
                 m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                m.marshal(cloudServicesSpecification, new FileWriter("src/test/resources/FLEXIANT_cloudServicesSpecification.xml"));
+                m.marshal(cloudServicesSpecification.getCloudProviders().iterator().next(), new FileWriter("src/test/resources/FLEXIANT_cloudServicesSpecification.xml"));
             }
 
             JAXBContext rulesContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
@@ -546,6 +560,13 @@ public class FlexiantCloudDescriptionGenerationTest {
 //                    ).withCostElement(...
 //                     
 //        );
+
+        //test we can read what was generated
+        {
+            JAXBContext jAXBContext = JAXBContext.newInstance(CloudProvider.class);
+            InputStream fileStream = new FileInputStream(new File("src/test/resources/FLEXIANT_cloudServicesSpecification.xml"));
+            TestCase.assertNotNull(jAXBContext.createUnmarshaller().unmarshal(fileStream));
+        }
 
     }
 }

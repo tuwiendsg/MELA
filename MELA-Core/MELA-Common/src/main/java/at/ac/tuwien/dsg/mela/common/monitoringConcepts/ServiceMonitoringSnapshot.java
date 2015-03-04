@@ -369,24 +369,25 @@ public class ServiceMonitoringSnapshot implements Serializable {
                 //search the coresponding element in the cloned service
                 for (MonitoredElement me : service) {
                     if (element.equals(me)) {
-                        clonedElement = element;
+                        clonedElement = me;
                         //update cloned element on snapshot
                         elementMonitoringSnapshot.withMonitoredElement(clonedElement);
+                        break;
                     }
                 }
             }
 
             //if clonedMonitoredData is null, then we had a big problem in cloning the MonitoredElement, so 
-            //no check here, as the error, if appears, show code bug
+            //no check here, as the error, if appears, shows code bug
             Map<MonitoredElement, MonitoredElementMonitoringSnapshot> levelData;
-            if (clonedMonitoredData.containsKey(clonedElement.getLevel())) {
-                levelData = clonedMonitoredData.get(clonedElement.getLevel());
+            if (clonedMonitoredData.containsKey(elementMonitoringSnapshot.getMonitoredElement().getLevel())) {
+                levelData = clonedMonitoredData.get(elementMonitoringSnapshot.getMonitoredElement().getLevel());
             } else {
                 levelData = new HashMap<>();
-                clonedMonitoredData.put(clonedElement.getLevel(), levelData);
+                clonedMonitoredData.put(elementMonitoringSnapshot.getMonitoredElement().getLevel(), levelData);
             }
 
-            levelData.put(clonedElement, elementMonitoringSnapshot);
+            levelData.put(elementMonitoringSnapshot.getMonitoredElement(), elementMonitoringSnapshot);
         }
 
         clone.monitoredData = clonedMonitoredData;

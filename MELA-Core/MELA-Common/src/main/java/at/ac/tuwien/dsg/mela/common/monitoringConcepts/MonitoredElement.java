@@ -196,8 +196,8 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         
 //        @XmlEnumValue("SERVICE_UNIT_INSTANCE")
 //        SERVICE_UNIT_INSTANCE,
-//        @XmlEnumValue("CLOUD_OFFERED_SERVICE")
-//        CLOUD_OFFERED_SERVICE,
+        @XmlEnumValue("CLOUD_OFFERED_SERVICE")
+        CLOUD_OFFERED_SERVICE,
         @XmlEnumValue("VIRTUAL_CLUSTER")
         VIRTUAL_CLUSTER
     }

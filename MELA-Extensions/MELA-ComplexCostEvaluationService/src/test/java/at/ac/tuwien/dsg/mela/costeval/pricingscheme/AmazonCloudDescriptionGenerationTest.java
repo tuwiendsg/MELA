@@ -18,9 +18,14 @@ package at.ac.tuwien.dsg.mela.costeval.pricingscheme;
 
 import at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.AmazonCloudJSONDescriptionParser;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.InputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import junit.framework.TestCase;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +42,8 @@ public class AmazonCloudDescriptionGenerationTest {
     public AmazonCloudDescriptionGenerationTest() {
     }
 
-    public static void main(String[] args) throws Exception {
+    @Test
+    public void testAmazonCloudDescriptionGenerationTest() throws Exception {
         AmazonCloudJSONDescriptionParser parser = new AmazonCloudJSONDescriptionParser();
         CloudProvider provider = parser.getCloudProviderDescription();
         {
@@ -46,6 +52,15 @@ public class AmazonCloudDescriptionGenerationTest {
             Marshaller m = elementContext.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             m.marshal(provider, new FileWriter("src/test/resources/AMAZON_cloudServicesSpecification.xml"));
+        }
+
+        //check we can read what we generate
+        {
+
+            JAXBContext jAXBContext = JAXBContext.newInstance(CloudProvider.class);
+            InputStream fileStream = new FileInputStream(new File("src/test/resources/AMAZON_cloudServicesSpecification.xml"));
+            TestCase.assertNotNull(jAXBContext.createUnmarshaller().unmarshal(fileStream));
+
         }
     }
 }
