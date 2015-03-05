@@ -45,6 +45,7 @@ import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProv
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,6 +61,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 import org.apache.cxf.common.i18n.UncheckedException;
 import org.hsqldb.server.ServerConstants;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -224,6 +227,15 @@ public class CostEvalEngineTest {
 
         MonitoredElement service = new MonitoredElement("Service").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE)
                 .withContainedElement(topology);
+
+        //persist service struct
+        {
+            JAXBContext elementContext = JAXBContext.newInstance(MonitoredElement.class);
+            //persist structure
+            Marshaller m = elementContext.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            m.marshal(service, new FileWriter("src/test/resources/serviceStructure_with_services.xml"));
+        }
 
         //make sure all is clean
         persistenceDelegate.removeService(service.getId());

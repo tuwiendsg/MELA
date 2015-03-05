@@ -593,21 +593,18 @@ public class CostEvalManager {
         log.debug("Updating usage and instant cost for {} snapshots", allMonData.size());
 
         for (ServiceMonitoringSnapshot monitoringSnapshot : allMonData) {
-            //update total usage so far and persist
-
             //compute total usage so far
-            previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructure(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
+            previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesASVMTypes(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
 
             //persist the total usage
-            persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID, previouselyDeterminedUsage);
-
+//            persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(serviceID, previouselyDeterminedUsage);
             //as the previous method has also the currently unused services, we must remove them for computing instant cost
             LifetimeEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(previouselyDeterminedUsage);
 
             //compute composition rules to create instant cost based on total usage so far
-            CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCost(cloudProvidersMap, cfg.getServiceConfiguration(), cleanedCostSnapshot, monitoringSnapshot.getTimestamp());
-            ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, monitoringSnapshot);
-            
+            CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesASVMTypes(cloudProvidersMap, cleanedCostSnapshot.getSnapshot().getMonitoredService(), cleanedCostSnapshot, monitoringSnapshot.getTimestamp());
+            ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, costEvalEngine.convertToStructureIncludingServicesASVMTypes(cloudProvidersMap, monitoringSnapshot));
+
             //persist instant cost
             persistenceDelegate.persistInstantCostSnapshot(serviceID, new CostEnrichedSnapshot().withCostCompositionRules(block)
                     .withLastUpdatedTimestampID(enrichedSnapshot.getTimestampID()).withSnapshot(enrichedSnapshot));
@@ -615,7 +612,7 @@ public class CostEvalManager {
             //retrieve the previousely computed total usage, as the computation of the instant cost destr
 //            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
             //create rules for metrics for total cost based on usage so far
-            CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCost(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot.getTimestamp());
+            CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesASVMTypes(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot.getTimestamp());
             ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
 
 //            persist mon snapshot enriched with total cost

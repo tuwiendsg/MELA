@@ -215,7 +215,7 @@ function update(source) {
                     case "metric":
                         position = "start";
                         break;
-                    case "UsedService":
+                    case "CLOUD_OFFERED_SERVICE":
                         position = "start";
                         break;
                     default:
@@ -236,7 +236,7 @@ function update(source) {
                     case "VM":
                         position = -15;
                         break;
-                    case "UsedService":
+                    case "CLOUD_OFFERED_SERVICE":
                         position = -15;
                         break;
                     default:
@@ -259,7 +259,7 @@ function update(source) {
                     case "metric":
                         position = 5;
                         break;
-                    case "UsedService":
+                    case "CLOUD_OFFERED_SERVICE":
                         position = 0;
                         break;
                     default:
@@ -348,7 +348,7 @@ function update(source) {
             .attr("xlink:href", function (d) {
                 if (d.type == "VM") {
                     return "./vm.png";
-                } else if (d.type == "UsedService") {
+                } else if (d.type == "CLOUD_OFFERED_SERVICE") {
                     return "./service.png";
                 } else {
                     return null;

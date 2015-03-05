@@ -30,7 +30,6 @@
         <property name="descriptionFile" value="file:./config/default/Flexiant.xml"/>
     </bean>
     
-    
 
     <jaxrs:server id="customerService" address="/">
         <jaxrs:serviceBeans>

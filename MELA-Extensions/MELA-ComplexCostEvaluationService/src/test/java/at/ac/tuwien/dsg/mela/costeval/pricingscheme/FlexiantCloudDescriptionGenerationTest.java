@@ -191,13 +191,13 @@ public class FlexiantCloudDescriptionGenerationTest {
                         .withUuid(UUID.fromString("30000000-0000-0000-0000-000000000002"));
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("diskSizeCost")
-                                .withCostMetric(new Metric("diskSize", "GB", Metric.MetricType.COST)) // needs to be converted from disk_total in Ganglia
+                                .withCostMetric(new Metric("diskSize", "GB", Metric.MetricType.RESOURCE)) // needs to be converted from disk_total in Ganglia
                                 .withBillingPeriod(CostElement.BillingPeriod.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
                                 .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24))
                         .withCostElement(new CostElement("diskUsageCost")
-                                .withCostMetric(new Metric("I/ODataSize", "GB", Metric.MetricType.COST)) //todo Write Ganglia Plug-in for IOStat
+                                .withCostMetric(new Metric("IODataSize", "GB", Metric.MetricType.RESOURCE)) //todo Write Ganglia Plug-in for IOStat
                                 .withType(CostElement.Type.USAGE)
                                 //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
                                 .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d)));
@@ -248,7 +248,7 @@ public class FlexiantCloudDescriptionGenerationTest {
 
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
-                                .withCostMetric(new Metric("instance", "#", Metric.MetricType.COST))
+                                .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
                                 .withBillingPeriod(CostElement.BillingPeriod.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
@@ -267,21 +267,21 @@ public class FlexiantCloudDescriptionGenerationTest {
 
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vlanCost")
-                                .withCostMetric(new Metric("vlan", "#", Metric.MetricType.COST))
+                                .withCostMetric(new Metric("vlan", "#", Metric.MetricType.RESOURCE))
                                 .withBillingPeriod(CostElement.BillingPeriod.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //first VLAN free, then rest 1.37 units per hour
                                 .withCostInterval(new MetricValue(1), 0d)
                                 .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 1.37)
                         ).withCostElement(new CostElement("publicIPsCost")
-                                .withCostMetric(new Metric("publicIP", "#", Metric.MetricType.COST))
+                                .withCostMetric(new Metric("publicIP", "#", Metric.MetricType.RESOURCE))
                                 .withBillingPeriod(CostElement.BillingPeriod.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //first VLAN free, then rest 1.37 units per hour
                                 .withCostInterval(new MetricValue(5), 0d)
                                 .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.137)
                         ).withCostElement(new CostElement("dataTransferCost")
-                                .withCostMetric(new Metric("dataTransfer", "GB", Metric.MetricType.COST))
+                                .withCostMetric(new Metric("dataTransfer", "GB", Metric.MetricType.RESOURCE))
                                 .withType(CostElement.Type.USAGE)
                                 //first VLAN free, then rest 1.37 units per hour
                                 .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d)
@@ -299,7 +299,7 @@ public class FlexiantCloudDescriptionGenerationTest {
 
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("imageStorageCost")
-                                .withCostMetric(new Metric("imageSize", "GB", Metric.MetricType.COST)) // needs to be converted from disk_total in Ganglia
+                                .withCostMetric(new Metric("imageSize", "GB", Metric.MetricType.RESOURCE)) // needs to be converted from disk_total in Ganglia
                                 .withBillingPeriod(CostElement.BillingPeriod.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB of stored Image Size no mather how many GBs no mather how many hours
@@ -416,7 +416,7 @@ public class FlexiantCloudDescriptionGenerationTest {
             }
             CompositionRule computeIPUsedForService = new CompositionRule()
                     .withTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE)
-                    .withResultingMetric(new Metric("publicIP", "#", Metric.MetricType.COST))
+                    .withResultingMetric(new Metric("publicIP", "#", Metric.MetricType.RESOURCE))
                     .withOperation(new CompositionOperation()
                             .withOperationType(CompositionOperationType.SUM)
                             .withMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.VM)
@@ -430,7 +430,7 @@ public class FlexiantCloudDescriptionGenerationTest {
             //data transfer rule
             CompositionRule computePublicIPDataTransferForServiceUnit = new CompositionRule()
                     .withTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
-                    .withResultingMetric(new Metric("dataTransfer", "GB", Metric.MetricType.COST))
+                    .withResultingMetric(new Metric("dataTransfer", "GB", Metric.MetricType.RESOURCE))
                     .withOperation(new CompositionOperation()
                             .withOperationType(CompositionOperationType.SUM)
                             .withSubOperation(new CompositionOperation()
@@ -453,7 +453,7 @@ public class FlexiantCloudDescriptionGenerationTest {
 
             CompositionRule computePublicIPDataTransferForServiceTopology = new CompositionRule()
                     .withTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)
-                    .withResultingMetric(new Metric("dataTransfer", "GB", Metric.MetricType.COST))
+                    .withResultingMetric(new Metric("dataTransfer", "GB", Metric.MetricType.RESOURCE))
                     .withOperation(new CompositionOperation()
                             .withOperationType(CompositionOperationType.SUM)
                             .withMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
@@ -465,7 +465,7 @@ public class FlexiantCloudDescriptionGenerationTest {
             }
             CompositionRule computePublicIPDataTransferForService = new CompositionRule()
                     .withTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE)
-                    .withResultingMetric(new Metric("dataTransfer", "GB", Metric.MetricType.COST))
+                    .withResultingMetric(new Metric("dataTransfer", "GB", Metric.MetricType.RESOURCE))
                     .withOperation(new CompositionOperation()
                             .withOperationType(CompositionOperationType.SUM)
                             .withMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)
@@ -479,7 +479,7 @@ public class FlexiantCloudDescriptionGenerationTest {
             //data transfer rule
             CompositionRule computeDiskDataLoadForServiceUnit = new CompositionRule()
                     .withTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
-                    .withResultingMetric(new Metric("I/ODataSize", "GB", Metric.MetricType.COST))
+                    .withResultingMetric(new Metric("IODataSize", "GB", Metric.MetricType.RESOURCE))
                     .withOperation(new CompositionOperation()
                             .withOperationType(CompositionOperationType.SUM)
                             .withSubOperation(new CompositionOperation()
@@ -497,7 +497,7 @@ public class FlexiantCloudDescriptionGenerationTest {
 //
 //            CompositionRule computeDiskDataLoadForServiceTopolgy = new CompositionRule()
 //                    .withTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)
-//                    .withResultingMetric(new Metric("diskDataLoad", "GB", Metric.MetricType.COST))
+//                    .withResultingMetric(new Metric("diskDataLoad", "GB", Metric.MetricType.RESOURCE))
 //                    .withOperation(new CompositionOperation()
 //                            .withOperationType(CompositionOperationType.SUM)
 //                            .withMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
@@ -506,7 +506,7 @@ public class FlexiantCloudDescriptionGenerationTest {
 //
 //            CompositionRule computeDiskDataLoadForService = new CompositionRule()
 //                    .withTargetMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE)
-//                    .withResultingMetric(new Metric("diskDataLoad", "GB", Metric.MetricType.COST))
+//                    .withResultingMetric(new Metric("diskDataLoad", "GB", Metric.MetricType.RESOURCE))
 //                    .withOperation(new CompositionOperation()
 //                            .withOperationType(CompositionOperationType.SUM)
 //                            .withMetricSourceMonitoredElementLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)

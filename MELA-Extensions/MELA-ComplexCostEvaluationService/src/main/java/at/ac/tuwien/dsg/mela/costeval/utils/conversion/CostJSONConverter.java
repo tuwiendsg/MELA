@@ -149,7 +149,7 @@ public class CostJSONConverter extends JsonConverter {
                     JSONArray childChildrenJSON = new JSONArray();
                     for (MonitoredElement childElement : currentElement.getContainedElements()) {
                         JSONObject childChild = new JSONObject();
-                        childChild.put("name", childElement.getId());
+                        childChild.put("name", (childElement.getName().length() > 0) ? childElement.getName() : childElement.getId());
                         childChild.put("level", childElement.getLevel().toString());
                         currentElementJSON.put("freshness", value.getFreshness());
                         childChild.put("uniqueID", currentElement.getId() + "_" + currentElement.getLevel().toString());
@@ -209,7 +209,6 @@ public class CostJSONConverter extends JsonConverter {
             JSONArray children = (JSONArray) object.get("children");
             if (children == null) {
                 children = new JSONArray();
-
             }
 
             //add children
@@ -241,7 +240,7 @@ public class CostJSONConverter extends JsonConverter {
                 JSONObject offeredServiceObject = new JSONObject();
 
                 offeredServiceObject.put("name", service.getCategory() + "." + service.getSubcategory() + "." + service.getName());
-                offeredServiceObject.put("type", "UsedService");
+                offeredServiceObject.put("type", MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE.toString());
                 children.add(offeredServiceObject);
             }
 

@@ -791,7 +791,7 @@ public class CostEvalEngine {
                                         }
                                     }
 
-                                    //"total_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
+                                    //"cost_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
                                     // and I put again this total cost metric with same name, will not replace it.
                                     //TODO: address this
                                     Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
@@ -1528,7 +1528,7 @@ public class CostEvalEngine {
 
                 snapshot.addChild(usedCloudServiceSnapshot);
 
-                //not move relevant monitoring data
+                //now move relevant monitoring data
                 List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(usedCloudService);
 
                 for (CostFunction cf : costFunctionsToApply) {
