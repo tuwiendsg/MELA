@@ -558,10 +558,6 @@ public class CostEvalManager {
         List<ServiceMonitoringSnapshot> allMonData = persistenceDelegate.extractMonitoringData(lastRetrievedTimestampID, serviceID);
 
         if (!allMonData.isEmpty()) {
-            if (previouselyDeterminedUsage == null) {
-                ServiceMonitoringSnapshot data = allMonData.remove(0);
-                previouselyDeterminedUsage = new LifetimeEnrichedSnapshot().withSnapshot(data).withLastUpdatedTimestampID(data.getTimestampID());
-            }
 
             //as I extract 1000 entries at a time to avoid memory overflow, I need to read the rest
             do {
@@ -582,17 +578,13 @@ public class CostEvalManager {
             return null;
         }
 
-        //does only instantCost
-        if (previouselyDeterminedUsage == null) {
-            log.debug("Updated cached ServiceUsageSnapshot is NULL. Something happened.");
-            return null;
-        }
-
         Map<UUID, Map<UUID, CloudOfferedService>> cloudProvidersMap = costEvalEngine.cloudProvidersToMap(cloudProviders);
 
         log.debug("Updating usage and instant cost for {} snapshots", allMonData.size());
 
         for (ServiceMonitoringSnapshot monitoringSnapshot : allMonData) {
+            //update total usage so far and persist
+
             //compute total usage so far
             previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesASVMTypes(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
 
@@ -614,6 +606,8 @@ public class CostEvalManager {
             //create rules for metrics for total cost based on usage so far
             CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesASVMTypes(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot.getTimestamp());
             ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
+
+            log.info(new CostJSONConverter().toJSONForRadialPieChart(snapshotWithTotalCost));
 
 //            persist mon snapshot enriched with total cost
             persistenceDelegate.persistTotalCostSnapshot(serviceID, new CostEnrichedSnapshot().withCostCompositionRules(totalCostBlock)

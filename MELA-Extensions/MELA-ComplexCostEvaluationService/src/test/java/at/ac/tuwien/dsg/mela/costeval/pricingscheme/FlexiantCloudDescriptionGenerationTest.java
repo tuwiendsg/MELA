@@ -21,13 +21,10 @@ import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloud
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionOperationType;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRule;
-import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
-import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
@@ -36,29 +33,26 @@ import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
-import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine;
-import at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ElasticityCapability;
+import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
+import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertNotNull;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import resources.FileBasedGangliaParser;
 
 /**
  *
@@ -563,9 +557,48 @@ public class FlexiantCloudDescriptionGenerationTest {
 
         //test we can read what was generated
         {
+
+            for (CloudOfferedService cloudOfferedService : provider.getCloudOfferedServices()) {
+                for (CostFunction function : cloudOfferedService.getCostFunctions()) {
+                    for (CostElement element : function.getCostElements()) {
+                        Assert.assertNotEquals("Cost element " + element.getName() + " for metric " + element.getCostMetric().getName() + " is cost", element.getCostMetric().getType(), Metric.MetricType.COST);
+                    }
+
+                }
+            }
+
             JAXBContext jAXBContext = JAXBContext.newInstance(CloudProvider.class);
             InputStream fileStream = new FileInputStream(new File("src/test/resources/FLEXIANT_cloudServicesSpecification.xml"));
-            TestCase.assertNotNull(jAXBContext.createUnmarshaller().unmarshal(fileStream));
+            CloudProvider fromText = (CloudProvider) jAXBContext.createUnmarshaller().unmarshal(fileStream);
+            TestCase.assertNotNull(fromText);
+
+            List<CloudProvider> providers = new ArrayList<>();
+            providers.add(fromText);
+
+            for (CloudOfferedService cloudOfferedService : fromText.getCloudOfferedServices()) {
+                for (CostFunction function : cloudOfferedService.getCostFunctions()) {
+                    for (CostElement element : function.getCostElements()) {
+                        Assert.assertNotEquals("Cost element " + element.getName() + " for metric " + element.getCostMetric().getName() + " is cost", element.getCostMetric().getType(), Metric.MetricType.COST);
+                    }
+
+                }
+            }
+
+            DataAccess access = new DataAccess("/tmp/flexiantTstCloud");
+            CloudProviderDAO.persistCloudProviders(providers, access.getGraphDatabaseService());
+
+            List<CloudProvider> retrievedProviders = CloudProviderDAO.getAllCloudProviders(access.getGraphDatabaseService());
+
+            CloudProvider mustHaveCostElementsWithMetricsNotCost = retrievedProviders.iterator().next();
+            for (CloudOfferedService cloudOfferedService : mustHaveCostElementsWithMetricsNotCost.getCloudOfferedServices()) {
+                for (CostFunction function : cloudOfferedService.getCostFunctions()) {
+                    for (CostElement element : function.getCostElements()) {
+                        Assert.assertNotEquals("Cost element " + element.getName() + " for metric " + element.getCostMetric().getName() + " is cost", element.getCostMetric().getType(), Metric.MetricType.COST);
+                    }
+
+                }
+            }
+
         }
 
     }

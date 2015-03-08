@@ -150,6 +150,8 @@ public class CostEvalEngineTest {
     @Test
     public void testCostEval() throws Exception {
 
+//        assertFalse( "Please check why in the enriched monitoring snapshot we still have the COST ORIGIN metrics as COST metrics, and thus, why are they USED in RADIAL chart, and especially"
+//                + "why they HAVE COST in this radial crap. THEY SHOULD NOOOOOT HAAAAVE", true);
         CostEvalEngine costEvalEngine = new CostEvalEngine();
         DataAggregationEngine aggregationEngine = new DataAggregationEngine();
         costEvalEngine.setInstantMonitoringDataEnrichmentEngine(aggregationEngine);

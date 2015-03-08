@@ -260,7 +260,7 @@
                     </costIntervalFunction>
                 </CostElement>
                 <CostElement type="USAGE" name="dataTransferCost" uuid="c6c20631-0158-441c-982d-9601a72d10a6">
-                    <CostMetric type="COST" measurementUnit="GB" name="dataTransfer"/>
+                    <CostMetric type="RESOURCE" measurementUnit="GB" name="dataTransfer"/>
                     <costIntervalFunction>
                         <CostIntervalEntry>
                             <metric ValueType="NUMERIC">
