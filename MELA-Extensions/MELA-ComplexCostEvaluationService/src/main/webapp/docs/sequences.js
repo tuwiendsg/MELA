@@ -166,8 +166,9 @@ function drawPieChart(json) {
     // For efficiency, filter nodes to keep only those large enough to see.
     var nodes = piePartition.nodes(json)
             .filter(function (d) {
-                return (d.dx > 0.005); // 0.005 radians = 0.29 degrees
-            });
+                return (d.dx > 0.001); // 0.005 radians = 0.29 degrees
+            })
+            ;
     var padding = 1;
 //for each node, create arc, and add text to it as text path
 

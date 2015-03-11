@@ -688,7 +688,7 @@ public class CostEvalEngine {
                                             Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
 
                                             List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
-                                            for (int i = 0; i < costIntervalsInAscendingOrder.size(); i++) {
+                                            for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
 
                                                 MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
 
@@ -765,7 +765,7 @@ public class CostEvalEngine {
                                     Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
 
                                     List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
-                                    for (int i = 0; i < costIntervalsInAscendingOrder.size(); i++) {
+                                    for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
 
                                         MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
 
@@ -2045,7 +2045,7 @@ public class CostEvalEngine {
                                                 Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
 
                                                 List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
-                                                for (int i = 0; i < costIntervalsInAscendingOrder.size(); i++) {
+                                                for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
 
                                                     MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
 
@@ -2122,7 +2122,7 @@ public class CostEvalEngine {
                                         Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
 
                                         List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
-                                        for (int i = 0; i < costIntervalsInAscendingOrder.size(); i++) {
+                                        for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
 
                                             MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
 

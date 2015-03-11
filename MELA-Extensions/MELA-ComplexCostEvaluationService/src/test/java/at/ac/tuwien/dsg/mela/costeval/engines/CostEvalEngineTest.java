@@ -169,7 +169,7 @@ public class CostEvalEngineTest {
         {
             CostFunction vmCost = new CostFunction(vm1SmallService.getName() + "_cost");
 
-            CostElement periodicCostElement = new CostElement("vmCost", new Metric("instance", "#", Metric.MetricType.COST), CostElement.Type.PERIODIC);
+            CostElement periodicCostElement = new CostElement("vmCost", new Metric("instance", "#/s", Metric.MetricType.COST), CostElement.Type.PERIODIC);
             periodicCostElement.addCostInterval(new MetricValue(1), 1d);
             periodicCostElement.addCostInterval(new MetricValue(2), 2d);
             periodicCostElement.addCostInterval(new MetricValue(3), 3d);
@@ -190,7 +190,7 @@ public class CostEvalEngineTest {
         {
             CostFunction vmCost = new CostFunction(vm1LargeService.getName() + "_cost");
 
-            CostElement periodicCostElement = new CostElement("vmCost", new Metric("instance", "#", Metric.MetricType.COST), CostElement.Type.PERIODIC);
+            CostElement periodicCostElement = new CostElement("vmCost", new Metric("instance", "#/s", Metric.MetricType.COST), CostElement.Type.PERIODIC);
             periodicCostElement.addCostInterval(new MetricValue(1), 2d);
             periodicCostElement.addCostInterval(new MetricValue(2), 4d);
             periodicCostElement.addCostInterval(new MetricValue(3), 6d);

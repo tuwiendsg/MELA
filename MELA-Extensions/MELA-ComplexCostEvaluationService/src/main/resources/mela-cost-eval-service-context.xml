@@ -26,8 +26,12 @@
     </bean>
     
     
-    <bean id="aflexiantFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
+    <bean id="flexiantFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
         <property name="descriptionFile" value="file:./config/default/Flexiant.xml"/>
+    </bean>
+    
+    <bean id="amazonFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
+        <property name="descriptionFile" value="file:./config/default/Amazon.xml"/>
     </bean>
     
 
