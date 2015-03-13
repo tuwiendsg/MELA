@@ -72,7 +72,7 @@ function setupTreeView(service, targetDIV_ID, w, h, type) {
     height = h;
     i = 0;
     duration = 0;
-    depth = width / 4.5;
+    depth = width / 5;
 
     tree = d3.layout.tree()
             .size([height, width]);
@@ -216,7 +216,7 @@ function update(source) {
                         position = "start";
                         break;
                     case "CLOUD_OFFERED_SERVICE":
-                        position = "start";
+                        position = "end";
                         break;
                     default:
                         position = "end";
@@ -323,7 +323,7 @@ function update(source) {
                 } else if (d.type) {
                     if (d.type == "metric") {
                         if (d.category == "COST") {
-                            return "#FFE773";
+                            return "#E8D0A9";
                         } else if (d.type == "requirement") {
                             if (d.fulfilled) {
                                 return "#1F7872"
@@ -390,7 +390,7 @@ function update(source) {
                 } else if (d.type) {
                     if (d.type == "metric") {
                         if (d.category == "COST") {
-                            return "#FFE773";
+                            return "#E8D0A9";
                         } else if (d.type == "requirement") {
                             if (d.fulfilled) {
                                 return "#1F7872"
@@ -398,7 +398,7 @@ function update(source) {
                                 return "#D13F31";
                             }
                         } else {
-                            return "gray";
+                            return "#F5FAFA";
                         }
                     }
                     else {

@@ -175,6 +175,12 @@ public class CostEvalService {
     public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostForServiceJSON(serviceID);
     }
+    @GET
+    @Path("/{serviceID}/usage/total/json/tree")
+    @Produces("application/json")
+    public String getTotalUsageForServiceJSON(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalUsageForServiceJSON(serviceID);
+    }
 
     @GET
     @Path("/{serviceID}/cost/total/json/piechart")

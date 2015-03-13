@@ -744,54 +744,54 @@ public class CostEvalEngine {
                                     Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
 
                                     //convert to seconds
-                                    Long timeIntervalInMillis = (currentTimestamp - instantiationTimestamp) / 1000;
+                                    Long seconds = (currentTimestamp - instantiationTimestamp) / 1000;
 
                                     Long costPeriodsFromCreation = 0l;
 
                                     //must standardise these somehow
                                     if (timePeriod.equals("s")) {
-                                        costPeriodsFromCreation = timeIntervalInMillis;
+                                        costPeriodsFromCreation = seconds;
                                     } else if (timePeriod.equals("m")) {
-                                        costPeriodsFromCreation = timeIntervalInMillis / 60;
+                                        costPeriodsFromCreation = seconds / 60;
                                     } else if (timePeriod.equals("h")) {
-                                        costPeriodsFromCreation = timeIntervalInMillis / 3600;
+                                        costPeriodsFromCreation = seconds / 3600;
                                     } else if (timePeriod.equals("d")) {
-                                        costPeriodsFromCreation = timeIntervalInMillis / 86400;
+                                        costPeriodsFromCreation = seconds / 86400;
                                     }
 
                                     //we need to go trough all cost element interval, and apply correct cost for each interval
-                                    MetricValue metricUsageSoFar = new MetricValue(costPeriodsFromCreation);
                                     MetricValue costForValue = new MetricValue(0l);
                                     Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
 
                                     List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
-                                    for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
+                                    for (int i = costIntervalsInAscendingOrder.size() - 1; i > 0; i--) {
 
-                                        MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
+                                        MetricValue currentCostIntervalElement = costIntervalsInAscendingOrder.get(i);
+                                        MetricValue previousCostIntervalElement = costIntervalsInAscendingOrder.get(i - 1);
 
-                                        if (costIntervalElement.compareTo(metricUsageSoFar) > 0) {
-                                            MetricValue costForThisInterval = metricUsageSoFar.clone();
-                                            costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
+                                        Long usageForInterval = costPeriodsFromCreation - ((Number) previousCostIntervalElement.getValue()).longValue();
+
+                                        if (usageForInterval >= 0) {
+                                            MetricValue costForThisInterval = new MetricValue(usageForInterval);
+                                            costForThisInterval.multiply(costIntervalFunction.get(currentCostIntervalElement));
                                             costForValue.sum(costForThisInterval);
-                                            break;
-                                        } else {
-                                            Double usageBetweenLastAndCurrentInterval = null;
-                                            if (i > 0) {
-                                                MetricValue tmp = costIntervalElement.clone();
-                                                tmp.sub(costIntervalsInAscendingOrder.get(i - 1));
-                                                usageBetweenLastAndCurrentInterval = ((Number) tmp.getValue()).doubleValue();
-                                            } else {
-                                                usageBetweenLastAndCurrentInterval = ((Number) costIntervalElement.getValue()).doubleValue();
-                                            }
-
-                                            metricUsageSoFar.sub(usageBetweenLastAndCurrentInterval);
-                                            MetricValue costForThisInterval = new MetricValue(usageBetweenLastAndCurrentInterval);
-                                            costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
-                                            costForValue.sum(costForThisInterval);
+                                            costPeriodsFromCreation -= usageForInterval;
                                         }
+
                                     }
 
-                                    //"cost_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
+                                    //add first cost interval
+                                    if (costPeriodsFromCreation >= 0) {
+                                        MetricValue currentCostIntervalElement = costIntervalsInAscendingOrder.get(0);
+
+                                        Long usageForInterval = costPeriodsFromCreation;
+
+                                        MetricValue costForThisInterval = new MetricValue(usageForInterval);
+                                        costForThisInterval.multiply(costIntervalFunction.get(currentCostIntervalElement));
+                                        costForValue.sum(costForThisInterval);
+                                    }
+
+                                    //"cost_" must be there, as currently hashcode on Metric is only on "name", so if I have allready the instant cost,
                                     // and I put again this total cost metric with same name, will not replace it.
                                     //TODO: address this
                                     Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
@@ -974,6 +974,15 @@ public class CostEvalEngine {
         return costCompositionRules;
     }
 
+    /**
+     *
+     * @param cloudOfferedServices map of cloud pricing schemes
+     * @param monitoredElement service structure
+     * @param totalUsageSoFar total usage used in determining current cost
+     * interval
+     * @param currentTimesnapshot not sure why is needed
+     * @return
+     */
     public CompositionRulesBlock createCompositionRulesForInstantUsageCostIncludingServicesASVMTypes(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
             final MonitoredElement monitoredElement, final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
 

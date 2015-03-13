@@ -8,6 +8,7 @@
                         <metric ValueType="NUMERIC">
                             <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
                         </metric>
+                        <!--<value>0.440131944</value>--><!--<value>used as a way to simulate disk size of 67 GB that I did not measure disk size</value>-->
                         <value>0.006944444444444444</value>
                     </CostIntervalEntry>
                 </costIntervalFunction>

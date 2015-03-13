@@ -26,6 +26,7 @@ import at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -51,36 +52,97 @@ public class CostJSONConverter extends JsonConverter {
         DecimalFormat df4 = new DecimalFormat("0.####");
         DecimalFormat df2 = new DecimalFormat("0.##");
 
-//        CompositionRulesBlock block = costEnrichedSnapshot.getCostCompositionRules();
         ServiceMonitoringSnapshot sms = costEnrichedSnapshot;
 
-//        //map pf resulting metrics
-//        //Map<Level, Map<MonitoredElementID,Map<ResultingMetric,Rule>>>
-//        Map<MonitoredElement.MonitoredElementLevel, Map<String, Map<Metric, CompositionRule>>> resultingMetrics = new HashMap<>();
-//
-//        for (CompositionRule compositionRule : block.getCompositionRules()) {
-//          
-//            Metric resultingMetric = compositionRule.getResultingMetric();
-//            MonitoredElement.MonitoredElementLevel level = MonitoredElement.MonitoredElementLevel.valueOf(resultingMetric.getMonitoredElementLevel());
-//            Map<String, Map<Metric, CompositionRule>> levelMap;
-//
-//            if (resultingMetrics.containsKey(level)) {
-//                levelMap = resultingMetrics.get(level);
-//            } else {
-//                levelMap = new HashMap<>();
-//                resultingMetrics.put(level, levelMap);
-//            }
-//
-//            Map<Metric, CompositionRule> elementRules;
-//            if (levelMap.containsKey(resultingMetric.getMonitoredElementID())) {
-//                elementRules = levelMap.get(resultingMetric.getMonitoredElementID());
-//            }else{
-//                elementRules = new HashMap<>();
-//                levelMap.put(resultingMetric.getMonitoredElementID(), elementRules);
-//            }
-//            elementRules.put(resultingMetric, compositionRule);
-//        }
-//        
+        /**
+         * Restructure as following: Take out all VMs. For each VM, take its
+         * used Cloud Offered Service, and put it in the Unit instead of the VM.
+         * Of course, when system scales, we have different Service instances
+         * used by different VMs, so we must sum up the metrics for each used
+         * service This way we get an overview over the unit's cost, and not on
+         * the VM cost.
+         */
+        //get all units, and get all of their VMs, and replace them with used Services
+        {
+            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> unitsData = sms.getMonitoredData(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+            for (MonitoredElement unit : unitsData.keySet()) {
+
+                MonitoredElementMonitoringSnapshot unitSnapshot = unitsData.get(unit);
+
+                List<MonitoredElementMonitoringSnapshot> addedChildrenServicesInsteadOfVMS = new ArrayList<>();
+
+                for (MonitoredElement childVMs : unit.getContainedElements()) {
+                    //interested only in volatile VMs
+                    if (!childVMs.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
+                        continue;
+                    }
+
+                    for (UsedCloudOfferedService service : childVMs.getCloudOfferedServices()) {
+
+                        MonitoredElement usedCloudServiceMonitoredElement = new MonitoredElement()
+                                //here we use ID not instance UUID as we want all service instances to be aggregated as cost into the one used service
+                                .withId(service.getId().toString()  + "_" + unit.getId()) //also add unit ID as we might have SAME service type for different VMs
+                                .withName(service.getName())
+                                .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
+
+                        MonitoredElementMonitoringSnapshot serviceSnapshot;
+                        if (sms.contains(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE, usedCloudServiceMonitoredElement)) {
+                            serviceSnapshot = sms.getMonitoredData(usedCloudServiceMonitoredElement);
+                        } else {
+                            serviceSnapshot = new MonitoredElementMonitoringSnapshot(usedCloudServiceMonitoredElement);
+                            sms.addMonitoredData(serviceSnapshot);
+                            addedChildrenServicesInsteadOfVMS.add(serviceSnapshot);
+                        }
+
+                        //get cost metrics from service instance
+                        MonitoredElement usedCloudServiceInstance = new MonitoredElement()
+                                //here we use ID not instance UUID as we want all service instances to be aggregated as cost into the one used service
+                                .withId(service.getInstanceUUID().toString())
+                                .withName(service.getName())
+                                .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
+
+                        MonitoredElementMonitoringSnapshot serviceInstanceMetrics = sms.getMonitoredData(usedCloudServiceInstance);
+                        for (Metric metric : serviceInstanceMetrics.getMetrics()) {
+                            if (serviceSnapshot.containsMetric(metric)) {
+                                MetricValue oldValue = serviceSnapshot.getMetricValue(metric);
+                                MetricValue newValue = serviceInstanceMetrics.getMetricValue(metric);
+                                //aggregate cost metrics as SUM
+                                oldValue.sum(newValue);
+                                serviceSnapshot.putMetric(metric, oldValue);
+
+                            } else {
+                                serviceSnapshot.putMetric(metric, serviceInstanceMetrics.getMetricValue(metric));
+                            }
+                        }
+
+                    }
+                }
+
+                unit.getContainedElements().clear();
+
+                //remove all VMs from mon data and etc, and replace with newly added stuff
+                for (MonitoredElementMonitoringSnapshot s : unitSnapshot.getChildren()) {
+                    if (sms.getMonitoredData().containsKey(s.getMonitoredElement().getLevel())) {
+                        sms.getMonitoredData().get(s.getMonitoredElement().getLevel()).remove(s.getMonitoredElement());
+                    }
+                }
+                unitSnapshot.getChildren().clear();
+
+                for (MonitoredElementMonitoringSnapshot added : addedChildrenServicesInsteadOfVMS) {
+                    if (sms.getMonitoredData().containsKey(added.getMonitoredElement().getLevel())) {
+                        sms.getMonitoredData().get(added.getMonitoredElement().getLevel()).put(added.getMonitoredElement(), added);
+                    } else {
+                        Map<MonitoredElement, MonitoredElementMonitoringSnapshot> s = new HashMap<>();
+                        s.put(added.getMonitoredElement(), added);
+                        sms.getMonitoredData().put(added.getMonitoredElement().getLevel(), s);
+                    }
+                    unit.addElement(added.getMonitoredElement());
+                }
+
+                unitSnapshot.getChildren().addAll(addedChildrenServicesInsteadOfVMS);
+            }
+        }
+
         //
         //next 2 metrics used to discriminate between children cost and element cost, and other cost metrics which are
         //represented as leafs (have no children as they are computed directly on the element)
@@ -92,7 +154,6 @@ public class CostJSONConverter extends JsonConverter {
         //total children cost for each element is represented as "children_cost" metric
         Metric totalChildrenCostMetric = new Metric("children_cost", "costUnits", Metric.MetricType.COST);
 
-//     
         List<MonitoredElement> elementsStack = new ArrayList<>();
         List<JSONObject> elementsJSONStack = new ArrayList<>();
 
@@ -135,18 +196,18 @@ public class CostJSONConverter extends JsonConverter {
                     currentElementJSON.put("level", currentElement.getLevel().toString());
                     currentElementJSON.put("uniqueID", UUID.randomUUID().toString());
                 } else if (m.equals(totalChildrenCostMetric)) {
-                    //if child, I need to expand its children
-                    JSONObject child = new JSONObject();
-                    child.put("name", m.getName());//+"(" + m.getMeasurementUnit()+")");
+//                    //if child, I need to expand its children
+//                    JSONObject child = new JSONObject();
+//                    child.put("name", m.getName());//+"(" + m.getMeasurementUnit()+")");
                     MetricValue value = snapshot.getMetricValue(m);
-                    String valueRepresentation = value.getValueRepresentation();
-                    child.put("displayValue", valueRepresentation);
-                    child.put("size", valueRepresentation);
-                    child.put("level", "metric");
-                    child.put("freshness", value.getFreshness());
-                    child.put("uniqueID", UUID.randomUUID().toString());
-
-                    JSONArray childChildrenJSON = new JSONArray();
+//                    String valueRepresentation = value.getValueRepresentation();
+//                    child.put("displayValue", valueRepresentation);
+//                    child.put("size", valueRepresentation);
+//                    child.put("level", "metric");
+//                    child.put("freshness", value.getFreshness());
+//                    child.put("uniqueID", UUID.randomUUID().toString());
+//
+//                    JSONArray childChildrenJSON = new JSONArray();
                     for (MonitoredElement childElement : currentElement.getContainedElements()) {
                         JSONObject childChild = new JSONObject();
                         childChild.put("name", (childElement.getName().length() > 0) ? childElement.getName() : childElement.getId());
@@ -158,11 +219,11 @@ public class CostJSONConverter extends JsonConverter {
                         if (sms.contains(childElement.getLevel(), childElement)) {
                             elementsJSONStack.add(childChild);
                             elementsStack.add(childElement);
-                            childChildrenJSON.add(childChild);
+                            childrenJSON.add(childChild);
                         }
                     }
-                    child.put("children", childChildrenJSON);
-                    childrenJSON.add(child);
+//                    child.put("children", childChildrenJSON);
+//                    childrenJSON.add(child);
 
                 } else {
                     //here means the metric is a final leaf

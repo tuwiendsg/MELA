@@ -25,7 +25,7 @@
 
 // var elColors = ["#1C4946", "#1F7872", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"]
 //var elColors = ["#1C4946", "orange", "#72B095", "#DEDBA7", "#D13F31", "#8C9C9A", "#9DB2B1"]
-var pieVisColors = ["orange", "#DEDBA7", "#1F7872"]
+var pieVisColors = ["orange", "#F5FAFA", "#C1DAD6", "#E8D0A9"]
 
 var pieVisWidth;
 var pieVisHeight;
@@ -65,6 +65,8 @@ function mapNodesToColor(d, selected) {
         return pieVisColors[0];
     } else {
         if (d && d.level == "metric") {
+            return pieVisColors[3];
+        } else if (d.level == "CLOUD_OFFERED_SERVICE") {
             return pieVisColors[1];
         } else {
             return pieVisColors[2];
@@ -106,7 +108,8 @@ function setupPieVisualization(divID, trailDivID, w, h) {//, analyticsDivID) {
     pieVisWidth = w;
     pieVisHeight = w;
 
-    pieVisRadius = 0.5 * Math.min(pieVisWidth, pieVisHeight) / 2;
+    pieVisRadius = 0.7 * Math.min(pieVisWidth, pieVisHeight) / 2;
+//    pieFontSize = pieVisRadius / 30;
 
     pieX = d3.scale.linear().range([0, 2 * Math.PI]);
     pieY = d3.scale.pow().exponent(0.9).domain([0, 1]).range([0, pieVisRadius]);
@@ -119,10 +122,10 @@ function setupPieVisualization(divID, trailDivID, w, h) {//, analyticsDivID) {
                 return Math.max(0, Math.min(2 * Math.PI, pieX(d.x + d.dx)));
             })
             .innerRadius(function (d) {
-                return Math.max(0, d.y ? pieY(d.y) : d.y);
+                return Math.max(0, d.y ? pieY(d.y * 0.6) : d.y * 0.6);
             })
             .outerRadius(function (d) {
-                return Math.max(0, pieY(d.y + d.dy));
+                return Math.max(0, pieY(d.y * 0.6 + d.dy * 0.6));
             });
 
     pieChartSVG = pieDiv.append("svg:svg")
@@ -184,7 +187,10 @@ function drawPieChart(json) {
                     return mapNodesToColor(d, false);
                 })
                 .style("stroke", function (d) {
-                    return "#787878";
+                    return "white"; //#787878";
+                })
+                .style("stroke-width", function (d) {
+                    return 2; //#787878";
                 })
                 .on("mouseover", mouseover);
 
@@ -193,6 +199,8 @@ function drawPieChart(json) {
                     return "text_" + d.name;
                 });
 
+        var pathLength = path[0][0].getTotalLength();
+
         try {
             var thingBoundingBox = path[0][0].getBBox();
         } catch (error) {
@@ -200,43 +208,65 @@ function drawPieChart(json) {
         }
         ;
 
-        //if this is SERVICE level, then do not draw the label.
         if (d.level != "SERVICE") {
+            var name;
+            var thisFontSize = pieFontSize;
+            if (thingBoundingBox) {
+                pathLength = Math.max(thingBoundingBox.width, thingBoundingBox.height, Math.sqrt(Math.pow(thingBoundingBox.width, 2), Math.pow(thingBoundingBox.height, 2)));
+                if (pathLength >= d.name.length * pieFontSize / 2) {
+                    d.shortened = false;
+                    name = d.name;
+                } else {
+                    var splitMargin = (pathLength) / (pieFontSize / 2);
+                    d.shortened = true;
+//                thisFontSize = pathLength / d.name.length;
+                    if (splitMargin > 3) {
+                        name = d.name.substring(0, splitMargin - 3) + ".";
+                    } else {
+                        name = d.name.substring(0, splitMargin);
+                    }
+
+                }
+            } else {
+                name = d.name;
+            }
 
 
             //continue from http://bl.ocks.org/Caged/6476579 to add tooltips to small labels
             var appendedText = thing.append("text")
                     //compute width of ark to place text in middle of thickness
                     .attr("dy", function () {
-                        var inside = Math.max(0, d.y ? pieY(d.y) : d.y);
-                        var outsideRadius = Math.max(0, pieY(d.y + d.dy));
+                        var inside = Math.max(0, d.y ? pieY(d.y * 0.6) : d.y * 0.6);
+                        var outsideRadius = Math.max(0, pieY(d.y * 0.6 + d.dy * 0.6));
                         var thickness = outsideRadius - inside;
                         return thickness / 2; //last1 0 is half of font size
                     })
-                    .style("font-size", pieFontSize + "px")
+                    .style("font-size", thisFontSize + "px")
+
                     .append("textPath")
 
                     .attr("xlink:href", function () {
                         return "#path_" + d.uniqueID;
                     })
                     //place text towards middle of arc
-                    .attr("startOffset", "20%")
-                    .attr("text-anchor", "middle")
+                    .attr("startOffset", function () {
+                        if (d.shortened) {
+                            return "1%";
+                        } else {
+                            return "20%";
+                        }
+                    }
+                    )
+                    .attr("text-anchor", function () {
+                        if (d.shortened) {
+                            return "start";
+                        } else {
+                            return "middle";
+                        }
+                    })
 
                     .text(function () {
-                        if (thingBoundingBox) {
-                            boxWidth = Math.max(thingBoundingBox.width, thingBoundingBox.height);
-                            if (boxWidth >= d.name.length * pieFontSize / 2) {
-                                d.shortened = false;
-                                return d.name;
-                            } else {
-                                var splitMargin = (boxWidth - 3) / (pieFontSize * 2 / 3);
-                                d.shortened = true;
-                                return d.name.substring(0, splitMargin) + "...";
-                            }
-                        } else {
-                            return d.name;
-                        }
+                        return name;
                     })
                     ;
 
@@ -251,9 +281,9 @@ function drawPieChart(json) {
                 return a.depth > b.depth;
             })[0];
 
-            var outsideRadius = Math.max(0, pieY(outmostNode.y + outmostNode.dy));
+            var outsideRadius = Math.max(0, pieY(outmostNode.y * 0.6 + outmostNode.dy * 0.6));
 
-            var arcRadius = Math.max(0, pieY(d.y + d.dy));
+            var arcRadius = Math.max(0, pieY(d.y * 0.6 + d.dy * 0.6));
 
 
 //        var middleOfArc = d3.interpolateNumber(a, b);
@@ -302,8 +332,22 @@ function drawPieChart(json) {
                     textLines.push({text: d.name, line: lineData});
                 }
             }
-        }
 
+        } else {
+            var appendedText = pieChartSVG.append("text")
+                    //compute width of ark to place text in middle of thickness
+                    .attr("dy", "0")
+                    .attr("dx", "0")
+                    .attr("transform", "translate(" + pieVisWidth / 2 + "," + pieVisHeight / 2 + ")")
+                    .style("font-size", pieFontSize + "px")
+                    .text(function () {
+                        return d.name;
+                    })
+                    .attr("text-anchor","middle")
+                    ;
+
+
+        }
     });
 
 
@@ -393,7 +437,7 @@ function drawPieChart(json) {
 //            d.line = [d.line[1],d.line[2]];
 //        }
             pieChartVis.append("path").attr("d", lineFunction(d.line))
-                    .attr("stroke", "black")
+                    .attr("stroke", "#B7AFA3")
                     .attr("stroke-width", 1)
                     .attr("fill", "none");
             ;
@@ -429,6 +473,7 @@ function shiftOverlappingCoordinates(lines, shiftAmount) {
         }
 
     }
+
 
 
 }
@@ -523,7 +568,7 @@ function clear() {
                 return mapNodesToColor(d, false);
             })
             .style("stroke", function (d) {
-                return "#787878";
+                return "white";
             });
     ;
 }

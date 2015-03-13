@@ -33,6 +33,7 @@ import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Resource;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
 import java.io.File;
@@ -189,11 +190,10 @@ public class FlexiantCloudDescriptionGenerationTest {
                                 .withBillingPeriod(CostElement.BillingPeriod.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24))
+                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24 ))
                         .withCostElement(new CostElement("diskUsageCost")
                                 .withCostMetric(new Metric("IODataSize", "GB", Metric.MetricType.RESOURCE)) //todo Write Ganglia Plug-in for IOStat
                                 .withType(CostElement.Type.USAGE)
-                                //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
                                 .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d)));
                 provider.addCloudOfferedService(unit);
 
@@ -239,7 +239,10 @@ public class FlexiantCloudDescriptionGenerationTest {
                         .withSubcategory("VM")
                         .withName("" + helper.CPU + "CPU" + helper.RAM)
                         .withUuid(UUID.fromString("20000000-0000-0000-0000-00000000000" + index++));
-
+                
+                Resource r = new Resource("CPU");
+                r.addProperty(new Metric("VCPU", "#", Metric.MetricType.RESOURCE), new MetricValue(2));
+                
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))

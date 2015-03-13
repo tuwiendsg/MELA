@@ -67,12 +67,12 @@
             <table style="width:100%">
 
                 <tr>
-                    
                     <td>
-                       <div id="wheelView"></div> 
+                         <div id="treeView"></div>
                     </td>
+                    
                 </tr>
-                <tr><td><div id="trailDiv"></div></td><td>&nbsp;</td></tr>
+                
                 <tr><td><div id="analytics"></div></td><td>&nbsp;</td></tr>
 
 
@@ -89,10 +89,9 @@
             var query = window.location.search.substring(1);
             var vars = query.split("&");
             var serviceID = vars[0];
-            pieFontSize = 20;
 
-        
-            setupPieVisualization("wheelView", "trailDiv", window.innerWidth , window.innerHeight );
+            setupTreeView(vars[0], "treeView", window.innerWidth  , window.innerHeight , vars[1]);
+          
 
             var query = window.location.search.substring(1);
             var vars = query.split("&");
@@ -100,32 +99,32 @@
 
             var reqDataTreeViewMonitoringDataObject;
             var reqDataPieViewMonitoringDataObject;
- 
 
-            function refreshMonitoringDataPieView() {
-                reqDataPieViewMonitoringDataObject = null;
+            function refreshMonitoringDataTreeView() {
+                reqDataTreeViewMonitoringDataObject = null;
                 if (window.XMLHttpRequest) {
-                    reqDataPieViewMonitoringDataObject = new XMLHttpRequest();
+                    reqDataTreeViewMonitoringDataObject = new XMLHttpRequest();
                 } else {
-                    reqDataPieViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
+                    reqDataTreeViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
                 }
-                reqDataPieViewMonitoringDataObject.onreadystatechange = processMonitoringDataDataPieViewResponse;
-                reqDataPieViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/"+vars[1]+"/json/piechart", true);
-                reqDataPieViewMonitoringDataObject.send(null);
+                reqDataTreeViewMonitoringDataObject.onreadystatechange = processMonitoringDataTreeViewResponse;
+                reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/usage/"+vars[1]+"/json/tree", true);
+                reqDataTreeViewMonitoringDataObject.send(null);
             }
 
-            function processMonitoringDataDataPieViewResponse() {
-                if (reqDataPieViewMonitoringDataObject.readyState == 4) {
+            function processMonitoringDataTreeViewResponse() {
+                if (reqDataTreeViewMonitoringDataObject.readyState == 4) {
 
-                    var retrievedData = JSON.parse(reqDataPieViewMonitoringDataObject.responseText);
-                    updatePieVisualization(retrievedData);
+                    var retrievedData = JSON.parse(reqDataTreeViewMonitoringDataObject.responseText);
+                    updateTreeView(retrievedData);
 
-
-                    setTimeout(refreshMonitoringDataPieView, 5000);
+                    setTimeout(refreshMonitoringDataTreeView, 5000);
                 }
             }
 
-            refreshMonitoringDataPieView();
+            refreshMonitoringDataTreeView();
+
+            
 
         </script>
 
