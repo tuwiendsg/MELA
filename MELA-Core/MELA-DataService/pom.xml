@@ -84,6 +84,7 @@
             <version>3.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
+    
         
          <!-- Apache CXF JAX-RS -->
         <dependency>

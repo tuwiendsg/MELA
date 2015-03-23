@@ -20,26 +20,29 @@
 package at.ac.tuwien.dsg.mela.costeval.persistence;
 
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.ServiceElasticityPathway;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
-import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -87,14 +90,6 @@ public class PersistenceDelegate {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public void persistElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
-        try {
-            persistenceSQLAccess.writeElasticitySpace(elasticitySpace, monitoringSequenceID);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-    }
-
     public ElasticitySpace extractLatestInstantCostElasticitySpace(String monitoringSequenceID) {
         String sql = "SELECT startTimestampID, endTimestampID, elasticitySpace from InstantCostElasticitySpace where monSeqID=? and ID=(SELECT MAX(ID) from InstantCostElasticitySpace where monSeqID=?);";
         RowMapper<ElasticitySpace> rowMapper = new RowMapper<ElasticitySpace>() {
@@ -114,6 +109,19 @@ public class PersistenceDelegate {
 
     public void persistInstantCostElasticitySpace(ElasticitySpace elasticitySpace, String monitoringSequenceID) {
 
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream;
+        try {
+            objectOutputStream = new ObjectOutputStream(new GZIPOutputStream(out));
+            objectOutputStream.writeObject(elasticitySpace);
+            objectOutputStream.close();
+        } catch (IOException ex) {
+            log.info(ex.getMessage(), ex);
+            return;
+        }
+
+        byte[] zipped = out.toByteArray();
+
         String sql = "DELETE FROM InstantCostElasticitySpace WHERE monseqid=?";
         jdbcTemplate.update(sql, elasticitySpace.getService().getId());
 
@@ -123,11 +131,24 @@ public class PersistenceDelegate {
                 + "( (SELECT ID FROM MonitoringSeq WHERE id='"
                 + monitoringSequenceID + "')" + ", ? , ? " + ", ? )";
 
-        jdbcTemplate.update(sql, elasticitySpace.getStartTimestampID(), elasticitySpace.getEndTimestampID(), elasticitySpace);
+        jdbcTemplate.update(sql, elasticitySpace.getStartTimestampID(), elasticitySpace.getEndTimestampID(), zipped);
 
     }
 
     public void persistInstantCostElasticityPathway(ServiceElasticityPathway elasticityPathway, String monitoringSequenceID) {
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream;
+        try {
+            objectOutputStream = new ObjectOutputStream(new GZIPOutputStream(out));
+            objectOutputStream.writeObject(elasticityPathway);
+            objectOutputStream.close();
+        } catch (IOException ex) {
+            log.info(ex.getMessage(), ex);
+            return;
+        }
+
+        byte[] zipped = out.toByteArray();
 
         String sql = "DELETE FROM InstantCostElasticityPathway WHERE monseqid=?";
         jdbcTemplate.update(sql, monitoringSequenceID);
@@ -138,7 +159,7 @@ public class PersistenceDelegate {
                 + "( (SELECT ID FROM MonitoringSeq WHERE id='"
                 + monitoringSequenceID + "')" + ", ? , ? )";
 
-        jdbcTemplate.update(sql, elasticityPathway.getTimestampID(), elasticityPathway);
+        jdbcTemplate.update(sql, elasticityPathway.getTimestampID(), zipped);
 
     }
 
@@ -315,9 +336,22 @@ public class PersistenceDelegate {
 //            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
 //            jdbcTemplate.update(sql, serviceID);
 //        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream;
+        try {
+            objectOutputStream = new ObjectOutputStream(new GZIPOutputStream(out));
+            objectOutputStream.writeObject(serviceUsageSnapshot);
+            objectOutputStream.close();
+        } catch (IOException ex) {
+            log.info(ex.getMessage(), ex);
+            return;
+        }
+
+        byte[] zipped = out.toByteArray();
+
         {
             String sql = "INSERT INTO CaschedHistoricalUsage (monseqid, timestampID, data) VALUES (?, ?, ?)";
-            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
+            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), zipped);
         }
 
     }
@@ -335,9 +369,22 @@ public class PersistenceDelegate {
 //            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
 //            jdbcTemplate.update(sql, serviceID);
 //        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream;
+        try {
+            objectOutputStream = new ObjectOutputStream(new GZIPOutputStream(out));
+            objectOutputStream.writeObject(serviceUsageSnapshot);
+            objectOutputStream.close();
+        } catch (IOException ex) {
+            log.info(ex.getMessage(), ex);
+            return;
+        }
+
+        byte[] zipped = out.toByteArray();
+
         {
             String sql = "INSERT INTO CaschedCompleteHistoricalUsage (monseqid, timestampID, data) VALUES (?, ?, ?)";
-            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
+            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), zipped);
         }
 
     }
@@ -383,9 +430,22 @@ public class PersistenceDelegate {
 //            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
 //            jdbcTemplate.update(sql, serviceID);
 //        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream;
+        try {
+            objectOutputStream = new ObjectOutputStream(new GZIPOutputStream(out));
+            objectOutputStream.writeObject(serviceUsageSnapshot);
+            objectOutputStream.close();
+        } catch (IOException ex) {
+            log.info(ex.getMessage(), ex);
+            return;
+        }
+
+        byte[] zipped = out.toByteArray();
+
         {
             String sql = "INSERT INTO InstantCostHistory (monseqid, timestampID, data) VALUES (?, ?, ?)";
-            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
+            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), zipped);
         }
 
     }
@@ -409,6 +469,19 @@ public class PersistenceDelegate {
 
     public void persistTotalCostSnapshot(String serviceID, CostEnrichedSnapshot serviceUsageSnapshot) {
 
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream;
+        try {
+            objectOutputStream = new ObjectOutputStream(new GZIPOutputStream(out));
+            objectOutputStream.writeObject(serviceUsageSnapshot);
+            objectOutputStream.close();
+        } catch (IOException ex) {
+            log.info(ex.getMessage(), ex);
+            return;
+        }
+
+        byte[] zipped = out.toByteArray();
+
 //        //delete old cached
 //        {
 //            String sql = "DELETE FROM CaschedHistoricalUsage WHERE monseqid=?";
@@ -416,7 +489,7 @@ public class PersistenceDelegate {
 //        }
         {
             String sql = "INSERT INTO TotalCostHistory (monseqid, timestampID, data) VALUES (?, ?, ?)";
-            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), serviceUsageSnapshot);
+            jdbcTemplate.update(sql, serviceID, serviceUsageSnapshot.getLastUpdatedTimestampID(), zipped);
         }
 
     }
@@ -428,19 +501,16 @@ public class PersistenceDelegate {
         //if array of bytes as mysql returns
         if (data instanceof byte[]) {
             try {
-                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
-                ObjectInput in = new ObjectInputStream(bis);
-                CostEnrichedSnapshot snapshot = (CostEnrichedSnapshot) in.readObject();
+                ObjectInputStream inputStream = new ObjectInputStream(new GZIPInputStream(new ByteArrayInputStream((byte[]) data)));
+                CostEnrichedSnapshot snapshot = (CostEnrichedSnapshot) inputStream.readObject();
                 snapshot.setLastUpdatedTimestampID(sTimestamp);
                 return snapshot;
-            } catch (ClassNotFoundException ex) {
-                log.info(ex.getMessage(), ex);
-                return new CostEnrichedSnapshot();
-            } catch (IOException ex) {
+            } catch (IOException | ClassNotFoundException ex) {
                 log.info(ex.getMessage(), ex);
                 return new CostEnrichedSnapshot();
             }
         } else {
+            log.info("Can't deserialize returned space of class {}", data.getClass());
             //can convert and return with H2 and HyperSQL adapters
             CostEnrichedSnapshot snapshot = (CostEnrichedSnapshot) rs.getObject(2);
             snapshot.setLastUpdatedTimestampID(sTimestamp);
@@ -455,9 +525,8 @@ public class PersistenceDelegate {
         //if array of bytes as mysql returns
         if (data instanceof byte[]) {
             try {
-                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
-                ObjectInput in = new ObjectInputStream(bis);
-                LifetimeEnrichedSnapshot snapshot = (LifetimeEnrichedSnapshot) in.readObject();
+                ObjectInputStream inputStream = new ObjectInputStream(new GZIPInputStream(new ByteArrayInputStream((byte[]) data)));
+                LifetimeEnrichedSnapshot snapshot = (LifetimeEnrichedSnapshot) inputStream.readObject();
                 snapshot.setLastUpdatedTimestampID(sTimestamp);
                 return snapshot;
             } catch (ClassNotFoundException ex) {
@@ -468,6 +537,7 @@ public class PersistenceDelegate {
                 return new LifetimeEnrichedSnapshot();
             }
         } else {
+            log.info("Can't deserialize returned space of class {}", data.getClass());
             //can convert and return with H2 and HyperSQL adapters
             LifetimeEnrichedSnapshot snapshot = (LifetimeEnrichedSnapshot) rs.getObject(2);
             snapshot.setLastUpdatedTimestampID(sTimestamp);
@@ -484,25 +554,23 @@ public class PersistenceDelegate {
         //if array of bytes as mysql returns
         if (data instanceof byte[]) {
             try {
-                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
-                ObjectInput in = new ObjectInputStream(bis);
-                ElasticitySpace space = (ElasticitySpace) in.readObject();
+                ObjectInputStream inputStream = new ObjectInputStream(new GZIPInputStream(new ByteArrayInputStream((byte[]) data)));
+                ElasticitySpace space = (ElasticitySpace) inputStream.readObject();
                 space.setStartTimestampID(startTimestamp);
                 space.setEndTimestampID(endTimestamp);
                 return space;
-            } catch (ClassNotFoundException ex) {
-                log.info(ex.getMessage(), ex);
-                return new ElasticitySpace();
-            } catch (IOException ex) {
+            } catch (IOException | ClassNotFoundException ex) {
                 log.info(ex.getMessage(), ex);
                 return new ElasticitySpace();
             }
         } else {
-            //can convert and space with H2 and HyperSQL adapters
-            ElasticitySpace space = (ElasticitySpace) rs.getObject(3);
-            space.setStartTimestampID(startTimestamp);
-            space.setEndTimestampID(endTimestamp);
-            return space;
+//            //can convert and space with H2 and HyperSQL adapters
+//            ElasticitySpace space = (ElasticitySpace) rs.getObject(3);
+//            space.setStartTimestampID(startTimestamp);
+//            space.setEndTimestampID(endTimestamp);
+//            return space;
+            log.info("Can't deserialize returned space of class {}", data.getClass());
+            return new ElasticitySpace();
         }
     }
 
@@ -514,19 +582,16 @@ public class PersistenceDelegate {
         //if array of bytes as mysql returns
         if (data instanceof byte[]) {
             try {
-                ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) data);
-                ObjectInput in = new ObjectInputStream(bis);
-                ServiceElasticityPathway space = (ServiceElasticityPathway) in.readObject();
+                ObjectInputStream inputStream = new ObjectInputStream(new GZIPInputStream(new ByteArrayInputStream((byte[]) data)));
+                ServiceElasticityPathway space = (ServiceElasticityPathway) inputStream.readObject();
                 space.setTimestampID(timestamp);
                 return space;
-            } catch (ClassNotFoundException ex) {
-                log.info(ex.getMessage(), ex);
-                return new ServiceElasticityPathway();
-            } catch (IOException ex) {
+            } catch (IOException | ClassNotFoundException ex) {
                 log.info(ex.getMessage(), ex);
                 return new ServiceElasticityPathway();
             }
         } else {
+            log.info("Can't deserialize returned space of class {}", data.getClass());
             //can convert and space with H2 and HyperSQL adapters
             ServiceElasticityPathway space = (ServiceElasticityPathway) rs.getObject(3);
             space.setTimestampID(timestamp);
@@ -612,9 +677,9 @@ public class PersistenceDelegate {
     public void writeConfiguration(String monitoringSequenceID, final ConfigurationXMLRepresentation configurationXMLRepresentation) {
         persistenceSQLAccess.writeConfiguration(monitoringSequenceID, configurationXMLRepresentation);
     }
-    
+
     public void writeInTimestamp(String timestamp, MonitoredElement serviceStructure, String monitoringSequenceID) {
-       persistenceSQLAccess.writeInTimestamp(timestamp, serviceStructure, monitoringSequenceID);
+        persistenceSQLAccess.writeInTimestamp(timestamp, serviceStructure, monitoringSequenceID);
     }
 
 }
