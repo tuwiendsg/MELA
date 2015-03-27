@@ -181,6 +181,18 @@ public class DataService {
         return collectionService.getLatestMonitoringDataINJSON(serviceID);
     }
 
+    @GET
+    @Path("/{serviceID}/monitoringdata/{monitoredElementID}/{monitoredElementLevel}/{metricName}/{metricUnit}")
+    @Produces("text/plain")
+    public String getValueForParticularMetric(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel,
+            @PathParam("metricName") String metricName,
+            @PathParam("metricUnit") String metricUnit
+    ) {
+        return collectionService.getLatestValueForParticularMetric(serviceID, monitoredElementID, monitoredElementlevel, metricName, metricUnit);
+    }
+
     /**
      * @return the service structure containing all virtual machines currently
      * running service units
@@ -225,11 +237,10 @@ public class DataService {
     @GET
     @Path("/{serviceID}/historicalmonitoringdata/fromtimestamp/xml")
     @Produces("application/xml")
-    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataFromTimestamp(@PathParam("serviceID") String serviceID, @QueryParam("timestamp") long timestamp)
-    {
+    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataFromTimestamp(@PathParam("serviceID") String serviceID, @QueryParam("timestamp") long timestamp) {
         return collectionService.getAllAggregatedMonitoringDataFromTimestamp(serviceID, timestamp);
     }
-    
+
     @GET
     @Path("/{serviceID}/historicalmonitoringdata/lastX/xml")
     @Produces("application/xml")

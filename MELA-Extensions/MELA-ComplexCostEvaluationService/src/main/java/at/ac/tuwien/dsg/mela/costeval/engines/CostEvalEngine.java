@@ -42,6 +42,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Relationship;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
+import at.ac.tuwien.dsg.mela.costeval.model.UnusedCostUnitsReport;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
@@ -49,6 +50,7 @@ import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Quality;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Resource;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
@@ -57,6 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import org.springframework.util.comparator.ComparableComparator;
 
 /**
  *
@@ -372,7 +375,7 @@ public class CostEvalEngine {
         return toClean;
     }
 
-    public LifetimeEnrichedSnapshot updateTotalUsageSoFarWithCompleteStructureIncludingServicesASVMTypes(Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices, LifetimeEnrichedSnapshot previousUsage, ServiceMonitoringSnapshot currentMonData) {
+    public LifetimeEnrichedSnapshot updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices, LifetimeEnrichedSnapshot previousUsage, ServiceMonitoringSnapshot currentMonData) {
 
         if (currentMonData == null) {
             return new LifetimeEnrichedSnapshot();
@@ -380,7 +383,7 @@ public class CostEvalEngine {
 
         if (previousUsage == null) {
             LifetimeEnrichedSnapshot updatedSnapshot = new LifetimeEnrichedSnapshot()
-                    .withSnapshot(convertToStructureIncludingServicesASVMTypes(cloudOfferedServices, currentMonData))
+                    .withSnapshot(convertToStructureIncludingServicesAsCloudOfferedService(cloudOfferedServices, currentMonData))
                     .withLastUpdatedTimestampID(currentMonData.getTimestampID());
             return updatedSnapshot;
         }
@@ -394,7 +397,7 @@ public class CostEvalEngine {
 
         ServiceMonitoringSnapshot usageSoFarSnapshot = updatedSnapshot.getSnapshot();
 
-        ServiceMonitoringSnapshot currentDataConverted = convertToStructureIncludingServicesASVMTypes(cloudOfferedServices, currentMonData);
+        ServiceMonitoringSnapshot currentDataConverted = convertToStructureIncludingServicesAsCloudOfferedService(cloudOfferedServices, currentMonData);
 
         MonitoredElementMonitoringSnapshot previousUsageData = usageSoFarSnapshot.getMonitoredData(usageSoFarSnapshot.getMonitoredService());
 
@@ -610,7 +613,7 @@ public class CostEvalEngine {
 
     }
 
-    public CompositionRulesBlock createCompositionRulesForTotalCostIncludingServicesASVMTypes(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
+    public CompositionRulesBlock createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
             final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
 
         List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
@@ -758,7 +761,10 @@ public class CostEvalEngine {
                                     } else if (timePeriod.equals("d")) {
                                         costPeriodsFromCreation = seconds / 86400;
                                     }
-
+                                    //minimum periodic usage is always rounded up and billed 
+                                    if (costPeriodsFromCreation == 0) {
+                                        costPeriodsFromCreation = 1l;
+                                    }
                                     //we need to go trough all cost element interval, and apply correct cost for each interval
                                     MetricValue costForValue = new MetricValue(0l);
                                     Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
@@ -770,7 +776,11 @@ public class CostEvalEngine {
                                         MetricValue previousCostIntervalElement = costIntervalsInAscendingOrder.get(i - 1);
 
                                         Long usageForInterval = costPeriodsFromCreation - ((Number) previousCostIntervalElement.getValue()).longValue();
-
+                                        //must always round up to 1, as we do not pay fractions of cost per fractionally used services
+                                        //so only if 0.something we round up to 1. if usage between last mon things is 0, then we do not pay it
+                                        if (usageForInterval < 1 && usageForInterval > 0) {
+                                            usageForInterval = 1l;
+                                        }
                                         if (usageForInterval >= 0) {
                                             MetricValue costForThisInterval = new MetricValue(usageForInterval);
                                             costForThisInterval.multiply(costIntervalFunction.get(currentCostIntervalElement));
@@ -975,6 +985,285 @@ public class CostEvalEngine {
     }
 
     /**
+     * The objective of this function is to compute how much we have actually
+     * used from the billed services, used when destroying a unit instance, with
+     * respect to the instance usage. So for example, if I pay per hour but
+     * destroy the VM after 30 minutes, I have used only 50% of what I payed
+     * for. Even more complex, we need to also consider cost per usage. So, I
+     * have 2 VMs and I want to scale 1, but one did 0.9 GB of I/O, while
+     * anotwer did only 0.5. If cost is pe GB of I/O, I would scale the first
+     * one. Of course, we must consider cost for I/O and VM usage, and do a
+     * cost-weighted sum, and scale the one with least cost. This method
+     * evaluates this cost waste, and returns a detailed report (for nicely
+     * printing) on cost of scaling each instance.
+     *
+     * @param cloudOfferedServices
+     * @param totalUsageSoFar
+     * @param currentTimesnapshot
+     * @param unitForWhichWeAssessTheCostEfficiencyOfItsUnits for which all its
+     * instances, i.e. VM level children are retrieved, and their unused cost
+     * computed
+     * @return a list of reports sorted after lowest unused cost first.
+     */
+    public List<UnusedCostUnitsReport> computeEffectiveUsageOfBilledServices(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
+            final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot, MonitoredElement unitForWhichWeAssessTheCostEfficiencyOfItsUnits) {
+
+        if (!unitForWhichWeAssessTheCostEfficiencyOfItsUnits.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
+            log.error("Unit {} to  scale instances in is not SERVICE_UNIT. Not supported yet for higher level things", unitForWhichWeAssessTheCostEfficiencyOfItsUnits.getName());
+            return new ArrayList<>();
+        }
+
+        List<UnusedCostUnitsReport> report = new ArrayList<>();
+
+        ServiceMonitoringSnapshot monitoringSnapshot = totalUsageSoFar.getSnapshot();
+
+        for (MonitoredElement unitInstance : unitForWhichWeAssessTheCostEfficiencyOfItsUnits.getContainedElements()) {
+            if (!unitInstance.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
+                log.error("Child {} for unit is not VM. Not supported yet for higher level things", new Object[]{unitInstance.getName(), unitForWhichWeAssessTheCostEfficiencyOfItsUnits.getName()});
+                continue;
+            }
+            UnusedCostUnitsReport costUnitsReport = new UnusedCostUnitsReport();
+            costUnitsReport.withUnitInstance(unitInstance);
+
+            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = monitoringSnapshot.getMonitoredData(unitInstance);
+            Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, unitInstance);
+            //todo : need to go trough all offered service and see how much I waste. them compute all waste.
+
+            for (UsedCloudOfferedService service : elementMonitoringSnapshot.getMonitoredElement().getCloudOfferedServices()) {
+
+                //from the cost functions, we extract those that should be applied.
+                //maybe some do not quality to be apply as the service does not fulfill application requirements
+                List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(service);
+
+                //start with USAGE type of cost, easier to apply. 
+                for (CostFunction cf : costFunctionsToApply) {
+
+                    for (CostElement element : cf.getCostElements()) {
+                        MetricValue value;
+                        Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
+
+                        if (element.getType().equals(CostElement.Type.USAGE)) {
+                            value = elementMonitoringSnapshot.getMonitoredData().get(element.getCostMetric());
+                        } else if (element.getType().equals(CostElement.Type.PERIODIC)) {
+                            Long currentTimestamp = Long.parseLong(currentTimesnapshot);
+                            Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(unitInstance, service);
+
+                            //convert to seconds
+                            Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
+
+                            Double costPeriodsFromCreation = 0d;
+
+                            String timePeriod = "s";
+
+                            if (element.getCostMetric().getMeasurementUnit().contains("/")) {
+                                timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+                            }
+
+                            //must standardise these somehow
+                            if (timePeriod.equals("s")) {
+                                costPeriodsFromCreation = seconds;
+                            } else if (timePeriod.equals("m")) {
+                                costPeriodsFromCreation = seconds / 60;
+                            } else if (timePeriod.equals("h")) {
+                                costPeriodsFromCreation = seconds / 3600;
+                            } else if (timePeriod.equals("d")) {
+                                costPeriodsFromCreation = seconds / 86400;
+                            }
+                            value = new MetricValue(costPeriodsFromCreation);
+                        } else {
+                            value = null;
+                            log.error("This should not happen, cost element {} with type {}", new Object[]{element.getName(), element.getType()});
+                        }
+
+                        if (value != null) {
+                            //instant snapshot composition rule 
+                            {
+
+                                //we need to go trough all cost element interval, and apply correct cost for each interval
+                                List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
+
+                                for (int i = 0; i < costIntervalsInAscendingOrder.size(); i++) {
+
+                                    MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
+
+                                    //need first interval > current value, then we substract prev interval, and see how much we used in the current one
+                                    if (costIntervalElement.compareTo(value) > 0) {
+
+                                        Double usageBetweenLastAndCurrentInterval = null;
+                                        if (i > 0) {
+                                            usageBetweenLastAndCurrentInterval = ((Number) value.getValue()).doubleValue() - ((Number) costIntervalsInAscendingOrder.get(i - 1).getValue()).doubleValue();
+                                        } else {
+                                            usageBetweenLastAndCurrentInterval = ((Number) value.getValue()).doubleValue();
+                                        }
+                                        //need to extract only the units which were not used completely, i.e., the thing after .
+                                        //for example, if until now it used 4.5 units, i am interested in 0.5, as it will pay for full, but used only half
+                                        usageBetweenLastAndCurrentInterval -= usageBetweenLastAndCurrentInterval.longValue();
+                                        Double costPerUnitForThisInterval = costIntervalFunction.get(costIntervalElement);
+                                        Double usedCostPercentage = costPerUnitForThisInterval * usageBetweenLastAndCurrentInterval;
+                                        costUnitsReport.withUnusedCostForCloudOfferedService(service, element.getCostMetric(), usedCostPercentage, costPerUnitForThisInterval);
+                                        break;
+                                    }
+                                }
+
+                            }
+
+                        }
+                    }
+
+                }
+            }
+
+            report.add(costUnitsReport);
+        }
+
+        Collections.sort(report, new Comparator<UnusedCostUnitsReport>() {
+
+            @Override
+            public int compare(UnusedCostUnitsReport t, UnusedCostUnitsReport t1) {
+                //larger is better
+                return -1 * new Double(t.getTotalCostUsedFromWhatWasBilled()).compareTo(t1.getTotalCostUsedFromWhatWasBilled());
+            }
+
+        });
+
+        return report;
+    }
+
+    /**
+     * Similar to the method above, but only considers lifetime (so periodic
+     * cost), not per USAGE
+     *
+     * @param cloudOfferedServices
+     * @param totalUsageSoFar
+     * @param currentTimesnapshot
+     * @param unitForWhichWeAssessTheCostEfficiencyOfItsUnits
+     * @return
+     */
+    public List<UnusedCostUnitsReport> computeLifetimeInBillingPeriods(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
+            final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot, MonitoredElement unitForWhichWeAssessTheCostEfficiencyOfItsUnits) {
+
+        if (!unitForWhichWeAssessTheCostEfficiencyOfItsUnits.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
+            log.error("Unit {} to  scale instances in is not SERVICE_UNIT. Not supported yet for higher level things", unitForWhichWeAssessTheCostEfficiencyOfItsUnits.getName());
+            return new ArrayList<>();
+        }
+
+        List<UnusedCostUnitsReport> report = new ArrayList<>();
+
+        ServiceMonitoringSnapshot monitoringSnapshot = totalUsageSoFar.getSnapshot();
+
+        for (MonitoredElement unitInstance : unitForWhichWeAssessTheCostEfficiencyOfItsUnits.getContainedElements()) {
+            if (!unitInstance.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
+                log.error("Child {} for unit is not VM. Not supported yet for higher level things", new Object[]{unitInstance.getName(), unitForWhichWeAssessTheCostEfficiencyOfItsUnits.getName()});
+                continue;
+            }
+            UnusedCostUnitsReport costUnitsReport = new UnusedCostUnitsReport();
+            costUnitsReport.withUnitInstance(unitInstance);
+
+            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = monitoringSnapshot.getMonitoredData(unitInstance);
+            Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, unitInstance);
+            //todo : need to go trough all offered service and see how much I waste. them compute all waste.
+
+            for (UsedCloudOfferedService service : elementMonitoringSnapshot.getMonitoredElement().getCloudOfferedServices()) {
+
+                //from the cost functions, we extract those that should be applied.
+                //maybe some do not quality to be apply as the service does not fulfill application requirements
+                List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(service);
+
+                //start with USAGE type of cost, easier to apply. 
+                for (CostFunction cf : costFunctionsToApply) {
+
+                    for (CostElement element : cf.getCostElements()) {
+                        MetricValue value;
+                        Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
+
+                        if (element.getType().equals(CostElement.Type.USAGE)) {
+                            continue;
+                        } else if (element.getType().equals(CostElement.Type.PERIODIC)) {
+                            Long currentTimestamp = Long.parseLong(currentTimesnapshot);
+                            Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(unitInstance, service);
+
+                            //convert to seconds
+                            Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
+
+                            Double costPeriodsFromCreation = 0d;
+
+                            String timePeriod = "s";
+
+                            if (element.getCostMetric().getMeasurementUnit().contains("/")) {
+                                timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+                            }
+
+                            //must standardise these somehow
+                            if (timePeriod.equals("s")) {
+                                costPeriodsFromCreation = seconds;
+                            } else if (timePeriod.equals("m")) {
+                                costPeriodsFromCreation = seconds / 60;
+                            } else if (timePeriod.equals("h")) {
+                                costPeriodsFromCreation = seconds / 3600;
+                            } else if (timePeriod.equals("d")) {
+                                costPeriodsFromCreation = seconds / 86400;
+                            }
+                            value = new MetricValue(costPeriodsFromCreation);
+                        } else {
+                            value = null;
+                            log.error("This should not happen, cost element {} with type {}", new Object[]{element.getName(), element.getType()});
+                        }
+
+                        if (value != null) {
+                            //instant snapshot composition rule 
+                            {
+
+                                //we need to go trough all cost element interval, and apply correct cost for each interval
+                                List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
+
+                                for (int i = 0; i < costIntervalsInAscendingOrder.size(); i++) {
+
+                                    MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
+
+                                    //need first interval > current value, then we substract prev interval, and see how much we used in the current one
+                                    if (costIntervalElement.compareTo(value) > 0) {
+
+                                        Double usageBetweenLastAndCurrentInterval = null;
+                                        if (i > 0) {
+                                            usageBetweenLastAndCurrentInterval = ((Number) value.getValue()).doubleValue() - ((Number) costIntervalsInAscendingOrder.get(i - 1).getValue()).doubleValue();
+                                        } else {
+                                            usageBetweenLastAndCurrentInterval = ((Number) value.getValue()).doubleValue();
+                                        }
+                                        //need to extract only the units which were not used completely, i.e., the thing after .
+                                        //for example, if until now it used 4.5 units, i am interested in 0.5, as it will pay for full, but used only half
+                                        usageBetweenLastAndCurrentInterval -= usageBetweenLastAndCurrentInterval.longValue();
+                                        Double costPerUnitForThisInterval = costIntervalFunction.get(costIntervalElement);
+                                        Double usedCostPercentage = costPerUnitForThisInterval * usageBetweenLastAndCurrentInterval;
+                                        costUnitsReport.withUnusedCostForCloudOfferedService(service, element.getCostMetric(), usedCostPercentage, costPerUnitForThisInterval);
+                                        break;
+                                    }
+                                }
+
+                            }
+
+                        }
+                    }
+
+                }
+            }
+
+            report.add(costUnitsReport);
+        }
+
+        Collections.sort(report, new Comparator<UnusedCostUnitsReport>() {
+
+            @Override
+            public int compare(UnusedCostUnitsReport t, UnusedCostUnitsReport t1) {
+                //larger is better
+                return -1 * new Double(t.getTotalCostUsedFromWhatWasBilled()).compareTo(t1.getTotalCostUsedFromWhatWasBilled());
+            }
+
+        });
+
+        return report;
+    }
+
+    /**
      *
      * @param cloudOfferedServices map of cloud pricing schemes
      * @param monitoredElement service structure
@@ -983,7 +1272,7 @@ public class CostEvalEngine {
      * @param currentTimesnapshot not sure why is needed
      * @return
      */
-    public CompositionRulesBlock createCompositionRulesForInstantUsageCostIncludingServicesASVMTypes(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
+    public CompositionRulesBlock createCompositionRulesForInstantUsageCostIncludingServicesAsCloudOfferedService(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
             final MonitoredElement monitoredElement, final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
 
         CompositionRulesBlock costCompositionRules = new CompositionRulesBlock();
@@ -991,7 +1280,7 @@ public class CostEvalEngine {
         ServiceMonitoringSnapshot monitoringSnapshot = totalUsageSoFar.getSnapshot();
 
         Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
-
+        Map<Metric, List<MonitoredElement>> mapWithCreatedMetricsForEachService = new HashMap<>();
         {
             for (UsedCloudOfferedService service : monitoredElement.getCloudOfferedServices()) {
                 {
@@ -1028,7 +1317,18 @@ public class CostEvalEngine {
                                         if (element.getCostMetric().getMeasurementUnit().contains("/")) {
                                             timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
                                         }
-                                        compositionRule.setResultingMetric(new Metric("cost_" + element.getCostMetric().getName(), "costUnits/" + timePeriod, Metric.MetricType.COST));
+                                        Metric resultingCostMetric = new Metric("cost_" + element.getCostMetric().getName(), "costUnits/" + timePeriod, Metric.MetricType.COST);
+                                        compositionRule.setResultingMetric(resultingCostMetric);
+
+                                        List<MonitoredElement> servicesGeneratingThisMetric;
+                                        if (mapWithCreatedMetricsForEachService.containsKey(resultingCostMetric)) {
+                                            servicesGeneratingThisMetric = mapWithCreatedMetricsForEachService.get(resultingCostMetric);
+                                        } else {
+                                            servicesGeneratingThisMetric = new ArrayList<>();
+                                            mapWithCreatedMetricsForEachService.put(resultingCostMetric, servicesGeneratingThisMetric);
+                                        }
+                                        servicesGeneratingThisMetric.add(usedCloudServiceMonitoredElement);
+
                                         CompositionOperation compositionOperation = new CompositionOperation();
 
 //                                        compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
@@ -1175,7 +1475,7 @@ public class CostEvalEngine {
 
                     @Override
                     public void run() {
-                        CompositionRulesBlock childRules = createCompositionRulesForInstantUsageCostIncludingServicesASVMTypes(cloudOfferedServices, child, totalUsageSoFar, currentTimesnapshot);
+                        CompositionRulesBlock childRules = createCompositionRulesForInstantUsageCostIncludingServicesAsCloudOfferedService(cloudOfferedServices, child, totalUsageSoFar, currentTimesnapshot);
                         //do not add duplicate rules
                         //add cost rate rules
                         for (CompositionRule childRule : childRules.getCompositionRules()) {
@@ -1267,6 +1567,38 @@ public class CostEvalEngine {
 
             }
 
+//               //here I create rules that bring cost of all used services by current element aggregated to cost of monitored element
+//            //helps in historical view using elasticity space
+//            {
+//                for (Metric m : mapWithCreatedMetricsForEachService.keySet()) {
+//                    {
+//                        CompositionRule metricCostRule = new CompositionRule();
+//                        metricCostRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                        metricCostRule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//                        metricCostRule.setResultingMetric(m);
+//
+//                    //we sum up each of the metrics from the children                
+//                        //one big  SUM operation
+//                        {
+//                            CompositionOperation sumOperation = new CompositionOperation();
+//                            sumOperation.setOperationType(CompositionOperationType.SUM);
+//                            metricCostRule.setOperation(sumOperation);
+//
+//                            for (MonitoredElement element : mapWithCreatedMetricsForEachService.get(m)) {
+//
+//                                CompositionOperation compositionOperation = new CompositionOperation();
+//                                compositionOperation.setMetricSourceMonitoredElementLevel(element.getLevel());
+//                                compositionOperation.addMetricSourceMonitoredElementID(element.getId());
+//                                compositionOperation.setTargetMetric(ELEMENT_COST_METRIC);
+//                                compositionOperation.setOperationType(CompositionOperationType.KEEP);
+//                                sumOperation.addCompositionOperation(compositionOperation);
+//
+//                            }
+//                            costCompositionRules.addCompositionRule(metricCostRule);
+//                        }
+//                    }
+//                }
+//            }
         }
 
         return costCompositionRules;
@@ -1500,7 +1832,16 @@ public class CostEvalEngine {
         return updatedSnapshot;
     }
 
-    public ServiceMonitoringSnapshot convertToStructureIncludingServicesASVMTypes(Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices, ServiceMonitoringSnapshot monData) {
+    /**
+     * Takes the used cloud offered service by each monitored element, and
+     * transforms it in a child monitored element with necessary associated
+     * monitoring information
+     *
+     * @param cloudOfferedServices
+     * @param monData
+     * @return
+     */
+    public ServiceMonitoringSnapshot convertToStructureIncludingServicesAsCloudOfferedService(Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices, ServiceMonitoringSnapshot monData) {
 
         if (monData == null) {
             return new ServiceMonitoringSnapshot();

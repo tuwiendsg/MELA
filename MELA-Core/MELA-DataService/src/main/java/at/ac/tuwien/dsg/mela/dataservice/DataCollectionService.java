@@ -756,6 +756,25 @@ public class DataCollectionService {
         return converted;
     }
 
+    public String getLatestValueForParticularMetric(String serviceID, String monitoredElementID, String monitoredElementLevel,
+            String metricName, String MetricUnit) {
+
+        ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData(serviceID);
+        if (serviceMonitoringSnapshot == null) {
+            return "";
+        }
+
+        MonitoredElement.MonitoredElementLevel level = MonitoredElement.MonitoredElementLevel.valueOf(monitoredElementLevel);
+
+        MonitoredElement element = new MonitoredElement(monitoredElementID).withLevel(level);
+        if (serviceMonitoringSnapshot.contains(level, element)) {
+            return serviceMonitoringSnapshot.getMonitoredData(element).getMetricValue(new Metric(metricName, MetricUnit)).getValueRepresentation();
+        } else {
+            return "";
+        }
+
+    }
+
     public MonitoredElement getLatestServiceStructure(String serviceID) {
         Date before = new Date();
 

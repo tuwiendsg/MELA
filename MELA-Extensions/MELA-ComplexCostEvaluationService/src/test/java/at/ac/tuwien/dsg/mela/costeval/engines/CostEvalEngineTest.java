@@ -34,6 +34,7 @@ import static at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngine.log;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
+import at.ac.tuwien.dsg.mela.costeval.model.UnusedCostUnitsReport;
 import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
 import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
@@ -173,6 +174,7 @@ public class CostEvalEngineTest {
             periodicCostElement.addCostInterval(new MetricValue(1), 1d);
             periodicCostElement.addCostInterval(new MetricValue(2), 2d);
             periodicCostElement.addCostInterval(new MetricValue(3), 3d);
+            periodicCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 4d);
             vmCost.addCostElement(periodicCostElement);
             vm1SmallService.addCostFunction(vmCost);
 
@@ -194,6 +196,7 @@ public class CostEvalEngineTest {
             periodicCostElement.addCostInterval(new MetricValue(1), 2d);
             periodicCostElement.addCostInterval(new MetricValue(2), 4d);
             periodicCostElement.addCostInterval(new MetricValue(3), 6d);
+            periodicCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 12d);
             vmCost.addCostElement(periodicCostElement);
             vm1LargeService.addCostFunction(vmCost);
 
@@ -317,11 +320,9 @@ public class CostEvalEngineTest {
                 .withtLastUpdatedTimestampID(monitoringSnapshot1.getTimestampID());
 
         //test1
-        LifetimeEnrichedSnapshot totalUsageSnapshot_0 = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesASVMTypes(cloudProvidersMap, null, monitoringSnapshot1);
+        LifetimeEnrichedSnapshot totalUsageSnapshot_0 = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, null, monitoringSnapshot1);
 
-
-        
-        LifetimeEnrichedSnapshot totalUsageSnapshot = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesASVMTypes(cloudProvidersMap, totalUsageSnapshot_0.clone(), monitoringSnapshot2);
+        LifetimeEnrichedSnapshot totalUsageSnapshot = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalUsageSnapshot_0.clone(), monitoringSnapshot2);
 
         //test that the service structure is still ok
         {
@@ -364,9 +365,9 @@ public class CostEvalEngineTest {
 
         LifetimeEnrichedSnapshot instantCostCleaned1 = costEvalEngine.cleanUnusedServices(totalUsageSnapshot);
 
-        CompositionRulesBlock block1 = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesASVMTypes(cloudProvidersMap, instantCostCleaned1.getSnapshot().getMonitoredService(), instantCostCleaned1, monitoringSnapshot2.getTimestamp());
+        CompositionRulesBlock block1 = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, instantCostCleaned1.getSnapshot().getMonitoredService(), instantCostCleaned1, monitoringSnapshot2.getTimestamp());
 
-        ServiceMonitoringSnapshot instantCost1 = costEvalEngine.applyCompositionRules(block1, costEvalEngine.convertToStructureIncludingServicesASVMTypes(cloudProvidersMap, monitoringSnapshot2));
+        ServiceMonitoringSnapshot instantCost1 = costEvalEngine.applyCompositionRules(block1, costEvalEngine.convertToStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, monitoringSnapshot2));
 
         {
             MonitoredElement usedCloudServiceMonitoredElement = new MonitoredElement()
@@ -417,7 +418,7 @@ public class CostEvalEngineTest {
 
         }
 
-        LifetimeEnrichedSnapshot totalServiceUsage2 = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesASVMTypes(cloudProvidersMap, totalUsageSnapshot, monitoringSnapshot3);
+        LifetimeEnrichedSnapshot totalServiceUsage2 = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalUsageSnapshot, monitoringSnapshot3);
 
 //        assertEquals(new MetricValue(2), totalServiceUsage2.getSnapshot().getMonitoredData(vm).getMetricValue(instanceMetric));
         {
@@ -437,9 +438,9 @@ public class CostEvalEngineTest {
         generalAccess.writeInTimestamp("" + totalServiceUsage2.getLastUpdatedTimestampID(), service, service.getId());
 //        persistenceDelegate.persistTotalCostSnapshot(service.getId(), serviceUsageSnapshot2);
 
-        CompositionRulesBlock block2 = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesASVMTypes(cloudProvidersMap, instantCostCleaned2.getSnapshot().getMonitoredService(), instantCostCleaned2, monitoringSnapshot3.getTimestamp());
+        CompositionRulesBlock block2 = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, instantCostCleaned2.getSnapshot().getMonitoredService(), instantCostCleaned2, monitoringSnapshot3.getTimestamp());
 
-        ServiceMonitoringSnapshot instantCost2 = costEvalEngine.applyCompositionRules(block2, costEvalEngine.convertToStructureIncludingServicesASVMTypes(cloudProvidersMap, monitoringSnapshot3));
+        ServiceMonitoringSnapshot instantCost2 = costEvalEngine.applyCompositionRules(block2, costEvalEngine.convertToStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, monitoringSnapshot3));
 
         persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block2).withSnapshot(instantCost2).withLastUpdatedTimestampID(instantCost2.getTimestampID()));
 
@@ -493,7 +494,7 @@ public class CostEvalEngineTest {
 
         }
 
-        LifetimeEnrichedSnapshot totalServiceUsage3 = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesASVMTypes(cloudProvidersMap, totalServiceUsage2, monitoringSnapshot4);
+        LifetimeEnrichedSnapshot totalServiceUsage3 = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalServiceUsage2, monitoringSnapshot4);
         persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId(), totalServiceUsage3);
 
         totalServiceUsage3 = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId());
@@ -517,7 +518,7 @@ public class CostEvalEngineTest {
 
         }
 
-        CompositionRulesBlock totalCostRules = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesASVMTypes(cloudProvidersMap, totalServiceUsage3, totalServiceUsage3.getSnapshot().getTimestamp());
+        CompositionRulesBlock totalCostRules = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalServiceUsage3, totalServiceUsage3.getSnapshot().getTimestamp());
         ServiceMonitoringSnapshot totalCostEnrichedSnapshot = costEvalEngine.applyCompositionRules(totalCostRules, totalServiceUsage3.getSnapshot());
 
         {
@@ -534,7 +535,7 @@ public class CostEvalEngineTest {
                     .withId(newVM.getCloudOfferedServices().iterator().next().getInstanceUUID().toString())
                     .withName(newVM.getCloudOfferedServices().iterator().next().getName())
                     .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
-            assertEquals(new MetricValue(0.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCost));
+            assertEquals(new MetricValue(1.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCost));
             assertEquals(new MetricValue(50.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalUsageMetricCost));
         }
 
@@ -561,7 +562,7 @@ public class CostEvalEngineTest {
                     .withId(newVM.getCloudOfferedServices().iterator().next().getInstanceUUID().toString())
                     .withName(newVM.getCloudOfferedServices().iterator().next().getName())
                     .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
-            assertEquals(new MetricValue(0.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCost));
+            assertEquals(new MetricValue(1.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCost));
             assertEquals(new MetricValue(50.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalUsageMetricCost));
         }
 
@@ -684,21 +685,21 @@ public class CostEvalEngineTest {
                     ServiceMonitoringSnapshot aggregated = aggregationEngine.enrichMonitoringData(compositionRulesConfiguration, snapshot);
                     //update total usage
 
-                    usageSoFar = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesASVMTypes(cloudProvidersMap, usageSoFar, aggregated);
+                    usageSoFar = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, usageSoFar, aggregated);
 
                     //persist instant cost
                     LifetimeEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(usageSoFar);
 
                     //compute composition rules to create instant cost based on total usage so far
-                    CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesASVMTypes(cloudProvidersMap, cleanedCostSnapshot.getSnapshot().getMonitoredService(), cleanedCostSnapshot, aggregated.getTimestamp());
-                    ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, costEvalEngine.convertToStructureIncludingServicesASVMTypes(cloudProvidersMap, aggregated));
+                    CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, cleanedCostSnapshot.getSnapshot().getMonitoredService(), cleanedCostSnapshot, aggregated.getTimestamp());
+                    ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, costEvalEngine.convertToStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, aggregated));
 
                     //persist instant cost
                     persistenceDelegate.persistInstantCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(block)
                             .withLastUpdatedTimestampID(enrichedSnapshot.getTimestampID()).withSnapshot(enrichedSnapshot));
 
                     //create rules for metrics for total cost based on usage so far
-                    CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesASVMTypes(cloudProvidersMap, usageSoFar, aggregated.getTimestamp());
+                    CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, usageSoFar, aggregated.getTimestamp());
                     ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, usageSoFar.getSnapshot());
 
                     //persist mon snapshot enriched with total cost 
@@ -729,10 +730,18 @@ public class CostEvalEngineTest {
                         .withName("m1.large")
                         .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
 
-                assertEquals(new MetricValue(0.0), totalCostForNew.getSnapshot().getMonitoredData(newVMUsedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCostNew));
+                assertEquals(new MetricValue(2.0), totalCostForNew.getSnapshot().getMonitoredData(newVMUsedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCostNew));
                 assertEquals(new MetricValue(12.0), totalCostForNew.getSnapshot().getMonitoredData(vmUsedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCostNew));
                 assertEquals(new MetricValue(3.0), totalCostForNew.getSnapshot().getMonitoredData(vmUsedCloudServiceMonitoredElement).getMetricValue(totalUsageMetricCostNew));
                 assertEquals(new MetricValue(100.0), totalCostForNew.getSnapshot().getMonitoredData(newVMUsedCloudServiceMonitoredElement).getMetricValue(totalUsageMetricCostNew));
+            }
+        }
+        {
+            List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsageSnapshot, "4500", unit);
+            for (UnusedCostUnitsReport costUnitsReport : report) {
+                //test cost efficiency analysis
+                assertEquals(new Double(2.0), costUnitsReport.getTotalCostUsedFromWhatWasBilled());
+                log.debug("Wasted cost for instance {} = {} with cost efficienty {}", new Object[]{costUnitsReport.getUnitInstance().getName(), costUnitsReport.getTotalCostUsedFromWhatWasBilled(), costUnitsReport.getCostEfficiency()});
             }
         }
     }

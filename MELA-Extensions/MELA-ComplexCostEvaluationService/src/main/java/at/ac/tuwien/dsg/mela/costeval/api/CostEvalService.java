@@ -34,6 +34,8 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
+import at.ac.tuwien.dsg.mela.costeval.model.UnusedCostUnitsReport;
+import java.util.List;
 import org.apache.cxf.common.i18n.UncheckedException;
 
 /**
@@ -50,15 +52,13 @@ public class CostEvalService {
 
     public CostEvalService() {
     }
-    
-    
-     @GET
+
+    @GET
     @Path("/{serviceID}/structure/json")
     @Produces("application/json")
     public String getStructureWithUsedCloudOfferedServices(@PathParam("serviceID") String serviceID) {
-        return  costEvalManager.getStructureWithUsedCloudOfferedServices(serviceID);
+        return costEvalManager.getStructureWithUsedCloudOfferedServices(serviceID);
     }
-
 
     /**
      * Method for retrieving an easy to display JSON string of the latest
@@ -175,6 +175,7 @@ public class CostEvalService {
     public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostForServiceJSON(serviceID);
     }
+
     @GET
     @Path("/{serviceID}/usage/total/json/tree")
     @Produces("application/json")
@@ -330,6 +331,69 @@ public class CostEvalService {
         } else {
             throw new UncheckedException(new Throwable("Supplied Monitored Element is null"));
         }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnCostEfficiencyPlainText(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getId();
+        }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/{unitInstanceID}/plain")
+    @Produces("text/plain")
+    public String getCostEfficiencyIfScalingIn(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel,
+            //i.e., IP of VM to scale down
+            @PathParam("unitInstanceID") String unitInstanceID
+    ) {
+        return "" + costEvalManager.evaluateUnitInstanceCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel, unitInstanceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/more/{monitoredElementID}/{monitoredElementLevel}/{unitInstanceIDs}/plain")
+    @Produces("text/plain")
+    public String getCostEfficiencyIfScalingInForMoreIPs(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel,
+            //i.e., IP of VM to scale down
+            @PathParam("unitInstanceIDs") String unitInstanceIDs
+    ) {
+        return costEvalManager.evaluateUnitInstancesCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel, unitInstanceIDs);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/lifetime/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnLifetime(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnLifetime(serviceID, monitoredElementID, monitoredElementlevel);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getId();
+        }
+    }
+    
+    
+    @GET
+    @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/xml")
+    @Produces("application/xml")
+    public MonitoredElement recommendUnitInstanceToScaleDownBasedOnCostEfficiencyXML(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        return costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
+
     }
 
 }
