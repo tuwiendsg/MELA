@@ -358,6 +358,22 @@ public class CostEvalService {
     ) {
         return "" + costEvalManager.evaluateUnitInstanceCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel, unitInstanceID);
     }
+    /**
+     * Will evaluate all units of a particular instance
+     * @param serviceID
+     * @param monitoredElementID
+     * @param monitoredElementlevel
+     * @return 
+     */
+    @GET
+    @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
+    @Produces("text/plain")
+    public String getCostEfficiencyIfScalingIn(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel
+    ) {
+        return "" + costEvalManager.evaluateUnitInstancesCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
+    }
 
     @GET
     @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/more/{monitoredElementID}/{monitoredElementLevel}/{unitInstanceIDs}/plain")

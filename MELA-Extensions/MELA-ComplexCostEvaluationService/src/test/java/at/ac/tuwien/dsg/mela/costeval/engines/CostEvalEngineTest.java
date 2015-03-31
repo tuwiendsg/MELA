@@ -740,7 +740,10 @@ public class CostEvalEngineTest {
             List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsageSnapshot, "4500", unit);
             for (UnusedCostUnitsReport costUnitsReport : report) {
                 //test cost efficiency analysis
+                //using 2 cost units from what was billed (4)
                 assertEquals(new Double(2.0), costUnitsReport.getTotalCostUsedFromWhatWasBilled());
+                //cost efficiency is 50% (1/2) as we are using only 2 cost units from 4,.
+                assertEquals(new Double(0.5), costUnitsReport.getCostEfficiency());
                 log.debug("Wasted cost for instance {} = {} with cost efficienty {}", new Object[]{costUnitsReport.getUnitInstance().getName(), costUnitsReport.getTotalCostUsedFromWhatWasBilled(), costUnitsReport.getCostEfficiency()});
             }
         }

@@ -273,7 +273,7 @@ public class CostEvalEngine {
 //                                            Long periodsBetweenPrevAndCurrentTimestamp = 0l;
 //
 //                                            //must standardise these somehow
-//                                            if (timePeriod.equals("s")) {
+//                                          NU ASA k tre reused
 //                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
 //                                            } else if (timePeriod.equals("m")) {
 //                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
@@ -737,30 +737,14 @@ public class CostEvalEngine {
                                     //I.E. a pkts_out/s will be multiplied with 60
                                     //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
                                     //this works as we assume we target only metrics which change in time using PER USAGE cost functions
-                                    String timePeriod = "s";
-
-                                    if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-                                        timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                                    }
-
                                     Long currentTimestamp = Long.parseLong(currentTimesnapshot);
                                     Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
 
                                     //convert to seconds
                                     Long seconds = (currentTimestamp - instantiationTimestamp) / 1000;
 
-                                    Long costPeriodsFromCreation = 0l;
+                                    Long costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
 
-                                    //must standardise these somehow
-                                    if (timePeriod.equals("s")) {
-                                        costPeriodsFromCreation = seconds;
-                                    } else if (timePeriod.equals("m")) {
-                                        costPeriodsFromCreation = seconds / 60;
-                                    } else if (timePeriod.equals("h")) {
-                                        costPeriodsFromCreation = seconds / 3600;
-                                    } else if (timePeriod.equals("d")) {
-                                        costPeriodsFromCreation = seconds / 86400;
-                                    }
                                     //minimum periodic usage is always rounded up and billed 
                                     if (costPeriodsFromCreation == 0) {
                                         costPeriodsFromCreation = 1l;
@@ -1035,6 +1019,14 @@ public class CostEvalEngine {
                 //maybe some do not quality to be apply as the service does not fulfill application requirements
                 List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(service);
 
+                //because I move usage metrics to the particular used services
+                MonitoredElement usedCloudServiceMonitoredElement = new MonitoredElement()
+                        .withId(service.getInstanceUUID().toString())
+                        .withName(service.getName())
+                        .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
+
+                MonitoredElementMonitoringSnapshot usedServiceDataSoFar = monitoringSnapshot.getMonitoredData(usedCloudServiceMonitoredElement);
+
                 //start with USAGE type of cost, easier to apply. 
                 for (CostFunction cf : costFunctionsToApply) {
 
@@ -1043,7 +1035,7 @@ public class CostEvalEngine {
                         Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
 
                         if (element.getType().equals(CostElement.Type.USAGE)) {
-                            value = elementMonitoringSnapshot.getMonitoredData().get(element.getCostMetric());
+                            value = usedServiceDataSoFar.getMonitoredData().get(element.getCostMetric());
                         } else if (element.getType().equals(CostElement.Type.PERIODIC)) {
                             Long currentTimestamp = Long.parseLong(currentTimesnapshot);
                             Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(unitInstance, service);
@@ -1051,24 +1043,8 @@ public class CostEvalEngine {
                             //convert to seconds
                             Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
 
-                            Double costPeriodsFromCreation = 0d;
+                            Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
 
-                            String timePeriod = "s";
-
-                            if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-                                timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                            }
-
-                            //must standardise these somehow
-                            if (timePeriod.equals("s")) {
-                                costPeriodsFromCreation = seconds;
-                            } else if (timePeriod.equals("m")) {
-                                costPeriodsFromCreation = seconds / 60;
-                            } else if (timePeriod.equals("h")) {
-                                costPeriodsFromCreation = seconds / 3600;
-                            } else if (timePeriod.equals("d")) {
-                                costPeriodsFromCreation = seconds / 86400;
-                            }
                             value = new MetricValue(costPeriodsFromCreation);
                         } else {
                             value = null;
@@ -1089,18 +1065,17 @@ public class CostEvalEngine {
                                     //need first interval > current value, then we substract prev interval, and see how much we used in the current one
                                     if (costIntervalElement.compareTo(value) > 0) {
 
-                                        Double usageBetweenLastAndCurrentInterval = null;
+                                        Double usageBetweenLastAndCurrentIntervalPercentage = null;
                                         if (i > 0) {
-                                            usageBetweenLastAndCurrentInterval = ((Number) value.getValue()).doubleValue() - ((Number) costIntervalsInAscendingOrder.get(i - 1).getValue()).doubleValue();
+                                            usageBetweenLastAndCurrentIntervalPercentage = ((Number) value.getValue()).doubleValue() - ((Number) costIntervalsInAscendingOrder.get(i - 1).getValue()).doubleValue();
                                         } else {
-                                            usageBetweenLastAndCurrentInterval = ((Number) value.getValue()).doubleValue();
+                                            usageBetweenLastAndCurrentIntervalPercentage = ((Number) value.getValue()).doubleValue();
                                         }
                                         //need to extract only the units which were not used completely, i.e., the thing after .
                                         //for example, if until now it used 4.5 units, i am interested in 0.5, as it will pay for full, but used only half
-                                        usageBetweenLastAndCurrentInterval -= usageBetweenLastAndCurrentInterval.longValue();
+                                        usageBetweenLastAndCurrentIntervalPercentage -= usageBetweenLastAndCurrentIntervalPercentage.longValue();
                                         Double costPerUnitForThisInterval = costIntervalFunction.get(costIntervalElement);
-                                        Double usedCostPercentage = costPerUnitForThisInterval * usageBetweenLastAndCurrentInterval;
-                                        costUnitsReport.withUnusedCostForCloudOfferedService(service, element.getCostMetric(), usedCostPercentage, costPerUnitForThisInterval);
+                                        costUnitsReport.withUsedCostForCloudOfferedService(service, element.getCostMetric(), usageBetweenLastAndCurrentIntervalPercentage, costPerUnitForThisInterval);
                                         break;
                                     }
                                 }
@@ -1116,15 +1091,18 @@ public class CostEvalEngine {
             report.add(costUnitsReport);
         }
 
-        Collections.sort(report, new Comparator<UnusedCostUnitsReport>() {
+        Collections.sort(report,
+                new Comparator<UnusedCostUnitsReport>() {
 
-            @Override
-            public int compare(UnusedCostUnitsReport t, UnusedCostUnitsReport t1) {
-                //larger is better
-                return -1 * new Double(t.getTotalCostUsedFromWhatWasBilled()).compareTo(t1.getTotalCostUsedFromWhatWasBilled());
-            }
+                    @Override
+                    public int compare(UnusedCostUnitsReport t, UnusedCostUnitsReport t1
+                    ) {
+                        //larger is better
+                        return -1 * new Double(t.getTotalCostUsedFromWhatWasBilled()).compareTo(t1.getTotalCostUsedFromWhatWasBilled());
+                    }
 
-        });
+                }
+        );
 
         return report;
     }
@@ -1185,24 +1163,7 @@ public class CostEvalEngine {
                             //convert to seconds
                             Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
 
-                            Double costPeriodsFromCreation = 0d;
-
-                            String timePeriod = "s";
-
-                            if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-                                timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                            }
-
-                            //must standardise these somehow
-                            if (timePeriod.equals("s")) {
-                                costPeriodsFromCreation = seconds;
-                            } else if (timePeriod.equals("m")) {
-                                costPeriodsFromCreation = seconds / 60;
-                            } else if (timePeriod.equals("h")) {
-                                costPeriodsFromCreation = seconds / 3600;
-                            } else if (timePeriod.equals("d")) {
-                                costPeriodsFromCreation = seconds / 86400;
-                            }
+                            Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
                             value = new MetricValue(costPeriodsFromCreation);
                         } else {
                             value = null;
@@ -1223,18 +1184,17 @@ public class CostEvalEngine {
                                     //need first interval > current value, then we substract prev interval, and see how much we used in the current one
                                     if (costIntervalElement.compareTo(value) > 0) {
 
-                                        Double usageBetweenLastAndCurrentInterval = null;
+                                        Double usageBetweenLastAndCurrentIntervalPercentage = null;
                                         if (i > 0) {
-                                            usageBetweenLastAndCurrentInterval = ((Number) value.getValue()).doubleValue() - ((Number) costIntervalsInAscendingOrder.get(i - 1).getValue()).doubleValue();
+                                            usageBetweenLastAndCurrentIntervalPercentage = ((Number) value.getValue()).doubleValue() - ((Number) costIntervalsInAscendingOrder.get(i - 1).getValue()).doubleValue();
                                         } else {
-                                            usageBetweenLastAndCurrentInterval = ((Number) value.getValue()).doubleValue();
+                                            usageBetweenLastAndCurrentIntervalPercentage = ((Number) value.getValue()).doubleValue();
                                         }
                                         //need to extract only the units which were not used completely, i.e., the thing after .
                                         //for example, if until now it used 4.5 units, i am interested in 0.5, as it will pay for full, but used only half
-                                        usageBetweenLastAndCurrentInterval -= usageBetweenLastAndCurrentInterval.longValue();
+                                        usageBetweenLastAndCurrentIntervalPercentage -= usageBetweenLastAndCurrentIntervalPercentage.longValue();
                                         Double costPerUnitForThisInterval = costIntervalFunction.get(costIntervalElement);
-                                        Double usedCostPercentage = costPerUnitForThisInterval * usageBetweenLastAndCurrentInterval;
-                                        costUnitsReport.withUnusedCostForCloudOfferedService(service, element.getCostMetric(), usedCostPercentage, costPerUnitForThisInterval);
+                                        costUnitsReport.withUsedCostForCloudOfferedService(service, element.getCostMetric(), usageBetweenLastAndCurrentIntervalPercentage, costPerUnitForThisInterval);
                                         break;
                                     }
                                 }
@@ -1250,15 +1210,18 @@ public class CostEvalEngine {
             report.add(costUnitsReport);
         }
 
-        Collections.sort(report, new Comparator<UnusedCostUnitsReport>() {
+        Collections.sort(report,
+                new Comparator<UnusedCostUnitsReport>() {
 
-            @Override
-            public int compare(UnusedCostUnitsReport t, UnusedCostUnitsReport t1) {
-                //larger is better
-                return -1 * new Double(t.getTotalCostUsedFromWhatWasBilled()).compareTo(t1.getTotalCostUsedFromWhatWasBilled());
-            }
+                    @Override
+                    public int compare(UnusedCostUnitsReport t, UnusedCostUnitsReport t1
+                    ) {
+                        //larger is better
+                        return -1 * new Double(t.getTotalCostUsedFromWhatWasBilled()).compareTo(t1.getTotalCostUsedFromWhatWasBilled());
+                    }
 
-        });
+                }
+        );
 
         return report;
     }
@@ -1375,20 +1338,9 @@ public class CostEvalEngine {
                                 Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
 
                                 //convert to seconds
-                                Long timeIntervalInMillis = (currentTimestamp - instantiationTimestamp) / 1000;
+                                Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
 
-                                Long costPeriodsFromCreation = 0l;
-
-                                //must standardise these somehow
-                                if (timePeriod.equals("s")) {
-                                    costPeriodsFromCreation = timeIntervalInMillis;
-                                } else if (timePeriod.equals("m")) {
-                                    costPeriodsFromCreation = timeIntervalInMillis / 60;
-                                } else if (timePeriod.equals("h")) {
-                                    costPeriodsFromCreation = timeIntervalInMillis / 3600;
-                                } else if (timePeriod.equals("d")) {
-                                    costPeriodsFromCreation = timeIntervalInMillis / 86400;
-                                }
+                                Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
 
                                 MetricValue totalCostFromCreation = new MetricValue(element.getCostForCostMetricValue(new MetricValue(costPeriodsFromCreation)));
 
@@ -2170,20 +2122,10 @@ public class CostEvalEngine {
                                 Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
 
                                 //convert to seconds
-                                Long timeIntervalInMillis = (currentTimestamp - instantiationTimestamp) / 1000;
+                                Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
 
-                                Long costPeriodsFromCreation = 0l;
-
+                                Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
                                 //must standardise these somehow
-                                if (timePeriod.equals("s")) {
-                                    costPeriodsFromCreation = timeIntervalInMillis;
-                                } else if (timePeriod.equals("m")) {
-                                    costPeriodsFromCreation = timeIntervalInMillis / 60;
-                                } else if (timePeriod.equals("h")) {
-                                    costPeriodsFromCreation = timeIntervalInMillis / 3600;
-                                } else if (timePeriod.equals("d")) {
-                                    costPeriodsFromCreation = timeIntervalInMillis / 86400;
-                                }
 
                                 MetricValue totalCostFromCreation = new MetricValue(element.getCostForCostMetricValue(new MetricValue(costPeriodsFromCreation)));
 
@@ -2374,11 +2316,6 @@ public class CostEvalEngine {
                                                 CompositionRule compositionRule = new CompositionRule();
                                                 compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
                                                 compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                                                String timePeriod = "s";
-
-                                                if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-                                                    timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                                                }
                                                 //"total_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
                                                 // and I put again this total cost metric with same name, will not replace it.
                                                 //TODO: address this
@@ -2441,30 +2378,13 @@ public class CostEvalEngine {
                                         //I.E. a pkts_out/s will be multiplied with 60
                                         //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
                                         //this works as we assume we target only metrics which change in time using PER USAGE cost functions
-                                        String timePeriod = "s";
-
-                                        if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-                                            timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                                        }
-
                                         Long currentTimestamp = Long.parseLong(currentTimesnapshot);
                                         Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
 
                                         //convert to seconds
-                                        Long timeIntervalInMillis = (currentTimestamp - instantiationTimestamp) / 1000;
+                                        Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
 
-                                        Long costPeriodsFromCreation = 0l;
-
-                                        //must standardise these somehow
-                                        if (timePeriod.equals("s")) {
-                                            costPeriodsFromCreation = timeIntervalInMillis;
-                                        } else if (timePeriod.equals("m")) {
-                                            costPeriodsFromCreation = timeIntervalInMillis / 60;
-                                        } else if (timePeriod.equals("h")) {
-                                            costPeriodsFromCreation = timeIntervalInMillis / 3600;
-                                        } else if (timePeriod.equals("d")) {
-                                            costPeriodsFromCreation = timeIntervalInMillis / 86400;
-                                        }
+                                        Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
 
                                         //we need to go trough all cost element interval, and apply correct cost for each interval
                                         MetricValue metricUsageSoFar = new MetricValue(costPeriodsFromCreation);
@@ -2665,4 +2585,33 @@ public class CostEvalEngine {
 
     }
 
+    private int toEvaluationIntervalInSeconds(String measurementUnit) {
+
+        int seconds = 1;
+        if (measurementUnit.contains("/")) {
+            String[] specification = measurementUnit.split("/");
+       //currently we support following format
+            // unit/ time (e.g., GB/h), or /unit/time/timeUnits (GB/m/10 meaning one GB every 10 minutes)
+
+            //process first element
+            String timePeriod = specification[1].toLowerCase();
+            if (timePeriod.equals("s")) {
+                seconds = 1;
+            } else if (timePeriod.equals("m")) {
+                seconds = 60;
+            } else if (timePeriod.equals("h")) {
+                seconds = 3600;
+            } else if (timePeriod.equals("d")) {
+                seconds = 86400;
+            }
+            //if we also ahve second argument on how many X hours or etc
+            if (specification.length > 2) {
+                int howManyTimePeriods = Integer.parseInt(specification[2]);
+                seconds *= howManyTimePeriods;
+            }
+
+        }
+
+        return seconds;
+    }
 }

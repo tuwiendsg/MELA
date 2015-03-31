@@ -1293,6 +1293,58 @@ public class CostEvalManager {
 
     }
 
+    public String evaluateUnitInstancesCostEfficiency(String service, String monitoredElementID, String monitoredElementLevel) {
+        //get allready monitored service
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(service);
+        if (cfg == null) {
+            throw new UncheckedException(new Throwable("Service with ID " + service + " not found in mon data"));
+        }
+
+        JSONArray response = new JSONArray();
+
+        MonitoredElement serviceCFG = cfg.getServiceConfiguration();
+        MonitoredElement unitToScale = null;
+
+        //search in the config for the unit we want
+        MonitoredElement.MonitoredElementLevel levelToScale = MonitoredElement.MonitoredElementLevel.valueOf(monitoredElementLevel);
+        for (MonitoredElement element : serviceCFG) {
+            if (element.getId().equals(monitoredElementID) && element.getLevel().equals(levelToScale)) {
+                unitToScale = element;
+                break;
+            }
+        }
+        if (unitToScale == null) {
+            throw new UncheckedException(new Throwable("Element with ID " + unitToScale.getId()
+                    + " and level " + unitToScale.getLevel() + " not found for service " + service));
+        }
+
+        LifetimeEnrichedSnapshot totalUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service);
+
+        final List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+            throw new UncheckedException(new Throwable("No cloud providers found in repository. Cannot compute cost"));
+        }
+        Map<UUID, Map<UUID, CloudOfferedService>> cloudProvidersMap = costEvalEngine.cloudProvidersToMap(cloudProviders);
+
+        List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsageSnapshot, "" + new Date().getTime(), unitToScale);
+
+        if (report.isEmpty()) {
+            throw new UncheckedException(new Throwable("Nothing to scale for element with ID " + unitToScale.getId()
+                    + " and level for service " + service));
+        }
+
+        for (UnusedCostUnitsReport costUnitsReport : report) {
+            JSONObject object = new JSONObject();
+            object.put("ip", costUnitsReport.getUnitInstance().getId());
+            object.put("efficiency", costUnitsReport.getCostEfficiency());
+            response.add(object);
+        }
+
+        return response.toJSONString();
+
+    }
+
     public MonitoredElement recommendUnitInstanceToScaleDownBasedOnLifetime(String service, String monitoredElementID, String monitoredElementLevel) {
         //get allready monitored service
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(service);
@@ -1333,7 +1385,7 @@ public class CostEvalManager {
         }
 
         UnusedCostUnitsReport best = report.get(0);
-
+        
         //cost efficiency target
         if (best.getCostEfficiency() < costEfficiencyThreshold) {
             log.error("Only scale in option {}{} for {}{} for service {} has cost efficiency {} below threshold {}",
