@@ -170,14 +170,14 @@ public class CostEvalOverTimeTest {
             CostFunction vmCost = new CostFunction(vm1SmallService.getName() + "_cost");
 
             CostElement periodicCostElement = new CostElement("vmCost", new Metric("instance", "#/h", Metric.MetricType.COST), CostElement.Type.PERIODIC);
-            periodicCostElement.addCostInterval(new MetricValue(1), 1d);
-            periodicCostElement.addCostInterval(new MetricValue(2), 2d);
-            periodicCostElement.addCostInterval(new MetricValue(3), 3d);
+            periodicCostElement.addBillingInterval(new MetricValue(1), 1d);
+            periodicCostElement.addBillingInterval(new MetricValue(2), 2d);
+            periodicCostElement.addBillingInterval(new MetricValue(3), 3d);
             vmCost.addCostElement(periodicCostElement);
             vm1SmallService.addCostFunction(vmCost);
 
             CostElement usageCostElement = new CostElement("usageCost", new Metric("usage", "#/s", Metric.MetricType.COST), CostElement.Type.USAGE);
-            usageCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.5d);
+            usageCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.5d);
             vmCost.addCostElement(usageCostElement);
         }
 
@@ -191,14 +191,14 @@ public class CostEvalOverTimeTest {
             CostFunction vmCost = new CostFunction(vm1LargeService.getName() + "_cost");
 
             CostElement periodicCostElement = new CostElement("vmCost", new Metric("instance", "#/h", Metric.MetricType.COST), CostElement.Type.PERIODIC);
-            periodicCostElement.addCostInterval(new MetricValue(1), 2d);
-            periodicCostElement.addCostInterval(new MetricValue(2), 4d);
-            periodicCostElement.addCostInterval(new MetricValue(3), 6d);
+            periodicCostElement.addBillingInterval(new MetricValue(1), 2d);
+            periodicCostElement.addBillingInterval(new MetricValue(2), 4d);
+            periodicCostElement.addBillingInterval(new MetricValue(3), 6d);
             vmCost.addCostElement(periodicCostElement);
             vm1LargeService.addCostFunction(vmCost);
 
             CostElement usageCostElement = new CostElement("usageCost", new Metric("usage", "#/s", Metric.MetricType.COST), CostElement.Type.USAGE);
-            usageCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 1d);
+            usageCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 1d);
             vmCost.addCostElement(usageCostElement);
         }
         provider.addCloudOfferedService(vm1LargeService);

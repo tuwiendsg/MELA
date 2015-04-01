@@ -187,17 +187,19 @@ public class FlexiantCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("diskSizeCost")
                                 .withCostMetric(new Metric("diskSize", "GB", Metric.MetricType.RESOURCE)) // needs to be converted from disk_total in Ganglia
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24 ))
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24 ))
                         .withCostElement(new CostElement("diskUsageCost")
                                 .withCostMetric(new Metric("IODataSize", "GB", Metric.MetricType.RESOURCE)) //todo Write Ganglia Plug-in for IOStat
                                 .withType(CostElement.Type.USAGE)
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d)));
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d)));
                 provider.addCloudOfferedService(unit);
 
             }
+            
+            
 
 //            RAM	CPU Cores	Units per hour
 //            0.5Gb	1               2
@@ -246,10 +248,10 @@ public class FlexiantCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), helper.unitsPerHour)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), helper.unitsPerHour)
                         )
                 );
 
@@ -265,23 +267,23 @@ public class FlexiantCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vlanCost")
                                 .withCostMetric(new Metric("vlan", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //first VLAN free, then rest 1.37 units per hour
-                                .withCostInterval(new MetricValue(1), 0d)
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 1.37)
+                                .withBillingInterval(new MetricValue(1), 0d)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 1.37)
                         ).withCostElement(new CostElement("publicIPsCost")
                                 .withCostMetric(new Metric("publicIP", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //first VLAN free, then rest 1.37 units per hour
-                                .withCostInterval(new MetricValue(5), 0d)
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.137)
+                                .withBillingInterval(new MetricValue(5), 0d)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.137)
                         ).withCostElement(new CostElement("dataTransferCost")
                                 .withCostMetric(new Metric("dataTransfer", "GB", Metric.MetricType.RESOURCE))
                                 .withType(CostElement.Type.USAGE)
                                 //first VLAN free, then rest 1.37 units per hour
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d)
                         )
                 );
 
@@ -297,10 +299,10 @@ public class FlexiantCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("imageStorageCost")
                                 .withCostMetric(new Metric("imageSize", "GB", Metric.MetricType.RESOURCE)) // needs to be converted from disk_total in Ganglia
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB of stored Image Size no mather how many GBs no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 5 / 30d / 24)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 5 / 30d / 24)
                         )
                 );
 

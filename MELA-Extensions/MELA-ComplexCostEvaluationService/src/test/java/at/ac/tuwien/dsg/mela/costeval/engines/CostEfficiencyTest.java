@@ -126,12 +126,12 @@ public class CostEfficiencyTest {
             CostFunction vmCost = new CostFunction(vm1SmallService.getName() + "_cost");
 
             CostElement periodicCostElement = new CostElement("vmCost", new Metric("instance", "#/m/10", Metric.MetricType.COST), CostElement.Type.PERIODIC);
-            periodicCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d);
+            periodicCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d);
             vmCost.addCostElement(periodicCostElement);
             vm1SmallService.addCostFunction(vmCost);
 
             CostElement usageCostElement = new CostElement("usageCost", new Metric("usage", "#/m/10", Metric.MetricType.COST), CostElement.Type.USAGE);
-            usageCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d);
+            usageCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d);
             vmCost.addCostElement(usageCostElement);
         }
 

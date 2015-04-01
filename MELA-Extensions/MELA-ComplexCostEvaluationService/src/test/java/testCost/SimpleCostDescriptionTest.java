@@ -58,7 +58,7 @@ public class SimpleCostDescriptionTest extends TestCase {
             {
                 CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
                 CostElement vmCostElement = new CostElement("vmCost", new Metric("instance", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
-                vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.12);
+                vmCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.12);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
             }
@@ -74,7 +74,7 @@ public class SimpleCostDescriptionTest extends TestCase {
             {
                 CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
                 CostElement vmCostElement = new CostElement("vmCost", new Metric("instance", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
-                vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.24);
+                vmCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.24);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
             }
@@ -90,7 +90,7 @@ public class SimpleCostDescriptionTest extends TestCase {
             {
                 CostFunction vmCost = new CostFunction(unit.getName() + "_cost");
                 CostElement vmCostElement = new CostElement("vmCost", new Metric("instance", "#/m", Metric.MetricType.COST), CostElement.Type.PERIODIC);
-                vmCostElement.addCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.48);
+                vmCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.48);
                 vmCost.addCostElement(vmCostElement);
                 unit.addCostFunction(vmCost);
             }
@@ -105,8 +105,8 @@ public class SimpleCostDescriptionTest extends TestCase {
             {
                 CostFunction cost = new CostFunction(unit.getName() + "_cost");
                 CostElement costElement = new CostElement("dataTransferCost", new Metric("dataTransfer", "MB/s", Metric.MetricType.RESOURCE), CostElement.Type.USAGE);
-                costElement.addCostInterval(new MetricValue(1024), 0.03 / 1024);
-                costElement.addCostInterval(new MetricValue(10 * 1024 * 1024), 0.01 / 1024);
+                costElement.addBillingInterval(new MetricValue(1024), 0.03 / 1024);
+                costElement.addBillingInterval(new MetricValue(10 * 1024 * 1024), 0.01 / 1024);
                 cost.addCostElement(costElement);
                 unit.addCostFunction(cost);
             }

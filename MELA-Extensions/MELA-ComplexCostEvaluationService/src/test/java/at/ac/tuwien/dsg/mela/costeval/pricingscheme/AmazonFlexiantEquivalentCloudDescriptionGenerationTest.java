@@ -197,15 +197,15 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("diskSizeCost")
                                 .withCostMetric(new Metric("diskSize", "GB", Metric.MetricType.RESOURCE)) // needs to be converted from disk_total in Ganglia
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.1 / 30 / 24))
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.1 / 30 / 24))
                         .withCostElement(new CostElement("diskUsageCost")
                                 .withCostMetric(new Metric("IODataSize", "GB", Metric.MetricType.RESOURCE)) //todo Write Ganglia Plug-in for IOStat
                                 .withType(CostElement.Type.USAGE)
                                 //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d)));
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d)));
                 provider.addCloudOfferedService(unit);
 
             }
@@ -223,10 +223,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.044)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.044)
                         )
                 );
 
@@ -244,10 +244,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.013)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.013)
                         )
                 ) //                        .withCostFunction(new CostFunction(unit.getName() + "EBSOptimized")
                         //                        .withAppliedIfServiceInstanceUses(new CloudOfferedService()
@@ -280,10 +280,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.026)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.026)
                         )
                 );
 
@@ -301,10 +301,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.175)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.175)
                         )
                 );
 
@@ -322,10 +322,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.052)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.052)
                         )
                 );
 
@@ -343,10 +343,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.105)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.105)
                         )
                 );
 
@@ -364,10 +364,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.350)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.350)
                         )
                 );
 
@@ -385,10 +385,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.280)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.280)
                         )
                 );
 
@@ -406,10 +406,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.232)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.232)
                         )
                 );
 
@@ -427,10 +427,10 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //2 units per hour no mather how many hours
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.210)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.210)
                         )
                 );
 
@@ -453,20 +453,20 @@ public class AmazonFlexiantEquivalentCloudDescriptionGenerationTest {
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("publicIPsCost")
                                 .withCostMetric(new Metric("publicIP", "#", Metric.MetricType.RESOURCE))
-                                .withBillingPeriod(CostElement.BillingPeriod.HOUR)
+                                .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //first public IP free, then rest 0.005 $ per hour
-                                .withCostInterval(new MetricValue(1.0), 0.0)
-                                .withCostInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.005)
+                                .withBillingInterval(new MetricValue(1.0), 0.0)
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 0.005)
                         ).withCostElement(new CostElement("dataTransferCost")
                                 .withCostMetric(new Metric("dataTransfer", "GB", Metric.MetricType.RESOURCE))
                                 .withType(CostElement.Type.USAGE)
                                 //first GB of da transfer free
-                                .withCostInterval(new MetricValue(1.0), 0.0)
-                                .withCostInterval(new MetricValue(10.0 * 1024), 0.09)
-                                .withCostInterval(new MetricValue(40.0 * 1024), 0.085)
-                                .withCostInterval(new MetricValue(100.0 * 1024), 0.07)
-                                .withCostInterval(new MetricValue(350.0 * 1024), 0.05)
+                                .withBillingInterval(new MetricValue(1.0), 0.0)
+                                .withBillingInterval(new MetricValue(10.0 * 1024), 0.09)
+                                .withBillingInterval(new MetricValue(40.0 * 1024), 0.085)
+                                .withBillingInterval(new MetricValue(100.0 * 1024), 0.07)
+                                .withBillingInterval(new MetricValue(350.0 * 1024), 0.05)
                         )
                 );
 

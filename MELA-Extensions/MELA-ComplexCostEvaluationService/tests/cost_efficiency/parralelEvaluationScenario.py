@@ -1,4 +1,4 @@
-#
+# not forced. Actually inchreases event processing instances up to 6, and decreases them by scaling in according to some strategy
 #########################################
 import sys, httplib, uuid, random, time, json, subprocess, StringIO, datetime
 from threading import Thread
@@ -59,16 +59,16 @@ STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME="STRATEGY_MELA_COST_RECOMMENDATION_LI
 strategiesList = [STRATEGY_LAST_ADDED, STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY] #[STRATEGY_LAST_ADDED, STRATEGY_FIRST_ADDED,STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME, STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY]
 
 
-eventProcessingStartIP["EventProcessingTopology_"+ str(STRATEGY_LAST_ADDED)]="10.99.0.33"
+eventProcessingStartIP["EventProcessingTopology_"+ str(STRATEGY_LAST_ADDED)]="10.99.0.25"
 loadBalancerStartIP["EventProcessingTopology_"+ str(STRATEGY_LAST_ADDED)]="10.99.0.15"
 
-eventProcessingStartIP["EventProcessingTopology_"+ str(STRATEGY_FIRST_ADDED)]="10.99.0.25"
+eventProcessingStartIP["EventProcessingTopology_"+ str(STRATEGY_FIRST_ADDED)]="10.99.0."
 loadBalancerStartIP["EventProcessingTopology_"+ str(STRATEGY_FIRST_ADDED)]="10.99.0.15"
 
-eventProcessingStartIP["EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME)]="10.99.0.67"
+eventProcessingStartIP["EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME)]="10.99.0.25"
 loadBalancerStartIP["EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME)]="10.99.0.15"
 
-eventProcessingStartIP["EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY)]="10.99.0.48"
+eventProcessingStartIP["EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY)]="10.99.0.33"
 loadBalancerStartIP["EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY)]="10.99.0.15"
  
 listOfEventProcessingDescriptions = {}
@@ -279,36 +279,21 @@ def directScaleOut(serviceId):
 
 def scaleOutAndInchreaseLoad(proc, serviceId):
     directScaleOut(serviceId)
-    if proc:
-       proc.terminate()
-       proc = subprocess.Popen(["exec python ./load.py " + loadBalancerStartIP[serviceId] + " " + str(len(listOfEventProcessingIPs[serviceId]) * 90)], shell=True)
+    #if proc:
+    #   proc.terminate()
+    #   proc = subprocess.Popen(["exec python ./load.py " + loadBalancerStartIP[serviceId] + " " + str(len(listOfEventProcessingIPs[serviceId]) * 90)], shell=True)
 
 def scaleInAndInchreaseLoad(proc, serviceId, strategy):
     directScaleIn(strategy, serviceId)
-    if proc:
-       proc.terminate()
-       proc = subprocess.Popen(["exec python ./load.py " + loadBalancerStartIP[serviceId] + " " + str(len(listOfEventProcessingIPs[serviceId]) * 90)], shell=True)
+    #if proc:
+    #   proc.terminate()
+    #   proc = subprocess.Popen(["exec python ./load.py " + loadBalancerStartIP[serviceId] + " " + str(len(listOfEventProcessingIPs[serviceId]) * 90)], shell=True)
 
 if __name__=='__main__':
    for strategy in  strategiesList:
      serviceName = "EventProcessingTopology_"+ str(strategy)
      listOfEventProcessingIPs[serviceName] = []
      listOfEventProcessingDescriptions[serviceName] = []
-
-   updateMELAServiceDescriptionAfterScaleOut("10.99.0.56", "EventProcessingTopology_"+ str(STRATEGY_LAST_ADDED))
-   updateMELAServiceDescriptionAfterScaleOut("10.99.0.65", "EventProcessingTopology_"+ str(STRATEGY_LAST_ADDED))
-
-
-   #updateMELAServiceDescriptionAfterScaleOut("10.99.0.54", "EventProcessingTopology_"+ str(STRATEGY_FIRST_ADDED))
-   #updateMELAServiceDescriptionAfterScaleOut("10.99.0.56", "EventProcessingTopology_"+ str(STRATEGY_FIRST_ADDED))
-
-
-   #updateMELAServiceDescriptionAfterScaleOut("10.99.0.54", "EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME))
-   #updateMELAServiceDescriptionAfterScaleOut("10.99.0.80", "EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME))
-
-
-   updateMELAServiceDescriptionAfterScaleOut("10.99.0.58", "EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY))
-   updateMELAServiceDescriptionAfterScaleOut("10.99.0.54", "EventProcessingTopology_"+ str(STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY))
 
    for strategy in  strategiesList:
      serviceName = "EventProcessingTopology_"+ str(strategy)
@@ -317,7 +302,7 @@ if __name__=='__main__':
      submitUpdatedDescriptionToMELA(serviceName)
      #starting control process
      f = open("./efficiency_"+str(strategy)+".csv", "w+")
-     f.write("Timestamp, Date, Instances, STRATEGY_LAST_ADDED IP, STRATEGY_LAST_ADDED Efficiency, STRATEGY_FIRST_ADDED IP, STRATEGY_FIRST_ADDED Efficiency, RANDOM IP, RANDOM Efficiency, STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME IP, STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME Efficiency, STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY IP, STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY Efficiency \n")
+     f.write("Timestamp, Date, Instances, " + str(strategy) + " IP, " + str(strategy) + " Efficiency  \n")
      f.close()
      #currently we run no load must be run remote, in cloud
      #proc=False
@@ -328,61 +313,54 @@ if __name__=='__main__':
    generatedProcesses = []
 
    #sleep so mela cost can intitiate the evaluation
-   time.sleep(500)
+   time.sleep(700)
   
-   for i in range(0, 20):
- 
-     #scale in each
-     print "Scale in"
+   for i in range(0, 5):
      
-     #for each strategy evaluate 7 times scaling in at 1 minute efficiency, in ||
-     for j in range(0,7):
-       for strategy in  strategiesList:
-          print "Evaluating after for " + str(j)
-          p = Thread(target=evaluateAndPersistCostEfficiencyForScalingStrategy, args=[strategy, serviceName])
-          generatedProcesses.append(p)
-          p.start()
-       for p in generatedProcesses:         
-          p.join()
-       generatedProcesses = [] 
-       print "Sleeping"   
-       time.sleep(60)
-    
-     #for all strategies scale in
-     for strategy in  strategiesList:
-        serviceName = "EventProcessingTopology_"+ str(strategy)
-        p = Thread(target=scaleInAndInchreaseLoad, args=[proc, serviceName, strategy])
-        generatedProcesses.append(p)
-        p.start()
-     for p in generatedProcesses:         
-        p.join()
-     generatedProcesses = []
-
-     time.sleep(120)
-        
+     #scale out up to n
+     for k in range (0,4): # 4 because we start with an initial IP 
      #for all scale out 
-     print "Scale out" 
-     for strategy in  strategiesList:
-         serviceName = "EventProcessingTopology_"+ str(strategy)
-         p = Thread(target=scaleOutAndInchreaseLoad, args=[proc, serviceName])
+       print "Scale out" 
+       for strategy in  strategiesList:
+         p = Thread(target=scaleOutAndInchreaseLoad, args=[proc, "EventProcessingTopology_"+ str(strategy)])
          generatedProcesses.append(p)
          p.start()
-         time.sleep(50) #avoid errors in open stack 
-     for p in generatedProcesses:         
+         time.sleep(10) #try to avoid errors in open stack 
+       for p in generatedProcesses:         
          p.join()
-     generatedProcesses = []   
-            
-     for j in range(0,7):
-       #evaluate and persist
-       print "Evaluating after for" + str(j)
-       for strategy in  strategiesList:
-          serviceName = "EventProcessingTopology_"+ str(strategy)
-          p = Thread(target=evaluateAndPersistCostEfficiencyForScalingStrategy, args=[strategy, serviceName])
+       generatedProcesses = []   
+ 
+       for j in range(0,7):
+         for strategy in  strategiesList:
+          print "Evaluating after for " + str(j)
+          p = Thread(target=evaluateAndPersistCostEfficiencyForScalingStrategy, args=[strategy, "EventProcessingTopology_"+ str(strategy)])
           generatedProcesses.append(p)
           p.start()
-       for p in generatedProcesses:         
+         for p in generatedProcesses:         
           p.join()
-       generatedProcesses = []  
-       print "Sleeping" 
-       time.sleep(60)
+         generatedProcesses = [] 
+         print "Sleeping"   
+         time.sleep(60)
 
+     for k in range (0,4):
+     #for all strategies scale in
+       for strategy in  strategiesList:
+        p = Thread(target=scaleInAndInchreaseLoad, args=[proc, "EventProcessingTopology_"+ str(strategy), strategy])
+        generatedProcesses.append(p)
+        p.start()
+       for p in generatedProcesses:         
+        p.join()
+       generatedProcesses = []
+       for j in range(0,7):
+         for strategy in  strategiesList:
+          print "Evaluating after for " + str(j)
+          p = Thread(target=evaluateAndPersistCostEfficiencyForScalingStrategy, args=[strategy, "EventProcessingTopology_"+ str(strategy)])
+          generatedProcesses.append(p)
+          p.start()
+         for p in generatedProcesses:         
+          p.join()
+         generatedProcesses = [] 
+         print "Sleeping"   
+         time.sleep(60)
+
+   
