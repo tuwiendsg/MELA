@@ -1270,19 +1270,26 @@ public class CostEvalManager {
         }
         Map<UUID, Map<UUID, CloudOfferedService>> cloudProvidersMap = costEvalEngine.cloudProvidersToMap(cloudProviders);
 
-        List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsageSnapshot, "" + new Date().getTime(), unitToScale);
+        List<UnusedCostUnitsReport> costEfficiencyReport = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsageSnapshot, "" + new Date().getTime(), unitToScale);
+        totalUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service);
+        List<UnusedCostUnitsReport> lifetimeReport = costEvalEngine.computeLifetimeInBillingPeriods(cloudProvidersMap, totalUsageSnapshot, "" + new Date().getTime(), unitToScale);
 
-        if (report.isEmpty()) {
+        if (costEfficiencyReport.isEmpty()) {
             throw new UncheckedException(new Throwable("Nothing to scale for element with ID " + unitToScale.getId()
                     + " and level for service " + service));
         }
 
         for (String ip : ips) {
-            for (UnusedCostUnitsReport costUnitsReport : report) {
+            for (UnusedCostUnitsReport costUnitsReport : costEfficiencyReport) {
                 if (costUnitsReport.getUnitInstance().getId().equals(ip)) {
                     JSONObject object = new JSONObject();
                     object.put("ip", ip);
                     object.put("efficiency", costUnitsReport.getCostEfficiency());
+                    for (UnusedCostUnitsReport lifetime : lifetimeReport) {
+                        if (lifetime.getUnitInstance().getId().equals(costUnitsReport.getUnitInstance().getId())) {
+                            object.put("lifetime", lifetime.getCostEfficiency());
+                        }
+                    }
                     response.add(object);
                     break;
                 }
@@ -1385,7 +1392,7 @@ public class CostEvalManager {
         }
 
         UnusedCostUnitsReport best = report.get(0);
-        
+
         //cost efficiency target
         if (best.getCostEfficiency() < costEfficiencyThreshold) {
             log.error("Only scale in option {}{} for {}{} for service {} has cost efficiency {} below threshold {}",

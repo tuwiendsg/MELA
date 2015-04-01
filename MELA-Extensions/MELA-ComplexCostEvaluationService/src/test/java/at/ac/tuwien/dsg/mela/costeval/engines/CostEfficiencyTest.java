@@ -130,9 +130,9 @@ public class CostEfficiencyTest {
             vmCost.addCostElement(periodicCostElement);
             vm1SmallService.addCostFunction(vmCost);
 
-            CostElement usageCostElement = new CostElement("usageCost", new Metric("usage", "#/m/10", Metric.MetricType.COST), CostElement.Type.USAGE);
-            usageCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d);
-            vmCost.addCostElement(usageCostElement);
+//            CostElement usageCostElement = new CostElement("usageCost", new Metric("usage", "#/m/10", Metric.MetricType.COST), CostElement.Type.USAGE);
+//            usageCostElement.addBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d);
+//            vmCost.addCostElement(usageCostElement);
         }
 
         provider.addCloudOfferedService(vm1SmallService);
@@ -150,23 +150,22 @@ public class CostEfficiencyTest {
 
         int unitInstanceIndex = 0;
 
-        {
-            for (int i = 0; i < 3; i++) {
-                MonitoredElement vm = new MonitoredElement("VM" + unitInstanceIndex).withLevel(MonitoredElement.MonitoredElementLevel.VM)
-                        .withCloudOfferedService(new UsedCloudOfferedService()
-                                .withCloudProviderID(UUID.fromString("251ed7c7-aa4d-49d4-b42b-7efefd970d6b"))
-                                .withCloudProviderName("Amazon")
-                                .withInstanceUUID(UUID.fromString("98400000-8cf0-11bd-b23e-00000000000" + unitInstanceIndex))
-                                .withId(UUID.fromString("38400000-8cf0-11bd-b23e-000000000000"))
-                                .withName("m1.small")
-                        );
-
-                unit.withContainedElement(vm);
-                unitInstanceIndex++;
-            }
-
-        }
-
+//        {
+//            for (int i = 0; i < 3; i++) {
+//                MonitoredElement vm = new MonitoredElement("VM" + unitInstanceIndex).withLevel(MonitoredElement.MonitoredElementLevel.VM)
+//                        .withCloudOfferedService(new UsedCloudOfferedService()
+//                                .withCloudProviderID(UUID.fromString("251ed7c7-aa4d-49d4-b42b-7efefd970d6b"))
+//                                .withCloudProviderName("Amazon")
+//                                .withInstanceUUID(UUID.fromString("98400000-8cf0-11bd-b23e-00000000000" + unitInstanceIndex))
+//                                .withId(UUID.fromString("38400000-8cf0-11bd-b23e-000000000000"))
+//                                .withName("m1.small")
+//                        );
+//
+//                unit.withContainedElement(vm);
+//                unitInstanceIndex++;
+//            }
+//
+//        }
         MonitoredElement topology = new MonitoredElement("Topology").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY)
                 .withContainedElement(unit);
 
@@ -181,68 +180,60 @@ public class CostEfficiencyTest {
 
         List<ServiceMonitoringSnapshot> snapshots = new ArrayList<>();
 
-        for (int i = 0; i < 4; i++) {
+//        for (int i = 0; i < 4; i++) {
+//            //ms per 7 minutes
+//            ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot().withTimestamp("" + (i * 7 * 60000));
+//            {
+//
+//                MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
+//                for (MonitoredElement element : unit.getContainedElements()) {
+//                    MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(element);
+//                    elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue((i > 0) ? 0.5 : 0.0).withFreshness(50d));
+//                    unitMonSnapshpot.addChild(elementMonitoringSnapshot);
+//                    monitoringSnapshot.addMonitoredData(elementMonitoringSnapshot);
+//                }
+//
+//                MonitoredElementMonitoringSnapshot topologyMonSnapshpot = new MonitoredElementMonitoringSnapshot(topology);
+//                topologyMonSnapshpot.addChild(unitMonSnapshpot);
+//
+//                MonitoredElementMonitoringSnapshot serviceMonSnapshpot = new MonitoredElementMonitoringSnapshot(service);
+//                serviceMonSnapshpot.addChild(topologyMonSnapshpot);
+//
+//                monitoringSnapshot.addMonitoredData(unitMonSnapshpot);
+//                monitoringSnapshot.addMonitoredData(topologyMonSnapshpot);
+//                monitoringSnapshot.addMonitoredData(serviceMonSnapshpot);
+//
+//                monitoringSnapshot = monitoringSnapshot.clone();
+//
+//                snapshots.add(monitoringSnapshot);
+//
+//                totalUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalUsage, monitoringSnapshot);
+//                {
+//                    List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsage, "" + (i * 1800000/60), unit);
+//                    for (UnusedCostUnitsReport costUnitsReport : report) {
+//                        log.info("cost efficiency for {} is {}, used is {} from {} ", new Object[]{costUnitsReport.getUnitInstance().getId(), costUnitsReport.getCostEfficiency(),
+//                            costUnitsReport.getTotalCostUsedFromWhatWasBilled(), costUnitsReport.getTotalCostBilled()});
+//                    }
+//                }
+//
+//                {
+//                    List<UnusedCostUnitsReport> report = costEvalEngine.computeLifetimeInBillingPeriods(cloudProvidersMap, totalUsage, "" + (i * 1800000/60), unit);
+//                    for (UnusedCostUnitsReport costUnitsReport : report) {
+//                        log.info("Lifetime efficiency for {} is {}, used is {} from {}", new Object[]{costUnitsReport.getUnitInstance().getId(), costUnitsReport.getCostEfficiency(),
+//                            costUnitsReport.getTotalCostUsedFromWhatWasBilled(), costUnitsReport.getTotalCostBilled()});
+//                    }
+//                }
+//
+//            }
+//
+//        }
+        for (int i = 0; i < 3; i++) {
 
-            ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot().withTimestamp("" + (i * 1800000/60));
+            String timestamp = "" + (i * 60000);
+
+            ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot().withTimestamp(timestamp);
             {
 
-                MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
-                for (MonitoredElement element : unit.getContainedElements()) {
-                    MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(element);
-                    elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue((i > 0) ? 0.5 : 0.0).withFreshness(50d));
-                    unitMonSnapshpot.addChild(elementMonitoringSnapshot);
-                    monitoringSnapshot.addMonitoredData(elementMonitoringSnapshot);
-                }
-
-                MonitoredElementMonitoringSnapshot topologyMonSnapshpot = new MonitoredElementMonitoringSnapshot(topology);
-                topologyMonSnapshpot.addChild(unitMonSnapshpot);
-
-                MonitoredElementMonitoringSnapshot serviceMonSnapshpot = new MonitoredElementMonitoringSnapshot(service);
-                serviceMonSnapshpot.addChild(topologyMonSnapshpot);
-
-                monitoringSnapshot.addMonitoredData(unitMonSnapshpot);
-                monitoringSnapshot.addMonitoredData(topologyMonSnapshpot);
-                monitoringSnapshot.addMonitoredData(serviceMonSnapshpot);
-
-                monitoringSnapshot = monitoringSnapshot.clone();
-
-                snapshots.add(monitoringSnapshot);
-
-                totalUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalUsage, monitoringSnapshot);
-                {
-                    List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsage, "" + (i * 1800000/60), unit);
-                    for (UnusedCostUnitsReport costUnitsReport : report) {
-                        log.info("cost efficiency for {} is {}, used is {} from {} ", new Object[]{costUnitsReport.getUnitInstance().getId(), costUnitsReport.getCostEfficiency(),
-                            costUnitsReport.getTotalCostUsedFromWhatWasBilled(), costUnitsReport.getTotalCostBilled()});
-                    }
-                }
-
-                {
-                    List<UnusedCostUnitsReport> report = costEvalEngine.computeLifetimeInBillingPeriods(cloudProvidersMap, totalUsage, "" + (i * 1800000/60), unit);
-                    for (UnusedCostUnitsReport costUnitsReport : report) {
-                        log.info("Lifetime efficiency for {} is {}, used is {} from {}", new Object[]{costUnitsReport.getUnitInstance().getId(), costUnitsReport.getCostEfficiency(),
-                            costUnitsReport.getTotalCostUsedFromWhatWasBilled(), costUnitsReport.getTotalCostBilled()});
-                    }
-                }
-
-            }
-
-        }
-
-        for (int i = 4; i < 10; i++) {
-
-            ServiceMonitoringSnapshot monitoringSnapshot = new ServiceMonitoringSnapshot().withTimestamp("" + (i * 1800000/60));
-            {
-
-                List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsage, "" + (i * 1800000/60), unit);
-                for (UnusedCostUnitsReport costUnitsReport : report) {
-                    log.info("efficiency for {} is {}, used is {} ", new Object[]{costUnitsReport.getUnitInstance().getId(), costUnitsReport.getCostEfficiency(),
-                        costUnitsReport.getTotalCostUsedFromWhatWasBilled()});
-                }
-
-                //remove best
-                UnusedCostUnitsReport best = report.get(0);
-                unit.getContainedElements().remove(best.getUnitInstance());
                 //add a new Unit
                 unitInstanceIndex++;
                 {
@@ -261,7 +252,7 @@ public class CostEfficiencyTest {
                 MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
                 for (MonitoredElement element : unit.getContainedElements()) {
                     MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(element);
-                    elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(0.5).withFreshness(50d));
+                    elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(1).withFreshness(50d));
                     unitMonSnapshpot.addChild(elementMonitoringSnapshot);
                     monitoringSnapshot.addMonitoredData(elementMonitoringSnapshot);
                 }
@@ -282,9 +273,33 @@ public class CostEfficiencyTest {
 
                 totalUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalUsage, monitoringSnapshot);
 
+                List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsage, timestamp, unit);
+                for (UnusedCostUnitsReport costUnitsReport : report) {
+                    log.info("efficiency for {} is {}, cost is {} from {} ", new Object[]{costUnitsReport.getUnitInstance().getId(), costUnitsReport.getCostEfficiency(),
+                        costUnitsReport.getTotalCostUsedFromWhatWasBilled(), costUnitsReport.getTotalCostBilled()});
+                }
+
             }
 
         }
+
+        List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsage, "" + (4 * 60000), unit);
+
+        if (report.isEmpty()) {
+            throw new UncheckedException(new Throwable("Nothing to scale for element with ID " + unit.getId()
+                    + " and level for service " + service));
+        }
+
+        UnusedCostUnitsReport best = report.get(0);
+
+        log.info("Scaling for " + best.getUnitInstance().getId());
+
+        for (UnusedCostUnitsReport costUnitsReport : report) {
+            log.info("efficiency for {} is {}, cost is {} from {} ", new Object[]{costUnitsReport.getUnitInstance().getId(), costUnitsReport.getCostEfficiency(),
+                costUnitsReport.getTotalCostUsedFromWhatWasBilled(), costUnitsReport.getTotalCostBilled()});
+        }
+
+        assertEquals(best.getUnitInstance().getId(), "VM1");
 
     }
 
