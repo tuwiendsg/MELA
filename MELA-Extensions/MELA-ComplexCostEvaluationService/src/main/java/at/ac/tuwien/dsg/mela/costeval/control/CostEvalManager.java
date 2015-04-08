@@ -137,8 +137,8 @@ public class CostEvalManager {
     @Value("${enabled.analysis.cost:true}")
     private boolean costEvaluationEnabled;
 
-    @Value("${cost.efficiency.threshold:50}")
-    private int costEfficiencyThreshold;
+    @Value("${cost.efficiency.threshold:0.5}")
+    private Double costEfficiencyThreshold;
 
     private Map<String, Timer> costMonitoringTimers;
     private Map<String, Timer> costElasticityTimers;
@@ -450,6 +450,31 @@ public class CostEvalManager {
 
     }
 
+    public String getInstantCostJSON(String serviceID, String timestampID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractInstantUsageSnapshotByTimeIDInterval(Integer.parseInt(timestampID), Integer.parseInt(timestampID), serviceID).get(0);
+
+        if (serviceUsageSnapshot == null) {
+            return "{nothing}";
+        }
+
+        try {
+            String converted = jsonConverter.convertMonitoringSnapshotAndCompositionRules(serviceUsageSnapshot.getSnapshot(), serviceUsageSnapshot.getCostCompositionRules());
+            return converted;
+        } catch (Exception e) {
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getServiceUsageInJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+
     public String getTotalCostJSON(String serviceID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
@@ -475,6 +500,31 @@ public class CostEvalManager {
 
     }
 
+    public String getTotalCostJSON(String serviceID, String timestampID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalCostSnapshotByTimeIDInterval(Integer.parseInt(timestampID), Integer.parseInt(timestampID), serviceID).get(0);
+
+        if (serviceUsageSnapshot == null) {
+            return "{nothing}";
+        }
+
+        try {
+            String converted = jsonConverter.convertMonitoringSnapshotAndCompositionRules(serviceUsageSnapshot.getSnapshot(), serviceUsageSnapshot.getCostCompositionRules());
+            return converted;
+        } catch (Exception e) {
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getServiceUsageInJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+
     public String getTotalCostForServiceJSON(String serviceID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
@@ -483,6 +533,31 @@ public class CostEvalManager {
             return "{nothing}";
         }
         CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalCostSnapshot(serviceID);
+        serviceUsageSnapshot.getCostCompositionRules().getCompositionRules().addAll(cfg.getCompositionRulesConfiguration().getMetricCompositionRules().getCompositionRules());
+        if (serviceUsageSnapshot == null) {
+            return "{nothing}";
+        }
+
+        try {
+            String converted = CostJSONConverter.convertMonitoringSnapshotAndCompositionRules(serviceUsageSnapshot.getSnapshot(), serviceUsageSnapshot.getCostCompositionRules());
+            return converted;
+        } catch (Exception e) {
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getTotalCostForServiceJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+
+    public String getTotalCostForServiceJSON(String serviceID, String timestampID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalCostSnapshotByTimeIDInterval(Integer.parseInt(timestampID), Integer.parseInt(timestampID), serviceID).get(0);
         serviceUsageSnapshot.getCostCompositionRules().getCompositionRules().addAll(cfg.getCompositionRulesConfiguration().getMetricCompositionRules().getCompositionRules());
         if (serviceUsageSnapshot == null) {
             return "{nothing}";
@@ -571,6 +646,31 @@ public class CostEvalManager {
 
     }
 
+    public String getInstantCostForServiceJSONAsPieChart(String serviceID, String timestampID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractInstantUsageSnapshotByTimeIDInterval(Integer.parseInt(timestampID), Integer.parseInt(timestampID), serviceID).get(0);
+
+        if (serviceUsageSnapshot == null) {
+            return "{nothing}";
+        }
+
+        try {
+            String converted = jsonConverter.toJSONForRadialPieChart(serviceUsageSnapshot.getSnapshot());
+            return converted;
+        } catch (Exception e) {
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getTotalCostForServiceJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+
     public LifetimeEnrichedSnapshot updateAndCacheHistoricalServiceUsageForInstantCostPerUsage(final String serviceID) {
 
         //if service DI not found
@@ -608,6 +708,10 @@ public class CostEvalManager {
 //                log.info("Updating usage and instant cost from {} for {} snapshots, last timestamp is {}",
 //                        new Object[]{lastRetrievedTimestampID, allMonData.size(), lastTimestampID});
                 for (ServiceMonitoringSnapshot monitoringSnapshot : allMonData) {
+
+                    if (monitoringSnapshot.getTimestampID() == 720) {
+                        log.debug("Am ajuns ");
+                    }
                     Date before = new Date();
                     //update total usage so far
                     previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
@@ -631,6 +735,27 @@ public class CostEvalManager {
                                 new Date(after.getTime() - before.getTime()).getTime()
                             });
 
+                    //compute total cost IF not computed before, or IF we have new mon data
+                    if (previouselyDeterminedUsage != null) {
+                        CostEnrichedSnapshot totalCost = persistenceDelegate.extractTotalCostSnapshot(serviceID);
+                        //only update and persist total cost snapshot if not done before
+                        if (totalCost == null || totalCost.getLastUpdatedTimestampID() != previouselyDeterminedUsage.getLastUpdatedTimestampID()) {
+
+                            //retrieve the previousely computed total usage, as the computation of the instant cost destr
+                            //            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
+                            //create rules for metrics for total cost based on usage so far
+                            CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, previouselyDeterminedUsage.getSnapshot().getTimestamp());
+                            ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
+
+                            //persist mon snapshot enriched with total cost
+                            persistenceDelegate.persistTotalCostSnapshot(serviceID, new CostEnrichedSnapshot().withCostCompositionRules(totalCostBlock)
+                                    .withLastUpdatedTimestampID(snapshotWithTotalCost.getTimestampID()).withSnapshot(snapshotWithTotalCost));
+                            log.debug("Persisted and update instant and total cost for {}", serviceID);
+                        } else {
+                            log.debug("Total Cost allready persisted previousely for {}, so continuing", serviceID);
+                        }
+                    }
+
                 }
                 lastRetrievedTimestampID = allMonData.get(allMonData.size() - 1).getTimestampID();
 //                log.info("Extracting from {}, and we still have to go until {}", new Object[]{lastRetrievedTimestampID, lastTimestampID});
@@ -640,27 +765,6 @@ public class CostEvalManager {
             } while (!allMonData.isEmpty() && lastRetrievedTimestampID < lastTimestampID);
         } else {
             log.debug("No new data to evaluate cost for {}", serviceID);
-        }
-
-        //compute total cost IF not computed before, or IF we have new mon data
-        if (previouselyDeterminedUsage != null) {
-            CostEnrichedSnapshot enrichedSnapshot = persistenceDelegate.extractTotalCostSnapshot(serviceID);
-            //only update and persist total cost snapshot if not done before
-            if (enrichedSnapshot == null || enrichedSnapshot.getLastUpdatedTimestampID() != previouselyDeterminedUsage.getLastUpdatedTimestampID()) {
-
-                //retrieve the previousely computed total usage, as the computation of the instant cost destr
-                //            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
-                //create rules for metrics for total cost based on usage so far
-                CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, persistenceDelegate.extractLatestMonitoringData(serviceID).getTimestamp());
-                ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
-
-                //persist mon snapshot enriched with total cost
-                persistenceDelegate.persistTotalCostSnapshot(serviceID, new CostEnrichedSnapshot().withCostCompositionRules(totalCostBlock)
-                        .withLastUpdatedTimestampID(snapshotWithTotalCost.getTimestampID()).withSnapshot(snapshotWithTotalCost));
-                log.debug("Persisted and update instant and total cost for {}", serviceID);
-            } else {
-                log.debug("Total Cost allready persisted previousely for {}, so continuing", serviceID);
-            }
         }
 
         Runtime.getRuntime().gc();

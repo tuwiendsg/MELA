@@ -19,10 +19,7 @@ minOperations = 100
 maxOperations = 300
 changeInterval = 1
 step = 1
-
-generatedKeys = []
-generatedTables = []
-
+ 
 rowOps  = 30
 
 
@@ -38,7 +35,6 @@ def executeRESTCall(restMethod, serviceBaseURL, resourceName,  content):
           result = connection.getresponse()
           connection.close()
         except Exception,e:
-          print e
           time.sleep(1)
 def _writeManyInParralel(writes):
             #print str(writes) + " writes "
@@ -53,44 +49,21 @@ def _writeManyInParralel(writes):
             #  p.join()
 
 
-def _readManyInParralel(reads):
-            generatedProcesses = []
-            for i in range(0,reads):
-              if len(generatedKeys) > 1:
-                      p = Process(target=_issueReadRequest)
-                      generatedProcesses.append(p)
-                      p.start()
-            time.sleep(1)
-            for p in generatedProcesses:
-              p.join()
 
 def _issueWriteRequest():
             key = str(uuid.uuid1())
             table=tablename
-            generatedKeys.append(key)
             rowsToCreate = rowOps
             #print str(rowsToCreate) 
             createRowStatement='<CreateRowsStatement><Table name="'+table+'"><Keyspace name="' + KeyspaceName + '"/></Table>'
             for i in range(0, int(rowsToCreate)):
               key = str(uuid.uuid1())
-              generatedKeys.append(key)
               createRowStatement=createRowStatement+('<Row><Column name="key" value="%s"/><Column name="sensorName" value="SensorY"/><Column name="sensorValue" value="%s"/> </Row>' % (key,random.uniform(1, 20000)))
 
             createRowStatement=createRowStatement + '</CreateRowsStatement>'
             executeRESTCall('PUT', BaseURL, 'DaaS/api/xml/table/row', createRowStatement)
 
-def _issueReadRequest():
-            rowsToDelete = rowOps
-            keysToDelete = generatedKeys.pop(random.randint(0,len(generatedKeys)-1));
-            for i in range(0, int (rowsToDelete)):
-               if len(generatedKeys) > 0:
-                   keysToDelete = keysToDelete + ',' + generatedKeys.pop(random.randint(0,len(generatedKeys)-1))
-
-            table = tablename
-            deleteRowQuerry = '<Query><Table name="'+table+'"><Keyspace name="' + KeyspaceName + '"/></Table><Condition>key in ('+keysToDelete+')</Condition></Query>'
-            executeRESTCall('DELETE', BaseURL, 'DaaS/api/xml/table/row', deleteRowQuerry)
-
-
+ 
 
 
 if __name__=='__main__':
@@ -109,7 +82,6 @@ if __name__=='__main__':
        changeAmount=step
        opCount = minOperations
        while True:
-                print "Writing ",opCount
                 try:
                         _writeManyInParralel(opCount)
                         time.sleep(1)

@@ -276,7 +276,64 @@ public class PersistenceDelegate {
             }
         };
 
-        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, serviceID);
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, startTimestampID, endTimestampID, serviceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots;
+        }
+    }
+
+    public List<CostEnrichedSnapshot> extractTotalCostSnapshotByTimeInterval(int startTimestampID, int endTimestampID, String serviceID) {
+
+        String sql = "SELECT TotalCostHistory.timestampID, TotalCostHistory.data from TotalCostHistory INNER JOIN Timestamp "
+                + "ON TotalCostHistory.timestampID= Timestamp.ID  where " + " Timestamp.timestamp >= ? "
+                + "AND Timestamp.timestamp <=  ? AND TotalCostHistory.monSeqID=?;";
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, startTimestampID, endTimestampID, serviceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots;
+        }
+    }
+
+    public List<CostEnrichedSnapshot> extractInstantUsageSnapshotByTimeIDInterval(int startTimestampID, int endTimestampID, String serviceID) {
+
+        String sql = "SELECT InstantCostHistory.timestampID, InstantCostHistory.data from InstantCostHistory INNER JOIN Timestamp "
+                + "ON InstantCostHistory.timestampID= Timestamp.ID  where " + " Timestamp.ID >= ? "
+                + "AND Timestamp.ID <=  ? AND InstantCostHistory.monSeqID=?;";
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, startTimestampID, endTimestampID, serviceID);
+        if (snapshots.isEmpty()) {
+            return null;
+        } else {
+            return snapshots;
+        }
+    }
+
+    public List<CostEnrichedSnapshot> extractTotalCostSnapshotByTimeIDInterval(int startTimestampID, int endTimestampID, String serviceID) {
+
+        String sql = "SELECT TotalCostHistory.timestampID, TotalCostHistory.data from TotalCostHistory INNER JOIN Timestamp "
+                + "ON TotalCostHistory.timestampID= Timestamp.ID  where " + " Timestamp.ID >= ? "
+                + "AND Timestamp.ID <=  ? AND TotalCostHistory.monSeqID=?;";
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        List<CostEnrichedSnapshot> snapshots = jdbcTemplate.query(sql, rowMapper, startTimestampID, endTimestampID, serviceID);
         if (snapshots.isEmpty()) {
             return null;
         } else {

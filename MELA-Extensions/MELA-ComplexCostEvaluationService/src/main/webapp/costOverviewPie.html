@@ -67,9 +67,9 @@
             <table style="width:100%">
 
                 <tr>
-                    
+
                     <td>
-                       <div id="wheelView"></div> 
+                        <div id="wheelView"></div> 
                     </td>
                 </tr>
                 <tr><td><div id="trailDiv"></div></td><td>&nbsp;</td></tr>
@@ -91,8 +91,8 @@
             var serviceID = vars[0];
             pieFontSize = 20;
 
-        
-            setupPieVisualization("wheelView", "trailDiv", window.innerWidth , window.innerHeight );
+
+            setupPieVisualization("wheelView", "trailDiv", window.innerWidth, window.innerHeight);
 
             var query = window.location.search.substring(1);
             var vars = query.split("&");
@@ -100,7 +100,7 @@
 
             var reqDataTreeViewMonitoringDataObject;
             var reqDataPieViewMonitoringDataObject;
- 
+
 
             function refreshMonitoringDataPieView() {
                 reqDataPieViewMonitoringDataObject = null;
@@ -110,7 +110,12 @@
                     reqDataPieViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
                 }
                 reqDataPieViewMonitoringDataObject.onreadystatechange = processMonitoringDataDataPieViewResponse;
-                reqDataPieViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/"+vars[1]+"/json/piechart", true);
+                if (vars.length > 2) { ///second argument is exact timestamp
+                    reqDataPieViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/" + vars[1] + "/json/piechart/" + vars[2], true);
+                } else {
+                    reqDataPieViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/" + vars[1] + "/json/piechart", true);
+                }
+
                 reqDataPieViewMonitoringDataObject.send(null);
             }
 

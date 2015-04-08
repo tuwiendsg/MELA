@@ -424,25 +424,25 @@ public class CostEvalOverTimeTest {
 
         persistenceDelegate.persistInstantCostSnapshot(service.getId(), new CostEnrichedSnapshot().withCostCompositionRules(block2).withSnapshot(instantCost2).withLastUpdatedTimestampID(instantCost2.getTimestampID()));
 
-        MonitoredElement newVM = new MonitoredElement("UNIT_INSTANCE_2").withLevel(MonitoredElement.MonitoredElementLevel.VM)
-                .withCloudOfferedService(new UsedCloudOfferedService()
-                        .withCloudProviderID(UUID.fromString("251ed7c7-aa4d-49d4-b42b-7efefd970d6b"))
-                        .withCloudProviderName("Amazon")
-                        .withId(UUID.fromString("38400000-8cf0-11bd-b23e-000000000000"))
-                        .withInstanceUUID(UUID.fromString("98400000-8cf0-11bd-b23e-000000000001"))
-                        .withName("m1.small")
-                );
+//        MonitoredElement newVM = new MonitoredElement("UNIT_INSTANCE_2").withLevel(MonitoredElement.MonitoredElementLevel.VM)
+//                .withCloudOfferedService(new UsedCloudOfferedService()
+//                        .withCloudProviderID(UUID.fromString("251ed7c7-aa4d-49d4-b42b-7efefd970d6b"))
+//                        .withCloudProviderName("Amazon")
+//                        .withId(UUID.fromString("38400000-8cf0-11bd-b23e-000000000000"))
+//                        .withInstanceUUID(UUID.fromString("98400000-8cf0-11bd-b23e-000000000001"))
+//                        .withName("m1.small")
+//                );
 
         //add another monitoring snapshot
         ServiceMonitoringSnapshot monitoringSnapshot4 = new ServiceMonitoringSnapshot().withTimestamp("37000000");
         {
 
             unit.getContainedElements().clear();
-            unit.withContainedElement(newVM);
+            unit.withContainedElement(vm);
 
-            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(newVM);
+            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(vm);
 //            elementMonitoringSnapshot.getMonitoredData().put(instanceMetric, new MetricValue(10).withFreshness(80d));
-            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(100.0).withFreshness(50d));
+            elementMonitoringSnapshot.getMonitoredData().put(usageMetric, new MetricValue(1.0).withFreshness(50d));
 
             MonitoredElementMonitoringSnapshot unitMonSnapshpot = new MonitoredElementMonitoringSnapshot(unit);
             unitMonSnapshpot.addChild(elementMonitoringSnapshot);
@@ -475,8 +475,8 @@ public class CostEvalOverTimeTest {
                     .withId(vm.getCloudOfferedServices().iterator().next().getInstanceUUID().toString())
                     .withName(vm.getCloudOfferedServices().iterator().next().getName())
                     .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
-            assertEquals(new MetricValue(27.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCost));
-            assertEquals(new MetricValue(1.5), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalUsageMetricCost));
+            assertEquals(new MetricValue(30.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCost));
+            assertEquals(new MetricValue(18499.5), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalUsageMetricCost));
         }
     }
 

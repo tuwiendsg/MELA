@@ -68,10 +68,10 @@
 
                 <tr>
                     <td>
-                         <div id="treeView"></div>
+                        <div id="treeView"></div>
                     </td>
                     <td>
-                       <div id="wheelView"></div> 
+                        <div id="wheelView"></div> 
                     </td>
                 </tr>
                 <tr><td><div id="trailDiv"></div></td><td>&nbsp;</td></tr>
@@ -92,12 +92,13 @@
             var vars = query.split("&");
             var serviceID = vars[0];
 
+
             setupTreeView(vars[0], "treeView", window.innerWidth * 2 / 3, window.innerHeight * 2 / 3, vars[1]);
             setupPieVisualization("wheelView", "trailDiv", window.innerWidth / 4, window.innerHeight * 2 / 3);
 
             var query = window.location.search.substring(1);
             var vars = query.split("&");
-            var serviceID = vars[0];
+
 
             var reqDataTreeViewMonitoringDataObject;
             var reqDataPieViewMonitoringDataObject;
@@ -110,7 +111,11 @@
                     reqDataTreeViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
                 }
                 reqDataTreeViewMonitoringDataObject.onreadystatechange = processMonitoringDataTreeViewResponse;
-                reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/" + vars[1]+ "/json/tree", true);
+                if (vars.length > 2) {
+                    reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + vars[0] + "/cost/" + vars[1] + "/json/tree/" + vars[2], true);
+                } else {
+                    reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + vars[0] + "/cost/" + vars[1] + "/json/tree", true);
+                }
                 reqDataTreeViewMonitoringDataObject.send(null);
             }
 
@@ -126,7 +131,7 @@
 
             refreshMonitoringDataTreeView();
 
-           
+
 
             function refreshMonitoringDataPieView() {
                 reqDataPieViewMonitoringDataObject = null;
@@ -136,7 +141,13 @@
                     reqDataPieViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
                 }
                 reqDataPieViewMonitoringDataObject.onreadystatechange = processMonitoringDataDataPieViewResponse;
-                reqDataPieViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/"+ vars[1]+ "/json/piechart", true);
+                if (vars.length > 2) { ///second argument is exact timestamp
+                    reqDataPieViewMonitoringDataObject.open("GET", "./REST_WS/" + vars[0] + "/cost/" + vars[1] + "/json/piechart/" + vars[2], true);
+                } else {
+                    reqDataPieViewMonitoringDataObject.open("GET", "./REST_WS/" + vars[0] + "/cost/" + vars[1] + "/json/piechart", true);
+                }
+
+
                 reqDataPieViewMonitoringDataObject.send(null);
             }
 

@@ -427,6 +427,12 @@ public class CostEvalEngineTest {
                     .withName(vm.getCloudOfferedServices().iterator().next().getName())
                     .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
             assertEquals(new MetricValue(3.0), totalServiceUsage2.getSnapshot().getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(usageMetric));
+
+            CompositionRulesBlock totalCostRules = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalServiceUsage2, totalServiceUsage2.getSnapshot().getTimestamp());
+            ServiceMonitoringSnapshot totalCostEnrichedSnapshot = costEvalEngine.applyCompositionRules(totalCostRules, totalServiceUsage2.getSnapshot());
+
+            assertEquals(new MetricValue(3.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCost));
+
         }
 
         persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(service.getId(), totalServiceUsage2);
@@ -520,6 +526,16 @@ public class CostEvalEngineTest {
 
         CompositionRulesBlock totalCostRules = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, totalServiceUsage3, totalServiceUsage3.getSnapshot().getTimestamp());
         ServiceMonitoringSnapshot totalCostEnrichedSnapshot = costEvalEngine.applyCompositionRules(totalCostRules, totalServiceUsage3.getSnapshot());
+
+        {
+            MonitoredElement usedCloudServiceMonitoredElement = new MonitoredElement()
+                    .withId(vm.getCloudOfferedServices().iterator().next().getInstanceUUID().toString())
+                    .withName(vm.getCloudOfferedServices().iterator().next().getName())
+                    .withLevel(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE);
+
+            assertEquals(new MetricValue(6.0), totalCostEnrichedSnapshot.getMonitoredData(usedCloudServiceMonitoredElement).getMetricValue(totalInstanceMetricCost));
+
+        }
 
         {
             MonitoredElement usedCloudServiceMonitoredElement = new MonitoredElement()

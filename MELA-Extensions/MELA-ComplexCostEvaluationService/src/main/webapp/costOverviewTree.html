@@ -108,7 +108,11 @@
                     reqDataTreeViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
                 }
                 reqDataTreeViewMonitoringDataObject.onreadystatechange = processMonitoringDataTreeViewResponse;
-                reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/"+vars[1]+"/json/tree", true);
+                 if (vars.length > 2) { ///second argument is exact timestamp
+                    reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/" + vars[1] + "/json/tree/" + vars[2], true);
+                } else {
+                    reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/" + vars[1] + "/json/tree", true);
+                }
                 reqDataTreeViewMonitoringDataObject.send(null);
             }
 

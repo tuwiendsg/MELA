@@ -179,7 +179,7 @@ public class LifetimeEnrichedSnapshot implements Serializable {
 
     public Long getDeallocationTime(MonitoredElement element, UsedCloudOfferedService cloudOfferedService) {
         if (deallocationTimes.containsKey(element)) {
-            Map<UsedCloudOfferedService, Long> elementServices = instantiationTimes.get(element);
+            Map<UsedCloudOfferedService, Long> elementServices = deallocationTimes.get(element);
             if (elementServices.containsKey(cloudOfferedService)) {
 
                 return elementServices.get(cloudOfferedService);
@@ -188,14 +188,14 @@ public class LifetimeEnrichedSnapshot implements Serializable {
                 return 0l;
             }
         } else {
-            logger.error("Element {} not found in snapshot", element.getId());
+//            logger.error("Element {} not found in snapshot", element.getId());
             return 0l;
         }
     }
 
     public boolean hasDeallocationTime(MonitoredElement element, UsedCloudOfferedService cloudOfferedService) {
         if (deallocationTimes.containsKey(element)) {
-            Map<UsedCloudOfferedService, Long> elementServices = instantiationTimes.get(element);
+            Map<UsedCloudOfferedService, Long> elementServices = deallocationTimes.get(element);
             if (elementServices.containsKey(cloudOfferedService)) {
                 return true;
             } else {
@@ -203,7 +203,7 @@ public class LifetimeEnrichedSnapshot implements Serializable {
                 return false;
             }
         } else {
-            logger.error("Element {} not found in snapshot", element.getId());
+//            logger.error("Element {} not found in snapshot", element.getId());
             return false;
         }
     }

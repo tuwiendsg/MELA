@@ -403,6 +403,46 @@ public class CostEvalEngine {
 
         MonitoredElementMonitoringSnapshot currentUsageData = currentDataConverted.getMonitoredData(currentDataConverted.getMonitoredService());
 
+        //update used and unused services
+        for (MonitoredElement monitoredElement : previousUsage.getSnapshot().getMonitoredService()) {
+
+            if (currentUsageData == null) {
+                log.error("No monitoring data for " + monitoredElement + " at level " + monitoredElement.getLevel().toString() + " timestamp " + currentDataConverted.getTimestampID());
+                continue;
+            }
+
+            //if element not here anymore, must mark all used services as dead
+            if (!currentMonData.contains(monitoredElement.getLevel(), monitoredElement)) {
+                for (UsedCloudOfferedService ucos : monitoredElement.getCloudOfferedServices()) {
+                    if (!previousUsage.hasDeallocationTime(monitoredElement, ucos)) {
+                        previousUsage.withDeallocationTime(monitoredElement, ucos, Long.parseLong(currentDataConverted.getTimestamp()));
+                    }
+                }
+            } else {
+                MonitoredElement equivalentElementFromCurrentData = currentMonData.getMonitoredData(monitoredElement).getMonitoredElement();
+                //if element still exists, check its services
+                for (UsedCloudOfferedService ucos : monitoredElement.getCloudOfferedServices()) {
+                    //remove services not in use anymore
+                    if (!equivalentElementFromCurrentData.getCloudOfferedServices().contains(ucos)) {
+                        if (!previousUsage.hasDeallocationTime(monitoredElement, ucos)) {
+                            previousUsage.withDeallocationTime(monitoredElement, ucos, Long.parseLong(currentDataConverted.getTimestamp()));
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+        //add newly allocated services
+        for (MonitoredElement elementInCurrentData : currentMonData.getMonitoredService()) {
+            for (UsedCloudOfferedService ucos : elementInCurrentData.getCloudOfferedServices()) {
+                if (!previousUsage.getInstantiationTimes(elementInCurrentData).containsKey(ucos)) {
+                    previousUsage.withInstantiationTime(elementInCurrentData, ucos, Long.parseLong(currentDataConverted.getTimestamp()));
+                }
+            }
+        }
+
         //I want to go trough each element
         //for each used cloud offered service
         //create a CLOUD_OFFERED_SERVICE and attach it to the element using the service
@@ -437,65 +477,70 @@ public class CostEvalEngine {
                             MonitoredElementMonitoringSnapshot usedServiceDataSoFar = usageSoFarSnapshot.getMonitoredData(usedCloudServiceMonitoredElement);
                             MonitoredElementMonitoringSnapshot usedServiceNewData = currentDataConverted.getMonitoredData(usedCloudServiceMonitoredElement);
 
-                            //if usedServiceNewData does not contain data, than service no linger in use
-                            if (usedServiceDataSoFar.getMonitoredData().containsKey(costElement.getCostMetric()) && usedServiceNewData.getMonitoredData().containsKey(costElement.getCostMetric())) {
-                                MetricValue usedServiceDataSoFarMetricValue = usedServiceDataSoFar.getMonitoredData().get(costElement.getCostMetric());
-                                MetricValue usedServiceNewDataMetricValue = usedServiceNewData.getMonitoredData().get(costElement.getCostMetric());
+                            if (usedServiceDataSoFar.getMonitoredData().containsKey(costElement.getCostMetric())) {
 
-                                String timePeriod = "";
+                                //if usedServiceNewData does not contain data, than service no linger in use
+                                if (usedServiceNewData.getMonitoredData().containsKey(costElement.getCostMetric())) {
+                                    MetricValue usedServiceDataSoFarMetricValue = usedServiceDataSoFar.getMonitoredData().get(costElement.getCostMetric());
+                                    MetricValue usedServiceNewDataMetricValue = usedServiceNewData.getMonitoredData().get(costElement.getCostMetric());
 
-                                if (costElement.getCostMetric().getMeasurementUnit().contains("/")) {
-                                    timePeriod = costElement.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                                }
+                                    String timePeriod = "";
 
-                                //check amount of time in millis between two measurement units
-                                Long currentTimestamp = Long.parseLong(currentDataConverted.getTimestamp());
+                                    if (costElement.getCostMetric().getMeasurementUnit().contains("/")) {
+                                        timePeriod = costElement.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+                                    }
 
-                                //check if monitoring has left some time intervals un-monitored
-                                //if so, then fill up missing 
-                                Long previousTimestamp = Long.parseLong(previousUsage.getSnapshot().getTimestamp());
-                                Long timeIntervalInMillis = (currentTimestamp - previousTimestamp) / 1000;
+                                    //check amount of time in millis between two measurement units
+                                    Long currentTimestamp = Long.parseLong(currentDataConverted.getTimestamp());
 
-                                //convert to seconds
-                                Long periodsBetweenPrevAndCurrentTimestamp = 0l;
+                                    //check if monitoring has left some time intervals un-monitored
+                                    //if so, then fill up missing 
+                                    Long previousTimestamp = Long.parseLong(previousUsage.getSnapshot().getTimestamp());
+                                    Long timeIntervalInMillis = (currentTimestamp - previousTimestamp) / 1000;
 
-                                //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up historical usage by itself
-                                if (timePeriod.length() == 0) {
-                                    usedServiceDataSoFarMetricValue.setValue(usedServiceNewDataMetricValue.getValue());
-                                    usedServiceNewDataMetricValue.setFreshness(usedServiceNewDataMetricValue.getFreshness());
-                                    usedServiceNewDataMetricValue.setTimeSinceCollection(usedServiceNewDataMetricValue.getTimeSinceCollection());
-                                    usedServiceNewDataMetricValue.setTimeSinceCollection(usedServiceNewDataMetricValue.getTimeSinceCollection());
-                                    continue;
-                                } else if (timePeriod.equals("s")) {
-                                    periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
-                                } else if (timePeriod.equals("m")) {
-                                    periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
-                                } else if (timePeriod.equals("h")) {
-                                    periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 3600;
-                                } else if (timePeriod.equals("d")) {
-                                    periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
-                                }
+                                    //convert to seconds
+                                    Long periodsBetweenPrevAndCurrentTimestamp = 0l;
 
-                                if (periodsBetweenPrevAndCurrentTimestamp <= 1) {
-                                    usedServiceDataSoFarMetricValue.sum(usedServiceNewDataMetricValue);
+                                    //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up historical usage by itself
+                                    if (timePeriod.length() == 0) {
+                                        usedServiceDataSoFarMetricValue.setValue(usedServiceNewDataMetricValue.getValue());
+                                        usedServiceNewDataMetricValue.setFreshness(usedServiceNewDataMetricValue.getFreshness());
+                                        usedServiceNewDataMetricValue.setTimeSinceCollection(usedServiceNewDataMetricValue.getTimeSinceCollection());
+                                        usedServiceNewDataMetricValue.setTimeSinceCollection(usedServiceNewDataMetricValue.getTimeSinceCollection());
+                                        continue;
+                                    } else if (timePeriod.equals("s")) {
+                                        periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
+                                    } else if (timePeriod.equals("m")) {
+                                        periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
+                                    } else if (timePeriod.equals("h")) {
+                                        periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 3600;
+                                    } else if (timePeriod.equals("d")) {
+                                        periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
+                                    }
 
-                                } else {
+                                    if (periodsBetweenPrevAndCurrentTimestamp <= 1) {
+                                        usedServiceDataSoFarMetricValue.sum(usedServiceNewDataMetricValue);
+
+                                    } else {
                                                 //if more than one period between recordings, need to compute usage for non-monitored periods
-                                    //we compute average for intermediary
+                                        //we compute average for intermediary
 
-                                    //get average between two last readings and use it to fill the gap of un-monitored data
-                                    MetricValue average = usedServiceNewDataMetricValue.clone();
-                                    average.sum(usedServiceNewDataMetricValue);
-                                    average.divide(2);
-                                    //add average for intermediary monitoring points
-                                    //TODO: add option for adding other plug-ins for filling up missing data, and computing accuracy of estimation
-                                    average.multiply(periodsBetweenPrevAndCurrentTimestamp.intValue());
-                                    //add monitored points
-                                    average.sum(usedServiceNewDataMetricValue);
-                                    average.sum(usedServiceNewDataMetricValue);
-                                    usedServiceDataSoFarMetricValue.setValue(average.getValue());
+                                        //get average between two last readings and use it to fill the gap of un-monitored data
+                                        MetricValue average = usedServiceNewDataMetricValue.clone();
+                                        average.sum(usedServiceNewDataMetricValue);
+                                        average.divide(2);
+                                        //add average for intermediary monitoring points
+                                        //TODO: add option for adding other plug-ins for filling up missing data, and computing accuracy of estimation
+                                        average.multiply(periodsBetweenPrevAndCurrentTimestamp.intValue());
+                                        //add monitored points
+                                        average.sum(usedServiceNewDataMetricValue);
+                                        average.sum(usedServiceNewDataMetricValue);
+                                        usedServiceDataSoFarMetricValue.setValue(average.getValue());
 
+                                    }
                                 }
+                            } else {
+                                usageSoFarSnapshot.addMonitoredData(usedServiceNewData);
                             }
 
                         }//else we do not care, as we allready updated the instantiation times
@@ -566,42 +611,6 @@ public class CostEvalEngine {
                         }
                     }
                     break;
-                }
-            }
-        }
-
-        //update used and unused services
-        for (MonitoredElement monitoredElement : previousUsage.getSnapshot().getMonitoredService()) {
-
-            if (currentUsageData == null) {
-                log.error("No monitoring data for " + monitoredElement + " at level " + monitoredElement.getLevel().toString() + " timestamp " + currentDataConverted.getTimestampID());
-                continue;
-            }
-
-            //if element not here anymore, must mark all used services as dead
-            if (!currentMonData.contains(monitoredElement.getLevel(), monitoredElement)) {
-                for (UsedCloudOfferedService ucos : monitoredElement.getCloudOfferedServices()) {
-                    previousUsage.withDeallocationTime(monitoredElement, ucos, Long.parseLong(currentDataConverted.getTimestamp()));
-                }
-            } else {
-                MonitoredElement equivalentElementFromCurrentData = currentMonData.getMonitoredData(monitoredElement).getMonitoredElement();
-                //if element still exists, check its services
-                for (UsedCloudOfferedService ucos : monitoredElement.getCloudOfferedServices()) {
-                    //remove services not in use anymore
-                    if (!equivalentElementFromCurrentData.getCloudOfferedServices().contains(ucos)) {
-                        previousUsage.withDeallocationTime(monitoredElement, ucos, Long.parseLong(currentDataConverted.getTimestamp()));
-                    }
-                }
-
-            }
-
-        }
-
-        //add newly allocated services
-        for (MonitoredElement elementInCurrentData : currentMonData.getMonitoredService()) {
-            for (UsedCloudOfferedService ucos : elementInCurrentData.getCloudOfferedServices()) {
-                if (!previousUsage.getInstantiationTimes(elementInCurrentData).containsKey(ucos)) {
-                    previousUsage.withInstantiationTime(elementInCurrentData, ucos, Long.parseLong(currentDataConverted.getTimestamp()));
                 }
             }
         }
@@ -685,7 +694,6 @@ public class CostEvalEngine {
                                             compositionOperation.addMetricSourceMonitoredElementID(usedCloudServiceMonitoredElement.getId());
                                             compositionOperation.setMetricSourceMonitoredElementLevel(usedCloudServiceMonitoredElement.getLevel());
 
-                                            //we need to go trough all cost element interval, and apply correct cost for each interval
                                             MetricValue metricUsageSoFar = value.clone();
                                             MetricValue costForValue = new MetricValue(0l);
                                             Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
@@ -695,8 +703,16 @@ public class CostEvalEngine {
 
                                                 MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
 
+                                                //for total cost, we allways pay in full the used service. for example, I have cost per GB of data, so I pay 1 GB even if I use 200 MB
+                                                //so if interval mentiones a value, need to round it up to interval
+                                                //if interval is up to Infinite, then i need to round it up to an integer
                                                 if (costIntervalElement.compareTo(metricUsageSoFar) > 0) {
-                                                    MetricValue costForThisInterval = metricUsageSoFar.clone();
+                                                    MetricValue roundedUsage = (costIntervalElement.compareTo(new MetricValue(Double.POSITIVE_INFINITY)) == 0)
+                                                            ? //if infinity, round to integer
+                                                            new MetricValue(Math.ceil(((Number) metricUsageSoFar.getValue()).doubleValue()))
+                                                            : //else usage does not matter, we are billed for complete interval
+                                                            costIntervalElement.clone();
+                                                    MetricValue costForThisInterval = roundedUsage;
                                                     costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
                                                     costForValue.sum(costForThisInterval);
                                                     break;
@@ -711,7 +727,7 @@ public class CostEvalEngine {
                                                     }
 
                                                     metricUsageSoFar.sub(usageBetweenLastAndCurrentInterval);
-                                                    MetricValue costForThisInterval = new MetricValue(usageBetweenLastAndCurrentInterval);
+                                                    MetricValue costForThisInterval = costIntervalElement.clone();
                                                     costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
                                                     costForValue.sum(costForThisInterval);
                                                 }
@@ -738,12 +754,16 @@ public class CostEvalEngine {
                                     //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
                                     //this works as we assume we target only metrics which change in time using PER USAGE cost functions
                                     Long currentTimestamp = Long.parseLong(currentTimesnapshot);
+                                    if (totalUsageSoFar.hasDeallocationTime(monitoredElement, service)) {
+                                        currentTimestamp = totalUsageSoFar.getDeallocationTime(monitoredElement, service);
+                                    }
                                     Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
 
                                     //convert to seconds
-                                    Long seconds = (currentTimestamp - instantiationTimestamp) / 1000;
+                                    Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
 
-                                    Long costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
+                                    //for total cost, we allways pay in full the reserved service. for example, I reserver for 1 hour, I pay in full even after half hour
+                                    Long costPeriodsFromCreation = new Double(Math.ceil(seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit()))).longValue();
 
                                     //minimum periodic usage is always rounded up and billed 
                                     if (costPeriodsFromCreation == 0) {
@@ -2379,6 +2399,9 @@ public class CostEvalEngine {
                                         //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
                                         //this works as we assume we target only metrics which change in time using PER USAGE cost functions
                                         Long currentTimestamp = Long.parseLong(currentTimesnapshot);
+                                        if (totalUsageSoFar.hasDeallocationTime(monitoredElement, service)) {
+                                            currentTimestamp = totalUsageSoFar.getDeallocationTime(monitoredElement, service);
+                                        }
                                         Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
 
                                         //convert to seconds
