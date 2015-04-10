@@ -514,7 +514,7 @@ public class CostEvalManager {
         }
 
         try {
-            String converted = jsonConverter.convertMonitoringSnapshotAndCompositionRules(serviceUsageSnapshot.getSnapshot(), serviceUsageSnapshot.getCostCompositionRules());
+            String converted = CostJSONConverter.convertMonitoringSnapshotAndCompositionRules(serviceUsageSnapshot.getSnapshot(), serviceUsageSnapshot.getCostCompositionRules());
             return converted;
         } catch (Exception e) {
             return e.getMessage();

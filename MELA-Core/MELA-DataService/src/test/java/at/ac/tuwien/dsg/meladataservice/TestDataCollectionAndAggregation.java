@@ -77,13 +77,13 @@ public class TestDataCollectionAndAggregation {
     @Before
     public void setUp() {
         try {
-             //run hsql in memory only for testing purposes
+            //run hsql in memory only for testing purposes
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setUrl("jdbc:hsqldb:mem:mela-test-db");
             dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
             dataSource.setUsername("sa");
             dataSource.setPassword("");
- 
+
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
             //read content of sql schema
@@ -165,7 +165,6 @@ public class TestDataCollectionAndAggregation {
         DataAggregationEngine aggregationEngine = new DataAggregationEngine();
 
         ServiceMonitoringSnapshot enrichedSnapshot = aggregationEngine.enrichMonitoringData(compositionRulesConfiguration, monitoringSnapshot);
-         
 
         persistenceDelegate.writeInTimestamp("1", element, element.getId());
         persistenceDelegate.writeMonitoringData("1", monitoringSnapshot, element.getId());
@@ -178,10 +177,16 @@ public class TestDataCollectionAndAggregation {
             MetricValue value = enrichedSnapshot.getMonitoredData(element).getMetricValue(serviceCostMetric);
             log.info(value.toString());
         }
+
         {
-            MonitoredElement vm = new MonitoredElement("10.99.0.65").withLevel(MonitoredElement.MonitoredElementLevel.VM);
+            MonitoredElement vm = new MonitoredElement("10.99.0.65_0").withName("10.99.0.65").withLevel(MonitoredElement.MonitoredElementLevel.VM);
 
             Map<Metric, MetricValue> data = enrichedSnapshot.getMonitoredData(vm).getMonitoredData();
+
+            Metric packets = new Metric("pkts_in", "packets/sec", Metric.MetricType.RESOURCE);
+            MetricValue packetsValue = data.get(packets);
+            org.junit.Assert.assertEquals(new MetricValue(10.1f), packetsValue);
+            log.info(packetsValue.toString());
 
             for (Metric metric : data.keySet()) {
                 MetricValue value = data.get(metric);

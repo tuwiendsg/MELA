@@ -17,9 +17,7 @@
 package at.ac.tuwien.dsg.mela.costeval.model;
 
 import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
-import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import java.io.Serializable;
 import java.util.HashMap;

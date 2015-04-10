@@ -419,7 +419,7 @@ public class JsonConverter {
             MonitoredElement rootElement = monitoredData.get(MonitoredElement.MonitoredElementLevel.SERVICE).keySet().iterator().next();
 
             JSONObject root = new JSONObject();
-            root.put("name", (rootElement.getName().length() > 0 )?rootElement.getName(): rootElement.getId());
+            root.put("name", rootElement.getId());
             root.put("type", "" + rootElement.getLevel());
 
             //going trough the serviceStructure element tree in a BFS manner
@@ -440,7 +440,7 @@ public class JsonConverter {
                 //add children
                 for (MonitoredElement child : element.getContainedElements()) {
                     JSONObject childElement = new JSONObject();
-                    childElement.put("name", (child.getName().length() > 0 )?child.getName(): child.getId());
+                    childElement.put("name",  child.getId());
                     childElement.put("type", "" + child.getLevel());
                     JSONArray childrenChildren = new JSONArray();
                     childElement.put("children", childrenChildren);
@@ -542,7 +542,7 @@ public class JsonConverter {
             MonitoredElement rootElement = monitoredData.get(MonitoredElement.MonitoredElementLevel.SERVICE).keySet().iterator().next();
 
             JSONObject root = new JSONObject();
-            root.put("name", (rootElement.getName().length() > 0 )?rootElement.getName(): rootElement.getId());
+            root.put("name", rootElement.getId());
             root.put("type", "" + rootElement.getLevel());
 
             //going trough the serviceStructure element tree in a BFS manner
@@ -568,7 +568,7 @@ public class JsonConverter {
                 //add children
                 for (MonitoredElement child : element.getContainedElements()) {
                     JSONObject childElement = new JSONObject();
-                    childElement.put("name", (child.getName().length() > 0 )?child.getName(): child.getId() );
+                    childElement.put("name",  child.getId() );
                     childElement.put("type", "" + child.getLevel());
                     JSONArray childrenChildren = new JSONArray();
                     childElement.put("children", childrenChildren);

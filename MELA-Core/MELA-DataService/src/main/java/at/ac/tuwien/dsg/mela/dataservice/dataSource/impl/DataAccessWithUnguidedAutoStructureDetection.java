@@ -46,7 +46,7 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
     static final Logger log = LoggerFactory.getLogger(DataAccessWithUnguidedAutoStructureDetection.class);
 
     public DataAccessWithUnguidedAutoStructureDetection() {
-        if(dataFreshnessAnalysisEngine == null){
+        if (dataFreshnessAnalysisEngine == null) {
             dataFreshnessAnalysisEngine = new DefaultFreshnessAnalysisEngine();
         }
     }
@@ -107,7 +107,8 @@ public class DataAccessWithUnguidedAutoStructureDetection extends AbstractDataAc
         while (!bfsTraversalQueue.isEmpty()) {
             MonitoredElementMonitoringSnapshot element = bfsTraversalQueue.remove(0);
             MonitoredElement processedElement = element.getMonitoredElement();
-            elements.put(processedElement, processedElement);
+            elements.put(new MonitoredElement().withId(processedElement.getName()).withName(processedElement.getName()),
+                    processedElement);
 
             if (!processedElement.getLevel().equals(MonitoredElementLevel.VM)) {
                 lowestLevelFoundMonitoredElement = processedElement;

@@ -100,229 +100,229 @@ public class CostEvalEngine {
         return cloudOfferedServices;
     }
 
-    public SnapshotEnrichmentReport enrichMonSnapshotWithInstantUsageCost(List<CloudProvider> cloudOfferedServices, ServiceMonitoringSnapshot monitoringSnapshot, LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
-
-        Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServicesMap = cloudProvidersToMap(cloudOfferedServices);
-
-        //updates monData in place
-        CompositionRulesBlock compositionRulesConfiguration = createCompositionRulesForInstantUsageCost(cloudOfferedServicesMap, monitoringSnapshot.getMonitoredService(), totalUsageSoFar, currentTimesnapshot);
-
-//        Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters = new HashMap<>();
-        // set metric filters on data access
-//        for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
-//            // go trough each CompositionOperation and extract the source
-//            // metrics
+//    public SnapshotEnrichmentReport enrichMonSnapshotWithInstantUsageCost(List<CloudProvider> cloudOfferedServices, ServiceMonitoringSnapshot monitoringSnapshot, LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
 //
-//            List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
-//            queue.add(compositionRule.getOperation());
+//        Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServicesMap = cloudProvidersToMap(cloudOfferedServices);
 //
-//            while (!queue.isEmpty()) {
-//                CompositionOperation operation = queue.remove(0);
-//                queue.addAll(operation.getSubOperations());
-//                Metric targetMetric = operation.getTargetMetric();
-//                // metric can be null if a composition rule artificially creates
-//                // a metric using SET_VALUE
-//                if (targetMetric != null) {
-//                    MetricFilter metricFilter = new MetricFilter();
-//                    metricFilter.setId(targetMetric.getName() + "_Filter");
-//                    metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
-//                    Collection<Metric> metrics = new ArrayList<Metric>();
-//                    metrics.add(new Metric(targetMetric.getName()));
-//                    metricFilter.setMetrics(metrics);
+//        //updates monData in place
+//        CompositionRulesBlock compositionRulesConfiguration = createCompositionRulesForInstantUsageCost(cloudOfferedServicesMap, monitoringSnapshot.getMonitoredService(), totalUsageSoFar, currentTimesnapshot);
 //
-//                    if (metricFilters.containsKey(metricFilter.getLevel())) {
-//                        List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
-//                        if (!list.contains(metricFilter)) {
-//                            list.add(metricFilter);
-//                        }
-//                    } else {
-//                        List<MetricFilter> list = new ArrayList<MetricFilter>();
-//                        list.add(metricFilter);
-//                        metricFilters.put(metricFilter.getLevel(), list);
-//                    }
-//                }
-//            }
-//        }
-//        monitoringSnapshot.applyMetricFilters(metricFilters);
-        SnapshotEnrichmentReport enrichmentReport = new SnapshotEnrichmentReport(instantMonitoringDataEnrichmentEngine.enrichMonitoringData(new CompositionRulesConfiguration().withMetricCompositionRules(compositionRulesConfiguration), monitoringSnapshot), compositionRulesConfiguration);
-        return enrichmentReport;
-
-    }
-
-//    /**
-//     * 1. Check what cost functions are applicable 2. SUMS up the metrics
-//     * targeted by the cost functions, between the previously monitored ones and
-//     * the new monitored snapshot !!!! NOTE !!! It works directly on the
-//     * supplied previouselyDeterminedUsage
-//     *
-//     * @param cloudOfferedServices
-//     * @param previouselyDeterminedUsage
-//     * @param newMonData
-//     * @return
-//     */
-//    public ServiceMonitoringSnapshot updateTotalUsageSoFarWithCurrentStructure(Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices, CostEnrichedSnapshot previouselyDeterminedUsage, ServiceMonitoringSnapshot newMonData) {
+////        Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters = new HashMap<>();
+//        // set metric filters on data access
+////        for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
+////            // go trough each CompositionOperation and extract the source
+////            // metrics
+////
+////            List<CompositionOperation> queue = new ArrayList<CompositionOperation>();
+////            queue.add(compositionRule.getOperation());
+////
+////            while (!queue.isEmpty()) {
+////                CompositionOperation operation = queue.remove(0);
+////                queue.addAll(operation.getSubOperations());
+////                Metric targetMetric = operation.getTargetMetric();
+////                // metric can be null if a composition rule artificially creates
+////                // a metric using SET_VALUE
+////                if (targetMetric != null) {
+////                    MetricFilter metricFilter = new MetricFilter();
+////                    metricFilter.setId(targetMetric.getName() + "_Filter");
+////                    metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
+////                    Collection<Metric> metrics = new ArrayList<Metric>();
+////                    metrics.add(new Metric(targetMetric.getName()));
+////                    metricFilter.setMetrics(metrics);
+////
+////                    if (metricFilters.containsKey(metricFilter.getLevel())) {
+////                        List<MetricFilter> list = metricFilters.get(metricFilter.getLevel());
+////                        if (!list.contains(metricFilter)) {
+////                            list.add(metricFilter);
+////                        }
+////                    } else {
+////                        List<MetricFilter> list = new ArrayList<MetricFilter>();
+////                        list.add(metricFilter);
+////                        metricFilters.put(metricFilter.getLevel(), list);
+////                    }
+////                }
+////            }
+////        }
+////        monitoringSnapshot.applyMetricFilters(metricFilters);
+//        SnapshotEnrichmentReport enrichmentReport = new SnapshotEnrichmentReport(instantMonitoringDataEnrichmentEngine.enrichMonitoringData(new CompositionRulesConfiguration().withMetricCompositionRules(compositionRulesConfiguration), monitoringSnapshot), compositionRulesConfiguration);
+//        return enrichmentReport;
 //
-//        if (newMonData == null) {
-//            return new ServiceMonitoringSnapshot();
-//        }
+//    }
 //
-//        //so, we have 2 types of cost, PERIODIC, and PER USAGE
-//        //usually per USAGE is payed according to some interval, such as free first GB, rest 0.12, etc
-//        //thus, for each USAGE cost metric, we compute for each snapshot its usage so far, and insert in the snapshot the instant cost rate
-////        Map<MonitoredElement, Map<Metric, MetricValue>> usageSoFar = new ConcurrentHashMap<MonitoredElement, Map<Metric, MetricValue>>();
-//        //fill this up with old data from old mon snapshot
-//        //holds timestamp in which each mon element appears in the service
-//        //        Map<MonitoredElement, Long> cloudOfferedServiceInstantiationTimes = new ConcurrentHashMap<MonitoredElement, Long>();
-//        List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
-//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.VM);
-//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
-//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
-//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE);
-//
-//        ServiceMonitoringSnapshot monitoringSnapshot = newMonData;
-//
-//        for (MonitoredElement.MonitoredElementLevel level : levelsInOrder) {
-//
-//            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> vmsData = monitoringSnapshot.getMonitoredData(level);
-//
-//            if (vmsData == null) {
-//                log.error("No monitoring data for service" + monitoringSnapshot.getMonitoredService() + " at level " + level.toString() + " timestamp " + monitoringSnapshot.getTimestampID());
-//                continue;
-//            }
-//
-//            for (MonitoredElement monitoredElement : vmsData.keySet()) {
-//
-//                //if just appeared, add monitored element VM in the instatiationTimes
-//                //update used cloud offered services, i.e., add newly added ones, and remove deleted ones
-//                List<UsedCloudOfferedService> monitoredElementUsedServices = monitoredElement.getCloudOfferedServices();
-//
-//                //remove deallocated services
-//                Iterator<UsedCloudOfferedService> it = previouselyDeterminedUsage.getInstantiationTimes(monitoredElement).keySet().iterator();
-//                while (it.hasNext()) {
-//                    UsedCloudOfferedService cloudOfferedService = it.next();
-//                    //if used service not used anymore, remove it from the map
-//                    if (!monitoredElementUsedServices.contains(cloudOfferedService)) {
-//                        it.remove();
-//                    }
-//
-//                }
-//
-//                //add newly allocated services
-//                for (UsedCloudOfferedService ucos : monitoredElementUsedServices) {
-//                    if (!previouselyDeterminedUsage.getInstantiationTimes(monitoredElement).containsKey(ucos)) {
-//                        previouselyDeterminedUsage.withInstantiationTime(monitoredElement, ucos, Long.parseLong(monitoringSnapshot.getTimestamp()));
-//                    }
-//                }
-//
-//                Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
-//
-//                for (UsedCloudOfferedService usedCloudService : monitoredElement.getCloudOfferedServices()) {
-//                    {
-//
-//                        //from the cost functions, we extract those that should be applied.
-//                        //maybe some do not quality to be apply as the service does not fulfill application requirements
-//                        List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(usedCloudService);
-//
-//                        Map<Metric, MetricValue> vmUsageSoFar = null;
-//
-//                        if (previouselyDeterminedUsage.getSnapshot().contains(level, monitoredElement)) {
-//                            vmUsageSoFar = previouselyDeterminedUsage.getSnapshot().getMonitoredData(monitoredElement).getMonitoredData();
-//                        } else {
-//                            vmUsageSoFar = new HashMap<>();
-//                            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, vmUsageSoFar);
-//                            previouselyDeterminedUsage.getSnapshot().addMonitoredData(elementMonitoringSnapshot);
-//                        }
-//
-//                        //apply cost functions
-//                        //start with USAGE type of cost, easier to apply. 
-//                        for (CostFunction cf : costFunctionsToApply) {
-//                            for (CostElement element : cf.getCostElements()) {
-//
-//                                if (element.getType().equals(CostElement.Type.USAGE)) {
-//                                    //if we just added the VM, so we do not have any historical usage so far
-//                                    MonitoredElementMonitoringSnapshot vmMonSnapshot = vmsData.get(monitoredElement);
-//
-//                                    MetricValue value = vmMonSnapshot.getMetricValue(element.getCostMetric());
-//                                    if (value != null) {
-//
-//                                        if (!vmUsageSoFar.containsKey(element.getCostMetric())) {
-//                                            vmUsageSoFar.put(element.getCostMetric(), value.clone());
-//
-//                                        } else {
-//                                            //else we need to sum up usage
-//                                            MetricValue usageSoFarForMetric = vmUsageSoFar.get(element.getCostMetric());
-//
-//                                            //we should compute estimated usage over time not captured by monitoring points:
-//                                            //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
-//                                            //depending on the measurement unit of the measured metric
-//                                            //I.E. a pkts_out/s will be multiplied with 60
-//                                            //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
-//                                            //this works as we assume we target only metrics which change in time using PER USAGE cost functions
-//                                            String timePeriod = "s";
-//
-//                                            if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-//                                                timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-//                                            }
-//
-//                                            //check amount of time in millis between two measurement units
-//                                            Long currentTimestamp = Long.parseLong(monitoringSnapshot.getTimestamp());
-//                                            Long previousTimestamp = Long.parseLong(newMonData.getTimestamp());
-//                                            Long timeIntervalInMillis = (currentTimestamp - previousTimestamp) / 1000;
-//
-//                                            //convert to seconds
-//                                            Long periodsBetweenPrevAndCurrentTimestamp = 0l;
-//
-//                                            //must standardise these somehow
-//                                          NU ASA k tre reused
-//                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
-//                                            } else if (timePeriod.equals("m")) {
-//                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
-//                                            } else if (timePeriod.equals("h")) {
-//                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 3600;
-//                                            } else if (timePeriod.equals("d")) {
-//                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
-//                                            }
-//
-//                                            //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up hsitorical usage by itself
-//                                            if (periodsBetweenPrevAndCurrentTimestamp <= 1) {
-//                                                usageSoFarForMetric.sum(value);
-//
-//                                            } else {
-//                                                //if more than one period between recordings, need to compute usage for non-monitored periods
-//                                                //we compute average for intermediary
-//
-//                                                MetricValue prevValue = vmUsageSoFar.get(element.getCostMetric());
-//                                                MetricValue average = prevValue.clone();
-//                                                prevValue.sum(value);
-//                                                average.divide(2);
-//                                                //add average for intermediary monitoring points
-//                                                //TODO: add option for adding other plug-ins for filling up missing data, and computing accuracy of estimation
-//                                                average.multiply(periodsBetweenPrevAndCurrentTimestamp.intValue());
-//                                                //add monitored points
-//                                                average.sum(prevValue);
-//                                                average.sum(value);
-//                                                usageSoFarForMetric.setValue(average.getValue());
-//
-//                                            }
-//
-//                                        }
-//                                    } else {
-//                                        log.error("Cost metric {} was not found on VM {}", element.getCostMetric().getName(), monitoredElement.getId());
-//                                    }
-//
-//                                    //if cost is per usage, it is computed by instant monitoring cost.
-////                                        continue;
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                }
-//            }
-//
-//        }
-//
-//        return previouselyDeterminedUsage.getSnapshot();
+////    /**
+////     * 1. Check what cost functions are applicable 2. SUMS up the metrics
+////     * targeted by the cost functions, between the previously monitored ones and
+////     * the new monitored snapshot !!!! NOTE !!! It works directly on the
+////     * supplied previouselyDeterminedUsage
+////     *
+////     * @param cloudOfferedServices
+////     * @param previouselyDeterminedUsage
+////     * @param newMonData
+////     * @return
+////     */
+////    public ServiceMonitoringSnapshot updateTotalUsageSoFarWithCurrentStructure(Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices, CostEnrichedSnapshot previouselyDeterminedUsage, ServiceMonitoringSnapshot newMonData) {
+////
+////        if (newMonData == null) {
+////            return new ServiceMonitoringSnapshot();
+////        }
+////
+////        //so, we have 2 types of cost, PERIODIC, and PER USAGE
+////        //usually per USAGE is payed according to some interval, such as free first GB, rest 0.12, etc
+////        //thus, for each USAGE cost metric, we compute for each snapshot its usage so far, and insert in the snapshot the instant cost rate
+//////        Map<MonitoredElement, Map<Metric, MetricValue>> usageSoFar = new ConcurrentHashMap<MonitoredElement, Map<Metric, MetricValue>>();
+////        //fill this up with old data from old mon snapshot
+////        //holds timestamp in which each mon element appears in the service
+////        //        Map<MonitoredElement, Long> cloudOfferedServiceInstantiationTimes = new ConcurrentHashMap<MonitoredElement, Long>();
+////        List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
+////        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.VM);
+////        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+////        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+////        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE);
+////
+////        ServiceMonitoringSnapshot monitoringSnapshot = newMonData;
+////
+////        for (MonitoredElement.MonitoredElementLevel level : levelsInOrder) {
+////
+////            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> vmsData = monitoringSnapshot.getMonitoredData(level);
+////
+////            if (vmsData == null) {
+////                log.error("No monitoring data for service" + monitoringSnapshot.getMonitoredService() + " at level " + level.toString() + " timestamp " + monitoringSnapshot.getTimestampID());
+////                continue;
+////            }
+////
+////            for (MonitoredElement monitoredElement : vmsData.keySet()) {
+////
+////                //if just appeared, add monitored element VM in the instatiationTimes
+////                //update used cloud offered services, i.e., add newly added ones, and remove deleted ones
+////                List<UsedCloudOfferedService> monitoredElementUsedServices = monitoredElement.getCloudOfferedServices();
+////
+////                //remove deallocated services
+////                Iterator<UsedCloudOfferedService> it = previouselyDeterminedUsage.getInstantiationTimes(monitoredElement).keySet().iterator();
+////                while (it.hasNext()) {
+////                    UsedCloudOfferedService cloudOfferedService = it.next();
+////                    //if used service not used anymore, remove it from the map
+////                    if (!monitoredElementUsedServices.contains(cloudOfferedService)) {
+////                        it.remove();
+////                    }
+////
+////                }
+////
+////                //add newly allocated services
+////                for (UsedCloudOfferedService ucos : monitoredElementUsedServices) {
+////                    if (!previouselyDeterminedUsage.getInstantiationTimes(monitoredElement).containsKey(ucos)) {
+////                        previouselyDeterminedUsage.withInstantiationTime(monitoredElement, ucos, Long.parseLong(monitoringSnapshot.getTimestamp()));
+////                    }
+////                }
+////
+////                Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
+////
+////                for (UsedCloudOfferedService usedCloudService : monitoredElement.getCloudOfferedServices()) {
+////                    {
+////
+////                        //from the cost functions, we extract those that should be applied.
+////                        //maybe some do not quality to be apply as the service does not fulfill application requirements
+////                        List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(usedCloudService);
+////
+////                        Map<Metric, MetricValue> vmUsageSoFar = null;
+////
+////                        if (previouselyDeterminedUsage.getSnapshot().contains(level, monitoredElement)) {
+////                            vmUsageSoFar = previouselyDeterminedUsage.getSnapshot().getMonitoredData(monitoredElement).getMonitoredData();
+////                        } else {
+////                            vmUsageSoFar = new HashMap<>();
+////                            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, vmUsageSoFar);
+////                            previouselyDeterminedUsage.getSnapshot().addMonitoredData(elementMonitoringSnapshot);
+////                        }
+////
+////                        //apply cost functions
+////                        //start with USAGE type of cost, easier to apply. 
+////                        for (CostFunction cf : costFunctionsToApply) {
+////                            for (CostElement element : cf.getCostElements()) {
+////
+////                                if (element.getType().equals(CostElement.Type.USAGE)) {
+////                                    //if we just added the VM, so we do not have any historical usage so far
+////                                    MonitoredElementMonitoringSnapshot vmMonSnapshot = vmsData.get(monitoredElement);
+////
+////                                    MetricValue value = vmMonSnapshot.getMetricValue(element.getCostMetric());
+////                                    if (value != null) {
+////
+////                                        if (!vmUsageSoFar.containsKey(element.getCostMetric())) {
+////                                            vmUsageSoFar.put(element.getCostMetric(), value.clone());
+////
+////                                        } else {
+////                                            //else we need to sum up usage
+////                                            MetricValue usageSoFarForMetric = vmUsageSoFar.get(element.getCostMetric());
+////
+////                                            //we should compute estimated usage over time not captured by monitoring points:
+////                                            //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
+////                                            //depending on the measurement unit of the measured metric
+////                                            //I.E. a pkts_out/s will be multiplied with 60
+////                                            //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
+////                                            //this works as we assume we target only metrics which change in time using PER USAGE cost functions
+////                                            String timePeriod = "s";
+////
+////                                            if (element.getCostMetric().getMeasurementUnit().contains("/")) {
+////                                                timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+////                                            }
+////
+////                                            //check amount of time in millis between two measurement units
+////                                            Long currentTimestamp = Long.parseLong(monitoringSnapshot.getTimestamp());
+////                                            Long previousTimestamp = Long.parseLong(newMonData.getTimestamp());
+////                                            Long timeIntervalInMillis = (currentTimestamp - previousTimestamp) / 1000;
+////
+////                                            //convert to seconds
+////                                            Long periodsBetweenPrevAndCurrentTimestamp = 0l;
+////
+////                                            //must standardise these somehow
+////                                          NU ASA k tre reused
+////                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
+////                                            } else if (timePeriod.equals("m")) {
+////                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
+////                                            } else if (timePeriod.equals("h")) {
+////                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 3600;
+////                                            } else if (timePeriod.equals("d")) {
+////                                                periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
+////                                            }
+////
+////                                            //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up hsitorical usage by itself
+////                                            if (periodsBetweenPrevAndCurrentTimestamp <= 1) {
+////                                                usageSoFarForMetric.sum(value);
+////
+////                                            } else {
+////                                                //if more than one period between recordings, need to compute usage for non-monitored periods
+////                                                //we compute average for intermediary
+////
+////                                                MetricValue prevValue = vmUsageSoFar.get(element.getCostMetric());
+////                                                MetricValue average = prevValue.clone();
+////                                                prevValue.sum(value);
+////                                                average.divide(2);
+////                                                //add average for intermediary monitoring points
+////                                                //TODO: add option for adding other plug-ins for filling up missing data, and computing accuracy of estimation
+////                                                average.multiply(periodsBetweenPrevAndCurrentTimestamp.intValue());
+////                                                //add monitored points
+////                                                average.sum(prevValue);
+////                                                average.sum(value);
+////                                                usageSoFarForMetric.setValue(average.getValue());
+////
+////                                            }
+////
+////                                        }
+////                                    } else {
+////                                        log.error("Cost metric {} was not found on VM {}", element.getCostMetric().getName(), monitoredElement.getId());
+////                                    }
+////
+////                                    //if cost is per usage, it is computed by instant monitoring cost.
+//////                                        continue;
+////                                }
+////                            }
+////                        }
+////                    }
+////
+////                }
+////            }
+////
+////        }
+////
+////        return previouselyDeterminedUsage.getSnapshot();
 //    }
     /**
      * This removes the unused services from the complete historical information
@@ -1576,233 +1576,233 @@ public class CostEvalEngine {
         return costCompositionRules;
     }
 
-    /**
-     * 1. Check what cost functions are applicable 2. SUMS up the metrics
-     * targeted by the cost functions, between the previously monitored ones and
-     * the new monitored snapshot !!!! NOTE !!! It works directly on the
-     * supplied previouselyDeterminedUsage
-     *
-     * This also does an interesting thing. As Services Used can
-     * appear/dissappear, it adds in the newMonData the services which are found
-     * also in previousUsage
-     *
-     * @param cloudOfferedServices
-     * @param previousUsage
-     * @param monData
-     * @return
-     */
-    public LifetimeEnrichedSnapshot updateTotalUsageSoFarWithCompleteStructure(Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices, LifetimeEnrichedSnapshot previousUsage, ServiceMonitoringSnapshot monData) {
-
-        if (monData == null) {
-            return new LifetimeEnrichedSnapshot();
-        }
-
-        //so, we have 2 types of cost, PERIODIC, and PER USAGE
-        //usually per USAGE is payed according to some interval, such as free first GB, rest 0.12, etc
-        //thus, for each USAGE cost metric, we compute for each snapshot its usage so far, and insert in the snapshot the instant cost rate
-//        Map<MonitoredElement, Map<Metric, MetricValue>> usageSoFar = new ConcurrentHashMap<MonitoredElement, Map<Metric, MetricValue>>();
-        //fill this up with old data from old mon snapshot
-        //holds timestamp in which each mon element appears in the service
-        //        Map<MonitoredElement, Long> cloudOfferedServiceInstantiationTimes = new ConcurrentHashMap<MonitoredElement, Long>();
-        List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
-        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.VM);
-        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
-        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
-        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE);
-
-        ServiceMonitoringSnapshot currentMonitoringSnapshot = monData.clone();
-
-        LifetimeEnrichedSnapshot updatedSnapshot = new LifetimeEnrichedSnapshot()
-                .withSnapshot(previousUsage.getSnapshot())
-                .withLastUpdatedTimestampID(currentMonitoringSnapshot.getTimestampID());
-        updatedSnapshot.withDeallocationTimes(previousUsage.getDeallocationTimes());
-        updatedSnapshot.withInstantiationTimes(previousUsage.getInstantiationTimes());
-
-        //we consider the current structure the last updated structure, as maybe the user rearanged the structure (e.g., moved/redefined topologies)
-        for (MonitoredElement monitoredElement : previousUsage.getSnapshot().getMonitoredService()) {
-
-            MonitoredElementMonitoringSnapshot previousUsageData = updatedSnapshot.getSnapshot().getMonitoredData(monitoredElement);
-            MonitoredElementMonitoringSnapshot currentUsageData = monData.getMonitoredData(monitoredElement);
-
-            if (currentUsageData == null) {
-                log.error("No monitoring data for " + monitoredElement + " at level " + monitoredElement.getLevel().toString() + " timestamp " + currentMonitoringSnapshot.getTimestampID());
-                continue;
-            }
-
-            //if just appeared, add monitored element VM in the instatiationTimes
-            //update used cloud offered services, i.e., add newly added ones, and remove deleted ones
-            List<UsedCloudOfferedService> monitoredElementCurrentlyUsedServices = monitoredElement.getCloudOfferedServices();
-//                List<UsedCloudOfferedService> monitoredElementNoLongerUsedServices = new ArrayList<>();
-
-            //mark deallocated services
-            Iterator<UsedCloudOfferedService> it = updatedSnapshot.getInstantiationTimes(monitoredElement).keySet().iterator();
-            while (it.hasNext()) {
-                UsedCloudOfferedService cloudOfferedService = it.next();
-
-                //if used service not used anymore, mark it as dead
-                if (!monitoredElementCurrentlyUsedServices.contains(cloudOfferedService)) {
-                    updatedSnapshot.withDeallocationTime(monitoredElement, cloudOfferedService, Long.parseLong(currentMonitoringSnapshot.getTimestamp()));
-                    //need to add the removed service to the current structure, so we have the usage so far on it
-                    monitoredElementCurrentlyUsedServices.add(cloudOfferedService);
-                }
-
-            }
-
-            //add newly allocated services
-            for (UsedCloudOfferedService ucos : monitoredElementCurrentlyUsedServices) {
-                if (!updatedSnapshot.getInstantiationTimes(monitoredElement).containsKey(ucos)) {
-                    updatedSnapshot.withInstantiationTime(monitoredElement, ucos, Long.parseLong(currentMonitoringSnapshot.getTimestamp()));
-                }
-            }
-
-            Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
-
-            //update usage only on the services still in use
-            for (UsedCloudOfferedService usedCloudService : monitoredElementCurrentlyUsedServices) {
-                {
-
-                    //if service no longer in use we do not update anything, and just continue
-                    if (previousUsage.hasDeallocationTime(monitoredElement, usedCloudService)) {
-                        continue;
-                    }
-
-                    //from the cost functions, we extract those that should be applied.
-                    //maybe some do not quality to be apply as the service does not fulfill application requirements
-                    List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(usedCloudService);
-
-//                        Map<Metric, MetricValue> vmUsageSoFar = null;
+//    /**
+//     * 1. Check what cost functions are applicable 2. SUMS up the metrics
+//     * targeted by the cost functions, between the previously monitored ones and
+//     * the new monitored snapshot !!!! NOTE !!! It works directly on the
+//     * supplied previouselyDeterminedUsage
+//     *
+//     * This also does an interesting thing. As Services Used can
+//     * appear/dissappear, it adds in the newMonData the services which are found
+//     * also in previousUsage
+//     *
+//     * @param cloudOfferedServices
+//     * @param previousUsage
+//     * @param monData
+//     * @return
+//     */
+//    public LifetimeEnrichedSnapshot updateTotalUsageSoFarWithCompleteStructure(Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices, LifetimeEnrichedSnapshot previousUsage, ServiceMonitoringSnapshot monData) {
 //
-//                        if (updatedSnapshot.getSnapshot().contains(level, monitoredElement)) {
-//                            vmUsageSoFar = updatedSnapshot.getSnapshot().getMonitoredData(monitoredElement).getMonitoredData();
-//                        } else {
-//                            vmUsageSoFar = new HashMap<>();
-//                            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, vmUsageSoFar);
-//                            updatedSnapshot.getSnapshot().addMonitoredData(elementMonitoringSnapshot);
-//                        }
-                    //apply cost functions
-                    //start with USAGE type of cost, easier to apply. 
-                    for (CostFunction cf : costFunctionsToApply) {
-                        for (CostElement element : cf.getCostElements()) {
-
-                            if (element.getType().equals(CostElement.Type.USAGE)) {
-
-                                MetricValue currentElementValue = currentUsageData.getMetricValue(element.getCostMetric());
-                                MetricValue usageSoFarForMetric = previousUsageData.getMetricValue(element.getCostMetric());
-
-                                if (currentElementValue != null) {
-
-                                    //if we just added the VM, so we do not have any historical usage so far
-//                                        if (!vmUsageSoFar.containsKey(element.getCostMetric())) {
-//                                            vmUsageSoFar.put(element.getCostMetric(), previousElementValue.clone());
+//        if (monData == null) {
+//            return new LifetimeEnrichedSnapshot();
+//        }
 //
-//                                        } else 
-                                    {
-                                            //else we need to sum up usage
-
-                                        //we should compute estimated usage over time not captured by monitoring points:
-                                        //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
-                                        //depending on the measurement unit of the measured metric
-                                        //I.E. a pkts_out/s will be multiplied with 60
-                                        //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
-                                        //this works as we assume we target only metrics which change in time using PER USAGE cost functions
-                                        String timePeriod = "";
-
-                                        if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-                                            timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                                        }
-
-                                        //check amount of time in millis between two measurement units
-                                        Long currentTimestamp = Long.parseLong(currentMonitoringSnapshot.getTimestamp());
-
-                                        //check if monitoring has left some time intervals un-monitored
-                                        //if so, then fill up missing 
-                                        Long previousTimestamp = Long.parseLong(previousUsage.getSnapshot().getTimestamp());
-                                        Long timeIntervalInMillis = (currentTimestamp - previousTimestamp) / 1000;
-
-                                        //convert to seconds
-                                        Long periodsBetweenPrevAndCurrentTimestamp = 0l;
-
-                                        //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up historical usage by itself
-                                        if (timePeriod.length() == 0) {
-                                            usageSoFarForMetric.setValue(currentElementValue.getValue());
-                                            usageSoFarForMetric.setFreshness(currentElementValue.getFreshness());
-                                            usageSoFarForMetric.setTimeSinceCollection(currentElementValue.getTimeSinceCollection());
-                                            usageSoFarForMetric.setTimeSinceCollection(currentElementValue.getTimeSinceCollection());
-                                            continue;
-                                        } else if (timePeriod.equals("s")) {
-                                            periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
-                                        } else if (timePeriod.equals("m")) {
-                                            periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
-                                        } else if (timePeriod.equals("h")) {
-                                            periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 3600;
-                                        } else if (timePeriod.equals("d")) {
-                                            periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
-                                        }
-
-                                        if (periodsBetweenPrevAndCurrentTimestamp <= 1) {
-                                            usageSoFarForMetric.sum(currentElementValue);
-
-                                        } else {
-                                                //if more than one period between recordings, need to compute usage for non-monitored periods
-                                            //we compute average for intermediary
-
-                                            //get average between two last readings and use it to fill the gap of un-monitored data
-                                            MetricValue average = usageSoFarForMetric.clone();
-                                            average.sum(currentElementValue);
-                                            average.divide(2);
-                                            //add average for intermediary monitoring points
-                                            //TODO: add option for adding other plug-ins for filling up missing data, and computing accuracy of estimation
-                                            average.multiply(periodsBetweenPrevAndCurrentTimestamp.intValue());
-                                            //add monitored points
-                                            average.sum(usageSoFarForMetric);
-                                            average.sum(currentElementValue);
-                                            usageSoFarForMetric.setValue(average.getValue());
-
-                                        }
-
-                                    }
-                                } else {
-                                    log.error("Cost metric {} was not found on {} on previous mon data", element.getCostMetric().getName(), monitoredElement.getId());
-                                }
-
-                                //if cost is per usage, it is computed by instant monitoring cost.
-//                                        continue;
-                            }
-                        }
-                    }
-                }
-
-            }
-
-            //usually VMs appear/dissapear, but also topologies can be restructured
-            //so check if some new appeared whichw e need to add
-            //if current mon data has some newly added services, and also has the
-//                if (currentUsageData.containsKey(monitoredElement)) {
-            for (MonitoredElementMonitoringSnapshot childSnapshot : currentUsageData.getChildren()) {
-                MonitoredElement child = childSnapshot.getMonitoredElement();
-
-                //if previousely monitored element is in currrent data, i.e., was not deleted, ignore it
-                if (!previousUsage.getSnapshot().contains(child.getLevel(), child)) {
-                    previousUsageData.getMonitoredElement().withContainedElement(child);
-                    Long currentTimestamp = Long.parseLong(monData.getTimestamp());
-                    for (UsedCloudOfferedService cloudOfferedService : child.getCloudOfferedServices()) {
-                        updatedSnapshot.withInstantiationTime(child, cloudOfferedService, currentTimestamp);
-                    }
-                    //interesting. I split that stupid map in such a way that i do not search for the parent where to add a particular
-                    //snapshot, so I must add the child both to the parent, and in the map level, to keep things consistent
-                    //it is a hassle, but is faster to retrieve data if we keep the map
-                    previousUsageData.addChild(childSnapshot);
-                    previousUsage.getSnapshot().getMonitoredData(child.getLevel()).put(child, childSnapshot);
+//        //so, we have 2 types of cost, PERIODIC, and PER USAGE
+//        //usually per USAGE is payed according to some interval, such as free first GB, rest 0.12, etc
+//        //thus, for each USAGE cost metric, we compute for each snapshot its usage so far, and insert in the snapshot the instant cost rate
+////        Map<MonitoredElement, Map<Metric, MetricValue>> usageSoFar = new ConcurrentHashMap<MonitoredElement, Map<Metric, MetricValue>>();
+//        //fill this up with old data from old mon snapshot
+//        //holds timestamp in which each mon element appears in the service
+//        //        Map<MonitoredElement, Long> cloudOfferedServiceInstantiationTimes = new ConcurrentHashMap<MonitoredElement, Long>();
+//        List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
+//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.VM);
+//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE);
+//
+//        ServiceMonitoringSnapshot currentMonitoringSnapshot = monData.clone();
+//
+//        LifetimeEnrichedSnapshot updatedSnapshot = new LifetimeEnrichedSnapshot()
+//                .withSnapshot(previousUsage.getSnapshot())
+//                .withLastUpdatedTimestampID(currentMonitoringSnapshot.getTimestampID());
+//        updatedSnapshot.withDeallocationTimes(previousUsage.getDeallocationTimes());
+//        updatedSnapshot.withInstantiationTimes(previousUsage.getInstantiationTimes());
+//
+//        //we consider the current structure the last updated structure, as maybe the user rearanged the structure (e.g., moved/redefined topologies)
+//        for (MonitoredElement monitoredElement : previousUsage.getSnapshot().getMonitoredService()) {
+//
+//            MonitoredElementMonitoringSnapshot previousUsageData = updatedSnapshot.getSnapshot().getMonitoredData(monitoredElement);
+//            MonitoredElementMonitoringSnapshot currentUsageData = monData.getMonitoredData(monitoredElement);
+//
+//            if (currentUsageData == null) {
+//                log.error("No monitoring data for " + monitoredElement + " at level " + monitoredElement.getLevel().toString() + " timestamp " + currentMonitoringSnapshot.getTimestampID());
+//                continue;
+//            }
+//
+//            //if just appeared, add monitored element VM in the instatiationTimes
+//            //update used cloud offered services, i.e., add newly added ones, and remove deleted ones
+//            List<UsedCloudOfferedService> monitoredElementCurrentlyUsedServices = monitoredElement.getCloudOfferedServices();
+////                List<UsedCloudOfferedService> monitoredElementNoLongerUsedServices = new ArrayList<>();
+//
+//            //mark deallocated services
+//            Iterator<UsedCloudOfferedService> it = updatedSnapshot.getInstantiationTimes(monitoredElement).keySet().iterator();
+//            while (it.hasNext()) {
+//                UsedCloudOfferedService cloudOfferedService = it.next();
+//
+//                //if used service not used anymore, mark it as dead
+//                if (!monitoredElementCurrentlyUsedServices.contains(cloudOfferedService)) {
+//                    updatedSnapshot.withDeallocationTime(monitoredElement, cloudOfferedService, Long.parseLong(currentMonitoringSnapshot.getTimestamp()));
+//                    //need to add the removed service to the current structure, so we have the usage so far on it
+//                    monitoredElementCurrentlyUsedServices.add(cloudOfferedService);
+//                }
+//
+//            }
+//
+//            //add newly allocated services
+//            for (UsedCloudOfferedService ucos : monitoredElementCurrentlyUsedServices) {
+//                if (!updatedSnapshot.getInstantiationTimes(monitoredElement).containsKey(ucos)) {
+//                    updatedSnapshot.withInstantiationTime(monitoredElement, ucos, Long.parseLong(currentMonitoringSnapshot.getTimestamp()));
+//                }
+//            }
+//
+//            Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
+//
+//            //update usage only on the services still in use
+//            for (UsedCloudOfferedService usedCloudService : monitoredElementCurrentlyUsedServices) {
+//                {
+//
+//                    //if service no longer in use we do not update anything, and just continue
+//                    if (previousUsage.hasDeallocationTime(monitoredElement, usedCloudService)) {
+//                        continue;
+//                    }
+//
+//                    //from the cost functions, we extract those that should be applied.
+//                    //maybe some do not quality to be apply as the service does not fulfill application requirements
+//                    List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(usedCloudService);
+//
+////                        Map<Metric, MetricValue> vmUsageSoFar = null;
+////
+////                        if (updatedSnapshot.getSnapshot().contains(level, monitoredElement)) {
+////                            vmUsageSoFar = updatedSnapshot.getSnapshot().getMonitoredData(monitoredElement).getMonitoredData();
+////                        } else {
+////                            vmUsageSoFar = new HashMap<>();
+////                            MonitoredElementMonitoringSnapshot elementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, vmUsageSoFar);
+////                            updatedSnapshot.getSnapshot().addMonitoredData(elementMonitoringSnapshot);
+////                        }
+//                    //apply cost functions
+//                    //start with USAGE type of cost, easier to apply. 
+//                    for (CostFunction cf : costFunctionsToApply) {
+//                        for (CostElement element : cf.getCostElements()) {
+//
+//                            if (element.getType().equals(CostElement.Type.USAGE)) {
+//
+//                                MetricValue currentElementValue = currentUsageData.getMetricValue(element.getCostMetric());
+//                                MetricValue usageSoFarForMetric = previousUsageData.getMetricValue(element.getCostMetric());
+//
+//                                if (currentElementValue != null) {
+//
+//                                    //if we just added the VM, so we do not have any historical usage so far
+////                                        if (!vmUsageSoFar.containsKey(element.getCostMetric())) {
+////                                            vmUsageSoFar.put(element.getCostMetric(), previousElementValue.clone());
+////
+////                                        } else 
+//                                    {
+//                                            //else we need to sum up usage
+//
+//                                        //we should compute estimated usage over time not captured by monitoring points:
+//                                        //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
+//                                        //depending on the measurement unit of the measured metric
+//                                        //I.E. a pkts_out/s will be multiplied with 60
+//                                        //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
+//                                        //this works as we assume we target only metrics which change in time using PER USAGE cost functions
+//                                        String timePeriod = "";
+//
+//                                        if (element.getCostMetric().getMeasurementUnit().contains("/")) {
+//                                            timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+//                                        }
+//
+//                                        //check amount of time in millis between two measurement units
+//                                        Long currentTimestamp = Long.parseLong(currentMonitoringSnapshot.getTimestamp());
+//
+//                                        //check if monitoring has left some time intervals un-monitored
+//                                        //if so, then fill up missing 
+//                                        Long previousTimestamp = Long.parseLong(previousUsage.getSnapshot().getTimestamp());
+//                                        Long timeIntervalInMillis = (currentTimestamp - previousTimestamp) / 1000;
+//
+//                                        //convert to seconds
+//                                        Long periodsBetweenPrevAndCurrentTimestamp = 0l;
+//
+//                                        //if metric does not have period, than its a metric which ACCUMULATES, I.E., show summed up historical usage by itself
+//                                        if (timePeriod.length() == 0) {
+//                                            usageSoFarForMetric.setValue(currentElementValue.getValue());
+//                                            usageSoFarForMetric.setFreshness(currentElementValue.getFreshness());
+//                                            usageSoFarForMetric.setTimeSinceCollection(currentElementValue.getTimeSinceCollection());
+//                                            usageSoFarForMetric.setTimeSinceCollection(currentElementValue.getTimeSinceCollection());
+//                                            continue;
+//                                        } else if (timePeriod.equals("s")) {
+//                                            periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis;
+//                                        } else if (timePeriod.equals("m")) {
+//                                            periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 60;
+//                                        } else if (timePeriod.equals("h")) {
+//                                            periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 3600;
+//                                        } else if (timePeriod.equals("d")) {
+//                                            periodsBetweenPrevAndCurrentTimestamp = timeIntervalInMillis / 86400;
+//                                        }
+//
+//                                        if (periodsBetweenPrevAndCurrentTimestamp <= 1) {
+//                                            usageSoFarForMetric.sum(currentElementValue);
+//
+//                                        } else {
+//                                                //if more than one period between recordings, need to compute usage for non-monitored periods
+//                                            //we compute average for intermediary
+//
+//                                            //get average between two last readings and use it to fill the gap of un-monitored data
+//                                            MetricValue average = usageSoFarForMetric.clone();
+//                                            average.sum(currentElementValue);
+//                                            average.divide(2);
+//                                            //add average for intermediary monitoring points
+//                                            //TODO: add option for adding other plug-ins for filling up missing data, and computing accuracy of estimation
+//                                            average.multiply(periodsBetweenPrevAndCurrentTimestamp.intValue());
+//                                            //add monitored points
+//                                            average.sum(usageSoFarForMetric);
+//                                            average.sum(currentElementValue);
+//                                            usageSoFarForMetric.setValue(average.getValue());
+//
+//                                        }
+//
+//                                    }
+//                                } else {
+//                                    log.error("Cost metric {} was not found on {} on previous mon data", element.getCostMetric().getName(), monitoredElement.getId());
+//                                }
+//
+//                                //if cost is per usage, it is computed by instant monitoring cost.
+////                                        continue;
+//                            }
 //                        }
-                }
-            }
-        }
-
-        //updated timestamp of prev snapshot to latest
-        updatedSnapshot.getSnapshot().withTimestamp(monData.getTimestamp()).withTimestampID(monData.getTimestampID());
-
-        return updatedSnapshot;
-    }
+//                    }
+//                }
+//
+//            }
+//
+//            //usually VMs appear/dissapear, but also topologies can be restructured
+//            //so check if some new appeared whichw e need to add
+//            //if current mon data has some newly added services, and also has the
+////                if (currentUsageData.containsKey(monitoredElement)) {
+//            for (MonitoredElementMonitoringSnapshot childSnapshot : currentUsageData.getChildren()) {
+//                MonitoredElement child = childSnapshot.getMonitoredElement();
+//
+//                //if previousely monitored element is in currrent data, i.e., was not deleted, ignore it
+//                if (!previousUsage.getSnapshot().contains(child.getLevel(), child)) {
+//                    previousUsageData.getMonitoredElement().withContainedElement(child);
+//                    Long currentTimestamp = Long.parseLong(monData.getTimestamp());
+//                    for (UsedCloudOfferedService cloudOfferedService : child.getCloudOfferedServices()) {
+//                        updatedSnapshot.withInstantiationTime(child, cloudOfferedService, currentTimestamp);
+//                    }
+//                    //interesting. I split that stupid map in such a way that i do not search for the parent where to add a particular
+//                    //snapshot, so I must add the child both to the parent, and in the map level, to keep things consistent
+//                    //it is a hassle, but is faster to retrieve data if we keep the map
+//                    previousUsageData.addChild(childSnapshot);
+//                    previousUsage.getSnapshot().getMonitoredData(child.getLevel()).put(child, childSnapshot);
+////                        }
+//                }
+//            }
+//        }
+//
+//        //updated timestamp of prev snapshot to latest
+//        updatedSnapshot.getSnapshot().withTimestamp(monData.getTimestamp()).withTimestampID(monData.getTimestampID());
+//
+//        return updatedSnapshot;
+//    }
 
     /**
      * Takes the used cloud offered service by each monitored element, and
@@ -2039,548 +2039,548 @@ public class CostEvalEngine {
 
     private static final Metric ELEMENT_COST_METRIC = new Metric("element_cost", "costUnits", Metric.MetricType.COST);
     private static final Metric CHILDREN_COST_METRIC = new Metric("children_cost", "costUnits", Metric.MetricType.COST);
-
-    /**
-     * Only computes the current cost rate for cost element reported per USAGE.
-     * It is the fastest to compute, as it requires no historical information.
-     * Computing PERIODIC cost requires computing lifetime, and thus, its
-     * slower.
-     *
-     * Thus, we provide methods to obtain three different cost snapshots:
-     * instant cost rate per usage, total cost until now per periodic, and
-     * complete
-     *
-     * @param cloudOfferedServices cloud procing schemes
-     * @param monitoredElement current monitoring snapshot on which we compute
-     * cost
-     * @param totalUsageSoFar total usage so far with current structure. used in
-     * determining instant applicable cost pricing scheme according to cost
-     * intervals
-     * @param currentTimesnapshot string representation of the Long timestamp of
-     * the current monitoring snapshot. Used to determine lifetime so far
-     * @return
-     */
-    public CompositionRulesBlock createCompositionRulesForInstantUsageCost(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
-            final MonitoredElement monitoredElement, final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
-
-        CompositionRulesBlock costCompositionRules = new CompositionRulesBlock();
-
-        Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
-
-        {
-            for (UsedCloudOfferedService service : monitoredElement.getCloudOfferedServices()) {
-                {
-
-                    //from the cost functions, we extract those that should be applied.
-                    //maybe some do not quality to be apply as the service does not fulfill application requirements
-                    List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(service);
-
-                    //start with USAGE type of cost, easier to apply. 
-                    for (CostFunction cf : costFunctionsToApply) {
-                        MonitoredElementMonitoringSnapshot vmMonSnapshot = totalUsageSoFar.getSnapshot().getMonitoredData(monitoredElement);
-
-                        for (CostElement element : cf.getCostElements()) {
-
-                            MetricValue value = vmMonSnapshot.getMetricValue(element.getCostMetric());
-
-                            if (element.getType().equals(CostElement.Type.USAGE)) {
-                                //instant snapshot composition rule 
-                                if (value != null) {
-                                    {
-                                        CompositionRule compositionRule = new CompositionRule();
-                                        compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                                        compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                                        String timePeriod = "s";
-
-                                        if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-                                            timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                                        }
-                                        compositionRule.setResultingMetric(new Metric("cost_" + element.getCostMetric().getName(), "costUnits/" + timePeriod, Metric.MetricType.COST));
-                                        CompositionOperation compositionOperation = new CompositionOperation();
-
-//                                        compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
-//                                        MetricValue costForValue = value.clone();
-//                                        costForValue.multiply(element.getCostForCostMetricValue(value));
 //
+//    /**
+//     * Only computes the current cost rate for cost element reported per USAGE.
+//     * It is the fastest to compute, as it requires no historical information.
+//     * Computing PERIODIC cost requires computing lifetime, and thus, its
+//     * slower.
+//     *
+//     * Thus, we provide methods to obtain three different cost snapshots:
+//     * instant cost rate per usage, total cost until now per periodic, and
+//     * complete
+//     *
+//     * @param cloudOfferedServices cloud procing schemes
+//     * @param monitoredElement current monitoring snapshot on which we compute
+//     * cost
+//     * @param totalUsageSoFar total usage so far with current structure. used in
+//     * determining instant applicable cost pricing scheme according to cost
+//     * intervals
+//     * @param currentTimesnapshot string representation of the Long timestamp of
+//     * the current monitoring snapshot. Used to determine lifetime so far
+//     * @return
+//     */
+//    public CompositionRulesBlock createCompositionRulesForInstantUsageCost(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
+//            final MonitoredElement monitoredElement, final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
+//
+//        CompositionRulesBlock costCompositionRules = new CompositionRulesBlock();
+//
+//        Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
+//
+//        {
+//            for (UsedCloudOfferedService service : monitoredElement.getCloudOfferedServices()) {
+//                {
+//
+//                    //from the cost functions, we extract those that should be applied.
+//                    //maybe some do not quality to be apply as the service does not fulfill application requirements
+//                    List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(service);
+//
+//                    //start with USAGE type of cost, easier to apply. 
+//                    for (CostFunction cf : costFunctionsToApply) {
+//                        MonitoredElementMonitoringSnapshot vmMonSnapshot = totalUsageSoFar.getSnapshot().getMonitoredData(monitoredElement);
+//
+//                        for (CostElement element : cf.getCostElements()) {
+//
+//                            MetricValue value = vmMonSnapshot.getMetricValue(element.getCostMetric());
+//
+//                            if (element.getType().equals(CostElement.Type.USAGE)) {
+//                                //instant snapshot composition rule 
+//                                if (value != null) {
+//                                    {
+//                                        CompositionRule compositionRule = new CompositionRule();
+//                                        compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                                        compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//                                        String timePeriod = "s";
+//
+//                                        if (element.getCostMetric().getMeasurementUnit().contains("/")) {
+//                                            timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+//                                        }
+//                                        compositionRule.setResultingMetric(new Metric("cost_" + element.getCostMetric().getName(), "costUnits/" + timePeriod, Metric.MetricType.COST));
+//                                        CompositionOperation compositionOperation = new CompositionOperation();
+//
+////                                        compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
+////                                        MetricValue costForValue = value.clone();
+////                                        costForValue.multiply(element.getCostForCostMetricValue(value));
+////
+////                                        compositionOperation.setValue(costForValue.getValueRepresentation());
+////                                        compositionRule.setOperation(compositionOperation);
+////
+////                                        if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+////                                            costCompositionRules.addCompositionRule(compositionRule);
+////                                        }
+//                                        compositionOperation.setOperationType(CompositionOperationType.MUL);
+//                                        compositionOperation.setTargetMetric(element.getCostMetric());
+//                                        compositionOperation.addMetricSourceMonitoredElementID(monitoredElement.getId());
+//                                        compositionOperation.setMetricSourceMonitoredElementLevel(monitoredElement.getLevel());
+//                                        compositionOperation.setValue(element.getCostForCostMetricValue(value).toString());
+//                                        compositionRule.setOperation(compositionOperation);
+//
+//                                        if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                            costCompositionRules.addCompositionRule(compositionRule);
+//                                        }
+//
+//                                    }
+//                                } else {
+//                                    log.warn("Metric {} not found in element {}", new Object[]{element.getCostMetric().getName(), monitoredElement.getName()});
+//                                }
+//
+//                            } else if (element.getType().equals(CostElement.Type.PERIODIC)) {
+//
+//                                //we should compute estimated usage over time not captured by monitoring points:
+//                                //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
+//                                //depending on the measurement unit of the measured metric
+//                                //I.E. a pkts_out/s will be multiplied with 60
+//                                //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
+//                                //this works as we assume we target only metrics which change in time using PER USAGE cost functions
+//                                String timePeriod = "s";
+//
+//                                if (element.getCostMetric().getMeasurementUnit().contains("/")) {
+//                                    timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
+//                                }
+//
+//                                Long currentTimestamp = Long.parseLong(currentTimesnapshot);
+//                                Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
+//
+//                                //convert to seconds
+//                                Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
+//
+//                                Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
+//                                //must standardise these somehow
+//
+//                                MetricValue totalCostFromCreation = new MetricValue(element.getCostForCostMetricValue(new MetricValue(costPeriodsFromCreation)));
+//
+//                                Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits/" + timePeriod, Metric.MetricType.COST);
+//
+//                                CompositionRule compositionRule = new CompositionRule();
+//                                compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                                compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//
+//                                compositionRule.setResultingMetric(cost);
+//                                CompositionOperation compositionOperation = new CompositionOperation();
+//
+//                                compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
+//                                compositionOperation.setValue(totalCostFromCreation.getValueRepresentation());
+//                                compositionRule.setOperation(compositionOperation);
+//
+//                                if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                    costCompositionRules.addCompositionRule(compositionRule);
+//                                }
+//
+//                            }
+//
+//                        }
+//                    }
+//                }
+//
+//            }
+//        }
+//
+//        //here I need to create rules that aggregate cost from the element's children and create cost metric at a higher level
+//        {
+//            final List<CompositionRule> childrenCostCompositionRules = Collections.synchronizedList(new ArrayList<CompositionRule>());
+//            //call recursively on all children the compute cost method
+//
+//            ExecutorService es = Executors.newCachedThreadPool();
+//            List<Callable<Object>> todo = new ArrayList<>();
+//
+//            for (final MonitoredElement child : monitoredElement.getContainedElements()) {
+//
+//                Callable c = Executors.callable(new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        CompositionRulesBlock childRules = createCompositionRulesForInstantUsageCost(cloudOfferedServices, child, totalUsageSoFar, currentTimesnapshot);
+//                        //do not add duplicate rules
+//                        //add cost rate rules
+//                        for (CompositionRule childRule : childRules.getCompositionRules()) {
+//                            if (!childrenCostCompositionRules.contains(childRule)) {
+//                                childrenCostCompositionRules.add(childRule);
+//                            }
+//                        }
+//
+//                    }
+//                });
+//                todo.add(c);
+//            }
+//            try {
+//                List<Future<Object>> answers = es.invokeAll(todo);
+//            } catch (InterruptedException ex) {
+//                log.error(ex.getMessage(), ex);
+//            }
+//
+//            {
+//                costCompositionRules.getCompositionRules().addAll(childrenCostCompositionRules);
+//
+//            }
+//
+//            if (!monitoredElement.getContainedElements().isEmpty()) {
+//
+//                {
+//                    CompositionRule children_cost_rule = new CompositionRule();
+//                    children_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                    children_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//                    children_cost_rule.setResultingMetric(CHILDREN_COST_METRIC);
+//
+//                    //we sum up each of the metrics from the children                
+//                    //one big  SUM operation
+//                    {
+//                        CompositionOperation sumOperation = new CompositionOperation();
+//                        sumOperation.setOperationType(CompositionOperationType.SUM);
+//                        children_cost_rule.setOperation(sumOperation);
+//
+//                        for (MonitoredElement element : monitoredElement.getContainedElements()) {
+//
+//                            CompositionOperation compositionOperation = new CompositionOperation();
+//                            compositionOperation.setMetricSourceMonitoredElementLevel(element.getLevel());
+//                            compositionOperation.addMetricSourceMonitoredElementID(element.getId());
+//                            compositionOperation.setTargetMetric(ELEMENT_COST_METRIC);
+//                            compositionOperation.setOperationType(CompositionOperationType.KEEP);
+//                            sumOperation.addCompositionOperation(compositionOperation);
+//
+//                        }
+//                        costCompositionRules.addCompositionRule(children_cost_rule);
+//                    }
+//                }
+//
+//            }
+//
+//            //compute instant cost for element
+//            {
+//                CompositionRule element_cost_rule = new CompositionRule();
+//                element_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                element_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//                element_cost_rule.setResultingMetric(ELEMENT_COST_METRIC);
+//
+//                //we sum up each of the metrics from the children                
+//                //one big  SUM operation
+//                {
+//                    CompositionOperation sumOperation = new CompositionOperation();
+//                    sumOperation.setOperationType(CompositionOperationType.SUM);
+//                    element_cost_rule.setOperation(sumOperation);
+//
+//                    for (CompositionRule rule : costCompositionRules.getCompositionRules()) {
+//
+//                        // only its rules, not also the rules from the children
+//                        // the issue is that I recursively create a list, not a tree  of rules, and the
+//                        // list contains all rules for all the subtree of this element
+//                        if (rule.getTargetMonitoredElementIDs().contains(monitoredElement.getId())) {
+//
+//                            CompositionOperation compositionOperation = new CompositionOperation();
+//                            compositionOperation.setMetricSourceMonitoredElementLevel(rule.getTargetMonitoredElementLevel());
+//                            compositionOperation.setTargetMetric(rule.getResultingMetric());
+//                            compositionOperation.setOperationType(CompositionOperationType.SUM);
+//                            sumOperation.addCompositionOperation(compositionOperation);
+//                        }
+//
+//                    }
+//                    //if we have no children or metrics which we add to the rule, do not create the rule
+//                    if (!sumOperation.getSubOperations().isEmpty()) {
+//                        costCompositionRules.addCompositionRule(element_cost_rule);
+//                    }
+//                }
+//
+//            }
+//
+//        }
+//
+//        return costCompositionRules;
+//    }
+//
+//    public CompositionRulesBlock createCompositionRulesForTotalCost(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
+//            final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
+//
+//        List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
+//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.VM);
+//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
+//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
+//        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE);
+//
+//        CompositionRulesBlock costCompositionRules = new CompositionRulesBlock();
+//
+//        ServiceMonitoringSnapshot monitoringSnapshot = totalUsageSoFar.getSnapshot();
+//
+//        for (MonitoredElement.MonitoredElementLevel level : levelsInOrder) {
+//
+//            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> vmsData = totalUsageSoFar.getSnapshot().getMonitoredData(level);
+//
+//            if (vmsData == null) {
+//                log.error("No monitoring data for service" + monitoringSnapshot.getMonitoredService() + " at level " + level.toString() + " timestamp " + monitoringSnapshot.getTimestampID());
+//                continue;
+//            }
+//
+//            for (MonitoredElement monitoredElement : vmsData.keySet()) {
+//
+//                Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
+//
+//                {
+//                    for (UsedCloudOfferedService service : monitoredElement.getCloudOfferedServices()) {
+//                        {
+//
+//                            //from the cost functions, we extract those that should be applied.
+//                            //maybe some do not quality to be apply as the service does not fulfill application requirements
+//                            List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(service);
+//
+//                            //start with USAGE type of cost, easier to apply. 
+//                            for (CostFunction cf : costFunctionsToApply) {
+//                                MonitoredElementMonitoringSnapshot vmMonSnapshot = totalUsageSoFar.getSnapshot().getMonitoredData(monitoredElement);
+//
+//                                for (CostElement element : cf.getCostElements()) {
+//
+//                                    if (element.getType().equals(CostElement.Type.USAGE)) {
+//
+//                                        MetricValue value = vmMonSnapshot.getMetricValue(element.getCostMetric());
+//
+//                                        if (value != null) {
+//                                            //instant snapshot composition rule 
+//                                            {
+//                                                CompositionRule compositionRule = new CompositionRule();
+//                                                compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                                                compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//                                                //"total_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
+//                                                // and I put again this total cost metric with same name, will not replace it.
+//                                                //TODO: address this
+//                                                compositionRule.setResultingMetric(new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST));
+//                                                CompositionOperation compositionOperation = new CompositionOperation();
+//                                                compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
+//                                                compositionOperation.setTargetMetric(element.getCostMetric());
+//                                                compositionOperation.addMetricSourceMonitoredElementID(monitoredElement.getId());
+//                                                compositionOperation.setMetricSourceMonitoredElementLevel(monitoredElement.getLevel());
+//
+//                                                //we need to go trough all cost element interval, and apply correct cost for each interval
+//                                                MetricValue metricUsageSoFar = value.clone();
+//                                                MetricValue costForValue = new MetricValue(0l);
+//                                                Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
+//
+//                                                List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
+//                                                for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
+//
+//                                                    MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
+//
+//                                                    if (costIntervalElement.compareTo(metricUsageSoFar) > 0) {
+//                                                        MetricValue costForThisInterval = metricUsageSoFar.clone();
+//                                                        costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
+//                                                        costForValue.sum(costForThisInterval);
+//                                                        break;
+//                                                    } else {
+//                                                        Double usageBetweenLastAndCurrentInterval = null;
+//                                                        if (i > 0) {
+//                                                            MetricValue tmp = costIntervalElement.clone();
+//                                                            tmp.sub(costIntervalsInAscendingOrder.get(i - 1));
+//                                                            usageBetweenLastAndCurrentInterval = ((Number) tmp.getValue()).doubleValue();
+//                                                        } else {
+//                                                            usageBetweenLastAndCurrentInterval = ((Number) costIntervalElement.getValue()).doubleValue();
+//                                                        }
+//
+//                                                        metricUsageSoFar.sub(usageBetweenLastAndCurrentInterval);
+//                                                        MetricValue costForThisInterval = new MetricValue(usageBetweenLastAndCurrentInterval);
+//                                                        costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
+//                                                        costForValue.sum(costForThisInterval);
+//                                                    }
+//                                                }
+//
+//                                                compositionOperation.setValue(costForValue.getValueRepresentation());
+//
+//                                                compositionRule.setOperation(compositionOperation);
+//
+//                                                if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
+//                                                    costCompositionRules.addCompositionRule(compositionRule);
+//                                                }
+//                                            }
+//                                        } else {
+//                                            log.warn("Metric {} not found in element {}", new Object[]{element.getCostMetric().getName(), monitoredElement.getName()});
+//                                        }
+//
+//                                    } else if (element.getType().equals(CostElement.Type.PERIODIC)) {
+//
+//                                        //we should compute estimated usage over time not captured by monitoring points:
+//                                        //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
+//                                        //depending on the measurement unit of the measured metric
+//                                        //I.E. a pkts_out/s will be multiplied with 60
+//                                        //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
+//                                        //this works as we assume we target only metrics which change in time using PER USAGE cost functions
+//                                        Long currentTimestamp = Long.parseLong(currentTimesnapshot);
+//                                        if (totalUsageSoFar.hasDeallocationTime(monitoredElement, service)) {
+//                                            currentTimestamp = totalUsageSoFar.getDeallocationTime(monitoredElement, service);
+//                                        }
+//                                        Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
+//
+//                                        //convert to seconds
+//                                        Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
+//
+//                                        Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
+//
+//                                        //we need to go trough all cost element interval, and apply correct cost for each interval
+//                                        MetricValue metricUsageSoFar = new MetricValue(costPeriodsFromCreation);
+//                                        MetricValue costForValue = new MetricValue(0l);
+//                                        Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
+//
+//                                        List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
+//                                        for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
+//
+//                                            MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
+//
+//                                            if (costIntervalElement.compareTo(metricUsageSoFar) > 0) {
+//                                                MetricValue costForThisInterval = metricUsageSoFar.clone();
+//                                                costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
+//                                                costForValue.sum(costForThisInterval);
+//                                                break;
+//                                            } else {
+//                                                Double usageBetweenLastAndCurrentInterval = null;
+//                                                if (i > 0) {
+//                                                    MetricValue tmp = costIntervalElement.clone();
+//                                                    tmp.sub(costIntervalsInAscendingOrder.get(i - 1));
+//                                                    usageBetweenLastAndCurrentInterval = ((Number) tmp.getValue()).doubleValue();
+//                                                } else {
+//                                                    usageBetweenLastAndCurrentInterval = ((Number) costIntervalElement.getValue()).doubleValue();
+//                                                }
+//
+//                                                metricUsageSoFar.sub(usageBetweenLastAndCurrentInterval);
+//                                                MetricValue costForThisInterval = new MetricValue(usageBetweenLastAndCurrentInterval);
+//                                                costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
+//                                                costForValue.sum(costForThisInterval);
+//                                            }
+//                                        }
+//
+//                                        //"total_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
+//                                        // and I put again this total cost metric with same name, will not replace it.
+//                                        //TODO: address this
+//                                        Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
+//
+//                                        CompositionRule compositionRule = new CompositionRule();
+//                                        compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                                        compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//
+//                                        compositionRule.setResultingMetric(cost);
+//                                        CompositionOperation compositionOperation = new CompositionOperation();
+//
+//                                        compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
 //                                        compositionOperation.setValue(costForValue.getValueRepresentation());
 //                                        compositionRule.setOperation(compositionOperation);
 //
 //                                        if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
 //                                            costCompositionRules.addCompositionRule(compositionRule);
 //                                        }
-                                        compositionOperation.setOperationType(CompositionOperationType.MUL);
-                                        compositionOperation.setTargetMetric(element.getCostMetric());
-                                        compositionOperation.addMetricSourceMonitoredElementID(monitoredElement.getId());
-                                        compositionOperation.setMetricSourceMonitoredElementLevel(monitoredElement.getLevel());
-                                        compositionOperation.setValue(element.getCostForCostMetricValue(value).toString());
-                                        compositionRule.setOperation(compositionOperation);
-
-                                        if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
-                                            costCompositionRules.addCompositionRule(compositionRule);
-                                        }
-
-                                    }
-                                } else {
-                                    log.warn("Metric {} not found in element {}", new Object[]{element.getCostMetric().getName(), monitoredElement.getName()});
-                                }
-
-                            } else if (element.getType().equals(CostElement.Type.PERIODIC)) {
-
-                                //we should compute estimated usage over time not captured by monitoring points:
-                                //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
-                                //depending on the measurement unit of the measured metric
-                                //I.E. a pkts_out/s will be multiplied with 60
-                                //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
-                                //this works as we assume we target only metrics which change in time using PER USAGE cost functions
-                                String timePeriod = "s";
-
-                                if (element.getCostMetric().getMeasurementUnit().contains("/")) {
-                                    timePeriod = element.getCostMetric().getMeasurementUnit().split("/")[1].toLowerCase();
-                                }
-
-                                Long currentTimestamp = Long.parseLong(currentTimesnapshot);
-                                Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
-
-                                //convert to seconds
-                                Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
-
-                                Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
-                                //must standardise these somehow
-
-                                MetricValue totalCostFromCreation = new MetricValue(element.getCostForCostMetricValue(new MetricValue(costPeriodsFromCreation)));
-
-                                Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits/" + timePeriod, Metric.MetricType.COST);
-
-                                CompositionRule compositionRule = new CompositionRule();
-                                compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                                compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
-
-                                compositionRule.setResultingMetric(cost);
-                                CompositionOperation compositionOperation = new CompositionOperation();
-
-                                compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
-                                compositionOperation.setValue(totalCostFromCreation.getValueRepresentation());
-                                compositionRule.setOperation(compositionOperation);
-
-                                if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
-                                    costCompositionRules.addCompositionRule(compositionRule);
-                                }
-
-                            }
-
-                        }
-                    }
-                }
-
-            }
-        }
-
-        //here I need to create rules that aggregate cost from the element's children and create cost metric at a higher level
-        {
-            final List<CompositionRule> childrenCostCompositionRules = Collections.synchronizedList(new ArrayList<CompositionRule>());
-            //call recursively on all children the compute cost method
-
-            ExecutorService es = Executors.newCachedThreadPool();
-            List<Callable<Object>> todo = new ArrayList<>();
-
-            for (final MonitoredElement child : monitoredElement.getContainedElements()) {
-
-                Callable c = Executors.callable(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        CompositionRulesBlock childRules = createCompositionRulesForInstantUsageCost(cloudOfferedServices, child, totalUsageSoFar, currentTimesnapshot);
-                        //do not add duplicate rules
-                        //add cost rate rules
-                        for (CompositionRule childRule : childRules.getCompositionRules()) {
-                            if (!childrenCostCompositionRules.contains(childRule)) {
-                                childrenCostCompositionRules.add(childRule);
-                            }
-                        }
-
-                    }
-                });
-                todo.add(c);
-            }
-            try {
-                List<Future<Object>> answers = es.invokeAll(todo);
-            } catch (InterruptedException ex) {
-                log.error(ex.getMessage(), ex);
-            }
-
-            {
-                costCompositionRules.getCompositionRules().addAll(childrenCostCompositionRules);
-
-            }
-
-            if (!monitoredElement.getContainedElements().isEmpty()) {
-
-                {
-                    CompositionRule children_cost_rule = new CompositionRule();
-                    children_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                    children_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                    children_cost_rule.setResultingMetric(CHILDREN_COST_METRIC);
-
-                    //we sum up each of the metrics from the children                
-                    //one big  SUM operation
-                    {
-                        CompositionOperation sumOperation = new CompositionOperation();
-                        sumOperation.setOperationType(CompositionOperationType.SUM);
-                        children_cost_rule.setOperation(sumOperation);
-
-                        for (MonitoredElement element : monitoredElement.getContainedElements()) {
-
-                            CompositionOperation compositionOperation = new CompositionOperation();
-                            compositionOperation.setMetricSourceMonitoredElementLevel(element.getLevel());
-                            compositionOperation.addMetricSourceMonitoredElementID(element.getId());
-                            compositionOperation.setTargetMetric(ELEMENT_COST_METRIC);
-                            compositionOperation.setOperationType(CompositionOperationType.KEEP);
-                            sumOperation.addCompositionOperation(compositionOperation);
-
-                        }
-                        costCompositionRules.addCompositionRule(children_cost_rule);
-                    }
-                }
-
-            }
-
-            //compute instant cost for element
-            {
-                CompositionRule element_cost_rule = new CompositionRule();
-                element_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                element_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                element_cost_rule.setResultingMetric(ELEMENT_COST_METRIC);
-
-                //we sum up each of the metrics from the children                
-                //one big  SUM operation
-                {
-                    CompositionOperation sumOperation = new CompositionOperation();
-                    sumOperation.setOperationType(CompositionOperationType.SUM);
-                    element_cost_rule.setOperation(sumOperation);
-
-                    for (CompositionRule rule : costCompositionRules.getCompositionRules()) {
-
-                        // only its rules, not also the rules from the children
-                        // the issue is that I recursively create a list, not a tree  of rules, and the
-                        // list contains all rules for all the subtree of this element
-                        if (rule.getTargetMonitoredElementIDs().contains(monitoredElement.getId())) {
-
-                            CompositionOperation compositionOperation = new CompositionOperation();
-                            compositionOperation.setMetricSourceMonitoredElementLevel(rule.getTargetMonitoredElementLevel());
-                            compositionOperation.setTargetMetric(rule.getResultingMetric());
-                            compositionOperation.setOperationType(CompositionOperationType.SUM);
-                            sumOperation.addCompositionOperation(compositionOperation);
-                        }
-
-                    }
-                    //if we have no children or metrics which we add to the rule, do not create the rule
-                    if (!sumOperation.getSubOperations().isEmpty()) {
-                        costCompositionRules.addCompositionRule(element_cost_rule);
-                    }
-                }
-
-            }
-
-        }
-
-        return costCompositionRules;
-    }
-
-    public CompositionRulesBlock createCompositionRulesForTotalCost(final Map<UUID, Map<UUID, CloudOfferedService>> cloudOfferedServices,
-            final LifetimeEnrichedSnapshot totalUsageSoFar, final String currentTimesnapshot) {
-
-        List<MonitoredElement.MonitoredElementLevel> levelsInOrder = new ArrayList<MonitoredElement.MonitoredElementLevel>();
-        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.VM);
-        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);
-        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE_TOPOLOGY);
-        levelsInOrder.add(MonitoredElement.MonitoredElementLevel.SERVICE);
-
-        CompositionRulesBlock costCompositionRules = new CompositionRulesBlock();
-
-        ServiceMonitoringSnapshot monitoringSnapshot = totalUsageSoFar.getSnapshot();
-
-        for (MonitoredElement.MonitoredElementLevel level : levelsInOrder) {
-
-            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> vmsData = totalUsageSoFar.getSnapshot().getMonitoredData(level);
-
-            if (vmsData == null) {
-                log.error("No monitoring data for service" + monitoringSnapshot.getMonitoredService() + " at level " + level.toString() + " timestamp " + monitoringSnapshot.getTimestampID());
-                continue;
-            }
-
-            for (MonitoredElement monitoredElement : vmsData.keySet()) {
-
-                Map<UsedCloudOfferedService, List<CostFunction>> applicableCostFunctions = getApplicableCostFunctions(cloudOfferedServices, monitoredElement);
-
-                {
-                    for (UsedCloudOfferedService service : monitoredElement.getCloudOfferedServices()) {
-                        {
-
-                            //from the cost functions, we extract those that should be applied.
-                            //maybe some do not quality to be apply as the service does not fulfill application requirements
-                            List<CostFunction> costFunctionsToApply = applicableCostFunctions.get(service);
-
-                            //start with USAGE type of cost, easier to apply. 
-                            for (CostFunction cf : costFunctionsToApply) {
-                                MonitoredElementMonitoringSnapshot vmMonSnapshot = totalUsageSoFar.getSnapshot().getMonitoredData(monitoredElement);
-
-                                for (CostElement element : cf.getCostElements()) {
-
-                                    if (element.getType().equals(CostElement.Type.USAGE)) {
-
-                                        MetricValue value = vmMonSnapshot.getMetricValue(element.getCostMetric());
-
-                                        if (value != null) {
-                                            //instant snapshot composition rule 
-                                            {
-                                                CompositionRule compositionRule = new CompositionRule();
-                                                compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                                                compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                                                //"total_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
-                                                // and I put again this total cost metric with same name, will not replace it.
-                                                //TODO: address this
-                                                compositionRule.setResultingMetric(new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST));
-                                                CompositionOperation compositionOperation = new CompositionOperation();
-                                                compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
-                                                compositionOperation.setTargetMetric(element.getCostMetric());
-                                                compositionOperation.addMetricSourceMonitoredElementID(monitoredElement.getId());
-                                                compositionOperation.setMetricSourceMonitoredElementLevel(monitoredElement.getLevel());
-
-                                                //we need to go trough all cost element interval, and apply correct cost for each interval
-                                                MetricValue metricUsageSoFar = value.clone();
-                                                MetricValue costForValue = new MetricValue(0l);
-                                                Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
-
-                                                List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
-                                                for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
-
-                                                    MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
-
-                                                    if (costIntervalElement.compareTo(metricUsageSoFar) > 0) {
-                                                        MetricValue costForThisInterval = metricUsageSoFar.clone();
-                                                        costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
-                                                        costForValue.sum(costForThisInterval);
-                                                        break;
-                                                    } else {
-                                                        Double usageBetweenLastAndCurrentInterval = null;
-                                                        if (i > 0) {
-                                                            MetricValue tmp = costIntervalElement.clone();
-                                                            tmp.sub(costIntervalsInAscendingOrder.get(i - 1));
-                                                            usageBetweenLastAndCurrentInterval = ((Number) tmp.getValue()).doubleValue();
-                                                        } else {
-                                                            usageBetweenLastAndCurrentInterval = ((Number) costIntervalElement.getValue()).doubleValue();
-                                                        }
-
-                                                        metricUsageSoFar.sub(usageBetweenLastAndCurrentInterval);
-                                                        MetricValue costForThisInterval = new MetricValue(usageBetweenLastAndCurrentInterval);
-                                                        costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
-                                                        costForValue.sum(costForThisInterval);
-                                                    }
-                                                }
-
-                                                compositionOperation.setValue(costForValue.getValueRepresentation());
-
-                                                compositionRule.setOperation(compositionOperation);
-
-                                                if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
-                                                    costCompositionRules.addCompositionRule(compositionRule);
-                                                }
-                                            }
-                                        } else {
-                                            log.warn("Metric {} not found in element {}", new Object[]{element.getCostMetric().getName(), monitoredElement.getName()});
-                                        }
-
-                                    } else if (element.getType().equals(CostElement.Type.PERIODIC)) {
-
-                                        //we should compute estimated usage over time not captured by monitoring points:
-                                        //I.E. I measure every 1 minute, usage over 1 minute must be extrapolated
-                                        //depending on the measurement unit of the measured metric
-                                        //I.E. a pkts_out/s will be multiplied with 60
-                                        //if not contain / then it does not have measurement unit over time , and we ASSUME it is per second
-                                        //this works as we assume we target only metrics which change in time using PER USAGE cost functions
-                                        Long currentTimestamp = Long.parseLong(currentTimesnapshot);
-                                        if (totalUsageSoFar.hasDeallocationTime(monitoredElement, service)) {
-                                            currentTimestamp = totalUsageSoFar.getDeallocationTime(monitoredElement, service);
-                                        }
-                                        Long instantiationTimestamp = totalUsageSoFar.getInstantiationTime(monitoredElement, service);
-
-                                        //convert to seconds
-                                        Double seconds = (currentTimestamp - instantiationTimestamp) / 1000d;
-
-                                        Double costPeriodsFromCreation = seconds / toEvaluationIntervalInSeconds(element.getCostMetric().getMeasurementUnit());
-
-                                        //we need to go trough all cost element interval, and apply correct cost for each interval
-                                        MetricValue metricUsageSoFar = new MetricValue(costPeriodsFromCreation);
-                                        MetricValue costForValue = new MetricValue(0l);
-                                        Map<MetricValue, Double> costIntervalFunction = element.getCostIntervalFunction();
-
-                                        List<MetricValue> costIntervalsInAscendingOrder = element.getCostIntervalsInAscendingOrder();
-                                        for (int i = costIntervalsInAscendingOrder.size() - 1; i >= 0; i--) {
-
-                                            MetricValue costIntervalElement = costIntervalsInAscendingOrder.get(i);
-
-                                            if (costIntervalElement.compareTo(metricUsageSoFar) > 0) {
-                                                MetricValue costForThisInterval = metricUsageSoFar.clone();
-                                                costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
-                                                costForValue.sum(costForThisInterval);
-                                                break;
-                                            } else {
-                                                Double usageBetweenLastAndCurrentInterval = null;
-                                                if (i > 0) {
-                                                    MetricValue tmp = costIntervalElement.clone();
-                                                    tmp.sub(costIntervalsInAscendingOrder.get(i - 1));
-                                                    usageBetweenLastAndCurrentInterval = ((Number) tmp.getValue()).doubleValue();
-                                                } else {
-                                                    usageBetweenLastAndCurrentInterval = ((Number) costIntervalElement.getValue()).doubleValue();
-                                                }
-
-                                                metricUsageSoFar.sub(usageBetweenLastAndCurrentInterval);
-                                                MetricValue costForThisInterval = new MetricValue(usageBetweenLastAndCurrentInterval);
-                                                costForThisInterval.multiply(costIntervalFunction.get(costIntervalElement));
-                                                costForValue.sum(costForThisInterval);
-                                            }
-                                        }
-
-                                        //"total_" must be there, as currnetly hashcode on Metric is only on "name", so if I have allready the instant cost,
-                                        // and I put again this total cost metric with same name, will not replace it.
-                                        //TODO: address this
-                                        Metric cost = new Metric("cost_" + element.getCostMetric().getName(), "costUnits", Metric.MetricType.COST);
-
-                                        CompositionRule compositionRule = new CompositionRule();
-                                        compositionRule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                                        compositionRule.addTargetMonitoredElementIDS(monitoredElement.getId());
-
-                                        compositionRule.setResultingMetric(cost);
-                                        CompositionOperation compositionOperation = new CompositionOperation();
-
-                                        compositionOperation.setOperationType(CompositionOperationType.SET_VALUE);
-                                        compositionOperation.setValue(costForValue.getValueRepresentation());
-                                        compositionRule.setOperation(compositionOperation);
-
-                                        if (!costCompositionRules.getCompositionRules().contains(compositionRule)) {
-                                            costCompositionRules.addCompositionRule(compositionRule);
-                                        }
-
-                                    }
-
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-                //here I need to create rules that aggregate cost from the element's children and create cost metric at a higher level
-                {
-//                    final List<CompositionRule> childrenCostCompositionRules = Collections.synchronizedList(new ArrayList<CompositionRule>());
-//                    //call recursively on all children the compute cost method
 //
-//                    ExecutorService es = Executors.newCachedThreadPool();
-//                    List<Callable<Object>> todo = new ArrayList<>();
-//
-//                    for (final MonitoredElement child : monitoredElement.getContainedElements()) {
-//
-//                        Callable c = Executors.callable(new Runnable() {
-//
-//                            @Override
-//                            public void run() {
-//                                CompositionRulesBlock childRules = createCompositionRulesForTotalCost(cloudOfferedServices, child, totalUsageSoFar, currentTimesnapshot);
-//                                //do not add duplicate rules
-//                                //add cost rate rules
-//                                for (CompositionRule childRule : childRules.getCompositionRules()) {
-//                                    if (!childrenCostCompositionRules.contains(childRule)) {
-//                                        childrenCostCompositionRules.add(childRule);
 //                                    }
+//
+//                                }
+//                            }
+//                        }
+//
+//                    }
+//                }
+//
+//                //here I need to create rules that aggregate cost from the element's children and create cost metric at a higher level
+//                {
+////                    final List<CompositionRule> childrenCostCompositionRules = Collections.synchronizedList(new ArrayList<CompositionRule>());
+////                    //call recursively on all children the compute cost method
+////
+////                    ExecutorService es = Executors.newCachedThreadPool();
+////                    List<Callable<Object>> todo = new ArrayList<>();
+////
+////                    for (final MonitoredElement child : monitoredElement.getContainedElements()) {
+////
+////                        Callable c = Executors.callable(new Runnable() {
+////
+////                            @Override
+////                            public void run() {
+////                                CompositionRulesBlock childRules = createCompositionRulesForTotalCost(cloudOfferedServices, child, totalUsageSoFar, currentTimesnapshot);
+////                                //do not add duplicate rules
+////                                //add cost rate rules
+////                                for (CompositionRule childRule : childRules.getCompositionRules()) {
+////                                    if (!childrenCostCompositionRules.contains(childRule)) {
+////                                        childrenCostCompositionRules.add(childRule);
+////                                    }
+////                                }
+////
+////                            }
+////                        });
+////                        todo.add(c);
+////                    }
+////                    try {
+////                        List<Future<Object>> answers = es.invokeAll(todo);
+////                    } catch (InterruptedException ex) {
+////                        log.error(ex.getMessage(), ex);
+////                    }
+////
+////                    {
+////                        costCompositionRules.getCompositionRules().addAll(childrenCostCompositionRules);
+////
+////                    }
+//
+//                    if (!monitoredElement.getContainedElements().isEmpty()) {
+//
+//                        {
+//                            CompositionRule children_cost_rule = new CompositionRule();
+//                            children_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                            children_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//                            children_cost_rule.setResultingMetric(CHILDREN_COST_METRIC);
+//
+//                            //we sum up each of the metrics from the children                
+//                            //one big  SUM operation
+//                            {
+//                                CompositionOperation sumOperation = new CompositionOperation();
+//                                sumOperation.setOperationType(CompositionOperationType.SUM);
+//                                children_cost_rule.setOperation(sumOperation);
+//
+//                                for (MonitoredElement element : monitoredElement.getContainedElements()) {
+//
+//                                    CompositionOperation compositionOperation = new CompositionOperation();
+//                                    compositionOperation.setMetricSourceMonitoredElementLevel(element.getLevel());
+//                                    compositionOperation.addMetricSourceMonitoredElementID(element.getId());
+//                                    compositionOperation.setTargetMetric(ELEMENT_COST_METRIC);
+//                                    compositionOperation.setOperationType(CompositionOperationType.KEEP);
+//                                    sumOperation.addCompositionOperation(compositionOperation);
+//
+//                                }
+//                                costCompositionRules.addCompositionRule(children_cost_rule);
+//                            }
+//                        }
+//
+//                    }
+//
+//                    //compute instant cost for element
+//                    {
+//                        CompositionRule element_cost_rule = new CompositionRule();
+//                        element_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
+//                        element_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
+//                        element_cost_rule.setResultingMetric(ELEMENT_COST_METRIC);
+//
+//                        //we sum up each of the metrics from the children                
+//                        //one big  SUM operation
+//                        {
+//                            CompositionOperation sumOperation = new CompositionOperation();
+//                            sumOperation.setOperationType(CompositionOperationType.SUM);
+//                            element_cost_rule.setOperation(sumOperation);
+//
+//                            for (CompositionRule rule : costCompositionRules.getCompositionRules()) {
+//
+//                                // only its rules, not also the rules from the children
+//                                // the issue is that I recursivelyc reate a list, not a tree  of rules, and the
+//                                // list contains all rules for all the subtree of this element
+//                                if (rule.getTargetMonitoredElementIDs().contains(monitoredElement.getId())) {
+//
+//                                    CompositionOperation compositionOperation = new CompositionOperation();
+//                                    compositionOperation.setMetricSourceMonitoredElementLevel(rule.getTargetMonitoredElementLevel());
+//                                    compositionOperation.setTargetMetric(rule.getResultingMetric());
+//                                    compositionOperation.setOperationType(CompositionOperationType.SUM);
+//                                    sumOperation.addCompositionOperation(compositionOperation);
 //                                }
 //
 //                            }
-//                        });
-//                        todo.add(c);
-//                    }
-//                    try {
-//                        List<Future<Object>> answers = es.invokeAll(todo);
-//                    } catch (InterruptedException ex) {
-//                        log.error(ex.getMessage(), ex);
-//                    }
-//
-//                    {
-//                        costCompositionRules.getCompositionRules().addAll(childrenCostCompositionRules);
+//                            //if we have no children or metrics which we add to the rule, do not create the rule
+//                            if (!sumOperation.getSubOperations().isEmpty()) {
+//                                costCompositionRules.addCompositionRule(element_cost_rule);
+//                            }
+//                        }
 //
 //                    }
-
-                    if (!monitoredElement.getContainedElements().isEmpty()) {
-
-                        {
-                            CompositionRule children_cost_rule = new CompositionRule();
-                            children_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                            children_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                            children_cost_rule.setResultingMetric(CHILDREN_COST_METRIC);
-
-                            //we sum up each of the metrics from the children                
-                            //one big  SUM operation
-                            {
-                                CompositionOperation sumOperation = new CompositionOperation();
-                                sumOperation.setOperationType(CompositionOperationType.SUM);
-                                children_cost_rule.setOperation(sumOperation);
-
-                                for (MonitoredElement element : monitoredElement.getContainedElements()) {
-
-                                    CompositionOperation compositionOperation = new CompositionOperation();
-                                    compositionOperation.setMetricSourceMonitoredElementLevel(element.getLevel());
-                                    compositionOperation.addMetricSourceMonitoredElementID(element.getId());
-                                    compositionOperation.setTargetMetric(ELEMENT_COST_METRIC);
-                                    compositionOperation.setOperationType(CompositionOperationType.KEEP);
-                                    sumOperation.addCompositionOperation(compositionOperation);
-
-                                }
-                                costCompositionRules.addCompositionRule(children_cost_rule);
-                            }
-                        }
-
-                    }
-
-                    //compute instant cost for element
-                    {
-                        CompositionRule element_cost_rule = new CompositionRule();
-                        element_cost_rule.setTargetMonitoredElementLevel(monitoredElement.getLevel());
-                        element_cost_rule.addTargetMonitoredElementIDS(monitoredElement.getId());
-                        element_cost_rule.setResultingMetric(ELEMENT_COST_METRIC);
-
-                        //we sum up each of the metrics from the children                
-                        //one big  SUM operation
-                        {
-                            CompositionOperation sumOperation = new CompositionOperation();
-                            sumOperation.setOperationType(CompositionOperationType.SUM);
-                            element_cost_rule.setOperation(sumOperation);
-
-                            for (CompositionRule rule : costCompositionRules.getCompositionRules()) {
-
-                                // only its rules, not also the rules from the children
-                                // the issue is that I recursivelyc reate a list, not a tree  of rules, and the
-                                // list contains all rules for all the subtree of this element
-                                if (rule.getTargetMonitoredElementIDs().contains(monitoredElement.getId())) {
-
-                                    CompositionOperation compositionOperation = new CompositionOperation();
-                                    compositionOperation.setMetricSourceMonitoredElementLevel(rule.getTargetMonitoredElementLevel());
-                                    compositionOperation.setTargetMetric(rule.getResultingMetric());
-                                    compositionOperation.setOperationType(CompositionOperationType.SUM);
-                                    sumOperation.addCompositionOperation(compositionOperation);
-                                }
-
-                            }
-                            //if we have no children or metrics which we add to the rule, do not create the rule
-                            if (!sumOperation.getSubOperations().isEmpty()) {
-                                costCompositionRules.addCompositionRule(element_cost_rule);
-                            }
-                        }
-
-                    }
-
-                }
-            }
-        }
-        return costCompositionRules;
-    }
+//
+//                }
+//            }
+//        }
+//        return costCompositionRules;
+//    }
 
     public CostEvalEngine withInstantMonitoringDataEnrichmentEngine(final DataAggregationEngine instantMonitoringDataEnrichmentEngine) {
         this.instantMonitoringDataEnrichmentEngine = instantMonitoringDataEnrichmentEngine;

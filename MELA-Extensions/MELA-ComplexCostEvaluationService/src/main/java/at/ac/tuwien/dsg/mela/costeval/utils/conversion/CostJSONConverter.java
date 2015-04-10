@@ -17,12 +17,16 @@
 package at.ac.tuwien.dsg.mela.costeval.utils.conversion;
 
 import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
+import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter;
+import static at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter.convertMonitoringSnapshot;
+import static at.ac.tuwien.dsg.mela.common.utils.outputConverters.JsonConverter.convertToJSON;
+import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -314,6 +318,7 @@ public class CostJSONConverter extends JsonConverter {
         return root.toJSONString();
 
     }
+ 
 
     private static class MyPair {
 

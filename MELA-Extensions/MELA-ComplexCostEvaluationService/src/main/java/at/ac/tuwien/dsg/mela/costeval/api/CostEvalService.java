@@ -154,6 +154,12 @@ public class CostEvalService {
     public String getTotalCostForServiceWithCurrentStructureJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostJSON(serviceID);
     }
+    @GET
+    @Path("/{serviceID}/cost/total/json/{timestampID}")
+    @Produces("application/json")
+    public String getTotalCostForServiceForTimestampIDJSON(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getTotalCostJSON(serviceID, timestampID);
+    }
 
     @GET
     @Path("/{serviceID}/cost/instant/json/tree")
@@ -161,12 +167,26 @@ public class CostEvalService {
     public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getInstantCostJSON(serviceID);
     }
-
+    
+    
+    @GET
+    @Path("/{serviceID}/cost/instant/json/tree/{timestampID}")
+    @Produces("application/json")
+    public String instantCostPerUsageForTimestampID(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getInstantCostJSON(serviceID, timestampID);
+    }
+    
     @GET
     @Path("/{serviceID}/cost/instant/json/piechart")
     @Produces("application/json")
     public String getInstantCostForServiceJSONAsPieChart(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getInstantCostForServiceJSONAsPieChart(serviceID);
+    }
+    @GET
+    @Path("/{serviceID}/cost/instant/json/piechart/{timestampID}")
+    @Produces("application/json")
+    public String getInstantCostForServiceJSONAsPieChartForTimestampID(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getInstantCostForServiceJSONAsPieChart(serviceID, timestampID);
     }
 
     @GET
@@ -174,6 +194,12 @@ public class CostEvalService {
     @Produces("application/json")
     public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostForServiceJSON(serviceID);
+    }
+    @GET
+    @Path("/{serviceID}/cost/total/json/tree/{timestampID}")
+    @Produces("application/json")
+    public String getTotalCostForServiceJSONForTimestampID(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getTotalCostForServiceJSON(serviceID, timestampID);
     }
 
     @GET
