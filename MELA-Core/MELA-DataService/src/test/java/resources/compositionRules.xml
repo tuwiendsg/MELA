@@ -12,6 +12,16 @@
                 <ReferenceMetric name="connectionRate" type="RESOURCE"/>
             </Operation>
         </CompositionRule>
+        
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric name="pkts_in" measurementUnit="packets/sec" type="RESOURCE"/>
+            <Operation type="KEEP" MetricSourceMonitoredElementLevel="VM">
+                <ReferenceMetric name="pkts_in" type="RESOURCE"/>
+            </Operation>
+        </CompositionRule>
+        
+     
+        
         <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
             <ResultingMetric name="totalPendingRequests" measurementUnit="#" type="RESOURCE"/>
             <Operation type="SUM" MetricSourceMonitoredElementLevel="VM">
