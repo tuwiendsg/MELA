@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  * Returns the maximum and minimum values for all monitored metrics, given a set
  * of user requirements Somewhat follows a decorator pattern, I.E. decorates an
@@ -51,7 +51,6 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 //    public ElSpaceDefaultFunction() {
 //        super();
 //    }
-
     @Override
     public void trainElasticitySpace(Collection<ServiceMonitoringSnapshot> monitoringData) {
 
@@ -91,6 +90,10 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
                 for (Metric metric : elementData.getMetrics()) {
                     MetricValue elementValue = elementData.getMetricValue(metric);
+                    //we ignore NaN when computing boundaries
+                    if (Double.isNaN(((Number) elementValue.getValue()).doubleValue())) {
+                        continue;
+                    }
 
                     //upperBoundary update
                     {
@@ -181,14 +184,11 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 //
 //                    }
 //                }
-
-
 //            } else {
-                //only also process children if ! SERVICE_UNIT
-                processingList.addAll(element.getContainedElements());
+            //only also process children if ! SERVICE_UNIT
+            processingList.addAll(element.getContainedElements());
 //            }
         }
-
 
     }
 
@@ -223,6 +223,9 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
                 for (Metric metric : elementData.getMetrics()) {
                     MetricValue elementValue = elementData.getMetricValue(metric);
+                    if (Double.isNaN(((Number) elementValue.getValue()).doubleValue())) {
+                        continue;
+                    }
 
                     //upperBoundary update
                     {
@@ -316,11 +319,10 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 //
 //
 //            } else {
-                //only also process children if ! SERVICE_UNIT
-                processingList.addAll(element.getContainedElements());
+            //only also process children if ! SERVICE_UNIT
+            processingList.addAll(element.getContainedElements());
 //            }
         }
-
 
     }
 

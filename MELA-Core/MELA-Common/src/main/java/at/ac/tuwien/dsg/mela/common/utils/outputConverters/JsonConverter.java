@@ -122,11 +122,8 @@ public class JsonConverter {
         });
 
         sortedMetricSet.addAll(elementMonitoringData.keySet());
-        
-         
-        //TODO: convert timestamp from milliseconds from epoch to seconds since start of space
-        
 
+        //TODO: convert timestamp from milliseconds from epoch to seconds since start of space
         for (Metric metric : sortedMetricSet) {
             JSONObject spaceDimensionJSON = new JSONObject();
             spaceDimensionJSON.put("name", metric.getName());
@@ -142,16 +139,29 @@ public class JsonConverter {
             for (MetricValue metricValue : elementMonitoringData.get(metric)) {
                 {
                     JSONObject metricValueJSON = new JSONObject();
-                    metricValueJSON.put("value", metricValue.getValueRepresentation());
+                    String repr = metricValue.getValueRepresentation();
+                    if (Double.isNaN(((Number) metricValue.getValue()).doubleValue())) {
+                        continue;
+                    }
+                    metricValueJSON.put("value", repr);
                     metricValuesJSON.add(metricValueJSON);
                 }
                 {
                     JSONObject metricUpperBoundaryJSON = new JSONObject();
+                    String repr = boundaries[1].getValueRepresentation();
+                    if (Double.isNaN(((Number) boundaries[1].getValue()).doubleValue())) {
+                        continue;
+                    }
                     metricUpperBoundaryJSON.put("value", boundaries[1]);
                     metricUpperBoundaryValuesJSON.add(metricUpperBoundaryJSON);
                 }
                 {
                     JSONObject metricLowerBoundaryJSON = new JSONObject();
+                    String repr = boundaries[0].getValueRepresentation();
+                    if (Double.isNaN(((Number) boundaries[0].getValue()).doubleValue())) {
+                        continue;
+                    }
+
                     metricLowerBoundaryJSON.put("value", boundaries[0]);
                     metricLowerBoundaryValuesJSON.add(metricLowerBoundaryJSON);
                 }
@@ -440,7 +450,7 @@ public class JsonConverter {
                 //add children
                 for (MonitoredElement child : element.getContainedElements()) {
                     JSONObject childElement = new JSONObject();
-                    childElement.put("name",  child.getId());
+                    childElement.put("name", child.getId());
                     childElement.put("type", "" + child.getLevel());
                     JSONArray childrenChildren = new JSONArray();
                     childElement.put("children", childrenChildren);
@@ -451,7 +461,7 @@ public class JsonConverter {
                 JSONArray metrics = new JSONArray();
                 if (monitoredData.containsKey(element.getLevel())) {
                     MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = monitoredData.get(element.getLevel()).get(element);
-                    if(monitoredElementMonitoringSnapshot == null){
+                    if (monitoredElementMonitoringSnapshot == null) {
                         continue;
                     }
                     List<Action> actions = monitoredElementMonitoringSnapshot.getExecutingActions();
@@ -490,14 +500,15 @@ public class JsonConverter {
             return "{\"name\":\"No Data\",\"type\":\"METRIC\"}";
         }
     }
+
     public static String convertMonitoringSnapshotAndCompositionRules(ServiceMonitoringSnapshot serviceMonitoringSnapshot, CompositionRulesBlock compositionRulesBlock) {
 
         if (serviceMonitoringSnapshot == null) {
             return "";
         }
-       
-        String complete ="{\"monitoringData\": " +   convertMonitoringSnapshot(serviceMonitoringSnapshot) 
-                + ",\"compositionRules\":" + convertToJSON(compositionRulesBlock)+"}";
+
+        String complete = "{\"monitoringData\": " + convertMonitoringSnapshot(serviceMonitoringSnapshot)
+                + ",\"compositionRules\":" + convertToJSON(compositionRulesBlock) + "}";
 
         return complete;
     }
@@ -568,7 +579,7 @@ public class JsonConverter {
                 //add children
                 for (MonitoredElement child : element.getContainedElements()) {
                     JSONObject childElement = new JSONObject();
-                    childElement.put("name",  child.getId() );
+                    childElement.put("name", child.getId());
                     childElement.put("type", "" + child.getLevel());
                     JSONArray childrenChildren = new JSONArray();
                     childElement.put("children", childrenChildren);

@@ -145,7 +145,12 @@ def updateMELAServiceDescriptionAfterScaleIn(ip, serviceName):
      #remove element with Ip from list
      #MELA returns only Ip ans I need to call SALSA
      listOfEventProcessingDescriptions[serviceName][:] = [element for element in listOfEventProcessingDescriptions[serviceName] if not ip in element]
-     listOfEventProcessingIPs[serviceName].remove(ip)
+     try:
+       listOfEventProcessingIPs[serviceName].remove(ip)
+     except :
+          print "Trying to remove from MELA IP " + str(ip)
+          raise
+
      for t in listOfEventProcessingDescriptions[serviceName]:
         print t
 
