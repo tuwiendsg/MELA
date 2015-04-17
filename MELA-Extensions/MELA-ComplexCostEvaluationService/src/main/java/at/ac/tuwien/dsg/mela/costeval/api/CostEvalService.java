@@ -154,6 +154,7 @@ public class CostEvalService {
     public String getTotalCostForServiceWithCurrentStructureJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostJSON(serviceID);
     }
+
     @GET
     @Path("/{serviceID}/cost/total/json/{timestampID}")
     @Produces("application/json")
@@ -167,21 +168,21 @@ public class CostEvalService {
     public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getInstantCostJSON(serviceID);
     }
-    
-    
+
     @GET
     @Path("/{serviceID}/cost/instant/json/tree/{timestampID}")
     @Produces("application/json")
     public String instantCostPerUsageForTimestampID(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
         return costEvalManager.getInstantCostJSON(serviceID, timestampID);
     }
-    
+
     @GET
     @Path("/{serviceID}/cost/instant/json/piechart")
     @Produces("application/json")
     public String getInstantCostForServiceJSONAsPieChart(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getInstantCostForServiceJSONAsPieChart(serviceID);
     }
+
     @GET
     @Path("/{serviceID}/cost/instant/json/piechart/{timestampID}")
     @Produces("application/json")
@@ -195,6 +196,20 @@ public class CostEvalService {
     public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostForServiceJSON(serviceID);
     }
+
+    @GET
+    @Path("/{serviceID}/cost/total")
+    @Produces("text/plain")
+    public String getTotalCostForServiceDoubleValue(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalCostForServiceDoubleValue(serviceID);
+    }
+    @GET
+    @Path("/{serviceID}/cost/instant")
+    @Produces("text/plain")
+    public String getInstantCostForServiceDoubleValue(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getInstantCostForServiceDoubleValue(serviceID);
+    }
+
     @GET
     @Path("/{serviceID}/cost/total/json/tree/{timestampID}")
     @Produces("application/json")
@@ -369,7 +384,7 @@ public class CostEvalService {
         if (recommended == null) {
             return "";
         } else {
-            return recommended.getId();
+            return recommended.getName();
         }
     }
 
@@ -384,12 +399,14 @@ public class CostEvalService {
     ) {
         return "" + costEvalManager.evaluateUnitInstanceCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel, unitInstanceID);
     }
+
     /**
      * Will evaluate all units of a particular instance
+     *
      * @param serviceID
      * @param monitoredElementID
      * @param monitoredElementlevel
-     * @return 
+     * @return
      */
     @GET
     @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
@@ -423,11 +440,10 @@ public class CostEvalService {
         if (recommended == null) {
             return "";
         } else {
-            return recommended.getId();
+            return recommended.getName();
         }
     }
-    
-    
+
     @GET
     @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/xml")
     @Produces("application/xml")

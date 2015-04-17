@@ -80,6 +80,7 @@ eventProcessingIPIndex = {}
 #used to have nice CSV in which if an Ip is encountered AGAIN, I padd it.
 #also contains in the name last "_instanceIndex" part
 historicalyUsedUnitInstancesNames ={}
+startTimestamp = {}
  
 maximumIPs=0
 #removed random
@@ -158,12 +159,13 @@ def updateMELAServiceDescriptionAfterScaleOut(ip, serviceName):
      index = 0
      if ip in eventProcessingIPIndex[serviceName]:
          index = eventProcessingIPIndex[serviceName][ip] + 1
-         eventProcessingIPIndex[serviceName][ip] = index
-         newElement = createNewMonElementSpecification(ip, ip +"_i"+ str(index))
+         eventProcessingIPIndex[serviceName][ip] = int(index)
+         newElement = createNewMonElementSpecification(ip, ip + "_i" + str(index))
+         historicalyUsedUnitInstancesNames[serviceName].append(ip + "_i" + str(index))
      else:
-         newElement = createNewMonElementSpecification(ip,ip)
+         newElement = createNewMonElementSpecification(ip, ip)
+         historicalyUsedUnitInstancesNames[serviceName].append(ip)
      eventProcessingIPIndex[serviceName][ip] = index
-     historicalyUsedUnitInstancesNames[serviceName].append(ip)
      listOfEventProcessingIPs[serviceName].append(ip)
      listOfEventProcessingDescriptions[serviceName].append(newElement)
      for t in listOfEventProcessingDescriptions[serviceName]:
@@ -220,6 +222,35 @@ def getMetricFromMELA(serviceID, elementID, elementLevel, metricName, metricUnit
        return 0
 
 
+def getTotalCostFromMELACost(serviceID):
+     metricValue = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceID+"/cost/total")
+     print "Received total cost value '" + metricValue + "'"
+     if metricValue:
+       value = -1 
+       try:
+          value = float(metricValue)
+       except:
+          print "Got instead of cost: " + str(value)
+       return value
+     else:
+       print "Nothing returned as value, so we replace with 0, which does not trigger anything"
+       return 0
+
+def getInstantCostFromMELACost(serviceID):
+     metricValue = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceID+"/cost/instant")
+     print "Received total cost value '" + metricValue + "'"
+     if metricValue:
+       value = -1 
+       try:
+          value = float(metricValue)
+       except:
+          print "Got instead of cost: " + str(value)
+       return value
+     else:
+       print "Nothing returned as value, so we replace with 0, which does not trigger anything"
+       return 0
+
+
 def getCostEfficiencyForScalingInFromMELA(serviceId,ip):
      efficiency = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceId+"/cost/evaluate/costefficiency/scalein/EventProcessingUnit/SERVICE_UNIT/"+ip+"/plain")
      print "Evaluated cost efficiency for scaling in "+ ip + " is '" + efficiency + "'"
@@ -259,7 +290,12 @@ def evaluateAndPersistCostEfficiencyForScalingStrategy(strategy, serviceId):
      #efficiency returned as JSON so need to parse it
      jsonRepresentation = json.loads(efficiency)
 
-     efficiencyCSVLine = "" + str(int(time.time())) + "," + str(datetime.datetime.now()) + "," + str(len(listOfEventProcessingIPs[serviceId]))
+     totalServiceCost = getTotalCostFromMELACost(serviceId)
+     instantServiceCost = getInstantCostFromMELACost(serviceId)
+
+     currentTime = time.time() - startTimestamp[serviceId]
+     humanReadableTime  = datetime.datetime.fromtimestamp(currentTime)
+     efficiencyCSVLine = "" + str(int(time.time()))  + "," + str(humanReadableTime.hour) + ":" + str(humanReadableTime.minute) + ":" + str(humanReadableTime.second) + "," + str(len(listOfEventProcessingIPs[serviceId])) + "," + str(instantServiceCost) + "," + str(totalServiceCost)
      reportMap={}  
      #map of returned report on IP and info
      for i in range(0, len(jsonRepresentation)):
@@ -270,18 +306,33 @@ def evaluateAndPersistCostEfficiencyForScalingStrategy(strategy, serviceId):
         report["diskUsage"] = diskUsage
         reportMap[str(report["ip"])] = report
 
+
    
      for instanceName in historicalyUsedUnitInstancesNames[serviceId]:
 	ipToSearchFor = instanceName
         if "_" in ipToSearchFor:
           ipToSearchFor = ipToSearchFor[:ipToSearchFor.index("_")]    
-        if ipToSearchFor in reportMap:  
-           report = reportMap[ipToSearchFor]
-           efficiencyCSVLine = efficiencyCSVLine + "," + str(report["ip"]) + "," + str(report["efficiency"]) + "," + str(report["lifetime"]) + ","+ str(report[diskUsage])
+        print "Searching " + ipToSearchFor
+        if ipToSearchFor in listOfEventProcessingIPs[serviceId]:
+            if ipToSearchFor in eventProcessingIPIndex[serviceId]:  
+               index = eventProcessingIPIndex[serviceId][ipToSearchFor]
+               print index 
+               currentName = ipToSearchFor
+               if index > 0 :
+                  currentName = currentName + "_i" + str(index)
+               print currentName + " == " + instanceName + "?"
+               if currentName == instanceName:   
+                   ipReport = reportMap[currentName]
+                   efficiencyCSVLine = efficiencyCSVLine + "," + instanceName + "," + str(ipReport["efficiency"]) + "," + str(ipReport["lifetime"]) + ","+ str(ipReport["diskUsage"])
+                   print currentName + " == " + instanceName
+               else:
+                   print currentName + " != " + instanceName
+                   efficiencyCSVLine = efficiencyCSVLine + ",,,,"   
         else:
-            efficiencyCSVLine = efficiencyCSVLine + ", , , , "
+            print ipToSearchFor + " != eventProcessingIPIndex[serviceId]"
+            efficiencyCSVLine = efficiencyCSVLine + ","
 
-     f = open("./efficiency_"+str(strategy)+".csv", "a+")
+     f = open("./efficiency_" + str(strategy) + ".csv", "a+")
      f.write(efficiencyCSVLine + "\n")
      f.close()
 
@@ -308,9 +359,17 @@ def directScaleIn(strategy, serviceId):
   #first record decision efficiency of all strategies
   iPToScaleIn = getIPToScaleIn(strategy, serviceId)
   #log what we are doing in separate log
-  efficiency = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceId+"/cost/evaluate/costefficiency/scalein/EventProcessingUnit/SERVICE_UNIT/"+iPToScaleIn+"/plain") 
+  iPToScaleInAsMELASeesIt = iPToScaleIn
+  if iPToScaleIn in eventProcessingIPIndex[serviceId]:
+         index = eventProcessingIPIndex[serviceId][iPToScaleIn]
+         if index > 0 :
+                iPToScaleInAsMELASeesIt = iPToScaleInAsMELASeesIt + "_i" + str(index)
+
+  efficiency = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceId+"/cost/evaluate/costefficiency/scalein/EventProcessingUnit/SERVICE_UNIT/"+iPToScaleInAsMELASeesIt+"/plain") 
   waste = 1 - float(efficiency)
-  cSVLine = str(iPToScaleIn) + "," + str(efficiency) + "," + str(waste)
+  currentTime = time.time() - startTimestamp[serviceId]
+  humanReadableTime  = datetime.datetime.fromtimestamp(currentTime)
+  cSVLine = "" + str(humanReadableTime.hour) + ":" + str(humanReadableTime.minute) + ":" + str(humanReadableTime.second) +  "," + str(iPToScaleIn) + "," + str(efficiency) + "," + str(waste)
   f = open("./efficiency_action_"+str(strategy)+".csv", "a+")
   f.write(cSVLine + "\n")
   f.close()
@@ -356,7 +415,7 @@ def executeScenarioForStrategy(strategy):
    historicalyUsedUnitInstancesNames[serviceName] = []
    submitMetricCompositionRules(serviceName)
    f = open("./efficiency_"+str(strategy)+".csv", "w+")
-   f.write("Timestamp, Date, Instances \n")
+   f.write("Timestamp, Date, Instances, Instant Cost, Total Cost \n")
    f.close()
 
    f = open("./efficiency_action_"+str(strategy)+".csv", "w+")
@@ -371,6 +430,7 @@ def executeScenarioForStrategy(strategy):
        scaleOutAndInchreaseLoad(proc, "EventProcessingTopology_"+ str(strategy))
        print "Scaled out " + serviceName
    submitUpdatedDescriptionToMELA("EventProcessingTopology_"+ str(strategy))
+   startTimestamp[serviceName] = time.time()
    print "Sleep 90 seconds after scale out " + serviceName
    time.sleep(90)
    print "For 45 minutes, evaluate efficiency " + serviceName

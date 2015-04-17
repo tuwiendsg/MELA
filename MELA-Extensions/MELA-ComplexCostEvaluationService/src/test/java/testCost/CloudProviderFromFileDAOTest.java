@@ -4,7 +4,6 @@
  */
 package testCost;
 
-import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.ServiceUnitDAO;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
@@ -17,9 +16,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import junit.framework.TestCase;
-import org.neo4j.graphdb.Transaction;
-import static testCost.SimpleCostDescriptionTest.log;
 
 /**
  *
@@ -53,19 +51,14 @@ public class CloudProviderFromFileDAOTest extends TestCase {
     /**
      * Test of matchServiceUnit method, of class RequirementsMatchingEngine.
      */
-    public void testEcosystemDescription() throws IOException {
+    public void testEcosystemDescription() throws IOException, JAXBException {
 
         List<CloudProvider> cloudProviders = new ArrayList<CloudProvider>();
 
-        try {
-            JAXBContext jAXBContext = JAXBContext.newInstance(CloudProvider.class);
-            InputStream fileStream = new FileInputStream(new File("./config/default/cloud_pricing_scheme.xml"));
-            CloudProvider specification = (CloudProvider) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-            cloudProviders.add(specification);
-        } catch (Exception ex) {
-            log.error("Cannot unmarshall : {}", ex.getMessage());
-            ex.printStackTrace();
-        }
+        JAXBContext jAXBContext = JAXBContext.newInstance(CloudProvider.class);
+        InputStream fileStream = new FileInputStream(new File("./config/default/Flexiant.xml"));
+        CloudProvider specification = (CloudProvider) jAXBContext.createUnmarshaller().unmarshal(fileStream);
+        cloudProviders.add(specification);
 
         CloudProviderDAO.persistCloudProviders(cloudProviders, access.getGraphDatabaseService());
 
@@ -77,7 +70,6 @@ public class CloudProviderFromFileDAOTest extends TestCase {
                 System.out.println(unit.getId() + " " + unit.getName());
             }
         }
-        
 
     }
 }

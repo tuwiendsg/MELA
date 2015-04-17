@@ -72,6 +72,9 @@ public class CostEvalEngine {
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
 
     static final Logger log = LoggerFactory.getLogger(CostEvalEngine.class);
+    
+    public static final Metric ELEMENT_COST_METRIC = new Metric("element_cost", "costUnits", Metric.MetricType.COST);
+    public static final Metric CHILDREN_COST_METRIC = new Metric("children_cost", "costUnits", Metric.MetricType.COST);
 
     public ServiceMonitoringSnapshot applyCompositionRules(CompositionRulesBlock block, ServiceMonitoringSnapshot monitoringSnapshot) {
         return instantMonitoringDataEnrichmentEngine.enrichMonitoringData(
@@ -2037,8 +2040,7 @@ public class CostEvalEngine {
 
     }
 
-    private static final Metric ELEMENT_COST_METRIC = new Metric("element_cost", "costUnits", Metric.MetricType.COST);
-    private static final Metric CHILDREN_COST_METRIC = new Metric("children_cost", "costUnits", Metric.MetricType.COST);
+    
 //
 //    /**
 //     * Only computes the current cost rate for cost element reported per USAGE.

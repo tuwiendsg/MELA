@@ -550,6 +550,55 @@ public class CostEvalManager {
 
     }
 
+    public String getTotalCostForServiceDoubleValue(String serviceID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalCostSnapshot(serviceID);
+
+        if (serviceUsageSnapshot == null) {
+            return "" + Double.NaN;
+        }
+
+        try {
+            return serviceUsageSnapshot.getSnapshot().getMonitoredData(serviceUsageSnapshot.getSnapshot().getMonitoredService()).getMetricValue(CostEvalEngine.ELEMENT_COST_METRIC).getValueRepresentation();
+        } catch (Exception e) {
+            log.debug(e.getMessage(), e);
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getTotalCostForServiceJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+    public String getInstantCostForServiceDoubleValue(String serviceID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractLastInstantCostSnapshot(serviceID);
+
+        if (serviceUsageSnapshot == null) {
+            return "" + Double.NaN;
+        }
+
+        try {
+            return serviceUsageSnapshot.getSnapshot().getMonitoredData(serviceUsageSnapshot.getSnapshot().getMonitoredService()).getMetricValue(CostEvalEngine.ELEMENT_COST_METRIC).getValueRepresentation();
+        } catch (Exception e) {
+            log.debug(e.getMessage(), e);
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getTotalCostForServiceJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+
     public String getTotalCostForServiceJSON(String serviceID, String timestampID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);

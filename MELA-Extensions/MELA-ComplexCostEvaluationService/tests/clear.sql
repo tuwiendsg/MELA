@@ -29,3 +29,21 @@ delete from AGGREGATEDDATA where monseqid='EventProcessingTopology_STRATEGY_LAST
 delete from TOTALCOSTHISTORY where monseqid='EventProcessingTopology_STRATEGY_LAST_ADDED' and TIMESTAMPID > 957;
 delete from TIMESTAMP where monseqid='EventProcessingTopology_STRATEGY_LAST_ADDED' and ID > 957;
  
+
+
+delete from INSTANTCOSTELASTICITYSPACE where monseqid='EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME';
+delete from CASCHEDCOMPLETEHISTORICALUSAGE where monseqid='EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME' and TIMESTAMPID > 836 ;
+delete from INSTANTCOSTHISTORY where monseqid='EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME' and TIMESTAMPID > 836;
+delete from STRUCTUREDCOLLECTEDDATA where monseqid='EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME' and TIMESTAMPID > 836;
+delete from AGGREGATEDDATA where monseqid='EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME' and TIMESTAMPID > 836;
+delete from TOTALCOSTHISTORY where monseqid='EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME' and TIMESTAMPID > 836;
+delete from TIMESTAMP where monseqid='EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_LIFETIME' and ID > 836;
+ 
+delete from INSTANTCOSTELASTICITYSPACE where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED';
+delete from CASCHEDCOMPLETEHISTORICALUSAGE where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED' and TIMESTAMPID > 841 ;
+delete from INSTANTCOSTHISTORY where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED' and TIMESTAMPID > 841;
+delete from STRUCTUREDCOLLECTEDDATA where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED' and TIMESTAMPID > 841;
+delete from AGGREGATEDDATA where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED' and TIMESTAMPID > 841;
+delete from TOTALCOSTHISTORY where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED' and TIMESTAMPID > 841;
+delete from TIMESTAMP where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED' and ID > 841;
+ 
