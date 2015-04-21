@@ -203,6 +203,7 @@ public class CostEvalService {
     public String getTotalCostForServiceDoubleValue(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostForServiceDoubleValue(serviceID);
     }
+
     @GET
     @Path("/{serviceID}/cost/instant")
     @Produces("text/plain")
@@ -243,7 +244,7 @@ public class CostEvalService {
     @GET
     @Path("/{serviceID}/cost/total/elasticityspace/{monitoredElementID}/{monitoredElementLevel}/json")
     @Produces("application/json")
-    public String gettotalCostPerUsageElasticitySpaceJSON(@PathParam("serviceID") String serviceID,
+    public String getTotalCostPerUsageElasticitySpaceJSON(@PathParam("serviceID") String serviceID,
             @PathParam("monitoredElementID") String monitoredElementID,
             @PathParam("monitoredElementLevel") String monitoredElementlevel) {
         throw new UnsupportedOperationException("Not implemented");
@@ -452,6 +453,13 @@ public class CostEvalService {
             @PathParam("monitoredElementLevel") String monitoredElementlevel) {
         return costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
 
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/structure/xml")
+    @Produces("application/xml")
+    public MonitoredElement getCompleteStructureOfUsedServices(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getCompleteStructureOfUsedServices(serviceID);
     }
 
 }

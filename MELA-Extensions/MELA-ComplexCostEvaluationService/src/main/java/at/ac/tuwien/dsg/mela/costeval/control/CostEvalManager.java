@@ -500,6 +500,22 @@ public class CostEvalManager {
 
     }
 
+    public MonitoredElement getCompleteStructureOfUsedServices(String serviceID) {
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return new MonitoredElement();
+        }
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalCostSnapshot(serviceID);
+
+        if (serviceUsageSnapshot == null) {
+            return new MonitoredElement();
+        }
+
+        return serviceUsageSnapshot.getSnapshot().getMonitoredService();
+
+    }
+
     public String getTotalCostJSON(String serviceID, String timestampID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
@@ -574,6 +590,7 @@ public class CostEvalManager {
         }
 
     }
+
     public String getInstantCostForServiceDoubleValue(String serviceID) {
         Date before = new Date();
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
@@ -1204,6 +1221,9 @@ public class CostEvalManager {
         //if space is not null, update it with new data
         List<ServiceMonitoringSnapshot> dataFromTimestamp = persistenceDelegate.extractStructuredMonitoringData(prevService.getId());
 
+        persistenceDelegate.writeMonitoringSequenceId(newname);
+        persistenceDelegate.writeConfiguration(newname, new ConfigurationXMLRepresentation().withServiceConfiguration(prevService.clone().withId(newname)).withCompositionRulesConfiguration(cfg.getCompositionRulesConfiguration()).withRequirements(cfg.getRequirements()));
+
         //extract usage so far only once, and just add to it.
         int lastRetrievedTimestampID = (previouselyDeterminedUsage != null) ? previouselyDeterminedUsage.getLastUpdatedTimestampID() : 0;
         int lastTimestampID = persistenceDelegate.extractLatestMonitoringData(prevService.getId()).getTimestampID();
@@ -1240,7 +1260,7 @@ public class CostEvalManager {
                 ServiceMonitoringSnapshot aggregated = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, snapshot);
 
                 previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, aggregated);
-                persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(newname, previouselyDeterminedUsage);
+//                persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(newname, previouselyDeterminedUsage);
                 //persist instant cost
                 LifetimeEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(previouselyDeterminedUsage);
                 aggregated = costEvalEngine.convertToStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, aggregated);
@@ -1248,8 +1268,8 @@ public class CostEvalManager {
                 CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, cleanedCostSnapshot.getSnapshot().getMonitoredService(), cleanedCostSnapshot, aggregated.getTimestamp());
                 ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, aggregated);
                 //persist instant cost
-                persistenceDelegate.persistInstantCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(block)
-                        .withLastUpdatedTimestampID(enrichedSnapshot.getTimestampID()).withSnapshot(enrichedSnapshot));
+//                persistenceDelegate.persistInstantCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(block)
+//                        .withLastUpdatedTimestampID(enrichedSnapshot.getTimestampID()).withSnapshot(enrichedSnapshot));
                 Date after = new Date();
                 log.debug("Emulate Instant Cost for timestamp {} time in ms: {} ",
                         new Object[]{snapshot.getTimestampID(),
@@ -1262,9 +1282,6 @@ public class CostEvalManager {
             dataFromTimestamp = persistenceDelegate.extractStructuredMonitoringData(nextTimestamp, prevService.getId());
 
         }
-
-        persistenceDelegate.writeMonitoringSequenceId(newname);
-        persistenceDelegate.writeConfiguration(newname, new ConfigurationXMLRepresentation().withServiceConfiguration(prevService.clone().withId(newname)).withCompositionRulesConfiguration(cfg.getCompositionRulesConfiguration()).withRequirements(cfg.getRequirements()));
 
         persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(newname, previouselyDeterminedUsage);
 
