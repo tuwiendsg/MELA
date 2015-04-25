@@ -376,20 +376,6 @@ public class CostEvalService {
     }
 
     @GET
-    @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
-    @Produces("text/plain")
-    public String recommendUnitInstanceToScaleDownBasedOnCostEfficiencyPlainText(@PathParam("serviceID") String serviceID,
-            @PathParam("monitoredElementID") String monitoredElementID,
-            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
-        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
-        if (recommended == null) {
-            return "";
-        } else {
-            return recommended.getName();
-        }
-    }
-
-    @GET
     @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/{unitInstanceID}/plain")
     @Produces("text/plain")
     public String getCostEfficiencyIfScalingIn(@PathParam("serviceID") String serviceID,
@@ -434,10 +420,24 @@ public class CostEvalService {
     @GET
     @Path("/{serviceID}/cost/recommend/lifetime/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
     @Produces("text/plain")
-    public String recommendUnitInstanceToScaleDownBasedOnLifetime(@PathParam("serviceID") String serviceID,
+    public String recommendUnitInstanceToScaleDownBasedOnLifetimePlainText(@PathParam("serviceID") String serviceID,
             @PathParam("monitoredElementID") String monitoredElementID,
             @PathParam("monitoredElementLevel") String monitoredElementlevel) {
         MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnLifetime(serviceID, monitoredElementID, monitoredElementlevel);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getName();
+        }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnCostEfficiencyPlainText(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
         if (recommended == null) {
             return "";
         } else {
@@ -453,6 +453,34 @@ public class CostEvalService {
             @PathParam("monitoredElementLevel") String monitoredElementlevel) {
         return costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
 
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/lifetime/scalein/{monitoredElementID}/{monitoredElementLevel}/{targetEfficiency}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnLifetime(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel, @PathParam("targetEfficiency") String targetEfficiency) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnLifetime(serviceID, monitoredElementID, monitoredElementlevel, targetEfficiency);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getName();
+        }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/{targetEfficiency}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnCostEfficiencyPlainText(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel, @PathParam("targetEfficiency") String targetEfficiency) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel, targetEfficiency);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getName();
+        }
     }
 
     @GET

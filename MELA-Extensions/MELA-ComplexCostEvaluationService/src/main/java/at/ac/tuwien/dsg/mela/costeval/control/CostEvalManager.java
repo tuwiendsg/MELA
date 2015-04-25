@@ -1255,12 +1255,12 @@ public class CostEvalManager {
                 snapshot.addMonitoredData(elementMonitoringSnapshot);
 
                 //persist new added struct
-//                persistenceDelegate.writeInTimestamp(snapshot.getTimestamp(), snapshotServicfCFG, newname);
+                persistenceDelegate.writeInTimestamp(snapshot.getTimestamp(), snapshotServicfCFG, newname);
                 //aggregate struct data
                 ServiceMonitoringSnapshot aggregated = instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration, snapshot);
 
                 previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, aggregated);
-//                persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(newname, previouselyDeterminedUsage);
+                persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(newname, previouselyDeterminedUsage);
                 //persist instant cost
                 LifetimeEnrichedSnapshot cleanedCostSnapshot = costEvalEngine.cleanUnusedServices(previouselyDeterminedUsage);
                 aggregated = costEvalEngine.convertToStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, aggregated);
@@ -1268,8 +1268,19 @@ public class CostEvalManager {
                 CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, cleanedCostSnapshot.getSnapshot().getMonitoredService(), cleanedCostSnapshot, aggregated.getTimestamp());
                 ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, aggregated);
                 //persist instant cost
-//                persistenceDelegate.persistInstantCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(block)
-//                        .withLastUpdatedTimestampID(enrichedSnapshot.getTimestampID()).withSnapshot(enrichedSnapshot));
+                persistenceDelegate.persistInstantCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(block)
+                        .withLastUpdatedTimestampID(enrichedSnapshot.getTimestampID()).withSnapshot(enrichedSnapshot));
+
+                //retrieve the previousely computed total usage, as the computation of the instant cost destr
+                //            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
+                //create rules for metrics for total cost based on usage so far
+                CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, persistenceDelegate.extractLatestMonitoringData(prevService.getId()).getTimestamp());
+                ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
+
+                //persist mon snapshot enriched with total cost
+                persistenceDelegate.persistTotalCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(totalCostBlock)
+                        .withLastUpdatedTimestampID(snapshotWithTotalCost.getTimestampID()).withSnapshot(snapshotWithTotalCost));
+
                 Date after = new Date();
                 log.debug("Emulate Instant Cost for timestamp {} time in ms: {} ",
                         new Object[]{snapshot.getTimestampID(),
@@ -1283,22 +1294,79 @@ public class CostEvalManager {
 
         }
 
-        persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(newname, previouselyDeterminedUsage);
-
-        //retrieve the previousely computed total usage, as the computation of the instant cost destr
-        //            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
-        //create rules for metrics for total cost based on usage so far
-        CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, persistenceDelegate.extractLatestMonitoringData(prevService.getId()).getTimestamp());
-        ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
-
-        //persist mon snapshot enriched with total cost
-        persistenceDelegate.persistTotalCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(totalCostBlock)
-                .withLastUpdatedTimestampID(snapshotWithTotalCost.getTimestampID()).withSnapshot(snapshotWithTotalCost));
-
+//        persistenceDelegate.persistTotalUsageWithCompleteHistoricalStructureSnapshot(newname, previouselyDeterminedUsage);
+//
+//        //retrieve the previousely computed total usage, as the computation of the instant cost destr
+//        //            previouselyDeterminedUsage = persistenceDelegate.extractCachedServiceUsage(serviceID);
+//        //create rules for metrics for total cost based on usage so far
+//        CompositionRulesBlock totalCostBlock = costEvalEngine.createCompositionRulesForTotalCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, persistenceDelegate.extractLatestMonitoringData(prevService.getId()).getTimestamp());
+//        ServiceMonitoringSnapshot snapshotWithTotalCost = costEvalEngine.applyCompositionRules(totalCostBlock, previouselyDeterminedUsage.getSnapshot());
+//
+//        //persist mon snapshot enriched with total cost
+//        persistenceDelegate.persistTotalCostSnapshot(newname, new CostEnrichedSnapshot().withCostCompositionRules(totalCostBlock)
+//                .withLastUpdatedTimestampID(snapshotWithTotalCost.getTimestampID()).withSnapshot(snapshotWithTotalCost));
     }
 
     public MonitoredElement recommendUnitInstanceToScaleDownBasedOnCostEfficiency(String service, String monitoredElementID, String monitoredElementLevel) {
         //get allready monitored service
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(service);
+        if (cfg == null) {
+            throw new UncheckedException(new Throwable("Service with ID " + service + " not found in mon data"));
+        }
+
+        MonitoredElement serviceCFG = cfg.getServiceConfiguration();
+        MonitoredElement unitToScale = null;
+
+        //search in the config for the unit we want
+        MonitoredElement.MonitoredElementLevel levelToScale = MonitoredElement.MonitoredElementLevel.valueOf(monitoredElementLevel);
+        for (MonitoredElement element : serviceCFG) {
+            if (element.getId().equals(monitoredElementID) && element.getLevel().equals(levelToScale)) {
+                unitToScale = element;
+                break;
+            }
+        }
+        if (unitToScale == null) {
+            throw new UncheckedException(new Throwable("Element with ID " + unitToScale.getId()
+                    + " and level " + unitToScale.getLevel() + " not found for service " + service));
+        }
+
+        LifetimeEnrichedSnapshot totalUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service);
+
+        final List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+            throw new UncheckedException(new Throwable("No cloud providers found in repository. Cannot compute cost"));
+        }
+        Map<UUID, Map<UUID, CloudOfferedService>> cloudProvidersMap = costEvalEngine.cloudProvidersToMap(cloudProviders);
+
+        List<UnusedCostUnitsReport> report = costEvalEngine.computeEffectiveUsageOfBilledServices(cloudProvidersMap, totalUsageSnapshot, "" + new Date().getTime(), unitToScale);
+
+        if (report.isEmpty()) {
+            throw new UncheckedException(new Throwable("Nothing to scale for element with ID " + unitToScale.getId()
+                    + " and level for service " + service));
+        }
+
+        UnusedCostUnitsReport best = report.get(0);
+
+        //cost efficiency target
+        if (best.getCostEfficiency() < costEfficiencyThreshold) {
+            log.error("Only scale in option {}{} for {}{} for service {} has cost efficiency {} below threshold {}",
+                    new Object[]{best.getUnitInstance().getId(),
+                        best.getUnitInstance().getLevel(),
+                        monitoredElementID,
+                        monitoredElementLevel,
+                        best.getCostEfficiency(),
+                        costEfficiencyThreshold
+                    });
+            return null;
+        } else {
+            return best.getUnitInstance();
+        }
+    }
+
+    public MonitoredElement recommendUnitInstanceToScaleDownBasedOnCostEfficiency(String service, String monitoredElementID, String monitoredElementLevel, String targetEfficiency) {
+        //get allready monitored service
+        Double costEfficiencyThreshold = Double.parseDouble(targetEfficiency);
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(service);
         if (cfg == null) {
             throw new UncheckedException(new Throwable("Service with ID " + service + " not found in mon data"));
@@ -1523,6 +1591,66 @@ public class CostEvalManager {
     }
 
     public MonitoredElement recommendUnitInstanceToScaleDownBasedOnLifetime(String service, String monitoredElementID, String monitoredElementLevel) {
+        //get allready monitored service
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(service);
+        if (cfg == null) {
+            throw new UncheckedException(new Throwable("Service with ID " + service + " not found in mon data"));
+        }
+
+        MonitoredElement serviceCFG = cfg.getServiceConfiguration();
+        MonitoredElement unitToScale = null;
+
+        //search in the config for the unit we want
+        MonitoredElement.MonitoredElementLevel levelToScale = MonitoredElement.MonitoredElementLevel.valueOf(monitoredElementLevel);
+        for (MonitoredElement element : serviceCFG) {
+            if (element.getId().equals(monitoredElementID) && element.getLevel().equals(levelToScale)) {
+                unitToScale = element;
+                break;
+            }
+        }
+        if (unitToScale == null) {
+            throw new UncheckedException(new Throwable("Element with ID " + unitToScale.getId()
+                    + " and level " + unitToScale.getLevel() + " not found for service " + service));
+        }
+
+        LifetimeEnrichedSnapshot totalUsageSnapshot = persistenceDelegate.extractTotalUsageWithCompleteHistoricalStructureSnapshot(service);
+
+        final List<CloudProvider> cloudProviders = CloudProviderDAO.getAllCloudProviders(dataAccess.getGraphDatabaseService());
+
+        if (cloudProviders == null) {
+            throw new UncheckedException(new Throwable("No cloud providers found in repository. Cannot compute cost"));
+        }
+        Map<UUID, Map<UUID, CloudOfferedService>> cloudProvidersMap = costEvalEngine.cloudProvidersToMap(cloudProviders);
+
+        List<UnusedCostUnitsReport> report = costEvalEngine.computeLifetimeInBillingPeriods(cloudProvidersMap, totalUsageSnapshot, "" + new Date().getTime(), unitToScale);
+
+        if (report.isEmpty()) {
+            throw new UncheckedException(new Throwable("Nothing to scale for element with ID " + unitToScale.getId()
+                    + " and level for service " + service));
+        }
+
+        UnusedCostUnitsReport best = report.get(0);
+
+        //cost efficiency target
+        if (best.getCostEfficiency() < costEfficiencyThreshold) {
+            log.error("Only scale in option {}{} for {}{} for service {} has cost efficiency {} below threshold {}",
+                    new Object[]{best.getUnitInstance().getId(),
+                        best.getUnitInstance().getLevel(),
+                        monitoredElementID,
+                        monitoredElementLevel,
+                        best.getCostEfficiency(),
+                        costEfficiencyThreshold
+                    });
+            return null;
+        } else {
+            return best.getUnitInstance();
+        }
+    }
+
+    public MonitoredElement recommendUnitInstanceToScaleDownBasedOnLifetime(String service, String monitoredElementID, String monitoredElementLevel, String targetEfficiency) {
+
+        Double costEfficiencyThreshold = Double.parseDouble(targetEfficiency);
+
         //get allready monitored service
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(service);
         if (cfg == null) {
