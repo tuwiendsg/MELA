@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><MonitoredElement level="SERVICE" name="EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY" id="EventProcessingTopology_STRATEGY_MELA_COST_RECOMMENDATION_EFFICIENCY">
+    <MonitoredElement level="SERVICE_TOPOLOGY" name="EventProcessingTopology" id="EventProcessingTopology">
+        <MonitoredElement level="SERVICE_UNIT" name="EventProcessingUnit" id="EventProcessingUnit">
+            <MonitoredElement level="VM" name="10.99.0.13" id="10.99.0.13">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="fe4f7dd9-2e13-494a-894f-d26f987e7169"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="b9d32ee9-0f7b-4f58-b890-f26f6c3603cc"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="fe4f7dd9-2e13-494a-894f-d26f987e7169" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="b9d32ee9-0f7b-4f58-b890-f26f6c3603cc" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.18" id="10.99.0.18">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="084615e9-5c9c-439b-b087-5a0e93575411"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="a33967d6-a951-4979-b16c-d77eb797244d"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="084615e9-5c9c-439b-b087-5a0e93575411" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="a33967d6-a951-4979-b16c-d77eb797244d" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.32" id="10.99.0.32">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="978a23f0-a7e9-46f3-9e73-a4aabfed4a74"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="5448055d-c05d-4832-b030-2af3934a969a"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="978a23f0-a7e9-46f3-9e73-a4aabfed4a74" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="5448055d-c05d-4832-b030-2af3934a969a" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.33" id="10.99.0.33">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="7c36a422-6686-4896-bdbb-b6ae52e48cf5"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="0d22c6cc-b823-49f5-89cc-1b20d778c575"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="7c36a422-6686-4896-bdbb-b6ae52e48cf5" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="0d22c6cc-b823-49f5-89cc-1b20d778c575" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.58" id="10.99.0.58">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="b388a507-2041-42ab-a7fb-d18c64209048"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="65040140-bbaf-49b9-b1c2-73e415bd1be4"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="b388a507-2041-42ab-a7fb-d18c64209048" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="65040140-bbaf-49b9-b1c2-73e415bd1be4" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="ImageStorage" id="98400000-8cf0-11bd-b23e-000000000001"/>
+            <MonitoredElement level="VM" name="10.99.0.13" id="10.99.0.13_i1">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="5a19060a-4a13-4bf3-af3b-2a51747e5358"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="63076f34-a6f1-4cf2-814e-2a7d7882c710"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="5a19060a-4a13-4bf3-af3b-2a51747e5358" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="63076f34-a6f1-4cf2-814e-2a7d7882c710" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.48" id="10.99.0.48">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="f05efbfd-ba50-43a2-8cc4-3ea991e5aa9b"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="d31090d3-fb34-460a-bae0-269cf5eecce7"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="f05efbfd-ba50-43a2-8cc4-3ea991e5aa9b" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="d31090d3-fb34-460a-bae0-269cf5eecce7" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.58" id="10.99.0.58_i1">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="b1e566b2-0c99-4aee-9666-24030a269297"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="2295fde9-4b6d-41de-a328-bf7034cca835"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="b1e566b2-0c99-4aee-9666-24030a269297" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="2295fde9-4b6d-41de-a328-bf7034cca835" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.33" id="10.99.0.33_i1">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="5291238f-5bc9-47f4-b013-ee59b60d4d19"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="c190ed20-e402-404d-807d-8b20826854e0"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="5291238f-5bc9-47f4-b013-ee59b60d4d19" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="c190ed20-e402-404d-807d-8b20826854e0" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.48" id="10.99.0.48_i1">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="6f98a05c-7191-426b-a56a-1b88c62840f7"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="83a79c42-166b-40d5-bd9e-e9d63f08b026"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="6f98a05c-7191-426b-a56a-1b88c62840f7" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="83a79c42-166b-40d5-bd9e-e9d63f08b026" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.72" id="10.99.0.72">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="ce9d2a36-a77e-4e38-aec1-3b8bf317919b"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="d970dc8f-63a9-419a-854e-e70b7eb08ae3"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="ce9d2a36-a77e-4e38-aec1-3b8bf317919b" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="d970dc8f-63a9-419a-854e-e70b7eb08ae3" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.58" id="10.99.0.58_i2">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="fb28076b-3415-41a9-a1dc-2ba81e9a2689"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="d06c5f95-c195-4284-a1b1-fa698972b820"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="fb28076b-3415-41a9-a1dc-2ba81e9a2689" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="d06c5f95-c195-4284-a1b1-fa698972b820" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.72" id="10.99.0.72_i1">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="50978778-865a-4564-918e-abcfe9504635"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="ecc010f9-de06-4561-b65b-0f62c420b964"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="50978778-865a-4564-918e-abcfe9504635" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="ecc010f9-de06-4561-b65b-0f62c420b964" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.32" id="10.99.0.32_i1">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="b0fd4a37-74af-4062-9c2a-be40963a9fdb"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="8f761bf2-fcaf-498f-a428-db3f43524bf7"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="b0fd4a37-74af-4062-9c2a-be40963a9fdb" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="8f761bf2-fcaf-498f-a428-db3f43524bf7" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.62" id="10.99.0.62">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="b29c36cf-198b-4249-8626-b59dc019085f"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="005e1f57-d8c5-4124-a181-10cee9b9774e"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="b29c36cf-198b-4249-8626-b59dc019085f" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="005e1f57-d8c5-4124-a181-10cee9b9774e" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.32" id="10.99.0.32_i2">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="833f5a41-2c74-4df5-b236-305a28784b8a"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="ea8dbc84-46c1-499f-ab7c-12342ff6c2e2"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="833f5a41-2c74-4df5-b236-305a28784b8a" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="ea8dbc84-46c1-499f-ab7c-12342ff6c2e2" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <MonitoredElement level="VM" name="10.99.0.48" id="10.99.0.48_i2">
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="1CPU2GB" id="89ea7f01-ded8-4f77-8a3d-68627d5a36e2"/>
+                <MonitoredElement level="CLOUD_OFFERED_SERVICE" name="CloudStorage" id="bf3a03ad-060a-4535-845b-c707039fcfff"/>
+                <UsedCloudOfferedServiceCfg name="1CPU2GB" instanceUUID="89ea7f01-ded8-4f77-8a3d-68627d5a36e2" uuid="20000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" instanceUUID="bf3a03ad-060a-4535-845b-c707039fcfff" uuid="30000000-0000-0000-0000-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <UsedCloudOfferedServiceCfg name="ImageStorage" instanceUUID="98400000-8cf0-11bd-b23e-000000000001" uuid="40000000-0000-0000-0000-000000000001" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                <QualityProperties/>
+                <ResourceProperties/>
+            </UsedCloudOfferedServiceCfg>
+        </MonitoredElement>
+    </MonitoredElement>
+</MonitoredElement>
