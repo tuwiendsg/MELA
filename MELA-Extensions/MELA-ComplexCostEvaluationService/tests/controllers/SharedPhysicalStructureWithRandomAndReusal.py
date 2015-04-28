@@ -1,4 +1,4 @@
-# Does scale in, and if still scaling in (as for example cost does not recommend to scale in), when scale out, reuses the IP
+# not forced. Actually inchreases event processing instances up to 6, and decreases them by scaling in according to some strategy
 #########################################
 import sys, httplib, uuid, random, time, json, subprocess, StringIO, datetime, threading, signal
 from threading import Thread
@@ -466,7 +466,7 @@ if __name__=='__main__':
        f.write("Timestamp, Scaling In IP, Scaling In efficiency " +str(strategy)+ ", Scaling In lifetime" +str(strategy)+ "\n")
        f.close()
      
-       proc = subprocess.Popen(["exec echo ddd"], shell=True)
+       proc = subprocess.Popen(["exec python ./load.py " + loadBalancerStartIP[serviceName] + " " + str(5 * 90)], shell=True)
 
    for k in range (0,3):
      #for all scale out 
@@ -516,26 +516,28 @@ if __name__=='__main__':
        for k in range (0,random.randint(1,3)):
              for strategy in  strategiesList:
                   serviceName = "EventProcessingTopology_"+ str(strategy)
-                  print "Start thread to scale in " + serviceName
-                  if listOfEventProcessingIPs[serviceName] > 2:
+		          #not [serviceName} because the cost ones migth have more units, other less, so for all strategies we must either scale in for all, or not
+                  if len(listOfEventProcessingIPs["EventProcessingTopology_"+STRATEGY_LAST_ADDED]) > 2:
+                    print "Start thread to scale in " + serviceName
+                    print "listOfEventProcessingIPs[serviceName] " + serviceName + " is " + str(listOfEventProcessingIPs[serviceName])
                     event = threading.Event()
                     p = Thread(target=scaleInAndInchreaseLoad, args=[proc, "EventProcessingTopology_"+ str(strategy), strategy, event])
                     p.setDaemon(True)
                     p.start() 
                     scaleInThreads["EventProcessingTopology_"+ str(strategy)].append(p)
                     stopScaleInEvents["EventProcessingTopology_"+ str(strategy)][p]=event
-             currentWaitInterval = random.randint(30,60)
-             print "Waiting for " + str(currentWaitInterval)
+		     currentWaitInterval = random.randint(30,60)
+		     print "Waiting for " + str(currentWaitInterval)
              for j in range(0,currentWaitInterval):
-                threads=[]
-                for strategy in  strategiesList:
-                    p = Thread(target=evaluateAndPersistCostEfficiencyForScalingStrategy, args=[strategy, "EventProcessingTopology_"+ str(strategy)])
-                    p.setDaemon(True)
-                    p.start() 
-                    threads.append(p)
-                for t in threads:
-                    t.join()
-                time.sleep(60)
+                 threads=[]
+                 for strategy in  strategiesList:
+                       p = Thread(target=evaluateAndPersistCostEfficiencyForScalingStrategy, args=[strategy, "EventProcessingTopology_"+ str(strategy)])
+                       p.setDaemon(True)
+                       p.start() 
+                       threads.append(p)
+                 for t in threads:
+                     t.join()
+             time.sleep(5)
              r = Thread(target=checkIfCanReallyScaleIn, args=[SALSA_SERVICE_ID])
              r.setDaemon(True)
              r.start() 
@@ -556,8 +558,10 @@ if __name__=='__main__':
                           else:
                             t.handled = False
                       scaleInThreads[serviceName] = [t for t in scaleInThreads[serviceName] if not t.handled]
+		      print "len of scaleInThreads for " + str(serviceName) + " is " + 	str(len(scaleInThreads[serviceName]))
                       if len(scaleInThreads[serviceName]) > 0:
-                           stopScaleInEvents[serviceName][scaleInThreads[serviceName][0]].set()
+                           scaleInThread = scaleInThreads[serviceName].pop()
+                           stopScaleInEvents[serviceName][scaleInThread].set()
                            #if we do not add the new one, mark it unused for this strategy, i.e., scaled in
                            listOfScaledInEventProcessingIPs[scaledIP]= listOfScaledInEventProcessingIPs[scaledIP] + 1
                       else:
