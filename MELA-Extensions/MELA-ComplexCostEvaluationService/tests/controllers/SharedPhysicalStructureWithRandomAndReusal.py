@@ -516,7 +516,7 @@ if __name__=='__main__':
        for k in range (0,random.randint(1,3)):
              for strategy in  strategiesList:
                   serviceName = "EventProcessingTopology_"+ str(strategy)
-		          #not [serviceName} because the cost ones migth have more units, other less, so for all strategies we must either scale in for all, or not
+                  #not [serviceName} because the cost ones migth have more units, other less, so for all strategies we must either scale in for all, or not
                   if len(listOfEventProcessingIPs["EventProcessingTopology_"+STRATEGY_LAST_ADDED]) > 2:
                     print "Start thread to scale in " + serviceName
                     print "listOfEventProcessingIPs[serviceName] " + serviceName + " is " + str(listOfEventProcessingIPs[serviceName])
@@ -526,8 +526,8 @@ if __name__=='__main__':
                     p.start() 
                     scaleInThreads["EventProcessingTopology_"+ str(strategy)].append(p)
                     stopScaleInEvents["EventProcessingTopology_"+ str(strategy)][p]=event
-		     currentWaitInterval = random.randint(30,60)
-		     print "Waiting for " + str(currentWaitInterval)
+		    currentWaitInterval = random.randint(30,60)
+		    print "Waiting for " + str(currentWaitInterval)
              for j in range(0,currentWaitInterval):
                  threads=[]
                  for strategy in  strategiesList:
