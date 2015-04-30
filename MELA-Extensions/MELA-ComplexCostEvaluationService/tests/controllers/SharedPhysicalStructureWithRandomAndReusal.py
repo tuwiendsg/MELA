@@ -136,8 +136,12 @@ def executeRESTCallWithContent(restMethod, serviceBaseURL, resourceName,  conten
 
 def scaleInWithSALSA(serviceName, ip):
         executeRESTCall("POST", SALSA_URL, "salsa-engine/rest/services/"+serviceName + "/vmnodes/"+ip+"/scalein")
+        print "DDD"
 
 def scaleOutWithSALSA(serviceName):
+        #global index
+        #index = index + 1
+        #scaleOutIP = "10.0.0." + str(index)  
         scaleOutIP = str(executeRESTCall("POST", SALSA_URL, "salsa-engine/rest/services/"+serviceName + "/nodes/EventProcessingUnit/scaleout"))
         print "Scaled Out With " + scaleOutIP
         return scaleOutIP
@@ -196,7 +200,9 @@ def getScaleInRecommendationFromMELABasedOnCostEffciency(serviceId, event):
        time.sleep(60)
        ipToScaleIn = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceId+"/cost/recommend/costefficiency/scalein/EventProcessingUnit/SERVICE_UNIT/0.8/plain")
 
-    # print "Received IP to scale " + ipToScaleIn
+     #remove _i from MELA structure
+     if "_" in ipToScaleIn:
+          ipToScaleIn = ipToScaleIn[:ipToScaleIn.index("_")] 
      return ipToScaleIn
 
 def getScaleInRecommendationFromMELABasedOnLifetime(serviceId, event):
@@ -210,6 +216,8 @@ def getScaleInRecommendationFromMELABasedOnLifetime(serviceId, event):
        time.sleep(60)
        ipToScaleIn = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceId+"/cost/recommend/lifetime/scalein/EventProcessingUnit/SERVICE_UNIT/0.9/plain")
 
+     if "_" in ipToScaleIn:
+          ipToScaleIn = ipToScaleIn[:ipToScaleIn.index("_")] 
      #print "Received IP to scale " + ipToScaleIn
      return ipToScaleIn
 
@@ -306,7 +314,7 @@ def evaluateAndPersistCostEfficiencyForScalingStrategy(strategy, serviceId):
      #map of returned report on IP and info
      for i in range(0, len(jsonRepresentation)):
         report = jsonRepresentation[i]       
-        diskUsage = 0
+        diskUsage = getMetricFromMELA(serviceId,report["ip"],"VM","IODataSize","GB") 
         #convert disk usage to current life
         diskUsage = diskUsage - int(diskUsage)
         report["diskUsage"] = diskUsage
@@ -316,7 +324,7 @@ def evaluateAndPersistCostEfficiencyForScalingStrategy(strategy, serviceId):
         ipToSearchFor = instanceName
         if "_" in ipToSearchFor:
           ipToSearchFor = ipToSearchFor[:ipToSearchFor.index("_")]    
-          if ipToSearchFor in listOfEventProcessingIPs[serviceId]:
+        if ipToSearchFor in listOfEventProcessingIPs[serviceId]:
             if ipToSearchFor in eventProcessingIPIndex[serviceId]:  
                index = eventProcessingIPIndex[serviceId][ipToSearchFor]
                currentName = ipToSearchFor
@@ -359,7 +367,7 @@ def directScaleIn(strategy, serviceId, event):
    iPToScaleIn = getIPToScaleIn(strategy, serviceId, event)
    if event.is_set():
          return   
-   #log what we are doing in separate log
+   #add _i if needed, as even MELA method returns recommendation without _ix
    iPToScaleInAsMELASeesIt = iPToScaleIn
    if iPToScaleIn in eventProcessingIPIndex[serviceId]:
          index = eventProcessingIPIndex[serviceId][iPToScaleIn]
@@ -388,7 +396,6 @@ def directScaleIn(strategy, serviceId, event):
    ipSStringForMela = ipSStringForMela[1:]
    cSVLine = "" + str(humanReadableTime.hour) + ":" + str(humanReadableTime.minute) + ":" + str(humanReadableTime.second) +  "," + str(iPToScaleIn) + "," + str(efficiency) + "," + str(waste) + ",, others,,"
 
-
    efficiency = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceId+"/cost/evaluate/costefficiency/scalein/more/EventProcessingUnit/SERVICE_UNIT/"+ipSStringForMela+"/plain")
    #efficiency returned as JSON so need to parse it
    jsonRepresentation = json.loads(efficiency)
@@ -403,14 +410,6 @@ def directScaleIn(strategy, serviceId, event):
    f.write(cSVLine + "\n")
    f.close()
   
-  
-  #check if the ipToScaleIn still here. 
-  #a but can appear IF we have 2 waiting scale ins, in parralel as deamon, and both get same recomendation
-   while not iPToScaleIn in listOfEventProcessingIPs[serviceId]: 
-     if event.is_set:
-         return    
-     time.sleep(1) 
-     iPToScaleIn = getIPToScaleIn(strategy, serviceId, event)
    #print "Getting IP for strategy " + strategy + " " + str(iPToScaleIn)
    listOfScaledInEventProcessingIPs[iPToScaleIn] = listOfScaledInEventProcessingIPs[iPToScaleIn] + 1
    updateMELAServiceDescriptionAfterScaleIn(iPToScaleIn, serviceId)
@@ -439,8 +438,6 @@ def checkIfCanReallyScaleIn(serviceId):
          #  print "SCALING IN " +  ip
            ipToScale = ip 
            scaledInLL.append(ip)
-           if "_" in ipToScale:
-              ipToScale = ipToScale[:ipToScaleindex("_")]
            scaleInWithSALSA(serviceId, ipToScale)             
     for ip in scaledInLL:
      listOfScaledInEventProcessingIPs.pop(ip)          
@@ -526,8 +523,8 @@ if __name__=='__main__':
                     p.start() 
                     scaleInThreads["EventProcessingTopology_"+ str(strategy)].append(p)
                     stopScaleInEvents["EventProcessingTopology_"+ str(strategy)][p]=event
-		    currentWaitInterval = random.randint(30,60)
-		    print "Waiting for " + str(currentWaitInterval)
+	     currentWaitInterval = random.randint(30,60)
+	     print "Waiting for " + str(currentWaitInterval)
              for j in range(0,currentWaitInterval):
                  threads=[]
                  for strategy in  strategiesList:
@@ -537,12 +534,12 @@ if __name__=='__main__':
                        threads.append(p)
                  for t in threads:
                      t.join()
-             time.sleep(5)
+             time.sleep(60)
              r = Thread(target=checkIfCanReallyScaleIn, args=[SALSA_SERVICE_ID])
              r.setDaemon(True)
              r.start() 
        for k in range (0,random.randint(1,3)): 
-         #for all scale out 
+         if len(listOfEventProcessingIPs["EventProcessingTopology_"+STRATEGY_LAST_ADDED]) < 6:
            threads=[]  
            scaledIP = scaleOutWithSALSA(SALSA_SERVICE_ID)
            if scaledIP:
