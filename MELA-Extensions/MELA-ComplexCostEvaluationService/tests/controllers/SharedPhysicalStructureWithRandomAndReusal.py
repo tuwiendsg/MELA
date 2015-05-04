@@ -130,8 +130,8 @@ def executeRESTCallWithContent(restMethod, serviceBaseURL, resourceName,  conten
         result = connection.getresponse()
         response  = result.read()
         connection.close()
-        #print result.status, result.reason
-        #print response
+        print result.status, result.reason
+        print response
         return response
 
 def scaleInWithSALSA(serviceName, ip):
@@ -153,14 +153,7 @@ def createNewMonElementSpecification(elementIP, elementID):
 def updateMELAServiceDescriptionAfterScaleIn(ip, serviceName):
      #remove element with Ip from list
      #MELA returns only Ip ans I need to call SALSA
-     listOfEventProcessingDescriptions[serviceName][:] = [element for element in listOfEventProcessingDescriptions[serviceName] if not ip in element]
-     try:
-       listOfEventProcessingIPs[serviceName].remove(ip)
-     except :
-          print "Trying to remove from MELA IP " + str(ip)
-          raise
-
- 
+     listOfEventProcessingDescriptions[serviceName].pop(ip)
 
 def updateMELAServiceDescriptionAfterScaleOut(ip, serviceName):
      index = 0
@@ -174,13 +167,13 @@ def updateMELAServiceDescriptionAfterScaleOut(ip, serviceName):
          historicalyUsedUnitInstancesNames[serviceName].append(ip)
      eventProcessingIPIndex[serviceName][ip] = index
      listOfEventProcessingIPs[serviceName].append(ip)
-     listOfEventProcessingDescriptions[serviceName].append(newElement)
+     listOfEventProcessingDescriptions[serviceName][ip]=newElement
  
 
 def submitUpdatedDescriptionToMELA(serviceName):
      serviceStructure_1='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><MonitoredElement level="SERVICE" name="'+serviceName+'" id="'+serviceName+'"><MonitoredElement level="SERVICE_TOPOLOGY" name="EventProcessingTopology" id="EventProcessingTopology"> <MonitoredElement level="SERVICE_UNIT" name="EventProcessingUnit" id="EventProcessingUnit">'
      completeText = "" + serviceStructure_1;
-     for element in listOfEventProcessingDescriptions[serviceName]:
+     for key, element in listOfEventProcessingDescriptions[serviceName].items():
        completeText = completeText + element
      
      serviceStructure_2='<UsedCloudOfferedServiceCfg name="ImageStorage" uuid="40000000-0000-0000-0000-000000000001" instanceUUID="98400000-8cf0-11bd-b23e-000000000001" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001"><QualityProperties/><ResourceProperties/></UsedCloudOfferedServiceCfg></MonitoredElement></MonitoredElement> </MonitoredElement>'
@@ -368,17 +361,25 @@ def directScaleIn(strategy, serviceId, event):
    if event.is_set():
          return   
    #add _i if needed, as even MELA method returns recommendation without _ix
-   iPToScaleInAsMELASeesIt = iPToScaleIn
+   iPToScaleInAsMELASeesIt = "" + iPToScaleIn
    if iPToScaleIn in eventProcessingIPIndex[serviceId]:
          index = eventProcessingIPIndex[serviceId][iPToScaleIn]
          if index > 0 :
                 iPToScaleInAsMELASeesIt = iPToScaleInAsMELASeesIt + "_i" + str(index)
 
    efficiency = executeRESTCall("GET",MELA_COST_URL,"MELA/REST_WS/"+serviceId+"/cost/evaluate/costefficiency/scalein/EventProcessingUnit/SERVICE_UNIT/"+iPToScaleInAsMELASeesIt+"/plain") 
-   waste = 1 - float(efficiency)
+   try:
+       waste = 1 - float(efficiency)
+   except Exception , e:
+       print e    
    currentTime = time.time() - startTimestamp[serviceId]
    humanReadableTime  = datetime.datetime.fromtimestamp(currentTime)
-
+   try:
+       listOfEventProcessingIPs[serviceName].remove(iPToScaleIn)
+   except Exception, e:
+       print "Trying to remove from MELA IP " + str(iPToScaleIn)
+       print str(e)
+       raise
 
    ipSStringForMela=""
    
@@ -411,37 +412,34 @@ def directScaleIn(strategy, serviceId, event):
    f.close()
   
    #print "Getting IP for strategy " + strategy + " " + str(iPToScaleIn)
-   listOfScaledInEventProcessingIPs[iPToScaleIn] = listOfScaledInEventProcessingIPs[iPToScaleIn] + 1
+   try:
+      listOfScaledInEventProcessingIPs[iPToScaleIn] = listOfScaledInEventProcessingIPs[iPToScaleIn] + 1
+   except Exception , e:
+      print str(e)       
    updateMELAServiceDescriptionAfterScaleIn(iPToScaleIn, serviceId)
    submitUpdatedDescriptionToMELA("EventProcessingTopology_"+ str(strategy)) 
 
-def directScaleOut(serviceId):
-    scaledIP = scaleOutWithSALSA(serviceId)
-    if scaledIP:
-      updateMELAServiceDescriptionAfterScaleOut(scaledIP, serviceId)
-    else:
-      print "SALSA returned no IP"
-
-def scaleOutAndInchreaseLoad(proc, serviceId):
-    directScaleOut(serviceId)
-    #if proc:
-    #   proc.terminate()
-    #   proc = subprocess.Popen(["exec python ./load.py " + loadBalancerStartIP[serviceId] + " " + str(len(listOfEventProcessingIPs[serviceId]) * 90)], shell=True)
-
+ 
 def scaleInAndInchreaseLoad(proc, serviceId, strategy, event):
     directScaleIn(strategy, serviceId, event)
 
 def checkIfCanReallyScaleIn(serviceId):
+  global listOfScaledInEventProcessingIPs
+  try:
     scaledInLL = []
-    for ip, count in listOfScaledInEventProcessingIPs.items(): 
+    if listOfScaledInEventProcessingIPs:
+      for ip, count in listOfScaledInEventProcessingIPs.items(): 
         if count >= len(strategiesList):
          #  print "SCALING IN " +  ip
            ipToScale = ip 
            scaledInLL.append(ip)
            scaleInWithSALSA(serviceId, ipToScale)             
-    for ip in scaledInLL:
-     listOfScaledInEventProcessingIPs.pop(ip)          
-  
+      for ip in scaledInLL:
+       listOfScaledInEventProcessingIPs.pop(ip)          
+  except Exception, inst:
+       print type(inst)     # the exception instance
+       print inst     
+
 if __name__=='__main__':
 
    SALSA_SERVICE_ID="EventProcessingTopology_MULTI"
@@ -449,7 +447,7 @@ if __name__=='__main__':
    for strategy in  strategiesList:
        serviceName = "EventProcessingTopology_"+ str(strategy)
        listOfEventProcessingIPs[serviceName] = []
-       listOfEventProcessingDescriptions[serviceName] = []
+       listOfEventProcessingDescriptions[serviceName] = {}
        eventProcessingIPIndex[serviceName] = {} #is dictionary as it holds encounter rate for each IP
        historicalyUsedUnitInstancesNames[serviceName] = []
        submitMetricCompositionRules(serviceName)
