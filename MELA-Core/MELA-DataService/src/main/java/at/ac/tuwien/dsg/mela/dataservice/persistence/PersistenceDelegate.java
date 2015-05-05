@@ -65,6 +65,10 @@ public class PersistenceDelegate {
         persistenceSQLAccess.writeMonitoringData(timestamp, monitoringSnapshot, monitoringSequenceID);
     }
 
+    public void writeStructuredMonitoringData(String timestamp, ServiceMonitoringSnapshot monitoringSnapshot, String monitoringSequenceID) {
+        persistenceSQLAccess.writeStructuredMonitoringData(timestamp, monitoringSnapshot, monitoringSequenceID);
+    }
+
     public List<Integer> getTimestampIDs(String monitoringSequenceID) {
         return persistenceSQLAccess.getTimestampIDs(monitoringSequenceID);
     }
@@ -136,9 +140,19 @@ public class PersistenceDelegate {
         return persistenceSQLAccess.extractMonitoringData(timestamp, monitoringSequenceID);
     }
 
+    public List<ServiceMonitoringSnapshot> extractStructuredMonitoringData(int timestamp, String monitoringSequenceID) {
+        return persistenceSQLAccess.extractStructuredMonitoringData(timestamp, monitoringSequenceID);
+    }
+
     public List<ServiceMonitoringSnapshot> extractMonitoringDataFromTimestamp(long timestamp, String monitoringSequenceID) {
 
         return persistenceSQLAccess.extractMonitoringDataFromTimestamp(timestamp, monitoringSequenceID);
+
+    }
+
+    public List<ServiceMonitoringSnapshot> extractStructuredMonitoringDataFromTimestamp(long timestamp, String monitoringSequenceID) {
+
+        return persistenceSQLAccess.extractStructuredMonitoringDataFromTimestamp(timestamp, monitoringSequenceID);
 
     }
 
@@ -146,5 +160,38 @@ public class PersistenceDelegate {
         return persistenceSQLAccess.extractMonitoringData(monitoringSequenceID);
 
     }
+
+    public List<ServiceMonitoringSnapshot> extractStructuredMonitoringData(String monitoringSequenceID) {
+        return persistenceSQLAccess.extractStructuredMonitoringData(monitoringSequenceID);
+
+    }
+
+    public PersistenceSQLAccess getPersistenceSQLAccess() {
+        return persistenceSQLAccess;
+    }
+
+    public void setPersistenceSQLAccess(PersistenceSQLAccess persistenceSQLAccess) {
+        this.persistenceSQLAccess = persistenceSQLAccess;
+    }
+
+    public ConfigurationUtility getConfigurationUtility() {
+        return configurationUtility;
+    }
+
+    public void setConfigurationUtility(ConfigurationUtility configurationUtility) {
+        this.configurationUtility = configurationUtility;
+    }
+
+    public PersistenceDelegate withPersistenceSQLAccess(final PersistenceSQLAccess persistenceSQLAccess) {
+        this.persistenceSQLAccess = persistenceSQLAccess;
+        return this;
+    }
+
+    public PersistenceDelegate withConfigurationUtility(final ConfigurationUtility configurationUtility) {
+        this.configurationUtility = configurationUtility;
+        return this;
+    }
+ 
+    
 
 }

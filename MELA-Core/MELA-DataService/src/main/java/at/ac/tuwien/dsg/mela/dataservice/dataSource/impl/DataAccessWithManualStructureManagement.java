@@ -36,7 +36,11 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitorin
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -48,6 +52,12 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
 
     private static final MonitoredElement ALL_VMS = new MonitoredElement("-");
 
+    @Autowired
+    private DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine;
+
+//    {
+//        dataFreshnessAnalysisEngine = new DefaultFreshnessAnalysisEngine();
+//    }
     /**
      * Left as this in case we want to limit in the future the nr of DataAccess
      * instances we create and maybe use a pool of instances
@@ -55,12 +65,21 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
      * @return
      */
     public static DataAccessWithManualStructureManagement createInstance() {
-
         return new DataAccessWithManualStructureManagement();
     }
 
     private DataAccessWithManualStructureManagement() {
+        if (dataFreshnessAnalysisEngine == null) {
+            dataFreshnessAnalysisEngine = new DefaultFreshnessAnalysisEngine();
+        }
+    }
 
+    public DataFreshnessAnalysisEngine getDataFreshnessAnalysisEngine() {
+        return dataFreshnessAnalysisEngine;
+    }
+
+    public void setDataFreshnessAnalysisEngine(DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine) {
+        this.dataFreshnessAnalysisEngine = dataFreshnessAnalysisEngine;
     }
 
     /**
@@ -109,7 +128,12 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
         while (!bfsTraversalQueue.isEmpty()) {
             MonitoredElementMonitoringSnapshot element = bfsTraversalQueue.remove(0);
             MonitoredElement processedElement = element.getMonitoredElement();
-            elements.put(processedElement, processedElement);
+
+            //so to work with Ganglia, I need the ID and NAME to be equal to the IP of the thing = IP
+            //as Ganglia does not know instance index of mon element
+            //this was required as I ned to discriminate if this is a nea 10.0.0.1, or an old one (after scale in/out)
+            elements.put(new MonitoredElement().withId(processedElement.getName()).withName(processedElement.getName()),
+                    processedElement);
 
             if (!processedElement.getLevel().equals(MonitoredElementLevel.VM)) {
                 lowestLevelFoundMonitoredElement = processedElement;
@@ -177,8 +201,13 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
                             if (elements.containsKey(element)) {
                                 MonitoredElement structureElement = elements.get(element);
 
+                                Long metricValueCollectionTimestamp = Long.parseLong(metricInfo.getTimeSinceCollection());
+                                Double freshness = dataFreshnessAnalysisEngine.evaluateFreshness(new Metric(metricInfo.getName(), metricInfo.getType()), metricValueCollectionTimestamp);
+
                                 HashMap<Metric, MetricValue> elementValues = new LinkedHashMap<Metric, MetricValue>();
-                                MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                                MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue())
+                                        .withFreshness(freshness)
+                                        .withCollectionTimestamp(metricValueCollectionTimestamp);
                                 elementValues.put(metric, metricValue);
 
                                 MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(structureElement, elementValues);
@@ -189,8 +218,14 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
                         }
                     } else {
                         //else put it in the generic VM metrics
-                        MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue());
+                        Long metricValueCollectionTimestamp = Long.parseLong(metricInfo.getTimeSinceCollection());
+                        Double freshness = dataFreshnessAnalysisEngine.evaluateFreshness(new Metric(metricInfo.getName(), metricInfo.getType()), metricValueCollectionTimestamp);
+
+                        MetricValue metricValue = new MetricValue(metricInfo.getConvertedValue())
+                                .withFreshness(freshness)
+                                .withCollectionTimestamp(metricValueCollectionTimestamp);
                         monitoredMetricValues.put(metric, metricValue);
+
                     }
                 }
                 MonitoredElement monitoredElement = elementData.getMonitoredElement();
@@ -236,6 +271,11 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
     @Override
     public synchronized MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement suppliedMonitoringElement) {
         throw new UnsupportedOperationException("getSingleElementMonitoredData not implemented");
+    }
+
+    public DataAccessWithManualStructureManagement withDataFreshnessAnalysisEngine(final DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine) {
+        this.dataFreshnessAnalysisEngine = dataFreshnessAnalysisEngine;
+        return this;
     }
 
 }

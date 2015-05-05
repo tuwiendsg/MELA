@@ -82,6 +82,14 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         this.cloudOfferedServices = cloudOfferedServices;
     }
 
+    public void addCloudOfferedServices(List<UsedCloudOfferedService> cloudOfferedServices) {
+        this.cloudOfferedServices.addAll(cloudOfferedServices);
+    }
+
+    public void addCloudOfferedService(UsedCloudOfferedService cloudOfferedService) {
+        this.cloudOfferedServices.add(cloudOfferedService);
+    }
+
     public String getName() {
         return name;
     }
@@ -182,9 +190,14 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         SERVICE_TOPOLOGY,
         @XmlEnumValue("SERVICE_UNIT")
         SERVICE_UNIT,
-        //TODO: rename from VM to CloudOfferedService, introduce category and subcategory, etc. 
+        //rename VM to Service Unit Instance
         @XmlEnumValue("VM")
         VM,
+        
+//        @XmlEnumValue("SERVICE_UNIT_INSTANCE")
+//        SERVICE_UNIT_INSTANCE,
+        @XmlEnumValue("CLOUD_OFFERED_SERVICE")
+        CLOUD_OFFERED_SERVICE,
         @XmlEnumValue("VIRTUAL_CLUSTER")
         VIRTUAL_CLUSTER
     }
@@ -312,6 +325,11 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         return this;
     }
 
+    public MonitoredElement withContainedElement(final MonitoredElement containedElement) {
+        this.containedElements.add(containedElement);
+        return this;
+    }
+
     public MonitoredElement withRelationships(final Collection<Relationship> relationships) {
         this.relationships = relationships;
         return this;
@@ -319,6 +337,11 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
     public MonitoredElement withCloudOfferedServices(final List<UsedCloudOfferedService> cloudOfferedServices) {
         this.cloudOfferedServices = cloudOfferedServices;
+        return this;
+    }
+
+    public MonitoredElement withCloudOfferedService(final UsedCloudOfferedService cloudOfferedService) {
+        this.cloudOfferedServices.add(cloudOfferedService);
         return this;
     }
 

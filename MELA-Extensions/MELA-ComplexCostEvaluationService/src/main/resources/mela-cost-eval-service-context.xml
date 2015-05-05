@@ -13,9 +13,27 @@
 
     <context:property-placeholder location="file:./config/mela-cost-eval-service.properties"/>
 
+<!--    <bean id="dataFreshnessAnalysisEngine" class="at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine">
+    </bean>
+    -->
+    
     <context:component-scan base-package="at.ac.tuwien.dsg.mela"/>
     
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
+    
+    <bean id="dataAccess" class="at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess">
+        <constructor-arg name="databaseLocation" value="/tmp/cloud-providers-pricing-scheme"/>
+    </bean>
+    
+    
+    <bean id="flexiantFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
+        <property name="descriptionFile" value="file:./config/default/Flexiant.xml"/>
+    </bean>
+    
+    <bean id="amazonFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
+        <property name="descriptionFile" value="file:./config/default/Amazon.xml"/>
+    </bean>
+    
 
     <jaxrs:server id="customerService" address="/">
         <jaxrs:serviceBeans>
@@ -43,23 +61,7 @@
         <property name="licenseUrl" value="http://www.apache.org/licenses/LICENSE-2.0.html"/>
         <property name="scan" value="true"/>
     </bean>
-
-    <!--    <bean class="at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess"/>-->
-
  
-    <!-- JMS stuff -->
-    <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="tcp://${dataservice.ip}:9124"/>
-    </bean>
-
-    <amq:queue id="destination" physicalName="MELADataService.Config"/>
-
-    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory"/>
-        <property name="defaultDestination" ref="destination"/>
-    </bean>
-    
-    
     <beans profile="PORTABLE">
          
     
@@ -70,7 +72,10 @@
             <property name="username" value="SA"/>
             <property name="password" value=""/>
         </bean>
-       
+     
+        <jdbc:initialize-database data-source="melaDBConnector">
+            <jdbc:script location="classpath*:sql/schema-continous.sql"/>
+        </jdbc:initialize-database>
     
     </beans>
     
@@ -84,7 +89,9 @@
             <property name="username" value="SA"/>
             <property name="password" value=""/>
         </bean> 
-       
+        <jdbc:initialize-database data-source="melaDBConnector" >
+            <jdbc:script location="classpath*:sql/schema-continous.sql"/>
+        </jdbc:initialize-database>
 
     
     </beans>
@@ -99,6 +106,12 @@
             <property name="password" value="mela"/>
         </bean>
         
+          
+         
+        <jdbc:initialize-database data-source="melaDBConnector" >
+            <jdbc:script location="classpath*:sql/schema-continous-mysql.sql"/>
+        </jdbc:initialize-database>
+
     
     </beans>
      

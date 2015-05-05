@@ -93,11 +93,12 @@
 //
 
                 // Normalize for fixed-depth.
-                serviceIDs.forEach(function(service) {
+                serviceIDs.forEach(function (service) {
                     var newItem = document.createElement("li");
                     //create new text node
                     var a = document.createElement('a');
-                    a.setAttribute('href', './cost_rate_monitoring.html?' + service.id);
+//                    a.setAttribute('href', './cost_rate_monitoring.html?' + service.id);
+                    a.setAttribute('href', './costOverview.html?' + service.id + '&total');
                     a.innerHTML = service.id;
                     //add text node to li element
                     newItem.appendChild(a);

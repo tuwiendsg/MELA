@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  * Returns the maximum and minimum values for all monitored metrics, given a set
  * of user requirements Somewhat follows a decorator pattern, I.E. decorates an
@@ -51,7 +51,6 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 //    public ElSpaceDefaultFunction() {
 //        super();
 //    }
-
     @Override
     public void trainElasticitySpace(Collection<ServiceMonitoringSnapshot> monitoringData) {
 
@@ -91,6 +90,10 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
                 for (Metric metric : elementData.getMetrics()) {
                     MetricValue elementValue = elementData.getMetricValue(metric);
+                    //we ignore NaN when computing boundaries
+                    if (Double.isNaN(((Number) elementValue.getValue()).doubleValue())) {
+                        continue;
+                    }
 
                     //upperBoundary update
                     {
@@ -129,66 +132,63 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
             }
 
             //if SERVICE_UNIT level, get All monitored VMs for this unit, and extract a unique boundary from all
-            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
-
-                //each boundary has only one VM boundary per service element
-                MonitoredElement genericVM = element.getContainedElements().iterator().next();
-                MonitoredElementMonitoringSnapshot upperBoundaryForGenericVM = upperBoundary.getMonitoredData(genericVM);
-                MonitoredElementMonitoringSnapshot lowerBoundaryForGenericVM = lowerBoundary.getMonitoredData(genericVM);
-
-                //retrieve the service element from the monitoring data, because that is the one which knows which VM to which service unit belongs to
-                MonitoredElement monitoredServiceUnit = monitoringData.getMonitoredData(element).getMonitoredElement();
-
-                //go trough all monitored VMs for the monitoredServiceUnit and update same genericVM boundaries
-                for (MonitoredElement vm : monitoredServiceUnit.getContainedElements()) {
-                    MonitoredElementMonitoringSnapshot vmMonitoredData = monitoringData.getMonitoredData(vm);
-
-                    for (Metric metric : vmMonitoredData.getMetrics()) {
-                        MetricValue elementValue = vmMonitoredData.getMetricValue(metric);
-
-                        //upperBoundary update
-                        {
-                            //if boundary has value
-                            if (upperBoundaryForGenericVM.containsMetric(metric)) {
-                                MetricValue boundaryValue = upperBoundaryForGenericVM.getMetricValue(metric);
-
-                                //if monitored element  > boundary, update boundary
-                                if (elementValue.compareTo(boundaryValue) > 0) {
-                                    upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
-                                }
-                            } else {
-                                //if the boundary is empty, insert first value
-                                upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
-                            }
-                        }
-
-                        //lowerBoundary update
-                        {
-                            //if boundary has value
-                            if (lowerBoundaryForGenericVM.containsMetric(metric)) {
-
-                                MetricValue boundaryValue = lowerBoundaryForGenericVM.getMetricValue(metric);
-
-                                //if monitored element  > boundary, update boundary
-                                if (elementValue.compareTo(boundaryValue) < 0) {
-                                    lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
-                                }
-                            } else {
-                                //if the boundary is empty, insert first value
-                                lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
-                            }
-                        }
-
-                    }
-                }
-
-
-            } else {
-                //only also process children if ! SERVICE_UNIT
-                processingList.addAll(element.getContainedElements());
-            }
+//            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
+//
+//                //each boundary has only one VM boundary per service element
+//                MonitoredElement genericVM = element.getContainedElements().iterator().next();
+//                MonitoredElementMonitoringSnapshot upperBoundaryForGenericVM = upperBoundary.getMonitoredData(genericVM);
+//                MonitoredElementMonitoringSnapshot lowerBoundaryForGenericVM = lowerBoundary.getMonitoredData(genericVM);
+//
+//                //retrieve the service element from the monitoring data, because that is the one which knows which VM to which service unit belongs to
+//                MonitoredElement monitoredServiceUnit = monitoringData.getMonitoredData(element).getMonitoredElement();
+//
+//                //go trough all monitored VMs for the monitoredServiceUnit and update same genericVM boundaries
+//                for (MonitoredElement vm : monitoredServiceUnit.getContainedElements()) {
+//                    MonitoredElementMonitoringSnapshot vmMonitoredData = monitoringData.getMonitoredData(vm);
+//
+//                    for (Metric metric : vmMonitoredData.getMetrics()) {
+//                        MetricValue elementValue = vmMonitoredData.getMetricValue(metric);
+//
+//                        //upperBoundary update
+//                        {
+//                            //if boundary has value
+//                            if (upperBoundaryForGenericVM.containsMetric(metric)) {
+//                                MetricValue boundaryValue = upperBoundaryForGenericVM.getMetricValue(metric);
+//
+//                                //if monitored element  > boundary, update boundary
+//                                if (elementValue.compareTo(boundaryValue) > 0) {
+//                                    upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+//                                }
+//                            } else {
+//                                //if the boundary is empty, insert first value
+//                                upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+//                            }
+//                        }
+//
+//                        //lowerBoundary update
+//                        {
+//                            //if boundary has value
+//                            if (lowerBoundaryForGenericVM.containsMetric(metric)) {
+//
+//                                MetricValue boundaryValue = lowerBoundaryForGenericVM.getMetricValue(metric);
+//
+//                                //if monitored element  > boundary, update boundary
+//                                if (elementValue.compareTo(boundaryValue) < 0) {
+//                                    lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+//                                }
+//                            } else {
+//                                //if the boundary is empty, insert first value
+//                                lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+//                            }
+//                        }
+//
+//                    }
+//                }
+//            } else {
+            //only also process children if ! SERVICE_UNIT
+            processingList.addAll(element.getContainedElements());
+//            }
         }
-
 
     }
 
@@ -223,6 +223,9 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
                 for (Metric metric : elementData.getMetrics()) {
                     MetricValue elementValue = elementData.getMetricValue(metric);
+                    if (Double.isNaN(((Number) elementValue.getValue()).doubleValue())) {
+                        continue;
+                    }
 
                     //upperBoundary update
                     {
@@ -261,66 +264,65 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
             }
 
             //if SERVICE_UNIT level, get All monitored VMs for this unit, and extract a unique boundary from all
-            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
-
-                //each boundary has only one VM boundary per service element
-                MonitoredElement genericVM = element.getContainedElements().iterator().next();
-                MonitoredElementMonitoringSnapshot upperBoundaryForGenericVM = upperBoundary.getMonitoredData(genericVM);
-                MonitoredElementMonitoringSnapshot lowerBoundaryForGenericVM = lowerBoundary.getMonitoredData(genericVM);
-
-                //retrieve the service element from the monitoring data, because that is the one which knows which VM to which service unit belongs to
-                MonitoredElement monitoredServiceUnit = monitoringData.getMonitoredData(element).getMonitoredElement();
-
-                //go trough all monitored VMs for the monitoredServiceUnit and update same genericVM boundaries
-                for (MonitoredElement vm : monitoredServiceUnit.getContainedElements()) {
-                    MonitoredElementMonitoringSnapshot vmMonitoredData = monitoringData.getMonitoredData(vm);
-
-                    for (Metric metric : vmMonitoredData.getMetrics()) {
-                        MetricValue elementValue = vmMonitoredData.getMetricValue(metric);
-
-                        //upperBoundary update
-                        {
-                            //if boundary has value
-                            if (upperBoundaryForGenericVM.containsMetric(metric)) {
-                                MetricValue boundaryValue = upperBoundaryForGenericVM.getMetricValue(metric);
-
-                                //if monitored element  > boundary, update boundary
-                                if (elementValue.compareTo(boundaryValue) > 0) {
-                                    upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
-                                }
-                            } else {
-                                //if the boundary is empty, insert first value
-                                upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
-                            }
-                        }
-
-                        //lowerBoundary update
-                        {
-                            //if boundary has value
-                            if (lowerBoundaryForGenericVM.containsMetric(metric)) {
-
-                                MetricValue boundaryValue = lowerBoundaryForGenericVM.getMetricValue(metric);
-
-                                //if monitored element  > boundary, update boundary
-                                if (elementValue.compareTo(boundaryValue) < 0) {
-                                    lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
-                                }
-                            } else {
-                                //if the boundary is empty, insert first value
-                                lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
-                            }
-                        }
-
-                    }
-                }
-
-
-            } else {
-                //only also process children if ! SERVICE_UNIT
-                processingList.addAll(element.getContainedElements());
-            }
+//            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
+//
+//                //each boundary has only one VM boundary per service element
+//                MonitoredElement genericVM = element.getContainedElements().iterator().next();
+//                MonitoredElementMonitoringSnapshot upperBoundaryForGenericVM = upperBoundary.getMonitoredData(genericVM);
+//                MonitoredElementMonitoringSnapshot lowerBoundaryForGenericVM = lowerBoundary.getMonitoredData(genericVM);
+//
+//                //retrieve the service element from the monitoring data, because that is the one which knows which VM to which service unit belongs to
+//                MonitoredElement monitoredServiceUnit = monitoringData.getMonitoredData(element).getMonitoredElement();
+//
+//                //go trough all monitored VMs for the monitoredServiceUnit and update same genericVM boundaries
+//                for (MonitoredElement vm : monitoredServiceUnit.getContainedElements()) {
+//                    MonitoredElementMonitoringSnapshot vmMonitoredData = monitoringData.getMonitoredData(vm);
+//
+//                    for (Metric metric : vmMonitoredData.getMetrics()) {
+//                        MetricValue elementValue = vmMonitoredData.getMetricValue(metric);
+//
+//                        //upperBoundary update
+//                        {
+//                            //if boundary has value
+//                            if (upperBoundaryForGenericVM.containsMetric(metric)) {
+//                                MetricValue boundaryValue = upperBoundaryForGenericVM.getMetricValue(metric);
+//
+//                                //if monitored element  > boundary, update boundary
+//                                if (elementValue.compareTo(boundaryValue) > 0) {
+//                                    upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+//                                }
+//                            } else {
+//                                //if the boundary is empty, insert first value
+//                                upperBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+//                            }
+//                        }
+//
+//                        //lowerBoundary update
+//                        {
+//                            //if boundary has value
+//                            if (lowerBoundaryForGenericVM.containsMetric(metric)) {
+//
+//                                MetricValue boundaryValue = lowerBoundaryForGenericVM.getMetricValue(metric);
+//
+//                                //if monitored element  > boundary, update boundary
+//                                if (elementValue.compareTo(boundaryValue) < 0) {
+//                                    lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+//                                }
+//                            } else {
+//                                //if the boundary is empty, insert first value
+//                                lowerBoundaryForGenericVM.putMetric(metric, elementValue.clone());
+//                            }
+//                        }
+//
+//                    }
+//                }
+//
+//
+//            } else {
+            //only also process children if ! SERVICE_UNIT
+            processingList.addAll(element.getContainedElements());
+//            }
         }
-
 
     }
 

@@ -34,9 +34,9 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
-
+import at.ac.tuwien.dsg.mela.costeval.model.UnusedCostUnitsReport;
 import java.util.List;
+import org.apache.cxf.common.i18n.UncheckedException;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -53,71 +53,13 @@ public class CostEvalService {
     public CostEvalService() {
     }
 
-//    @POST
-//    @Path("/{serviceID}/elasticitypathway")
-//    @Consumes("application/xml")
-//    @Produces("application/json")
-//    @ApiOperation(value = "Retrieve elasticity pathway",
-//            notes = "Retrieves the elasticity pathway for the given MonitoredElement",
-//            response = String.class)
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 400, message = "Invalid ID supplied"),
-//        @ApiResponse(code = 404, message = "Service element not found in service structure")
-//    })
-//    public String getElasticityPathwayInJSON(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-//        return systemControl.getElasticityPathway(serviceID, element);
-//
-//    }
-////    @POST
-////    @Path("/{serviceID}/elasticitypathwayxml")
-////    @Consumes("application/xml")
-////    @Produces("application/xml")
-////    public ElasticityPathwayXML getElasticityPathwayInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-////        return systemControl.getElasticityPathwayInXML(serviceID, element);
-////
-////    }
-////
-////    /**
-////     * @param element the MonitoredElement for which the elasticity space must
-////     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
-////     * SERVICE_TOPOLOGY, etc)
-////     * @return the elasticity space in JSON
-////     */
-////    @POST
-////    @Path("/{serviceID}/elasticityspace")
-////    @Consumes("application/xml")
-////    @Produces("application/json")
-////    public String getLatestElasticitySpaceInJSON(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-////        return systemControl.getElasticitySpaceJSON(serviceID, element);
-////    }
-//
-//    /**
-//     * @param element the MonitoredElement for which the elasticity space must
-//     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
-//     * SERVICE_TOPOLOGY, etc)
-//     * @return the elasticity space in XML WITH historical monitoring data
-//     */
-//    @POST
-//    @Path("/{serviceID}/elasticityspacecompletexml")
-//    @Consumes("application/xml")
-//    @Produces("application/xml")
-//    public ElasticitySpaceXML getLatestElasticitySpaceInXMLComplete(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-//        return systemControl.getCompleteElasticitySpaceXML(serviceID, element);
-//    }
-//
-//    /**
-//     * @param element the MonitoredElement for which the elasticity space must
-//     * be returned. Needs BOTH the Element ID and the Element LEVEL (SERVICE,
-//     * SERVICE_TOPOLOGY, etc)
-//     * @return the elasticity space in XML WITH historical monitoring data
-//     */
-//    @POST
-//    @Path("/{serviceID}/elasticityspacexml")
-//    @Consumes("application/xml")
-//    @Produces("application/xml")
-//    public ElasticitySpaceXML getLatestElasticitySpaceInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-//        return systemControl.getElasticitySpaceXML(serviceID, element);
-//    }
+    @GET
+    @Path("/{serviceID}/structure/json")
+    @Produces("application/json")
+    public String getStructureWithUsedCloudOfferedServices(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getStructureWithUsedCloudOfferedServices(serviceID);
+    }
+
     /**
      * Method for retrieving an easy to display JSON string of the latest
      * monitored Data complete with composed metrics
@@ -136,7 +78,7 @@ public class CostEvalService {
     @Path("/{serviceID}/monitoringdata/json")
     @Produces("application/json")
     public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getLatestMonitoringDataEnrichedWithCostINJSON(serviceID);
+        return "{}";//costEvalManager.getLatestMonitoringDataEnrichedWithCostINJSON(serviceID);
     }
 
     /**
@@ -150,54 +92,11 @@ public class CostEvalService {
         return costEvalManager.getLatestServiceStructure(serviceID);
     }
 
-//    @GET
-//    @Path("/{serviceID}/monitoringdataXML")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID) {
-//        return systemControl.getLatestMonitoringData(serviceID);
-//    }
-//
-//    @POST
-//    @Path("/{serviceID}/monitoringdataXML")
-//    @Consumes("application/xml")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshot getLatestMonitoringDataInXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-//        return systemControl.getLatestMonitoringData(serviceID, element);
-//    }
-//
-//    @GET
-//    @Path("/{serviceID}/historicalmonitoringdataXML/all")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringData(@PathParam("serviceID") String serviceID) {
-//        return systemControl.getAllAggregatedMonitoringData(serviceID);
-//    }
-//
-//    @GET
-//    @Path("/{serviceID}/historicalmonitoringdataXML/ininterval")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshots getAllAggregatedMonitoringDataInTimeInterval(@PathParam("serviceID") String serviceID, @QueryParam("startTimestamp") int startTimestamp,
-//            @QueryParam("endTimestamp") int endTimestamp) {
-//        return systemControl.getAggregatedMonitoringDataInTimeInterval(serviceID, startTimestamp, endTimestamp);
-//    }
-//
-//    @GET
-//    @Path("/{serviceID}/historicalmonitoringdataXML/lastX")
-//    @Produces("application/xml")
-//    public MonitoredElementMonitoringSnapshots getLastXAggregatedMonitoringData(@PathParam("serviceID") String serviceID, @QueryParam("count") int count) {
-//        return systemControl.getLastXAggregatedMonitoringData(serviceID, count);
-//    }
     @GET
     @Path("/{serviceID}/servicerequirements")
     @Produces("application/xml")
     public Requirements getRequirements(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getRequirements(serviceID);
-    }
-
-    @GET
-    @Path("/{serviceID}/metriccompositionrules")
-    @Produces("application/json")
-    public String getMetricCompositionRules(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getMetricCompositionRules(serviceID);
     }
 
     @GET
@@ -218,27 +117,28 @@ public class CostEvalService {
     @Path("/cloudofferedservice/pricingscheme")
     @Consumes("application/xml")
     public void putPricingScheme(CloudServicesSpecification cloudServicesSpecification) {
-        costEvalManager.setServiceUnits(cloudServicesSpecification.getServiceUnits());
+        costEvalManager.addCloudProviders(cloudServicesSpecification.getCloudProviders());
     }
 
     @GET
     @Path("/cloudofferedservice/pricingscheme")
     @Produces("application/xml")
     public CloudServicesSpecification getPricingScheme() {
-        return new CloudServicesSpecification().withServiceUnits(costEvalManager.getServiceUnits());
+        throw new UnsupportedOperationException("must implement");
+//        return new CloudServicesSpecification().withServiceUnits(costEvalManager.getServiceUnits());
     }
 
     @DELETE
     @Path("/{cloudofferedserviceID}/pricingscheme")
     public void deletePricingScheme(@PathParam("cloudofferedserviceID") String cloudofferedserviceID) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @GET
     @Path("/{cloudofferedserviceID}/pricingscheme")
     @Produces("application/xml")
     public void getPricingSchemeForService(@PathParam("cloudofferedserviceID") String cloudofferedserviceID) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @GET
@@ -251,15 +151,103 @@ public class CostEvalService {
     @GET
     @Path("/{serviceID}/cost/total/json")
     @Produces("application/json")
-    public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
-        return costEvalManager.getTotalServiceCostJSON(serviceID);
+    public String getTotalCostForServiceWithCurrentStructureJSON(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalCostJSON(serviceID);
     }
 
     @GET
-    @Path("/{serviceID}/cost/total/detailed")
-    @Produces("application/csv")
-    public void getTotalCostForServiceCSV(@PathParam("serviceID") String serviceID) {
+    @Path("/{serviceID}/cost/total/json/{timestampID}")
+    @Produces("application/json")
+    public String getTotalCostForServiceForTimestampIDJSON(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getTotalCostJSON(serviceID, timestampID);
+    }
 
+    @GET
+    @Path("/{serviceID}/cost/instant/json/tree")
+    @Produces("application/json")
+    public String instantCostPerUsage(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getInstantCostJSON(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/instant/json/tree/{timestampID}")
+    @Produces("application/json")
+    public String instantCostPerUsageForTimestampID(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getInstantCostJSON(serviceID, timestampID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/instant/json/piechart")
+    @Produces("application/json")
+    public String getInstantCostForServiceJSONAsPieChart(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getInstantCostForServiceJSONAsPieChart(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/instant/json/piechart/{timestampID}")
+    @Produces("application/json")
+    public String getInstantCostForServiceJSONAsPieChartForTimestampID(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getInstantCostForServiceJSONAsPieChart(serviceID, timestampID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/json/tree")
+    @Produces("application/json")
+    public String getTotalCostForServiceJSON(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalCostForServiceJSON(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total")
+    @Produces("text/plain")
+    public String getTotalCostForServiceDoubleValue(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalCostForServiceDoubleValue(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/instant")
+    @Produces("text/plain")
+    public String getInstantCostForServiceDoubleValue(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getInstantCostForServiceDoubleValue(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/json/tree/{timestampID}")
+    @Produces("application/json")
+    public String getTotalCostForServiceJSONForTimestampID(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getTotalCostForServiceJSON(serviceID, timestampID);
+    }
+
+    @GET
+    @Path("/{serviceID}/usage/total/json/tree")
+    @Produces("application/json")
+    public String getTotalUsageForServiceJSON(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalUsageForServiceJSON(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/json/piechart")
+    @Produces("application/json")
+    public String getTotalCostForServiceJSONAsPieChart(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getTotalCostForServiceJSONAsPieChart(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/instant/elasticityspace/{monitoredElementID}/{monitoredElementLevel}/json")
+    @Produces("application/json")
+    public String getInstantCostPerUsageElasticitySpaceJSON(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        return costEvalManager.getInstantCostSpaceJSON(serviceID, monitoredElementID, monitoredElementlevel);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/elasticityspace/{monitoredElementID}/{monitoredElementLevel}/json")
+    @Produces("application/json")
+    public String getTotalCostPerUsageElasticitySpaceJSON(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @GET
@@ -267,7 +255,7 @@ public class CostEvalService {
     @Produces("application/xml")
     public void getTotalCostForServiceInIntervalXML(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @GET
@@ -275,7 +263,7 @@ public class CostEvalService {
     @Produces("application/csv")
     public void getTotalCostForServiceInIntervalCSV(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @POST
@@ -290,7 +278,7 @@ public class CostEvalService {
         @ApiResponse(code = 404, message = "Service element not found in service structure")
     })
     public void getTotalCostForElementXML(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @POST
@@ -305,7 +293,7 @@ public class CostEvalService {
         @ApiResponse(code = 404, message = "Service element not found in service structure")
     })
     public void getTotalCostForElementJson(@PathParam("serviceID") String serviceID, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @POST
@@ -321,7 +309,7 @@ public class CostEvalService {
     })
     public void getTotalCostForElementInIntervalXML(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @POST
@@ -337,7 +325,7 @@ public class CostEvalService {
     })
     public void getTotalCostForElementInIntervalCSV(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end, MonitoredElement element) {
-
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Path("/{serviceID}/cost/ininterval/{start}/{end}/json")
@@ -352,7 +340,154 @@ public class CostEvalService {
     })
     public void getTotalCostForElementInIntervalJSON(@PathParam("serviceID") String serviceID,
             @PathParam("start") String start, @PathParam("end") String end, MonitoredElement element) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
+    /**
+     * @param serviceID the service to be removed
+     */
+    @DELETE
+    @Path("/{serviceID}")
+    @Consumes("application/xml")
+    public void removeServiceDescription(@PathParam("serviceID") String serviceID) {
+        costEvalManager.removeService(serviceID);
+    }
+
+    /**
+     * Used to replay existing monitoring information with this updated list of
+     * cloud offered services So only the cloud offered services are replaced.
+     * As after elasticity actions, you might have added/removed VMs To work OK,
+     * you need to provide the complete description here, containing all VMs
+     * ever used by the service. Using this struct, for each stored service
+     * structure before, we fo for each element, if exists in submitted struct,
+     * set updated services. Otherwise, delete any used services.
+     *
+     * @param element the service topology to be monitored
+     */
+    @PUT
+    @Path("/service/emulate/{newName}")
+    @Consumes("application/xml")
+    public void putServiceDescription(MonitoredElement element, @PathParam("newName") String newname) {
+        if (element != null) {
+            costEvalManager.emulateServiceWithOtherUsedCloudOfferedServices(element, newname);
+        } else {
+            throw new UncheckedException(new Throwable("Supplied Monitored Element is null"));
+        }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/{unitInstanceID}/plain")
+    @Produces("text/plain")
+    public String getCostEfficiencyIfScalingIn(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel,
+            //i.e., IP of VM to scale down
+            @PathParam("unitInstanceID") String unitInstanceID
+    ) {
+        return "" + costEvalManager.evaluateUnitInstanceCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel, unitInstanceID);
+    }
+
+    /**
+     * Will evaluate all units of a particular instance
+     *
+     * @param serviceID
+     * @param monitoredElementID
+     * @param monitoredElementlevel
+     * @return
+     */
+    @GET
+    @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
+    @Produces("text/plain")
+    public String getCostEfficiencyIfScalingIn(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel
+    ) {
+        return "" + costEvalManager.evaluateUnitInstancesCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/evaluate/costefficiency/scalein/more/{monitoredElementID}/{monitoredElementLevel}/{unitInstanceIDs}/plain")
+    @Produces("text/plain")
+    public String getCostEfficiencyIfScalingInForMoreIPs(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel,
+            //i.e., IP of VM to scale down
+            @PathParam("unitInstanceIDs") String unitInstanceIDs
+    ) {
+        return costEvalManager.evaluateUnitInstancesCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel, unitInstanceIDs);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/lifetime/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnLifetimePlainText(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnLifetime(serviceID, monitoredElementID, monitoredElementlevel);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getName();
+        }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnCostEfficiencyPlainText(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getName();
+        }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/xml")
+    @Produces("application/xml")
+    public MonitoredElement recommendUnitInstanceToScaleDownBasedOnCostEfficiencyXML(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel) {
+        return costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel);
+
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/lifetime/scalein/{monitoredElementID}/{monitoredElementLevel}/{targetEfficiency}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnLifetime(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel, @PathParam("targetEfficiency") String targetEfficiency) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnLifetime(serviceID, monitoredElementID, monitoredElementlevel, targetEfficiency);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getName();
+        }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/recommend/costefficiency/scalein/{monitoredElementID}/{monitoredElementLevel}/{targetEfficiency}/plain")
+    @Produces("text/plain")
+    public String recommendUnitInstanceToScaleDownBasedOnCostEfficiencyPlainText(@PathParam("serviceID") String serviceID,
+            @PathParam("monitoredElementID") String monitoredElementID,
+            @PathParam("monitoredElementLevel") String monitoredElementlevel, @PathParam("targetEfficiency") String targetEfficiency) {
+        MonitoredElement recommended = costEvalManager.recommendUnitInstanceToScaleDownBasedOnCostEfficiency(serviceID, monitoredElementID, monitoredElementlevel, targetEfficiency);
+        if (recommended == null) {
+            return "";
+        } else {
+            return recommended.getName();
+        }
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/structure/xml")
+    @Produces("application/xml")
+    public MonitoredElement getCompleteStructureOfUsedServices(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getCompleteStructureOfUsedServices(serviceID);
     }
 
 }

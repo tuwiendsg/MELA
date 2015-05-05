@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
+ * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
 public abstract class ElasticitySpaceFunction {
@@ -69,21 +69,21 @@ public abstract class ElasticitySpaceFunction {
                 upperBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(element));
                 lowerBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(element));
 
-                //if we reach service unit, add a VM at it to contain the boundaries for ANY vm at this unit
-                if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
-                    MonitoredElement genericVMPerUnit = new MonitoredElement();
-                    genericVMPerUnit.setId(element.getId() + "_VMs");
-                    genericVMPerUnit.setName(element.getId() + "_VMs");
-                    genericVMPerUnit.setLevel(MonitoredElement.MonitoredElementLevel.VM);
-                    element.addElement(genericVMPerUnit);
-
-                    upperBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(genericVMPerUnit));
-                    lowerBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(genericVMPerUnit));
-
-                } else {
-                    //if not service unit level, also process children
-                    processingList.addAll(element.getContainedElements());
-                }
+//                //if we reach service unit, add a VM at it to contain the boundaries for ANY vm at this unit
+//                if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
+//                    MonitoredElement genericVMPerUnit = new MonitoredElement();
+//                    genericVMPerUnit.setId(element.getId() + "_VMs");
+//                    genericVMPerUnit.setName(element.getId() + "_VMs");
+//                    genericVMPerUnit.setLevel(MonitoredElement.MonitoredElementLevel.VM);
+//                    element.addElement(genericVMPerUnit);
+//
+//                    upperBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(genericVMPerUnit));
+//                    lowerBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(genericVMPerUnit));
+//
+//                } else {
+                //if not service unit level, also process children
+                processingList.addAll(element.getContainedElements());
+//                }
             }
         }
 
@@ -101,9 +101,9 @@ public abstract class ElasticitySpaceFunction {
     public final void removeRequirement(Requirement requirement) {
         this.requirements.getRequirements().add(requirement);
     }
-    
-    public ElasticitySpaceFunction(){
-    	
+
+    public ElasticitySpaceFunction() {
+
     }
 
     public ElasticitySpaceFunction(MonitoredElement service) {
@@ -127,20 +127,20 @@ public abstract class ElasticitySpaceFunction {
             lowerBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(element));
 
             //if we reach service unit, add a VM at it to contain the boundaries for ANY vm at this unit
-            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
-                MonitoredElement genericVMPerUnit = new MonitoredElement();
-                genericVMPerUnit.setId(element.getId() + "_VMs");
-                genericVMPerUnit.setName(element.getId() + "_VMs");
-                genericVMPerUnit.setLevel(MonitoredElement.MonitoredElementLevel.VM);
-                element.addElement(genericVMPerUnit);
-
-                upperBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(genericVMPerUnit));
-                lowerBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(genericVMPerUnit));
-
-            } else {
-                //if not service unit level, also process children
-                processingList.addAll(element.getContainedElements());
-            }
+//            if (element.getLevel().equals(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)) {
+//                MonitoredElement genericVMPerUnit = new MonitoredElement();
+//                genericVMPerUnit.setId(element.getId() + "_VMs");
+//                genericVMPerUnit.setName(element.getId() + "_VMs");
+//                genericVMPerUnit.setLevel(MonitoredElement.MonitoredElementLevel.VM);
+//                element.addElement(genericVMPerUnit);
+//
+//                upperBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(genericVMPerUnit));
+//                lowerBoundary.addMonitoredData(new MonitoredElementMonitoringSnapshot(genericVMPerUnit));
+//
+//            } else {
+            //if not service unit level, also process children
+            processingList.addAll(element.getContainedElements());
+//            }
         }
 //        System.out.println(serviceStructure);
     }
@@ -197,17 +197,15 @@ public abstract class ElasticitySpaceFunction {
      * @param monitoringData
      */
     public abstract void trainElasticitySpace(ServiceMonitoringSnapshot monitoringData);
-    
-    
+
     /**
      * Used to train an already existent space
+     *
      * @param elasticitySpace
      * @param monitoringData
      * @param requirements
      */
     public abstract void trainElasticitySpace(ElasticitySpace elasticitySpace, ServiceMonitoringSnapshot monitoringData, Requirements requirements);
-    
-    
-    
+
     public abstract void trainElasticitySpace(ElasticitySpace elasticitySpace, Collection<ServiceMonitoringSnapshot> monitoringData, Requirements requirements);
 }

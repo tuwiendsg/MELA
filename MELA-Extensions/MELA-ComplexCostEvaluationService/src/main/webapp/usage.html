@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Cost Analytics</title>
+        <link rel="stylesheet" type="text/css"
+              href="https://fonts.googleapis.com/css?family=Open+Sans:400,600">
+        <link rel="stylesheet" type="text/css" href="docs/css/sequences.css"/>
+
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"/>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+        <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+        <script src="http://d3js.org/d3.v3.js"></script>
+
+        <link href="docs/css/toastr.css" rel="stylesheet"/>
+
+        <style type="text/css">
+
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+            .node circle {
+                cursor: pointer;
+                fill: #fff;
+                stroke: steelblue;
+                stroke-width: 1.5px;
+            }
+
+            .node text {
+                font: 10px sans-serif;
+            }
+
+            path.link {
+                fill: none;
+                stroke: #ccc;
+                stroke-dasharray: 3.3;
+                stroke-width: 1.5px;
+            }
+
+            path.metricLink {
+                fill: none;
+                stroke: #A31E39;
+                stroke-width: 3px;
+            }
+
+            #A{
+                position:absolute;
+                top:50%;
+                left:50%;
+            }
+
+        </style>
+
+    </head>
+    <body> 
+
+        <div id="main">
+            <div id="mydialog"></div>
+            <table style="width:100%">
+
+                <tr>
+                    <td>
+                         <div id="treeView"></div>
+                    </td>
+                    
+                </tr>
+                
+                <tr><td><div id="analytics"></div></td><td>&nbsp;</td></tr>
+
+
+            </table>
+        </div>
+
+
+        <script type="text/javascript" src="docs/spin.js" ></script>
+        <script type="text/javascript" src="docs/sequences.js"></script>
+        <script type="text/javascript" src="melaTreeView.js"></script>
+
+
+        <script type="text/javascript" >
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            var serviceID = vars[0];
+
+            setupTreeView(vars[0], "treeView", window.innerWidth  , window.innerHeight , vars[1]);
+          
+
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            var serviceID = vars[0];
+
+            var reqDataTreeViewMonitoringDataObject;
+            var reqDataPieViewMonitoringDataObject;
+
+            function refreshMonitoringDataTreeView() {
+                reqDataTreeViewMonitoringDataObject = null;
+                if (window.XMLHttpRequest) {
+                    reqDataTreeViewMonitoringDataObject = new XMLHttpRequest();
+                } else {
+                    reqDataTreeViewMonitoringDataObject = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                reqDataTreeViewMonitoringDataObject.onreadystatechange = processMonitoringDataTreeViewResponse;
+                reqDataTreeViewMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/usage/"+vars[1]+"/json/tree", true);
+                reqDataTreeViewMonitoringDataObject.send(null);
+            }
+
+            function processMonitoringDataTreeViewResponse() {
+                if (reqDataTreeViewMonitoringDataObject.readyState == 4) {
+
+                    var retrievedData = JSON.parse(reqDataTreeViewMonitoringDataObject.responseText);
+                    updateTreeView(retrievedData);
+
+                    setTimeout(refreshMonitoringDataTreeView, 5000);
+                }
+            }
+
+            refreshMonitoringDataTreeView();
+
+            
+
+        </script>
+
+
+
+    </body>
+</html>

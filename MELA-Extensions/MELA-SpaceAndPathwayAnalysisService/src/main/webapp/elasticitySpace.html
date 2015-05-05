@@ -511,18 +511,25 @@
 
         function processElasticitySpaceRequestResponse() {
             if (elasticitySpaceRequest.readyState == 4) {
+                try {
+                    elasticitySpace = JSON.parse(elasticitySpaceRequest.responseText);
+                    elSpaceLoaded = true;
+                    loadingSpinner.stop();
+                    d3.select("#loadingIcon").remove();
 
 
-                elasticitySpace = JSON.parse(elasticitySpaceRequest.responseText);
-                elSpaceLoaded = true;
-                loadingSpinner.stop();
-                d3.select("#loadingIcon").remove();
+                    drawElSpace(elasticitySpace, vars)
 
 
-                drawElSpace(elasticitySpace, vars)
-
-
-                setTimeout(refreshElSpace, 5000);
+                    setTimeout(refreshElSpace, 5000);
+                }
+                catch(err) {
+                   console.log(err)
+                   console.log(err.stack);
+                }
+                
+                    
+                      
             }
         }
 

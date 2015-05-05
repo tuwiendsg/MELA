@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CloudProvider type="IAAS" name="Amazon" uuid="10000000-0000-0000-0000-000000000002">
+    <ServiceUnit subcategory="Storage" category="IaaS" name="EBSGeneralPurpose" uuid="30000000-0000-0000-0000-000000000002">
+        <CostFunction name="EBSGeneralPurpose" uuid="b593233f-de2a-48fe-91a8-74070bc2dd9f">
+            <CostElement type="PERIODIC" name="diskSizeCost" uuid="6d161672-2da7-484a-b0d5-cd6be67fea08">
+                <CostMetric type="RESOURCE" measurementUnit="GB/h" name="diskSize"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>1.388888888888889E-4</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+            <CostElement type="USAGE" name="diskUsageCost" uuid="f9b89db8-e248-4f68-924b-492a90e2b1b9">
+                <CostMetric type="RESOURCE" measurementUnit="GB" name="IODataSize"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>2.0</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m1.small" uuid="21000000-0000-0000-0000-000000000000">
+        <CostFunction name="m1.small" uuid="73105a73-4558-429b-9a4f-6e98e11717a4">
+            <CostElement type="PERIODIC" name="vmCost" uuid="5023dac0-1347-4fff-bfd3-54de8bb8d077">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.044</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="t2.micro" uuid="21000000-0000-0000-0000-000000000001">
+        <CostFunction name="t2.micro" uuid="cb631b38-2f81-4b6e-b94a-c0728cc54356">
+            <CostElement type="PERIODIC" name="vmCost" uuid="86bc9f03-b3f4-41cc-91a5-1934e1af09ac">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.013</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="t1.micro" uuid="21000000-0000-0000-0000-000000000002">
+        <CostFunction name="t1.micro" uuid="165bc1fd-3e0c-40dc-854a-952a889d5b9f">
+            <CostElement type="PERIODIC" name="vmCost" uuid="3977956d-7c4a-4e8b-984a-577c9cd4fa40">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.026</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m1.large" uuid="21000000-0000-0000-0000-000000000003">
+        <CostFunction name="m1.large" uuid="97d5a92c-7229-495b-ac34-ac38c9777a68">
+            <CostElement type="PERIODIC" name="vmCost" uuid="1f19e5db-a6af-48a5-be6c-bfa9b8146149">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.175</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m1.large" uuid="21000000-0000-0000-0000-000000000004">
+        <CostFunction name="m1.large" uuid="35a12387-5e23-4ed6-b02a-45258b1707c4">
+            <CostElement type="PERIODIC" name="vmCost" uuid="4cfa27b8-5ccf-43fb-adbd-d01b7c880d8d">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.052</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="c3.large" uuid="21000000-0000-0000-0000-000000000005">
+        <CostFunction name="c3.large" uuid="cccb2beb-11d8-4269-9ce7-af738b74345b">
+            <CostElement type="PERIODIC" name="vmCost" uuid="9e0d5a4c-3510-49b5-af29-ced5481fc237">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.105</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m1.xlarge" uuid="21000000-0000-0000-0000-000000000006">
+        <CostFunction name="m1.xlarge" uuid="82daeaad-7001-4dbd-920d-8d3973e02ee9">
+            <CostElement type="PERIODIC" name="vmCost" uuid="c0680606-b9b5-49cf-95f6-a96d2b364cdf">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.35</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m3.xlarge" uuid="21000000-0000-0000-0000-000000000007">
+        <CostFunction name="m3.xlarge" uuid="52072537-61c3-4346-904c-64d1c6d2e816">
+            <CostElement type="PERIODIC" name="vmCost" uuid="5d77e97e-3b19-492f-8b28-9dba41f9c0d5">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.28</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m3.xlarge" uuid="21000000-0000-0000-0000-000000000008">
+        <CostFunction name="m3.xlarge" uuid="9fe3ae64-5867-4632-8067-7c049d42f797">
+            <CostElement type="PERIODIC" name="vmCost" uuid="29d1b57d-4c00-45a1-88a3-e0468dbd8b9b">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.232</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="VM" category="IaaS" name="m3.xlarge" uuid="21000000-0000-0000-0000-000000000009">
+        <CostFunction name="m3.xlarge" uuid="cc84477e-f739-4a05-ac8e-00601ec4a02d">
+            <CostElement type="PERIODIC" name="vmCost" uuid="cd843142-51c4-4517-8a00-3473759ec4e0">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="instance"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.21</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+    <ServiceUnit subcategory="Network" category="IaaS" name="ElasticIP" uuid="31000000-0000-0000-0000-000000000001">
+        <CostFunction name="ElasticIP" uuid="16f72f9a-c01e-45b5-9963-2377832b90c3">
+            <CostElement type="PERIODIC" name="publicIPsCost" uuid="c691fa2e-1bdc-421d-b964-70a698840199">
+                <CostMetric type="RESOURCE" measurementUnit="#/h" name="publicIP"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1.0</Value>
+                        </metric>
+                        <value>0.0</value>
+                    </CostIntervalEntry>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">INF</Value>
+                        </metric>
+                        <value>0.005</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+            <CostElement type="USAGE" name="dataTransferCost" uuid="8157bc4e-3f48-43bf-8aee-d5349cdefa54">
+                <CostMetric type="RESOURCE" measurementUnit="GB" name="dataTransfer"/>
+                <costIntervalFunction>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">1.0</Value>
+                        </metric>
+                        <value>0.0</value>
+                    </CostIntervalEntry>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">10240.0</Value>
+                        </metric>
+                        <value>0.09</value>
+                    </CostIntervalEntry>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">40960.0</Value>
+                        </metric>
+                        <value>0.085</value>
+                    </CostIntervalEntry>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">102400.0</Value>
+                        </metric>
+                        <value>0.07</value>
+                    </CostIntervalEntry>
+                    <CostIntervalEntry>
+                        <metric ValueType="NUMERIC">
+                            <Value xsi:type="xs:double" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">358400.0</Value>
+                        </metric>
+                        <value>0.05</value>
+                    </CostIntervalEntry>
+                </costIntervalFunction>
+            </CostElement>
+        </CostFunction>
+    </ServiceUnit>
+</CloudProvider>
+

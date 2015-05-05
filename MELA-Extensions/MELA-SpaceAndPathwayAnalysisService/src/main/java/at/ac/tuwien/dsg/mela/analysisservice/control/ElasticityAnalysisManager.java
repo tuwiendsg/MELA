@@ -26,9 +26,7 @@ import at.ac.tuwien.dsg.mela.common.utils.outputConverters.XmlConverter;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.configuration.ConfigurationXMLRepresentation;
@@ -62,12 +60,6 @@ import org.json.simple.JSONArray;
 public class ElasticityAnalysisManager {
 
     static final Logger log = LoggerFactory.getLogger(ElasticityAnalysisManager.class);
-
-    /**
-     * Value of metric that indicates that the unit has not started yet .Used to
-     * avoid analyzing the elasticity space also over that metric
-     */
-    private static final String UNSTABLE_METRIC_VALUE = "-1";
 
     @Value("${analysisservice.elasticityanalysis:true}")
     private boolean elasticityAnalysisEnabled;

@@ -82,7 +82,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
         return hashCode;
     }
 
-    public MonitoredElementMonitoringSnapshot(MonitoredElement MonitoredElement, HashMap<Metric, MetricValue> monitoredData) {
+    public MonitoredElementMonitoringSnapshot(MonitoredElement MonitoredElement, Map<Metric, MetricValue> monitoredData) {
         this.monitoredElement = MonitoredElement;
         this.monitoredData = monitoredData;
         hashCode = super.hashCode() + monitoredElement.hashCode() + monitoredData.hashCode();
@@ -135,10 +135,7 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     public synchronized MonitoredElement getMonitoredElement() {
         return monitoredElement;
     }
-
-    public synchronized MetricValue getValueForMetric(Metric metric) {
-        return monitoredData.get(metric);
-    }
+ 
 
     public synchronized Collection<MonitoredElementMonitoringSnapshot> getChildren() {
         return children;
@@ -255,6 +252,28 @@ public class MonitoredElementMonitoringSnapshot implements Serializable, Iterabl
     public MonitoredElementMonitoringSnapshot withHashCode(final int hashCode) {
         this.hashCode = hashCode;
         return this;
+    }
+
+    @Override
+    public MonitoredElementMonitoringSnapshot clone() {
+
+        MonitoredElementMonitoringSnapshot clone = new MonitoredElementMonitoringSnapshot();
+        clone.monitoredElement = monitoredElement;
+        clone.timestamp = "" + timestamp;
+
+        for (Map.Entry<Metric, MetricValue> entry : monitoredData.entrySet()) {
+            clone.monitoredData.put(entry.getKey().clone(), entry.getValue().clone());
+        }
+
+        for (Action action : executingActions) {
+            clone.executingActions.add(action.clone());
+        }
+        
+        for (MonitoredElementMonitoringSnapshot child : children) {
+            clone.children.add(child.clone());
+        }
+    
+        return clone;
     }
 
 }

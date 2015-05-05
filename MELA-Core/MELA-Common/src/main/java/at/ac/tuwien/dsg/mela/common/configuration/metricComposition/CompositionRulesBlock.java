@@ -60,6 +60,10 @@ public class CompositionRulesBlock implements Serializable {
         this.compositionRules.remove(compositionRule);
     }
 
+    /**
+     * why is this fixed?
+     * @return 
+     */
     @Override
     public int hashCode() {
         return 3;

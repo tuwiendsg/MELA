@@ -41,6 +41,15 @@
         </style>
     </head>
     <body>
+
+        <input type="radio" name="detail" value="Instant Cost" id="instantUsageCost" checked>Instant Cost Per Usage
+        <br>
+        <input type="radio" name="detail" value="Total Cost Per Usage and periodic" id="totalCost" >Total Cost Per Usage and periodic
+        <br>
+        <button id="buton" onclick="updateCostDetail()">Update</button>
+
+
+
         <div id="A"></div>
         <div id="chart"></div>
 
@@ -52,6 +61,25 @@
             var query = window.location.search.substring(1);
             var vars = query.split("&");
             var serviceID = vars[0];
+
+            var INSTANT_COST_RATE_URL = "/cost/instant/json";
+            var TOTAL_INSTANT_COST_RATE_URL = "/cost/total/json";
+            var TOTAL_COST_RATE_URL = "/cost/total/json";
+
+            var costServiceURL = INSTANT_COST_RATE_URL;
+
+            function updateCostDetail()
+            {
+                if (document.getElementById('instantUsageCost').checked) {
+                    costServiceURL = INSTANT_COST_RATE_URL;
+                } else if (document.getElementById('totalUsageCost').checked) {
+                    costServiceURL = TOTAL_INSTANT_COST_RATE_URL;
+                } else if (document.getElementById('totalCost').checked) {
+                    costServiceURL = TOTAL_COST_RATE_URL;
+                }
+                refreshMonitoringData();
+            }
+
 
             function contains(children, child) {
                 for (var index = 0; index < children.length; index++) {
@@ -411,8 +439,8 @@
                         .attr("stroke-width", 1)
                         .attr("fill", function(d) {
                             if (d.type == "metric") {
-                                if (d.name.indexOf(' cost_')  > -1) {
-                                    return "orange"
+                                if (d.category == "COST") {
+                                    return "orange";
                                 } else {
                                     return "gray";
                                 }
@@ -468,7 +496,7 @@
                         })
                         .style("fill", function(d) {
                             if (d.type == "metric") {
-                                if (d.name.indexOf(' cost_')  > -1) {
+                                if (d.category == "COST") {
                                     return "orange"
                                 } else {
                                     return "gray";
@@ -1277,7 +1305,7 @@
                 }
 
                 reqMonitoringDataObject.onreadystatechange = processMonitoringDataResponse;
-                reqMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + "/cost/total/json", true);
+                reqMonitoringDataObject.open("GET", "./REST_WS/" + serviceID + costServiceURL, true);
                 reqMonitoringDataObject.send(null);
 
             }
@@ -1286,14 +1314,25 @@
                 if (reqMonitoringDataObject.readyState == 4) {
 
                     try {
-                        new_root = JSON.parse(reqMonitoringDataObject.responseText);
+                        retrievedData = JSON.parse(reqMonitoringDataObject.responseText);
+                        new_root = null;
+                        if (retrievedData.monitoringData) {
+                            new_root = retrievedData.monitoringData;
+                            metrics = retrievedData.compositionRules;
 
+                            if (fullPath) {
+                                highlightMetricsSources(selectedMetric);
+                            } else {
+                                highlightMetricsSourcesOneLevel(selectedMetric);
+                            }
+                        } else {
+                            new_root = retrievedData;
+                        }
 
 
                         if (new_root.children) {
                             loadingSpinner.stop();
                             d3.select("#A").remove();
-                            //                        setTimeout(refreshMonitoringData, 1000);
                         }
 
                         //if we have root that changed and is not metric, update its tree
@@ -1320,43 +1359,43 @@
             }
 
 
-            function refreshMetricsCompositionRules() {
-
-                reqMetricCompositionRulesObj = null;
-
-
-                if (window.XMLHttpRequest) {
-                    reqMetricCompositionRulesObj = new XMLHttpRequest();
-                } else {
-                    reqMetricCompositionRulesObj = new ActiveXObject("Microsoft.XMLHTTP");
-                }
-
-                reqMetricCompositionRulesObj.onreadystatechange = processCompositionMetricsResponse;
-                reqMetricCompositionRulesObj.open("GET", "./REST_WS/" + serviceID + "/metriccompositionrules", true);
-                reqMetricCompositionRulesObj.send(null);
-
-            }
-
-            function processCompositionMetricsResponse() {
-                if (reqMetricCompositionRulesObj.readyState == 4) {
-
-
-                    try {
-                        metrics = JSON.parse(reqMetricCompositionRulesObj.responseText);
-                        vis.selectAll("path.metricLink").remove();
-                        if (fullPath) {
-                            highlightMetricsSources(selectedMetric);
-                        } else {
-                            highlightMetricsSourcesOneLevel(selectedMetric);
-                        }
-                    }
-                    catch (err) {
-                        console.log("Error encountered when processing composition metrics");
-                    }
-                    setTimeout(refreshMetricsCompositionRules, 5000);
-
-                }
-            }
+//            function refreshMetricsCompositionRules() {
+//
+//                reqMetricCompositionRulesObj = null;
+//
+//
+//                if (window.XMLHttpRequest) {
+//                    reqMetricCompositionRulesObj = new XMLHttpRequest();
+//                } else {
+//                    reqMetricCompositionRulesObj = new ActiveXObject("Microsoft.XMLHTTP");
+//                }
+//
+//                reqMetricCompositionRulesObj.onreadystatechange = processCompositionMetricsResponse;
+//                reqMetricCompositionRulesObj.open("GET", "./REST_WS/" + serviceID + "/metriccompositionrules", true);
+//                reqMetricCompositionRulesObj.send(null);
+//
+//            }
+//
+//            function processCompositionMetricsResponse() {
+//                if (reqMetricCompositionRulesObj.readyState == 4) {
+//
+//
+//                    try {
+//                        metrics = JSON.parse(reqMetricCompositionRulesObj.responseText);
+//                        vis.selectAll("path.metricLink").remove();
+//                        if (fullPath) {
+//                            highlightMetricsSources(selectedMetric);
+//                        } else {
+//                            highlightMetricsSourcesOneLevel(selectedMetric);
+//                        }
+//                    }
+//                    catch (err) {
+//                        console.log("Error encountered when processing composition metrics");
+//                    }
+//                    setTimeout(refreshMetricsCompositionRules, 5000);
+//
+//                }
+//            }
 
             function drawSpinner(spinnerContainer) {
                 var target = document.getElementById(spinnerContainer);

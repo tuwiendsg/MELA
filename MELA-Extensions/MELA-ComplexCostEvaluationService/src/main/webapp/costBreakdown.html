@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Sequences sunburst</title>
+        <script src="http://d3js.org/d3.v3.js"></script>
+        <link rel="stylesheet" type="text/css"
+              href="https://fonts.googleapis.com/css?family=Open+Sans:400,600">
+        <link rel="stylesheet" type="text/css" href="docs/css/sequences.css"/>
+        
+        
+
+        <style type="text/css">
+
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+            .node circle {
+                cursor: pointer;
+                fill: #fff;
+                stroke: steelblue;
+                stroke-width: 1.5px;
+            }
+
+            .node text {
+                font: 10px sans-serif;
+            }
+
+            path.link {
+                fill: none;
+                stroke: #ccc;
+                stroke-dasharray: 3.3;
+                stroke-width: 1.5px;
+            }
+
+            path.metricLink {
+                fill: none;
+                stroke: #A31E39;
+                stroke-width: 3px;
+            }
+
+            #A{
+                position:absolute;
+                top:50%;
+                left:50%;
+            }
+
+        </style>
+
+    </head>
+    <body>
+        <div id="main">
+            <div id="sequence"></div>
+            <div id="chart">
+                <div id="explanation" style="visibility: hidden;">
+                    <span id="percentage"></span><br/>
+                </div>
+            </div>
+            <div id="elasticitySpace"></div>
+        </div>
+        <!--        <div id="sidebar">
+                    <input type="checkbox" id="togglelegend"> Legend<br/>
+                    <div id="legend" style="visibility: hidden;"></div>
+                </div>-->
+
+        
+        <script type="text/javascript" src="docs/spin.js" ></script>
+        <script type="text/javascript" src="docs/sequences.js"></script>
+        <script type="text/javascript" src="docs/elasticity.js"></script>
+        <script type="text/javascript" >
+            d3.json("test.json", function (error, root) {
+                var json = root;
+                createVisualization(json, "chart", 800, 200);
+            });
+        </script> 
+
+        <script type="text/javascript" >
+            function refresh() {
+                d3.json("test2.json", function (error, root) {
+                    var json = root;
+                    recreateVisualization(json);
+                });
+            }
+        </script>
+
+        <!--<button onclick="refresh()">Click me</button>-->
+
+        <script type="text/javascript">
+            // Hack to make this example display correctly in an iframe on bl.ocks.org
+            d3.select(self.frameElement).style("height", "700px");
+        </script> 
+
+        <script type="text/javascript">
+            d3.json("space.json", function (error, root) {
+                var json = root;
+                drawElSpace(json, "elasticitySpace", 500, 200);
+            });
+
+
+        </script> 
+
+    </body>
+</html>
+<!--
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+<script src="http://d3js.org/d3.v2.js"></script>
+<script>
+
+var svg = d3.select("body").append("svg")
+    .attr("viewBox", "0 0 500 300");
+
+svg.append("defs").append("path")
+    .attr("id", "s3")
+    .attr("d", "M 10,90 Q 100,15 200,70 Q 340,140 400,30");
+
+var thing = svg.append("g")
+    .attr("id", "thing")
+    .style("fill", "navy");
+
+thing.append("text")
+    .style("font-size", "20px")
+  .append("textPath")
+    .attr("xlink:href", "#s3")
+    .text("Wavy text is the gimmick for many years to come (d3)");
+
+thing.append("use")
+    .attr("xlink:href", "#s3")
+    .style("stroke", "black")
+    .style("fill", "none");
+
+</script>-->

@@ -55,30 +55,32 @@ public class HsqlServerBean implements InitializingBean, DisposableBean {
         log.debug("HSQL Database path: " + server.getDatabasePath(0, true));
         log.info("Starting HSQL Server database '" + server.getDatabaseName(0, true) + "' listening on port: "
                 + server.getPort());
+        log.info("Waiting for HSQL Server to decompress previously compacted DB. Please be pacient.");
         server.start();
         // server.start() is synchronous; so we should expect online status from server.
         Assert.isTrue(server.getState() == ServerConstants.SERVER_STATE_ONLINE,
                 "HSQLDB could not be started. Maybe another instance is already running on " + server.getAddress()
-                        + ":" + server.getPort() + " ?");
+                + ":" + server.getPort() + " ?");
         log.info("Started HSQL Server");
     }
-
 
     public void destroy() throws InterruptedException {
         log.info("HSQL Server Shutdown sequence initiated");
         if (server != null) {
+            log.info("Waiting for HSQL Server to compact DB. Please be pacient.");
             server.signalCloseAllServerConnections();
+//            server.shutdownWithCatalogs(org.hsqldb.Database.CLOSEMODE_COMPACT);
             server.stop();
-            server.shutdown();
             // Wait until the server shuts down or break after 5 seconds.
             long start = System.currentTimeMillis();
-            long end = start + 5 * 1000;
+//            long end = start + 5 * 1000;
+
             while (server.getState() != ServerConstants.SERVER_STATE_SHUTDOWN) {
                 try {
-                    if (System.currentTimeMillis() > end) {
-                        break;
-                    }
-                    Thread.sleep(100);
+//                    if (System.currentTimeMillis() > end) {
+//                        break;
+//                    }
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     log.error("Interrupted exception during HSQLDB server shutdown", e);
                     throw e;

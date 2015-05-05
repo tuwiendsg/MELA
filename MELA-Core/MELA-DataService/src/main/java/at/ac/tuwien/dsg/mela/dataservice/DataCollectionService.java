@@ -43,6 +43,7 @@ import at.ac.tuwien.dsg.mela.common.utils.perfMonitoring.MELAPerfMonitor;
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStructureManagement;
 
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceDelegate;
+import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,9 @@ public class DataCollectionService {
 
     @Autowired
     private XmlConverter xmlConverter;
+
+    @Value("#{dataFreshnessAnalysisEngine}")
+    private DataFreshnessAnalysisEngine dataFreshnessAnalysisEngine;
 
     static final Logger log = LoggerFactory.getLogger(DataCollectionService.class);
     static final Logger performanceLog = LoggerFactory.getLogger("PerformanceLogger");
@@ -366,6 +370,7 @@ public class DataCollectionService {
 
         if (!serviceConfigurations.containsKey(serviceID)) {
             log.error("Service with id \"" + serviceID + "\" not found");
+            compositionRulesConfigurations.put(serviceID, compositionRulesConfiguration);
             return;
         }
         MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
@@ -616,6 +621,25 @@ public class DataCollectionService {
                         if (monitoringData != null) {
                             List<ServiceMonitoringSnapshot> dataToAggregate = null;
 
+                            // write monitoring data in sql
+                            Date before = new Date();
+                            String timestamp = "" + new Date().getTime();
+
+                            Date beforePersisting = new Date();
+                            MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
+
+                            Date beforeTimestamp = new Date();
+                            persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration, serviceConfiguration.getId());
+                            Date afterTimestamp = new Date();
+                            performanceLog.debug("Timestamp persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
+
+                            {
+                                Date beforeStructured = new Date();
+                                persistenceSQLAccess.writeStructuredMonitoringData(timestamp, monitoringData, serviceID);
+                                Date afterStructured = new Date();
+                                performanceLog.debug("StructuredMonitoringData persistence time in ms:  " + new Date(afterStructured.getTime() - beforeStructured.getTime()).getTime());
+                            }
+
                             if (historicalMonitoringDatas.containsKey(serviceID)) {
                                 dataToAggregate = historicalMonitoringDatas.get(serviceID);
                             } else {
@@ -642,18 +666,6 @@ public class DataCollectionService {
                                 latestMonitoringData.setExecutingActions(actionsInExecution.get(serviceID));
                             }
 
-                            // write monitoring data in sql
-                            Date before = new Date();
-                            String timestamp = "" + new Date().getTime();
-
-                            Date beforePersisting = new Date();
-                            MonitoredElement serviceConfiguration = serviceConfigurations.get(serviceID);
-
-                            Date beforeTimestamp = new Date();
-                            persistenceSQLAccess.writeInTimestamp(timestamp, serviceConfiguration, serviceConfiguration.getId());
-                            Date afterTimestamp = new Date();
-
-                            performanceLog.debug("Timestamp persistence time in ms:  " + new Date(afterTimestamp.getTime() - beforeTimestamp.getTime()).getTime());
                             perfReport += " " + new Date(afterAggregation.getTime() - beforeAggregation.getTime()).getTime();
                             //add same timestamp on all mon data
                             //this is something as a short-hand solution
@@ -742,6 +754,25 @@ public class DataCollectionService {
         performanceLog.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
 
         return converted;
+    }
+
+    public String getLatestValueForParticularMetric(String serviceID, String monitoredElementID, String monitoredElementLevel,
+            String metricName, String MetricUnit) {
+
+        ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData(serviceID);
+        if (serviceMonitoringSnapshot == null) {
+            return "";
+        }
+
+        MonitoredElement.MonitoredElementLevel level = MonitoredElement.MonitoredElementLevel.valueOf(monitoredElementLevel);
+
+        MonitoredElement element = new MonitoredElement(monitoredElementID).withLevel(level);
+        if (serviceMonitoringSnapshot.contains(level, element)) {
+            return serviceMonitoringSnapshot.getMonitoredData(element).getMetricValue(new Metric(metricName, MetricUnit)).getValueRepresentation();
+        } else {
+            return "";
+        }
+
     }
 
     public MonitoredElement getLatestServiceStructure(String serviceID) {

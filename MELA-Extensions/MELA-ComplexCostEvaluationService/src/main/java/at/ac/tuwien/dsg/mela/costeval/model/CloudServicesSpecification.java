@@ -19,7 +19,8 @@
  */
 package at.ac.tuwien.dsg.mela.costeval.model;
 
-import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ServiceUnit;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -35,32 +36,37 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "CloudServices")
 public class CloudServicesSpecification {
 
-    @XmlElement(name = "ServiceUnit", required = false)
-    private List<ServiceUnit> serviceUnits;
+    @XmlElement(name = "CloudProvider", required = false)
+    private List<CloudProvider> cloudProviders;
 
     {
-        serviceUnits = new ArrayList<ServiceUnit>();
+        cloudProviders = new ArrayList<CloudProvider>();
     }
 
-    public CloudServicesSpecification withServiceUnits(final List<ServiceUnit> serviceUnits) {
-        this.serviceUnits = serviceUnits;
+    public CloudServicesSpecification withCloudProviders(final List<CloudProvider> cloudProviders) {
+        this.cloudProviders = cloudProviders;
         return this;
     }
 
-    public List<ServiceUnit> getServiceUnits() {
-        return serviceUnits;
+    public CloudServicesSpecification withCloudProvider(final CloudProvider cloudProvider) {
+        this.cloudProviders.add(cloudProvider);
+        return this;
     }
 
-    public void setServiceUnits(List<ServiceUnit> serviceUnits) {
-        this.serviceUnits = serviceUnits;
+    public List<CloudProvider> getCloudProviders() {
+        return cloudProviders;
     }
 
-    public void addServiceUnit(ServiceUnit serviceUnit) {
-        serviceUnits.add(serviceUnit);
+    public void setCloudProviders(List<CloudProvider> cloudProviders) {
+        this.cloudProviders = cloudProviders;
     }
 
-    public void removeServiceUnit(ServiceUnit serviceUnit) {
-        serviceUnits.remove(serviceUnit);
+    public void addCloudProvider(CloudProvider cloudProvider) {
+        this.cloudProviders.add(cloudProvider);
+    }
+
+    public void removeCloudProvider(CloudProvider cloudProvider) {
+        this.cloudProviders.remove(cloudProvider);
     }
 
 }

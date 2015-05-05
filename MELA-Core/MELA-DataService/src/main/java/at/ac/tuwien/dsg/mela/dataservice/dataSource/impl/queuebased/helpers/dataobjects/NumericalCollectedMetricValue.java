@@ -172,7 +172,7 @@ public class NumericalCollectedMetricValue implements Serializable {
         value.name = cmv.getName();
         value.type = cmv.getType();
         value.units = cmv.getUnits();
-        value.timeSinceCollection = Long.parseLong(cmv.getTimeSinceCollection());
+        value.timeSinceCollection = Long.parseLong(cmv.getMonitoredElementID());
 
         //eat the exception, if the converted value is not double, is null
         try {

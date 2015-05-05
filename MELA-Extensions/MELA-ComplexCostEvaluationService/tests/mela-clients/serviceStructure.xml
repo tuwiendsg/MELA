@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MonitoredElement level="SERVICE" name="Service" id="Service">
+    <MonitoredElement level="SERVICE_TOPOLOGY" name="EventProcessingTopology" id="EventProcessingTopology">
+        <MonitoredElement level="SERVICE_UNIT" name="EventProcessingUnit" id="EventProcessingUnit">
+            <MonitoredElement level="VM" name="10.99.0.25" id="10.99.0.25">
+                <UsedCloudOfferedServiceCfg name="1CPU1" uuid="20000000-0000-0000-0000-000000000001" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <UsedCloudOfferedServiceCfg name="ImageStorage" uuid="40000000-0000-0000-0000-000000000001" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                <QualityProperties/>
+                <ResourceProperties/>
+            </UsedCloudOfferedServiceCfg>
+        </MonitoredElement>
+        <MonitoredElement level="SERVICE_UNIT" name="LoadBalancer" id="LoadBalancer">
+            <MonitoredElement level="VM" name="10.99.0.56" id="10.99.0.56">
+                <UsedCloudOfferedServiceCfg name="2CPU3" uuid="20000000-0000-0000-0000-000000000003" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+        </MonitoredElement>
+    </MonitoredElement>
+    <UsedCloudOfferedServiceCfg name="PublicVLAN" uuid="30000000-0000-0000-0000-000000000001" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+        <QualityProperties/>
+        <ResourceProperties/>
+    </UsedCloudOfferedServiceCfg>
+</MonitoredElement>

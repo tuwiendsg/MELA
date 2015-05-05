@@ -349,4 +349,49 @@ public class ServiceMonitoringSnapshot implements Serializable {
         return this;
     }
 
+    public ServiceMonitoringSnapshot clone() {
+        ServiceMonitoringSnapshot clone = new ServiceMonitoringSnapshot();
+        clone.timestamp = "" + timestamp;
+        clone.timestampID = timestampID;
+
+        MonitoredElement service = this.getMonitoredService().clone();
+        MonitoredElementMonitoringSnapshot serviceSnapshot = monitoredData.get(service.getLevel()).get(service).clone();
+
+        Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> clonedMonitoredData = new HashMap<>();
+
+        //udate the cloned snapshot with cloned service
+        for (MonitoredElementMonitoringSnapshot elementMonitoringSnapshot : serviceSnapshot) {
+
+            MonitoredElement clonedElement = null;
+
+            {
+                MonitoredElement element = elementMonitoringSnapshot.getMonitoredElement();
+                //search the coresponding element in the cloned service
+                for (MonitoredElement me : service) {
+                    if (element.equals(me)) {
+                        clonedElement = me;
+                        //update cloned element on snapshot
+                        elementMonitoringSnapshot.withMonitoredElement(clonedElement);
+                        break;
+                    }
+                }
+            }
+
+            //if clonedMonitoredData is null, then we had a big problem in cloning the MonitoredElement, so 
+            //no check here, as the error, if appears, shows code bug
+            Map<MonitoredElement, MonitoredElementMonitoringSnapshot> levelData;
+            if (clonedMonitoredData.containsKey(elementMonitoringSnapshot.getMonitoredElement().getLevel())) {
+                levelData = clonedMonitoredData.get(elementMonitoringSnapshot.getMonitoredElement().getLevel());
+            } else {
+                levelData = new HashMap<>();
+                clonedMonitoredData.put(elementMonitoringSnapshot.getMonitoredElement().getLevel(), levelData);
+            }
+
+            levelData.put(elementMonitoringSnapshot.getMonitoredElement(), elementMonitoringSnapshot);
+        }
+
+        clone.monitoredData = clonedMonitoredData;
+        return clone;
+    }
+
 }

@@ -95,4 +95,10 @@ public class Action implements Serializable {
         return this;
     }
 
+    public Action clone() {
+        return new Action(targetEntityID, action);
+    }
+    
+    
+
 }

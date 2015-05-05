@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MonitoredElement level="SERVICE" name="Service" id="Service">
+    <MonitoredElement level="SERVICE_TOPOLOGY" name="EventProcessingTopology" id="EventProcessingTopology">
+        <MonitoredElement level="SERVICE_UNIT" name="EventProcessingUnit" id="EventProcessingUnit">
+            <MonitoredElement level="VM" name="10.99.0.48" id="10.99.0.48">
+                <UsedCloudOfferedServiceCfg name="1CPU1" uuid="20000000-0000-0000-0000-000000000001"  instanceUUID="98400000-8cf0-11bd-b23e-000000000000" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" uuid="30000000-0000-0000-0000-000000000002"  instanceUUID="98400000-8cf0-11bd-b23e-000000000016" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+
+            </MonitoredElement>
+
+            <UsedCloudOfferedServiceCfg name="ImageStorage" uuid="40000000-0000-0000-0000-000000000001" instanceUUID="98400000-8cf0-11bd-b23e-000000000001" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                <QualityProperties/>
+                <ResourceProperties/>
+            </UsedCloudOfferedServiceCfg>
+        </MonitoredElement>
+        <MonitoredElement level="SERVICE_UNIT" name="LoadBalancer" id="LoadBalancer">
+            <MonitoredElement level="VM" name="10.99.0.13" id="10.99.0.13">
+                <UsedCloudOfferedServiceCfg name="2.0CPU4.0" uuid="20000000-0000-0000-0000-000000000003"  instanceUUID="98400000-8cf0-11bd-b23e-000000000002" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="PublicVLAN" uuid="30000000-0000-0000-0000-000000000001"  instanceUUID="98400000-8cf0-11bd-b23e-000000000003" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+<UsedCloudOfferedServiceCfg name="CloudStorage" uuid="30000000-0000-0000-0000-000000000002"  instanceUUID="98400000-8cf0-11bd-b23e-000000000015" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+        </MonitoredElement>
+    </MonitoredElement>
+    
+    <MonitoredElement level="SERVICE_TOPOLOGY" name="LocalProcessingTopology" id="LocalProcessingTopology">
+        <MonitoredElement level="SERVICE_UNIT" name="LocalProcessingUnit" id="LocalProcessingUnit">
+            <MonitoredElement level="VM" name="10.99.0.66" id="10.99.0.66">
+                <UsedCloudOfferedServiceCfg name="1.0CPU0.5" uuid="20000000-0000-0000-0000-000000000000"  instanceUUID="98400000-8cf0-11bd-b23e-000000000004" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+<UsedCloudOfferedServiceCfg name="CloudStorage" uuid="30000000-0000-0000-0000-000000000002"  instanceUUID="98400000-8cf0-11bd-b23e-000000000014" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <UsedCloudOfferedServiceCfg name="ImageStorage" uuid="40000000-0000-0000-0000-000000000001"  instanceUUID="98400000-8cf0-11bd-b23e-000000000005" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                <QualityProperties/>
+                <ResourceProperties/>
+            </UsedCloudOfferedServiceCfg>
+        </MonitoredElement>
+        <MonitoredElement level="SERVICE_UNIT" name="SensorDataQueue" id="SensorDataQueue">
+            <MonitoredElement level="VM" name="10.99.0.65" id="10.99.0.65">
+                <UsedCloudOfferedServiceCfg name="1.0CPU2.0" uuid="20000000-0000-0000-0000-000000000002"  instanceUUID="98400000-8cf0-11bd-b23e-000000000006" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="PublicVLAN" uuid="30000000-0000-0000-0000-000000000001"  instanceUUID="98400000-8cf0-11bd-b23e-000000000007"  cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                <QualityProperties/>
+                <ResourceProperties/>
+            </UsedCloudOfferedServiceCfg>
+<UsedCloudOfferedServiceCfg name="CloudStorage" uuid="30000000-0000-0000-0000-000000000002"  instanceUUID="98400000-8cf0-11bd-b23e-000000000013" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+           
+        </MonitoredElement>
+    </MonitoredElement>
+ 
+
+    <MonitoredElement level="SERVICE_TOPOLOGY" name="DataEndTopology" id="DataEndTopology">
+        <MonitoredElement level="SERVICE_UNIT" name="DataNode" id="DataNode">
+            <MonitoredElement level="VM" name="10.99.0.87" id="10.99.0.87">
+                <UsedCloudOfferedServiceCfg name="2.0CPU4.0" uuid="20000000-0000-0000-0000-000000000003"  instanceUUID="98400000-8cf0-11bd-b23e-000000000008" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+<UsedCloudOfferedServiceCfg name="CloudStorage" uuid="30000000-0000-0000-0000-000000000002"  instanceUUID="98400000-8cf0-11bd-b23e-000000000012" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+            <UsedCloudOfferedServiceCfg name="ImageStorage" uuid="40000000-0000-0000-0000-000000000001"  instanceUUID="98400000-8cf0-11bd-b23e-000000000009" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                <QualityProperties/>
+                <ResourceProperties/>
+            </UsedCloudOfferedServiceCfg>
+        </MonitoredElement>
+        <MonitoredElement level="SERVICE_UNIT" name="DataController" id="DataController">
+            <MonitoredElement level="VM" name="10.99.0.91" id="10.99.0.91">
+                <UsedCloudOfferedServiceCfg name="3.0CPU6.0" uuid="20000000-0000-0000-0000-000000000004"  instanceUUID="98400000-8cf0-11bd-b23e-0000000000010" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+<UsedCloudOfferedServiceCfg name="CloudStorage" uuid="30000000-0000-0000-0000-000000000002"  instanceUUID="98400000-8cf0-11bd-b23e-000000000011" cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+           
+        </MonitoredElement>
+    </MonitoredElement>
+ 
+    
+</MonitoredElement>
+ 
