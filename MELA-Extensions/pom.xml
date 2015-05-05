@@ -20,6 +20,18 @@
 	<module>MELA-ComplexCostEvaluationService</module>
     </modules>
  
+    <profiles>
+        <profile>
+            <id>dependencies</id>
+            <activation>
+                <file>
+                    <exists>/usr/bin/R</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>MELA-ElasticityRelationshipsAnalysis</module>
+            </modules>
+        </profile>
+    </profiles>
      
-
 </project>
