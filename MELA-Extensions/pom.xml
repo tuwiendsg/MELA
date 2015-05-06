@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-   <parent>
+    <parent>
         <groupId>at.ac.tuwien.mela</groupId>
         <artifactId>MELA-Pom</artifactId>
         <version>3.0-SNAPSHOT</version>
@@ -14,24 +14,29 @@
  
     <packaging>pom</packaging>
 
-    <modules>
-        <module>MELA-SpaceAndPathwayAnalysisService</module>
-        <module>MELA-ElasticityRelationshipsAnalysis</module>
-	<module>MELA-ComplexCostEvaluationService</module>
-    </modules>
- 
     <profiles>
         <profile>
-            <id>dependencies</id>
+            <id>noR</id>
             <activation>
-                <file>
-                    <exists>/usr/bin/R</exists>
-                </file>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
+                <module>MELA-SpaceAndPathwayAnalysisService</module>
+                <module>MELA-ComplexCostEvaluationService</module>
+            </modules>
+        </profile>
+    
+        <profile>
+            <id>yesR</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>MELA-SpaceAndPathwayAnalysisService</module>
                 <module>MELA-ElasticityRelationshipsAnalysis</module>
+                <module>MELA-ComplexCostEvaluationService</module>
             </modules>
         </profile>
     </profiles>
-     
 </project>
