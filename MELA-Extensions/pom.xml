@@ -13,19 +13,13 @@
     <description>Additional MELA analysis services, integrated with Spring </description>
  
     <packaging>pom</packaging>
-
+ 
+    <modules>
+        <module>MELA-SpaceAndPathwayAnalysisService</module>
+        <module>MELA-ComplexCostEvaluationService</module>
+    </modules>
+      
     <profiles>
-        <profile>
-            <id>noR</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>MELA-SpaceAndPathwayAnalysisService</module>
-                <module>MELA-ComplexCostEvaluationService</module>
-            </modules>
-        </profile>
-    
         <profile>
             <id>yesR</id>
             <activation>
@@ -33,9 +27,7 @@
                 <jdk>1.8</jdk>
             </activation>
             <modules>
-                <module>MELA-SpaceAndPathwayAnalysisService</module>
                 <module>MELA-ElasticityRelationshipsAnalysis</module>
-                <module>MELA-ComplexCostEvaluationService</module>
             </modules>
         </profile>
     </profiles>

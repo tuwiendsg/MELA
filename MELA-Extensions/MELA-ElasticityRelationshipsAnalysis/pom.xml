@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-   <parent>
+    <parent>
         <groupId>at.ac.tuwien.mela</groupId>
         <artifactId>MELA-Extensions-Pom</artifactId>
         <version>3.0-SNAPSHOT</version>
@@ -14,12 +14,24 @@
  
     <packaging>pom</packaging>
 
-    <modules>
-        <module>RCaller</module>
-        <module>MELA-ElasticityDependencyAnalysisService</module>
-    </modules>
- 
-     
+   
+    <profiles> 
+
+        <profile>
+            <id>yesR</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>/usr/bin/R</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>RCaller</module>
+                <module>MELA-ElasticityDependencyAnalysisService</module>
+            </modules>
+        </profile>
+   
+    </profiles> 
     
 
 </project>
