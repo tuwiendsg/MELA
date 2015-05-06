@@ -13,7 +13,7 @@
 // * See the License for the specific language governing permissions and
 // * limitations under the License.
 // */
-//package at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.engine;
+package at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.engine;
 //
 //import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.api.ElasticityDependencyAnalysisManager;
 //import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.persistence.PersistenceDelegate;
@@ -41,7 +41,7 @@
 // */
 //@RunWith(SpringJUnit4ClassRunner.class)
 //@ContextConfiguration({"classpath*:mela-dependencies-analysis-service-context.xml"})
-//public class LinearDependenciesValidationEngineTest {
+public class LinearDependenciesValidationEngineTest {
 //
 ////    @Autowired
 ////    private ElasticityDependencyAnalysisManager elasticityDependencyAnalysisManager;
@@ -322,4 +322,4 @@
 //        System.out.println(result);
 //    }
 //
-//}
+}

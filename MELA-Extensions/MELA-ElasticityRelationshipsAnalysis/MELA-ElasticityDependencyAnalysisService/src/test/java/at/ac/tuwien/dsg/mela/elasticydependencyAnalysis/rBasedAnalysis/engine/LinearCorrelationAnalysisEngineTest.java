@@ -3,7 +3,7 @@
 // * To change this template file, choose Tools | Templates
 // * and open the template in the editor.
 // */
-//package at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.engine;
+package at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.engine;
 //
 //import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 //import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.concept.LinearCorrelation;
@@ -22,7 +22,7 @@
 // *
 // * @author daniel-tuwien
 // */
-//public class LinearCorrelationAnalysisEngineTest {
+public class LinearCorrelationAnalysisEngineTest {
 //
 //    public LinearCorrelationAnalysisEngineTest() {
 //    }
@@ -90,4 +90,4 @@
 //
 //    }
 //
-//}
+}
