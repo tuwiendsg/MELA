@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MonitoredElement level="SERVICE" name="SparkCluster_2" id="SparkCluster_2">
+    <MonitoredElement level="SERVICE_TOPOLOGY" name="SparkCluster" id="SparkCluster">
+        <MonitoredElement level="SERVICE_UNIT" name="SparkWorker" id="SparkWorker">
+            <MonitoredElement level="VM" name="10.99.0.48" id="10.99.0.48">
+                <UsedCloudOfferedServiceCfg name="1CPU1" uuid="20000000-0000-0000-0000-000000000001" instanceUUID="70000000-0000-0000-0000-000000000006" 
+                                            cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                <UsedCloudOfferedServiceCfg name="CloudStorage" uuid="30000000-0000-0000-0000-000000000002"  instanceUUID="70000000-0000-0000-0000-000000000007"
+                                            cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001"> 
+                    <QualityProperties/> 
+                    <ResourceProperties/> 
+                </UsedCloudOfferedServiceCfg>
+            </MonitoredElement>
+             
+        </MonitoredElement>
+        <MonitoredElement level="SERVICE_UNIT" name="SparkMaster" id="SparkMaster">
+            <MonitoredElement level="VM" name="10.99.0.57" id="10.99.0.57">
+                <UsedCloudOfferedServiceCfg name="1CPU1" uuid="20000000-0000-0000-0000-000000000001" instanceUUID="70000000-0000-0000-0000-000000000008" 
+                                            cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+                
+                <UsedCloudOfferedServiceCfg name="PublicVLAN" uuid="30000000-0000-0000-0000-000000000001" instanceUUID="70000000-0000-0000-0000-000000000009"
+                                            cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001">
+                    <QualityProperties/>
+                    <ResourceProperties/>
+                </UsedCloudOfferedServiceCfg>
+
+                <UsedCloudOfferedServiceCfg name="CloudStorage" uuid="30000000-0000-0000-0000-000000000002"  instanceUUID="70000000-0000-0000-0000-000000000010" 
+                                            cloudProviderName="Flexiant" cloudProviderID="10000000-0000-0000-0000-000000000001"> 
+                    <QualityProperties/> 
+                    <ResourceProperties/> 
+                </UsedCloudOfferedServiceCfg>
+
+            </MonitoredElement>
+        </MonitoredElement>
+    </MonitoredElement>
+    
+</MonitoredElement>
+
+ 

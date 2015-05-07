@@ -1,0 +1,61 @@
+{
+  "name": "ServiceElSpace",
+  "dimensions": [
+    {
+      "unit": "costUnits",
+      "values": [
+        {
+          "value": "1.5"
+        },
+        {
+          "value": "3"
+        }
+      ],
+      "lowerBoundary": [
+        {
+          "value": 1.5
+        },
+        {
+          "value": 1.5
+        }
+      ],
+      "upperBoundary": [
+        {
+          "value": 3.0
+        },
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "element_cost"
+    },
+    {
+      "unit": "costUnits",
+      "values": [
+        {
+          "value": "1"
+        },
+        {
+          "value": "2"
+        }
+      ],
+      "lowerBoundary": [
+        {
+          "value": 1.5
+        },
+        {
+          "value": 1.5
+        }
+      ],
+      "upperBoundary": [
+        {
+          "value": 3.0
+        },
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "children_cost"
+    }
+  ]
+}

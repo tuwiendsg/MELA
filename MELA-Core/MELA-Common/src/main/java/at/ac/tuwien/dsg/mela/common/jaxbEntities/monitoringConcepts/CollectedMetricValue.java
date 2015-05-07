@@ -160,7 +160,11 @@ public class CollectedMetricValue {
                     return Integer.parseInt(value);
                 }
             } catch (NumberFormatException e) {
-                return new Float(Float.NaN);
+                try {
+                    return Long.parseLong(value);
+                } catch (NumberFormatException ex) {
+                    return new Float(Float.NaN);
+                }
             }
         } else if (type.toLowerCase().contains("long")) {
             try {

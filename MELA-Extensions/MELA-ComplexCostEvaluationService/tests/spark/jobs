@@ -1,0 +1,5 @@
+./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount" --master local[4] ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar 10.99.0.61 9999 &
+
+
+./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount" --master local[4] ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar localhost 9999  &
+
