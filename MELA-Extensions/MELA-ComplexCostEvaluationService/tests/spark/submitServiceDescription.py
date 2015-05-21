@@ -1,8 +1,7 @@
 import urllib, urllib2, sys, httplib
 
 url = "/MELA/REST_WS"
-#HOST_IP="128.130.172.191:8180"
-HOST_IP="128.130.172.230:8180"
+HOST_IP="localhost:8180"
 filename="./serviceDescription.xml"
 
  

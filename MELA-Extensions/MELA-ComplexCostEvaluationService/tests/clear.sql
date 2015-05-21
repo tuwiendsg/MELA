@@ -47,3 +47,10 @@ delete from AGGREGATEDDATA where monseqid='EventProcessingTopology_STRATEGY_FIRS
 delete from TOTALCOSTHISTORY where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED' and TIMESTAMPID > 841;
 delete from TIMESTAMP where monseqid='EventProcessingTopology_STRATEGY_FIRST_ADDED' and ID > 841;
  
+
+
+delete from INSTANTCOSTELASTICITYSPACE;
+delete from CASCHEDCOMPLETEHISTORICALUSAGE;
+delete from INSTANTCOSTHISTORY;
+delete from TOTALCOSTHISTORY ;
+

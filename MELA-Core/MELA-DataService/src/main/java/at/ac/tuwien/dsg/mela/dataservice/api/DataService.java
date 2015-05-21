@@ -41,6 +41,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.ws.rs.core.Response;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -312,6 +313,18 @@ public class DataService {
     @Consumes("text/plain")
     public void writeEvents(@PathParam("serviceID") String serviceID, String event) {
         collectionService.writeEvents(serviceID, event);
+    }
+    
+     @GET
+    @Path("/{serviceID}/data/csv")
+    @Produces("text/csv")
+    public Response getCompleteMonitoringtHistoryAsCSV(@PathParam("serviceID") String serviceID) {
+
+        String csvString = collectionService.getCompleteMonitoringHistoryAsCSV(serviceID);
+
+        Response response = Response.status(200).header("Content-Disposition", "attachment; filename=" + serviceID + "_monitoring_data.csv").entity(csvString).build();
+        return response;
+
     }
 
 }

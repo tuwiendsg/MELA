@@ -1,5 +1,19 @@
-./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount" --master local[4] ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar 10.99.0.61 9999 &
+#0
+nc -lk 9999 &
+./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount"  ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar localhost 9999  &
 
 
-./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount" --master local[4] ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar localhost 9999  &
+#1000
+./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount" ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar 10.99.0.61 9901 &
+
+
+#5000
+./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount" ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar 10.99.0.61 9905 &
+
+
+#10000
+./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount" ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar 10.99.0.61 9910 &
+
+#50000
+./bin/spark-submit --class "at.ac.tuwien.dsg.streamingkmeansclustering.JavaNetworkWordCount" ../StreamingKMeansClustering/target/StreamingKMeansClustering.jar 10.99.0.61 9950 &
 

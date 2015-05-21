@@ -24,6 +24,10 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionR
 import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.XmlConverter;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.ElasticityDependencyCoefficient;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.ElasticityDependencyElement;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.MonitoredElementElasticityDependency;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.ServiceElasticityDependencies;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.ServiceElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
@@ -46,6 +50,9 @@ import at.ac.tuwien.dsg.quelle.descriptionParsers.CloudDescriptionParser;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -737,6 +744,31 @@ public class CostEvalManager {
 
     }
 
+    public String getTotalCostForServiceJSONAsPieChart(String serviceID, String timestampID) {
+        Date before = new Date();
+        ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(serviceID);
+
+        if (cfg == null) {
+            return "{nothing}";
+        }
+        CostEnrichedSnapshot serviceUsageSnapshot = persistenceDelegate.extractTotalCostSnapshotByTimeIDInterval(Integer.parseInt(timestampID), Integer.parseInt(timestampID), serviceID).get(0);
+
+        if (serviceUsageSnapshot == null) {
+            return "{nothing}";
+        }
+
+        try {
+            String converted = jsonConverter.toJSONForRadialPieChart(serviceUsageSnapshot.getSnapshot());
+            return converted;
+        } catch (Exception e) {
+            return e.getMessage();
+        } finally {
+            Date after = new Date();
+            log.debug("getTotalCostForServiceJSON time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        }
+
+    }
+
     public LifetimeEnrichedSnapshot updateAndCacheHistoricalServiceUsageForInstantCostPerUsage(final String serviceID) {
 
         //if service DI not found
@@ -775,9 +807,9 @@ public class CostEvalManager {
 //                        new Object[]{lastRetrievedTimestampID, allMonData.size(), lastTimestampID});
                 for (ServiceMonitoringSnapshot monitoringSnapshot : allMonData) {
 
-                    if (monitoringSnapshot.getTimestampID() == 720) {
-                        log.debug("Am ajuns ");
-                    }
+//                    if (monitoringSnapshot.getTimestampID() == 720) {
+//                        log.debug("Am ajuns ");
+//                    }
                     Date before = new Date();
                     //update total usage so far
                     previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
@@ -1785,4 +1817,124 @@ public class CostEvalManager {
         this.threadExecutorService = threadExecutorService;
     }
 
+    public String getCompleteCostHistoryAsCSV(String serviceID) {
+
+        StringWriter sw = new StringWriter();
+
+        Map<MonitoredElement, Map<Metric, List<MetricValue>>> csv = new LinkedHashMap<>();
+
+        //if space is not null, update it with new data
+        List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
+
+        ServiceMonitoringSnapshot lastData = persistenceDelegate.extractLatestMonitoringData(serviceID);
+        MonitoredElement service = lastData.getMonitoredService();
+        int lastTimestampID = lastData.getTimestampID();
+
+        //            boolean spaceUpdated = false;
+        int currentTimestamp = 0;
+        //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
+        do {
+
+            //if space is null, compute it from all aggregated monitored data recorded so far
+            List<CostEnrichedSnapshot> enrichedCostSnapshots = persistenceDelegate.extractTotalUsageSnapshot(currentTimestamp, serviceID);
+            dataFromTimestamp = new ArrayList<>();
+            for (CostEnrichedSnapshot snapshot : enrichedCostSnapshots) {
+                dataFromTimestamp.add(snapshot.getSnapshot());
+            }
+
+            //check if new data has been collected between elasticity space querries
+            if (!dataFromTimestamp.isEmpty()) {
+                currentTimestamp = enrichedCostSnapshots.get(enrichedCostSnapshots.size() - 1).getLastUpdatedTimestampID();
+
+                for (ServiceMonitoringSnapshot snapshot : dataFromTimestamp) {
+
+                    MonitoredElementMonitoringSnapshot serviceData = snapshot.getMonitoredData(service);
+
+                    List<MonitoredElementMonitoringSnapshot> toProcessInBFS = new ArrayList<>();
+                    toProcessInBFS.add(serviceData);
+
+                    while (!toProcessInBFS.isEmpty()) {
+                        MonitoredElementMonitoringSnapshot elementData = toProcessInBFS.remove(0);
+
+                        MonitoredElement element = elementData.getMonitoredElement();
+
+                        for (MonitoredElementMonitoringSnapshot child : elementData.getChildren()) {
+                            child.getMonitoredElement().setName(element.getId() + "_" + child.getMonitoredElement().getName());
+                            toProcessInBFS.add(child);
+                        }
+
+                        Map<Metric, List<MetricValue>> unitValues;
+                        if (csv.containsKey(element)) {
+                            unitValues = csv.get(element);
+                        } else {
+                            unitValues = new LinkedHashMap<>();
+                            csv.put(element, unitValues);
+                        }
+                        Map<Metric, MetricValue> monElementata = elementData.getMonitoredData();
+                        for (Metric metric : monElementata.keySet()) {
+//                                if (metric.getType().equals(Metric.MetricType.COST)) {
+                            List<MetricValue> metricValues;
+                            if (unitValues.containsKey(metric)) {
+                                metricValues = unitValues.get(metric);
+                            } else {
+                                metricValues = new ArrayList<>();
+                                unitValues.put(metric, metricValues);
+                            }
+                            metricValues.add(monElementata.get(metric));
+//                                }
+
+                        }
+                    }
+                }
+            }
+
+        } while (!dataFromTimestamp.isEmpty() && currentTimestamp < lastTimestampID);
+
+        List<List<String>> columns = new ArrayList<>();
+
+        for (MonitoredElement element
+                : csv.keySet()) {
+
+            for (Metric metric : csv.get(element).keySet()) {
+
+                List<String> column = new ArrayList<>();
+                columns.add(column);
+
+                column.add(element.getName() + "_" + metric.getName() + ":" + metric.getMeasurementUnit());
+
+                for (MetricValue value : csv.get(element).get(metric)) {
+                    column.add(value.getValueRepresentation());
+                }
+            }
+        }
+
+        //write to string
+        try {
+            BufferedWriter writer = new BufferedWriter(sw);
+            boolean haveData = true;
+            while (haveData) {
+                haveData = false;
+
+                for (List<String> column : columns) {
+                    if (column.isEmpty()) {
+                        writer.write(",");
+                    } else {
+                        haveData = true;
+                        writer.write("," + column.remove(0));
+                    }
+
+                }
+                writer.newLine();
+
+            }
+
+            writer.flush();
+            writer.close();
+
+        } catch (IOException ex) {
+            log.error(ex.getMessage(), ex);
+        }
+
+        return sw.toString();
+    }
 }

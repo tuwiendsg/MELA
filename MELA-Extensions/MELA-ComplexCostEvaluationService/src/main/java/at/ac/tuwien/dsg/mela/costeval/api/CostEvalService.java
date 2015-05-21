@@ -36,6 +36,9 @@ import javax.ws.rs.ext.Provider;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.mela.costeval.model.UnusedCostUnitsReport;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ws.rs.core.Response;
 import org.apache.cxf.common.i18n.UncheckedException;
 
 /**
@@ -230,6 +233,13 @@ public class CostEvalService {
     @Produces("application/json")
     public String getTotalCostForServiceJSONAsPieChart(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getTotalCostForServiceJSONAsPieChart(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/total/json/piechart/{timestampID}")
+    @Produces("application/json")
+    public String getTotalCostForServiceJSONAsPieChartForTimestampID(@PathParam("serviceID") String serviceID, @PathParam("timestampID") String timestampID) {
+        return costEvalManager.getTotalCostForServiceJSONAsPieChart(serviceID, timestampID);
     }
 
     @GET
@@ -488,6 +498,18 @@ public class CostEvalService {
     @Produces("application/xml")
     public MonitoredElement getCompleteStructureOfUsedServices(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getCompleteStructureOfUsedServices(serviceID);
+    }
+
+    @GET
+    @Path("/{serviceID}/cost/csv")
+    @Produces("text/csv")
+    public Response getCompleteCostHistoryAsCSV(@PathParam("serviceID") String serviceID) {
+
+        String csvString = costEvalManager.getCompleteCostHistoryAsCSV(serviceID);
+
+        Response response = Response.status(200).header("Content-Disposition", "attachment; filename=" + serviceID + "_cost.csv").entity(csvString).build();
+        return response;
+
     }
 
 }

@@ -322,6 +322,19 @@ public class PersistenceDelegate {
         }
     }
 
+    public List<CostEnrichedSnapshot> extractTotalUsageSnapshot(int timestamp, String monitoringSequenceID) {
+        String sql = "SELECT TotalCostHistory.timestampID, TotalCostHistory.data from TotalCostHistory INNER JOIN Timestamp "
+                + "ON TotalCostHistory.timestampID= Timestamp.ID where TotalCostHistory.monSeqID=? and TotalCostHistory.timestampID > ? LIMIT 1000;";
+        RowMapper<CostEnrichedSnapshot> rowMapper = new RowMapper<CostEnrichedSnapshot>() {
+            public CostEnrichedSnapshot mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return mapToServiceUsageSnapshot(rs);
+            }
+        };
+
+        return jdbcTemplate.query(sql, rowMapper, monitoringSequenceID, timestamp);
+
+    }
+
     public List<CostEnrichedSnapshot> extractTotalCostSnapshotByTimeIDInterval(int startTimestampID, int endTimestampID, String serviceID) {
 
         String sql = "SELECT TotalCostHistory.timestampID, TotalCostHistory.data from TotalCostHistory INNER JOIN Timestamp "

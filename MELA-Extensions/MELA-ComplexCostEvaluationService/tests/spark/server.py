@@ -1,4 +1,4 @@
-import socket, random
+import socket, random, sys
 import time
  
 
@@ -33,6 +33,14 @@ if __name__=='__main__':
   host = "localhost"
 
   port = 9999
+
+  args = sys.argv;
+  if (len(args) > 1):  sensorsCount=int(args[1])
+  if (len(args) > 2):  port=int(args[2])
+  if (len(args) > 3):  host=str(args[3])
+  print str(sensorsCount) + " on " + host + " : " + str(port)
+
+
 
 # bind to the port
   serversocket.bind((host, port))

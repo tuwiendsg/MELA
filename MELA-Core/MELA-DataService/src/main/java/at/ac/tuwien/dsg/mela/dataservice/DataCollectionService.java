@@ -44,6 +44,9 @@ import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.DataAccessWithManualStr
 
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceDelegate;
 import at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.DataFreshnessAnalysisEngine;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -985,6 +988,110 @@ public class DataCollectionService {
             eventsList.add(e1);
         }
         persistenceSQLAccess.writeEvents(serviceID, eventsList);
+    }
+
+    public String getCompleteMonitoringHistoryAsCSV(String serviceID) {
+
+        StringWriter sw = new StringWriter();
+
+        Map<MonitoredElement, Map<Metric, List<MetricValue>>> csv = new HashMap<>();
+
+        //if space is not null, update it with new data
+        List<ServiceMonitoringSnapshot> dataFromTimestamp = null;
+
+        int lastTimestampID = persistenceSQLAccess.extractLatestMonitoringData(serviceID).getTimestampID();
+
+        //            boolean spaceUpdated = false;
+        int currentTimestamp = 0;
+        //as this method retrieves in steps of 1000 the data to avoids killing the HSQL
+        do {
+
+            //if space is null, compute it from all aggregated monitored data recorded so far
+            List<ServiceMonitoringSnapshot> enrichedCostSnapshots = persistenceSQLAccess.extractMonitoringData(currentTimestamp, serviceID);
+            dataFromTimestamp = new ArrayList<>();
+            for (ServiceMonitoringSnapshot snapshot : enrichedCostSnapshots) {
+                dataFromTimestamp.add(snapshot);
+            }
+
+            //check if new data has been collected between elasticity space querries
+            if (!dataFromTimestamp.isEmpty()) {
+                currentTimestamp = enrichedCostSnapshots.get(enrichedCostSnapshots.size() - 1).getTimestampID();
+
+                for (ServiceMonitoringSnapshot snapshot : dataFromTimestamp) {
+                    Map<MonitoredElement.MonitoredElementLevel, Map<MonitoredElement, MonitoredElementMonitoringSnapshot>> data = snapshot.getMonitoredData();
+                    for (Map<MonitoredElement, MonitoredElementMonitoringSnapshot> unitDatas : data.values()) {
+                        for (MonitoredElement element : unitDatas.keySet()) {
+                            Map<Metric, List<MetricValue>> unitValues;
+                            if (csv.containsKey(element)) {
+                                unitValues = csv.get(element);
+                            } else {
+                                unitValues = new HashMap<>();
+                                csv.put(element, unitValues);
+                            }
+                            Map<Metric, MetricValue> monElementata = unitDatas.get(element).getMonitoredData();
+                            for (Metric metric : monElementata.keySet()) {
+                                List<MetricValue> metricValues;
+                                if (unitValues.containsKey(metric)) {
+                                    metricValues = unitValues.get(metric);
+                                } else {
+                                    metricValues = new ArrayList<>();
+                                    unitValues.put(metric, metricValues);
+                                }
+                                metricValues.add(monElementata.get(metric));
+
+                            }
+                        }
+                    }
+                }
+            }
+
+        } while (!dataFromTimestamp.isEmpty() && currentTimestamp < lastTimestampID);
+
+        List<List<String>> columns = new ArrayList<>();
+
+        for (MonitoredElement element : csv.keySet()) {
+
+            for (Metric metric : csv.get(element).keySet()) {
+
+                List<String> column = new ArrayList<>();
+                columns.add(column);
+
+                column.add(element.getName()+ "_" + metric.getName() + ":" + metric.getMeasurementUnit());
+
+                for (MetricValue value : csv.get(element).get(metric)) {
+                    column.add(value.getValueRepresentation());
+                }
+            }
+        }
+
+        //write to string
+        try {
+            BufferedWriter writer = new BufferedWriter(sw);
+            boolean haveData = true;
+            while (haveData) {
+                haveData = false;
+
+                for (List<String> column : columns) {
+                    if (column.isEmpty()) {
+                        writer.write(",");
+                    } else {
+                        haveData = true;
+                        writer.write("," + column.remove(0));
+                    }
+
+                }
+                writer.newLine();
+
+            }
+
+            writer.flush();
+            writer.close();
+
+        } catch (IOException ex) {
+            log.error(ex.getMessage(), ex);
+        }
+
+        return sw.toString();
     }
 
 }
