@@ -132,8 +132,13 @@ public class DataAccessWithManualStructureManagement extends AbstractDataAccess 
             //so to work with Ganglia, I need the ID and NAME to be equal to the IP of the thing = IP
             //as Ganglia does not know instance index of mon element
             //this was required as I ned to discriminate if this is a nea 10.0.0.1, or an old one (after scale in/out)
-            elements.put(new MonitoredElement().withId(processedElement.getName()).withName(processedElement.getName()),
-                    processedElement);
+            if (processedElement.getName() != null) {
+                elements.put(new MonitoredElement().withId(processedElement.getName()).withName(processedElement.getName()),
+                        processedElement);
+            } else {
+                elements.put(new MonitoredElement().withId(processedElement.getId()).withName(processedElement.getId()),
+                        processedElement);
+            }
 
             if (!processedElement.getLevel().equals(MonitoredElementLevel.VM)) {
                 lowestLevelFoundMonitoredElement = processedElement;
