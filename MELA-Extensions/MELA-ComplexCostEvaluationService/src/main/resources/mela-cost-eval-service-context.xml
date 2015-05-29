@@ -13,27 +13,20 @@
 
     <context:property-placeholder location="file:./config/mela-cost-eval-service.properties"/>
 
-<!--    <bean id="dataFreshnessAnalysisEngine" class="at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine">
-    </bean>
-    -->
     
     <context:component-scan base-package="at.ac.tuwien.dsg.mela"/>
     
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
+ 
     
+    
+    <bean id="cloudFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
+    </bean> 
+    
+      
     <bean id="dataAccess" class="at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess">
         <constructor-arg name="databaseLocation" value="/tmp/cloud-providers-pricing-scheme"/>
     </bean>
-    
-    
-    <bean id="flexiantFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
-        <property name="descriptionFile" value="file:./config/default/Flexiant.xml"/>
-    </bean>
-    
-    <bean id="amazonFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
-        <property name="descriptionFile" value="file:./config/default/Amazon.xml"/>
-    </bean>
-    
 
     <jaxrs:server id="customerService" address="/">
         <jaxrs:serviceBeans>

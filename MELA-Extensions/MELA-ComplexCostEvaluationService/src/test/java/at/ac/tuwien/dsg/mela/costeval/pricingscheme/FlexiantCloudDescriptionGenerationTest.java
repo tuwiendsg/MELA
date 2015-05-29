@@ -190,7 +190,7 @@ public class FlexiantCloudDescriptionGenerationTest {
                                 .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
-                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24 ))
+                                .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24))
                         .withCostElement(new CostElement("diskUsageCost")
                                 .withCostMetric(new Metric("IODataSize", "GB", Metric.MetricType.RESOURCE)) //todo Write Ganglia Plug-in for IOStat
                                 .withType(CostElement.Type.USAGE)
@@ -198,8 +198,6 @@ public class FlexiantCloudDescriptionGenerationTest {
                 provider.addCloudOfferedService(unit);
 
             }
-            
-            
 
 //            RAM	CPU Cores	Units per hour
 //            0.5Gb	1               2
@@ -241,10 +239,10 @@ public class FlexiantCloudDescriptionGenerationTest {
                         .withSubcategory("VM")
                         .withName("" + helper.CPU + "CPU" + helper.RAM)
                         .withUuid(UUID.fromString("20000000-0000-0000-0000-00000000000" + index++));
-                
+
                 Resource r = new Resource("CPU");
                 r.addProperty(new Metric("VCPU", "#", Metric.MetricType.RESOURCE), new MetricValue(2));
-                
+
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("vmCost")
                                 .withCostMetric(new Metric("instance", "#", Metric.MetricType.RESOURCE))
@@ -333,7 +331,8 @@ public class FlexiantCloudDescriptionGenerationTest {
                             .withContainedElement(new MonitoredElement("EventProcessingUnit").withLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT)
                                     .withCloudOfferedService(new UsedCloudOfferedService(provider.getUuid(), "Flexiant", UUID.fromString("40000000-0000-0000-0000-000000000001"), "ImageStorage"))
                                     .withContainedElement(new MonitoredElement("10.99.0.25").withLevel(MonitoredElement.MonitoredElementLevel.VM)
-                                            .withCloudOfferedService(new UsedCloudOfferedService(provider.getUuid(), "Flexiant", UUID.fromString("20000000-0000-0000-0000-000000000001"), "1CPU1"))
+                                            .withCloudOfferedService(new UsedCloudOfferedService(provider.getUuid(), "Flexiant", UUID.fromString("20000000-0000-0000-0000-000000000001"), "1CPU1")
+                                                    .withInstanceUUID(UUID.randomUUID()))
                                     )
                             //                                    .withContainedElement(new MonitoredElement("10.99.0.18").withLevel(MonitoredElement.MonitoredElementLevel.VM)
                             //                                            .withCloudOfferedService(new UsedCloudOfferedService(provider.getUuid(), "Flexiant", UUID.fromString("20000000-0000-0000-0000-000000000001"), "1CPU1"))

@@ -50,7 +50,9 @@ import at.ac.tuwien.dsg.quelle.descriptionParsers.CloudDescriptionParser;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
+import at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import org.json.simple.JSONObject;
@@ -259,17 +261,30 @@ public class CostEvalManager {
 
     public void updateCloudProvidersDescription() {
 
+        String cloudDescriptionsPath = "./config/default/";
+
         List<CloudProvider> providers = new ArrayList<>();
 
-        // list all MELA datasources from application context
-        Map<String, CloudDescriptionParser> cloudParsers = context.getBeansOfType(CloudDescriptionParser.class);
-        for (String name : cloudParsers.keySet()) {
-            CloudDescriptionParser cloudDescriptionParser = cloudParsers.get(name);
-            log.debug("Using CloudDescriptionParser '{}': {}  to update cloud description", name, cloudDescriptionParser);
-            CloudProvider provider = cloudDescriptionParser.getCloudProviderDescription();
-            providers.add(provider);
+        CloudFileDescriptionParser cloudFileDescriptionParser = (CloudFileDescriptionParser) context.getBean("cloudFileDescriptionParser");
+
+        File folder = new File(cloudDescriptionsPath);
+        for (File cloudDescriptionFile : folder.listFiles()) {
+            try {
+                providers.add(cloudFileDescriptionParser.getCloudProviderDescription("file:" + cloudDescriptionFile.getPath()));
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+
         }
 
+//        // list all MELA datasources from application context
+//        Map<String, CloudDescriptionParser> cloudParsers = context.getBeansOfType(CloudDescriptionParser.class);
+//        for (String name : cloudParsers.keySet()) {
+//            CloudDescriptionParser cloudDescriptionParser = cloudParsers.get(name);
+//            log.debug("Using CloudDescriptionParser '{}': {}  to update cloud description", name, cloudDescriptionParser);
+//            CloudProvider provider = cloudDescriptionParser.getCloudProviderDescription();
+//            providers.add(provider);
+//        }
         CloudProviderDAO.persistCloudProviders(providers, dataAccess.getGraphDatabaseService());
 
     }

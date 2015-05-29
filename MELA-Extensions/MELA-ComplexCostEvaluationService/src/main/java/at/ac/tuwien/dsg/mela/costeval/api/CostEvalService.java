@@ -63,26 +63,6 @@ public class CostEvalService {
         return costEvalManager.getStructureWithUsedCloudOfferedServices(serviceID);
     }
 
-    /**
-     * Method for retrieving an easy to display JSON string of the latest
-     * monitored Data complete with composed metrics
-     *
-     * @return JSON representation of the monitored data. JSON Format:
-     * {"name":"ServiceEntityName"
-     * ,"type":"MonitoredElementType","children":[{"name":"metric value
-     * [metricName]","type":"metric"}]} JSON Example:
-     * {"name":"LoadBalancer","children":[{"name":"1
-     * [vmCount]","type":"metric"},{"name":"51 [clients]","type":"metric"},{"
-     * name":"10.99.0.62","children":[{"name":"51
-     * [activeConnections]","type":"metric"},{"name":"1
-     * [vmCount]","type":"metric"}],"type":"VM"}],"type":"SERVICE_UNIT"}
-     */
-    @GET
-    @Path("/{serviceID}/monitoringdata/json")
-    @Produces("application/json")
-    public String getLatestMonitoringDataInJSON(@PathParam("serviceID") String serviceID) {
-        return "{}";//costEvalManager.getLatestMonitoringDataEnrichedWithCostINJSON(serviceID);
-    }
 
     /**
      * @return the service structure containing all virtual machines currently
@@ -497,6 +477,12 @@ public class CostEvalService {
     @Path("/{serviceID}/cost/total/structure/xml")
     @Produces("application/xml")
     public MonitoredElement getCompleteStructureOfUsedServices(@PathParam("serviceID") String serviceID) {
+        return costEvalManager.getCompleteStructureOfUsedServices(serviceID);
+    }
+    @GET
+    @Path("/{serviceID}/cost/structure/xml")
+    @Produces("application/xml")
+    public MonitoredElement getCompleteStructureOfUsedServices2(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getCompleteStructureOfUsedServices(serviceID);
     }
 
