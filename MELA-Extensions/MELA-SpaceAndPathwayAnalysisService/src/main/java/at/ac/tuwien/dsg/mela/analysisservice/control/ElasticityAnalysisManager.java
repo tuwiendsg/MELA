@@ -64,6 +64,12 @@ public class ElasticityAnalysisManager {
     @Value("${analysisservice.elasticityanalysis:true}")
     private boolean elasticityAnalysisEnabled;
 
+    @Value("${analysisservice.space.analysis.pooling.enabled:true}")
+    private boolean spacePooling;
+
+    @Value("${analysisservice.space.analysis.period.s:60}")
+    private long periodsBetweenSpacePolling;
+
     @Autowired
     private MelaDataServiceConfigurationAPIConnector melaApi;
 
@@ -108,9 +114,11 @@ public class ElasticityAnalysisManager {
                     }
 
                 };
-                Timer timer = new Timer(true);
-                timer.schedule(task, 0, 5000);
-                elasticitySpaceComputationTimers.put(serviceConfiguration, timer);
+                if (spacePooling) {
+                    Timer timer = new Timer(true);
+                    timer.schedule(task, 0, periodsBetweenSpacePolling * 1000l);
+                    elasticitySpaceComputationTimers.put(serviceConfiguration, timer);
+                }
             }
         }
 
@@ -140,9 +148,11 @@ public class ElasticityAnalysisManager {
                             }
 
                         };
-                        Timer timer = new Timer(true);
-                        timer.schedule(task, 0, 5000);
-                        elasticitySpaceComputationTimers.put(serviceConfiguration, timer);
+                        if (spacePooling) {
+                            Timer timer = new Timer(true);
+                            timer.schedule(task, 0, periodsBetweenSpacePolling * 1000l);
+                            elasticitySpaceComputationTimers.put(serviceConfiguration, timer);
+                        }
                     }
                 }
             }
@@ -496,7 +506,12 @@ public class ElasticityAnalysisManager {
         }
 
         Date before = new Date();
-        ElasticitySpace space = persistenceDelegate.extractLatestElasticitySpace(serviceID);
+        ElasticitySpace space ;
+        if (spacePooling) {
+            space = persistenceDelegate.extractLatestElasticitySpace(serviceID);
+        }else{
+            space = persistenceDelegate.updateAndGetElasticitySpace(serviceID);
+        }
 
         String jsonRepr = jsonConverter.convertElasticitySpace(space, element);
 
@@ -536,6 +551,7 @@ public class ElasticityAnalysisManager {
         }
 
         ElasticitySpace space = persistenceDelegate.updateAndGetElasticitySpace(serviceID);
+        
         ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXML(space, element);
         Date after = new Date();
         log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
