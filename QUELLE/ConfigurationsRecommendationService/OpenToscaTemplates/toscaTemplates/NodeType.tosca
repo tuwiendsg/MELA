@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<tosca:Definitions xmlns:tosca="http://docs.oasis-open.org/tosca/ns/2011/12" xmlns:winery="http://www.opentosca.org/winery/extensions/tosca/2013/02/12" xmlns:ses="http://opentosca.org/self-service" id="def-03540447-b56a-4db6-a6eb-9cd30e604978" targetNamespace="http://www.example.org/opentosca/winery/org.opentosca.winery.repository">
+    <tosca:NodeType name="TemplateNamePlaceholder" abstract="no" final="no" targetNamespace="http://www.dsg.tuwien.ac.at/SES" winery:bordercolor="#e396dc">
+        <winery:PropertiesDefinition elementname="Properties" namespace="http://example.com/NodeTypes/propertiesdefinition/winery">
+            TemplatePropertiesPlaceholder
+            <!--<winery:properties>
+                <winery:key>NetworkPerformance</winery:key>
+                <winery:type>xsd:string</winery:type>
+            </winery:properties>-->   
+        </winery:PropertiesDefinition>
+        <tosca:DerivedFrom typeRef="tonty:TemplateDerivedFromPlaceholder" xmlns:tonty="http://www.dsg.tuwien.ac.at/tosca/nodetypes"/>
+    </tosca:NodeType>
+</tosca:Definitions>

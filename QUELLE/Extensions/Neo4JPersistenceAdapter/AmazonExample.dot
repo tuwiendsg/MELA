@@ -1,0 +1,263 @@
+digraph Neo {
+  node [
+    fontname = "Bitstream Vera Sans"
+    shape = "Mrecord"
+    fontsize = "8"
+  ]
+  edge [
+    fontname = "Bitstream Vera Sans"
+    fontsize = "8"
+  ]
+  N0 [
+    label = "{Node\[0\]: ServiceUnit|'subcategory' = 'Storage' : String\l'name' = 'EBS' : String\l'category' = 'IaaS' : String\l}"
+  ]
+  N0 -> N26 [
+    label = "hasQuality\n'IOperformance:IOPS' = '100' : String\l"
+  ]
+  N0 -> N26 [
+    label = "hasQuality\n'IOperformance:IOPS' = '4000' : String\l"
+  ]
+  N0 -> N27 [
+    label = "hasElasticityCapability\n'phase' = 'InstantiationTime' : String\l"
+  ]
+  N27 [
+    label = "{Node\[27\]: ElasticityCapability|'name' = 'StoragePerformance' : String\l}"
+  ]
+  N27 -> N26 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N26 [
+    label = "{Node\[26\]: Quality|'name' = 'I/O Performance' : String\l}"
+  ]
+  N29 [
+    label = "{Node\[29\]: Resource|'name' = 'Computing' : String\l}"
+  ]
+  N28 [
+    label = "{Node\[28\]: ServiceUnit|'name' = 'm1.large' : String\l'subcategory' = 'VM' : String\l'category' = 'IaaS' : String\l}"
+  ]
+  N28 -> N29 [
+    label = "hasResource\n'Architecture:type' = 'x64' : String\l'VCPU:number' = 1 : int\l"
+  ]
+  N28 -> N29 [
+    label = "hasResource\n'Architecture:type' = 'x86' : String\l'VCPU:number' = 1 : int\l"
+  ]
+  N28 -> N30 [
+    label = "hasResource\n'memorySize:GB' = 7.5 : double\l"
+  ]
+  N28 -> N31 [
+    label = "hasResource\n'size:GB' = 420 : int\l'disks:number' = 2 : int\l"
+  ]
+  N28 -> N32 [
+    label = "hasResource\n'Reservation:type' = 'OnDemand' : String\l"
+  ]
+  N28 -> N32 [
+    label = "hasResource\n'Reservation:type' = 'Spot' : String\l"
+  ]
+  N28 -> N32 [
+    label = "hasResource\n'Reservation:type' = 'Reserved1YearLightUtilization' : String\l"
+  ]
+  N28 -> N32 [
+    label = "hasResource\n'Reservation:type' = 'Reserved1YearMediumUtilization' : String\l"
+  ]
+  N28 -> N32 [
+    label = "hasResource\n'Reservation:type' = 'Reserved1YearHeavyUtilization' : String\l"
+  ]
+  N28 -> N32 [
+    label = "hasResource\n'Reservation:type' = 'Reserved2YearsLightUtilization' : String\l"
+  ]
+  N28 -> N32 [
+    label = "hasResource\n'Reservation:type' = 'Reserved2YearsMediumUtilization' : String\l"
+  ]
+  N28 -> N32 [
+    label = "hasResource\n'Reservation:type' = 'Reserved2YearsHeavyUtilization' : String\l"
+  ]
+  N28 -> N33 [
+    label = "hasQuality\n'performance:rank' = 'Moderate' : String\l"
+  ]
+  N28 -> N34 [
+    label = "hasQuality\n'ECU:number' = 4 : int\l"
+  ]
+  N28 -> N35 [
+    label = "hasCostFunction\n"
+  ]
+  N28 -> N37 [
+    label = "hasCostFunction\n"
+  ]
+  N28 -> N38 [
+    label = "hasCostFunction\n"
+  ]
+  N28 -> N40 [
+    label = "hasCostFunction\n"
+  ]
+  N28 -> N41 [
+    label = "hasCostFunction\n"
+  ]
+  N28 -> N42 [
+    label = "hasCostFunction\n"
+  ]
+  N28 -> N43 [
+    label = "hasCostFunction\n"
+  ]
+  N28 -> N44 [
+    label = "hasElasticityCapability\n'phase' = 'InstantiationTime' : String\l"
+  ]
+  N28 -> N45 [
+    label = "hasElasticityCapability\n'phase' = 'InstantiationTime' : String\l"
+  ]
+  N28 -> N46 [
+    label = "hasElasticityCapability\n'phase' = 'InstantiationTime' : String\l"
+  ]
+  N28 -> N47 [
+    label = "hasElasticityCapability\n'phase' = 'InstantiationTime' : String\l"
+  ]
+  N31 [
+    label = "{Node\[31\]: Resource|'name' = 'InstanceStorage' : String\l}"
+  ]
+  N30 [
+    label = "{Node\[30\]: Resource|'name' = 'Memory' : String\l}"
+  ]
+  N34 [
+    label = "{Node\[34\]: Quality|'name' = 'ComputingPerformance' : String\l}"
+  ]
+  N35 [
+    label = "{Node\[35\]: CostFunction|'name' = 'OnDemandCost' : String\l}"
+  ]
+  N35 -> N36 [
+    label = "hasCostElement\n'1' = 0.24 : double\l"
+  ]
+  N35 -> N32 [
+    label = "IN_CONJUNCTION_WITH\n'Reservation:type' = 'OnDemand' : String\l"
+  ]
+  N32 [
+    label = "{Node\[32\]: Resource|'name' = 'ReservationScheme' : String\l}"
+  ]
+  N33 [
+    label = "{Node\[33\]: Quality|'name' = 'NetworkPerformance' : String\l}"
+  ]
+  N38 [
+    label = "{Node\[38\]: CostFunction|'name' = '1YearLightUtilizationCost' : String\l}"
+  ]
+  N38 -> N39 [
+    label = "hasCostElement\n'1' = 243.0 : double\l"
+  ]
+  N38 -> N36 [
+    label = "hasCostElement\n'1' = 0.13 : double\l"
+  ]
+  N38 -> N32 [
+    label = "IN_CONJUNCTION_WITH\n'Reservation:type' = 'Reserved1YearLightUtilization' : String\l"
+  ]
+  N39 [
+    label = "{Node\[39\]: CostElement|'type' = 'PERIODIC' : String\l'metric' = 'OneTimePay:value' : String\l'name' = 'UpfrontCost' : String\l}"
+  ]
+  N36 [
+    label = "{Node\[36\]: CostElement|'type' = 'PERIODIC' : String\l'name' = 'HourlyCost' : String\l'metric' = 'hourlyUsage:hour' : String\l}"
+  ]
+  N37 [
+    label = "{Node\[37\]: CostFunction|'name' = 'SpotCost' : String\l}"
+  ]
+  N37 -> N36 [
+    label = "hasCostElement\n'1' = 0.026 : double\l"
+  ]
+  N37 -> N32 [
+    label = "IN_CONJUNCTION_WITH\n'Reservation:type' = 'Spot' : String\l"
+  ]
+  N42 [
+    label = "{Node\[42\]: CostFunction|'name' = '2YearsMediumUtilizationCost' : String\l}"
+  ]
+  N42 -> N39 [
+    label = "hasCostElement\n'1' = 860.0 : double\l"
+  ]
+  N42 -> N36 [
+    label = "hasCostElement\n'1' = 0.064 : double\l"
+  ]
+  N42 -> N32 [
+    label = "IN_CONJUNCTION_WITH\n'Reservation:type' = 'Reserved2YearsMediumUtilization' : String\l"
+  ]
+  N43 [
+    label = "{Node\[43\]: CostFunction|'name' = '2YearsHeavyUtilizationCost' : String\l}"
+  ]
+  N43 -> N39 [
+    label = "hasCostElement\n'1' = 1028.0 : double\l"
+  ]
+  N43 -> N36 [
+    label = "hasCostElement\n'1' = 0.046 : double\l"
+  ]
+  N43 -> N32 [
+    label = "IN_CONJUNCTION_WITH\n'Reservation:type' = 'Reserved2YearsHeavyUtilization' : String\l"
+  ]
+  N40 [
+    label = "{Node\[40\]: CostFunction|'name' = '1YearHeavyUtilizationCost' : String\l}"
+  ]
+  N40 -> N39 [
+    label = "hasCostElement\n'1' = 676.0 : double\l"
+  ]
+  N40 -> N36 [
+    label = "hasCostElement\n'1' = 0.056 : double\l"
+  ]
+  N40 -> N32 [
+    label = "IN_CONJUNCTION_WITH\n'Reservation:type' = 'Reserved1YearHeavyUtilization' : String\l"
+  ]
+  N41 [
+    label = "{Node\[41\]: CostFunction|'name' = '2YearsLightUtilizationCost' : String\l}"
+  ]
+  N41 -> N39 [
+    label = "hasCostElement\n'1' = 384.0 : double\l"
+  ]
+  N41 -> N36 [
+    label = "hasCostElement\n'1' = 0.108 : double\l"
+  ]
+  N41 -> N32 [
+    label = "IN_CONJUNCTION_WITH\n'Reservation:type' = 'Reserved2YearsLightUtilization' : String\l"
+  ]
+  N46 [
+    label = "{Node\[46\]: ElasticityCapability|'name' = 'ReservationSchemeElasticity' : String\l}"
+  ]
+  N46 -> N32 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N47 [
+    label = "{Node\[47\]: ElasticityCapability|'name' = 'CostElasticity' : String\l}"
+  ]
+  N47 -> N48 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N47 -> N42 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N47 -> N41 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N47 -> N40 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N47 -> N49 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N47 -> N49 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N47 -> N37 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N47 -> N35 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N44 [
+    label = "{Node\[44\]: ElasticityCapability|'name' = 'Architecture' : String\l}"
+  ]
+  N44 -> N29 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N45 [
+    label = "{Node\[45\]: ElasticityCapability|'name' = 'StorageElCapability' : String\l}"
+  ]
+  N45 -> N0 [
+    label = "elasticityCapabilityFor\n'minimumLifetimeInHours' = 0 : int\l'maxNrOfChanges' = 0.0 : double\l'type' = 'OptionalAssociation' : String\l"
+  ]
+  N49 [
+    label = "{Node\[49\]: CostFunction|'name' = '1YearMediumUtilizationCost' : String\l}"
+  ]
+  N48 [
+    label = "{Node\[48\]: CostFunction|'name' = '2YearsHEavyUtilizationCost' : String\l}"
+  ]
+}
