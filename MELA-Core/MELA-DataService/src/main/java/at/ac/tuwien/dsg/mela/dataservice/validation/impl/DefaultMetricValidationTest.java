@@ -18,11 +18,13 @@ package at.ac.tuwien.dsg.mela.dataservice.validation.impl;
 
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.queuebased.helpers.dataobjects.NumericalCollectedMetricValue;
 import at.ac.tuwien.dsg.mela.dataservice.validation.MetricValidationTest;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
+@Component
 public class DefaultMetricValidationTest extends MetricValidationTest {
 
     {

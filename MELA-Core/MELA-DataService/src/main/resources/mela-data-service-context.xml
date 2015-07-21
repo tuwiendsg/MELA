@@ -31,9 +31,7 @@
         </amq:transportConnectors>
     </amq:broker>
     
-    <!--Metric validators-->
-    <bean id="defaultMetricsValidationTest"  class="at.ac.tuwien.dsg.mela.dataservice.validation.impl.DefaultMetricValidationTest">
-    </bean>
+
 
     <import resource="file:./config/dataSources.xml" />
     
@@ -128,10 +126,11 @@
     </beans>
     
     <beans>
-        
+        <!--Metric validators-->
+<!--        <bean id="defaultMetricsValidationTest"  class="at.ac.tuwien.dsg.mela.dataservice.validation.impl.DefaultMetricValidationTest"/>
         <bean id="dataFreshnessAnalysisEngine" class="at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine"/>
        
-    
+    -->
         <!-- Adds annotated spring beans -->
         <context:component-scan base-package="at.ac.tuwien.dsg"/>
      
