@@ -24,7 +24,7 @@ import at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngine;
 import at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngineTest;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
-import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
+import at.ac.tuwien.dsg.mela.costeval.persistence.CostPersistenceDelegate;
 import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
@@ -64,7 +64,7 @@ public class ForDebuggingDataProcessingFromDataService {
     static final Logger log = LoggerFactory.getLogger(ForDebuggingDataProcessingFromDataService.class);
 
 //    @Value("#{persistenceDelegate}")
-    private PersistenceDelegate persistenceDelegate;
+    private CostPersistenceDelegate persistenceDelegate;
     private at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceDelegate dataAccessPersistenceDelegate;
 
     private PersistenceSQLAccess generalAccess;
@@ -110,7 +110,7 @@ public class ForDebuggingDataProcessingFromDataService {
                 }
             }
 
-            persistenceDelegate = new PersistenceDelegate();
+            persistenceDelegate = new CostPersistenceDelegate();
             persistenceDelegate.setDataSource(dataSource);
             persistenceDelegate.setJdbcTemplate(jdbcTemplate);
 

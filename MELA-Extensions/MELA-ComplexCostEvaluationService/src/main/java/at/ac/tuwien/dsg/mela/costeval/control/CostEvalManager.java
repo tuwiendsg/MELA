@@ -21,7 +21,7 @@ package at.ac.tuwien.dsg.mela.costeval.control;
 
 import at.ac.tuwien.dsg.mela.common.applicationdeploymentconfiguration.UsedCloudOfferedService;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesBlock;
-import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
+import at.ac.tuwien.dsg.mela.costeval.persistence.CostPersistenceDelegate;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.XmlConverter;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.ElasticityDependencyCoefficient;
@@ -43,6 +43,7 @@ import at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngine;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.UnusedCostUnitsReport;
+import at.ac.tuwien.dsg.mela.costeval.reporting.CostReportingAsMetricsToMelaDataService;
 import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
@@ -102,7 +103,7 @@ public class CostEvalManager {
     private CostEvalEngine costEvalEngine;
 
     @Autowired
-    private PersistenceDelegate persistenceDelegate;
+    private CostPersistenceDelegate persistenceDelegate;
 
     @Autowired
     private CostJSONConverter jsonConverter;
@@ -118,6 +119,9 @@ public class CostEvalManager {
 
     @Autowired
     private DataAggregationEngine instantMonitoringDataEnrichmentEngine;
+
+    @Autowired
+    private CostReportingAsMetricsToMelaDataService costReportingMelaDataService;
 
     private ExecutorService threadExecutorService;
 
@@ -159,11 +163,11 @@ public class CostEvalManager {
         costElasticityTimers = new ConcurrentHashMap<String, Timer>();
     }
 
-    public PersistenceDelegate getPersistenceDelegate() {
+    public CostPersistenceDelegate getPersistenceDelegate() {
         return persistenceDelegate;
     }
 
-    public void setPersistenceDelegate(PersistenceDelegate persistenceDelegate) {
+    public void setPersistenceDelegate(CostPersistenceDelegate persistenceDelegate) {
         this.persistenceDelegate = persistenceDelegate;
     }
 
@@ -822,9 +826,7 @@ public class CostEvalManager {
 //                        new Object[]{lastRetrievedTimestampID, allMonData.size(), lastTimestampID});
                 for (ServiceMonitoringSnapshot monitoringSnapshot : allMonData) {
 
-//                    if (monitoringSnapshot.getTimestampID() == 720) {
-//                        log.debug("Am ajuns ");
-//                    }
+                    // TODO: Check if here I might need to remove all ELEMENT COST metrics created by the cost service which evaluated cost and sent it back to MELA data service
                     Date before = new Date();
                     //update total usage so far
                     previouselyDeterminedUsage = costEvalEngine.updateTotalUsageSoFarWithCompleteStructureIncludingServicesAsCloudOfferedService(cloudProvidersMap, previouselyDeterminedUsage, monitoringSnapshot);
@@ -837,6 +839,9 @@ public class CostEvalManager {
                     //compute composition rules to create instant cost based on total usage so far
                     final CompositionRulesBlock block = costEvalEngine.createCompositionRulesForInstantUsageCostIncludingServicesAsCloudOfferedService(cloudProvidersMap, cleanedCostSnapshot.getSnapshot().getMonitoredService(), cleanedCostSnapshot, monitoringSnapshot.getTimestamp());
                     final ServiceMonitoringSnapshot enrichedSnapshot = costEvalEngine.applyCompositionRules(block, convertedCurrentStructure);
+
+                    //here I need to actually send all the cost elements as metrics to mela data source
+                    costReportingMelaDataService.sendElementCostMetrics(enrichedSnapshot);
 
                     //persist instant cost
                     persistenceDelegate.persistInstantCostSnapshot(serviceID, new CostEnrichedSnapshot().withCostCompositionRules(block)
@@ -1764,7 +1769,7 @@ public class CostEvalManager {
         return this;
     }
 
-    public CostEvalManager withPersistenceDelegate(final PersistenceDelegate persistenceDelegate) {
+    public CostEvalManager withPersistenceDelegate(final CostPersistenceDelegate persistenceDelegate) {
         this.persistenceDelegate = persistenceDelegate;
         return this;
     }

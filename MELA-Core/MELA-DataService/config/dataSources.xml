@@ -16,5 +16,7 @@
 <!-- <mela:ganglia-datasource id="flexiant-1" host="localhost" port="8650" polling-interval-ms="5000"/>-->
  
 <mela:ganglia-datasource id="flexiant-1" host="localhost" port="8649" polling-interval-ms="5000"/>
- 
+
+<mela:mela-push-datasource id="cost-data-source" polling-interval-ms="1000"/>
+
 </beans>

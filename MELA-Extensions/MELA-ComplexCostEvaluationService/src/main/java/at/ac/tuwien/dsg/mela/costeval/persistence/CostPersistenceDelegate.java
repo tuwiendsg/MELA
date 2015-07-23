@@ -57,9 +57,9 @@ import org.springframework.stereotype.Service;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
 @Service
-public class PersistenceDelegate {
+public class CostPersistenceDelegate {
 
-    static final Logger log = LoggerFactory.getLogger(PersistenceDelegate.class);
+    static final Logger log = LoggerFactory.getLogger(CostPersistenceDelegate.class);
 
     @Autowired
     private PersistenceSQLAccess persistenceSQLAccess;
@@ -69,7 +69,7 @@ public class PersistenceDelegate {
 
     protected JdbcTemplate jdbcTemplate;
 
-    public PersistenceDelegate() {
+    public CostPersistenceDelegate() {
     }
 
     public void setDataSource(DataSource dataSource) {

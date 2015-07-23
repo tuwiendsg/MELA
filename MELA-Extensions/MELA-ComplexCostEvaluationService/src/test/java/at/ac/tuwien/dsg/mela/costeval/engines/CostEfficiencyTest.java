@@ -35,7 +35,7 @@ import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.UnusedCostUnitsReport;
-import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
+import at.ac.tuwien.dsg.mela.costeval.persistence.CostPersistenceDelegate;
 import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;

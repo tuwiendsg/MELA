@@ -34,7 +34,7 @@ import static at.ac.tuwien.dsg.mela.costeval.engines.CostEvalEngine.log;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
 import at.ac.tuwien.dsg.mela.costeval.model.CostEnrichedSnapshot;
 import at.ac.tuwien.dsg.mela.costeval.model.LifetimeEnrichedSnapshot;
-import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
+import at.ac.tuwien.dsg.mela.costeval.persistence.CostPersistenceDelegate;
 import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
@@ -78,7 +78,7 @@ import org.springframework.util.Assert;
 public class CostEvalOverTimeTest {
 
 //    @Value("#{persistenceDelegate}")
-    private PersistenceDelegate persistenceDelegate;
+    private CostPersistenceDelegate persistenceDelegate;
     private at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceDelegate dataAccessPersistenceDelegate;
 
     private PersistenceSQLAccess generalAccess;
@@ -124,7 +124,7 @@ public class CostEvalOverTimeTest {
                 }
             }
 
-            persistenceDelegate = new PersistenceDelegate();
+            persistenceDelegate = new CostPersistenceDelegate();
             persistenceDelegate.setDataSource(dataSource);
             persistenceDelegate.setJdbcTemplate(jdbcTemplate);
 

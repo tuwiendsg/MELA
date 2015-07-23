@@ -14,16 +14,30 @@
     <context:property-placeholder location="file:./config/mela-cost-eval-service.properties"/>
 
     
-    <context:component-scan base-package="at.ac.tuwien.dsg.mela"/>
+    <context:component-scan base-package="at.ac.tuwien.dsg.mela.common"/>
+    <context:component-scan base-package="at.ac.tuwien.dsg.mela.costeval"/>
     
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
- 
     
+    <bean id="dataFreshnessAnalysisEngine" class="at.ac.tuwien.dsg.mela.dataservice.qualityanalysis.impl.DefaultFreshnessAnalysisEngine"/>
+    <bean id="dataAggregationEngine" class="at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine"/>
+       
+ 
+    <!-- JMS stuff -->
+    <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="tcp://${dataservice.ip}:9124"/>
+    </bean>
+
+    <amq:queue id="destination" physicalName="metrics_queue"/>
+
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory"/>
+        <property name="defaultDestination" ref="destination"/>
+    </bean>
     
     <bean id="cloudFileDescriptionParser" class="at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser">
     </bean> 
     
-      
     <bean id="dataAccess" class="at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess">
         <constructor-arg name="databaseLocation" value="/tmp/cloud-providers-pricing-scheme"/>
     </bean>

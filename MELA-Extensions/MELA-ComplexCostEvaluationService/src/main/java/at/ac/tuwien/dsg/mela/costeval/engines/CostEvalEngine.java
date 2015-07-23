@@ -1289,6 +1289,7 @@ public class CostEvalEngine {
 
                         for (CostElement element : cf.getCostElements()) {
 
+                            //for instant cost per usage we need to consider cost of usage unit, disregarding monitoring data    
                             if (element.getType().equals(CostElement.Type.USAGE)) {
                                 MetricValue value = usedServiceDataSoFar.getMonitoredData().get(element.getCostMetric());
 

@@ -27,7 +27,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.persistence.PersistenceSQLAccess;
 import at.ac.tuwien.dsg.mela.costeval.model.CloudServicesSpecification;
-import at.ac.tuwien.dsg.mela.costeval.persistence.PersistenceDelegate;
+import at.ac.tuwien.dsg.mela.costeval.persistence.CostPersistenceDelegate;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 public class FlexiantCloudDescriptionGenerationTest {
 
 //    @Value("#{persistenceDelegate}")
-    private PersistenceDelegate persistenceDelegate;
+    private CostPersistenceDelegate persistenceDelegate;
 
     private PersistenceSQLAccess generalAccess;
 
