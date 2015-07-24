@@ -2,7 +2,8 @@ import urllib, urllib2, sys, httplib
 
 
 url = "/MELA/REST_WS/Service"
-HOST_IP="128.130.172.214:8180"
+#HOST_IP="128.130.172.214:8180"
+HOST_IP="109.231.126.217:8180"
 #HOST_IP="localhost:8180"
 
 

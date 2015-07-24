@@ -45,6 +45,7 @@
     <jaxrs:server id="customerService" address="/">
         <jaxrs:serviceBeans>
             <ref bean="costEvalService"/>
+            <ref bean="cloudProvidersManagementService"/>
             <bean id="swaggerResourceJSON" class="com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON"/>
         </jaxrs:serviceBeans>
         <jaxrs:features>

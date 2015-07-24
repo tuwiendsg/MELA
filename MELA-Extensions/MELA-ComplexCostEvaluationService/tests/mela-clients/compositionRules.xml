@@ -189,9 +189,33 @@
         </CompositionRule>
 
         <CompositionRule TargetMonitoredElementLevel="VM">
-            <ResultingMetric type="RESOURCE" measurementUnit="GB" name="diskSize"/>
-            <Operation type="KEEP">
-               <ReferenceMetric type="RESOURCE" measurementUnit="GB" name="disk_total"/>
+            <ResultingMetric type="RESOURCE" measurementUnit="costUnits" name="cost"/>
+            <Operation MetricSourceMonitoredElementLevel="VM" type="KEEP">
+               <ReferenceMetric type="RESOURCE" measurementUnit="GB" name="cost"/>
+            </Operation>
+        </CompositionRule>
+
+
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_UNIT">
+            <ResultingMetric type="RESOURCE" measurementUnit="costUnits" name="cost"/>
+            <Operation MetricSourceMonitoredElementLevel="SERVICE_UNIT" type="KEEP">
+               <ReferenceMetric type="RESOURCE" measurementUnit="GB" name="cost"/>
+            </Operation>
+        </CompositionRule>
+
+
+        <CompositionRule TargetMonitoredElementLevel="SERVICE_TOPOLOGY">
+            <ResultingMetric type="RESOURCE" measurementUnit="costUnits" name="cost"/>
+            <Operation MetricSourceMonitoredElementLevel="SERVICE_TOPOLOGY" type="KEEP">
+               <ReferenceMetric type="RESOURCE" measurementUnit="GB" name="cost"/>
+            </Operation>
+        </CompositionRule>
+
+
+        <CompositionRule TargetMonitoredElementLevel="SERVICE">
+            <ResultingMetric type="RESOURCE" measurementUnit="costUnits" name="cost"/>
+            <Operation MetricSourceMonitoredElementLevel="SERVICE" type="KEEP">
+               <ReferenceMetric type="RESOURCE" measurementUnit="GB" name="cost"/>
             </Operation>
         </CompositionRule>
 

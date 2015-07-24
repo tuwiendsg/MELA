@@ -2,3 +2,7 @@
 /Extensions/CSVOutputFormatter/target/
 /Extensions/GraphVizOutputFormatter/target/
 /ConfigurationsRecommendationService/target/
+/Core/CloudServicesModel/target/
+/Extensions/Neo4JPersistenceAdapter/target/
+/Extensions/CloudServicesDescriptionParser/target/
+/Core/ElasticityQuantification/target/

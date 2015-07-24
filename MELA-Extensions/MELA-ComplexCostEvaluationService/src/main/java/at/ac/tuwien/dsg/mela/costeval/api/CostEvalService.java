@@ -63,7 +63,6 @@ public class CostEvalService {
         return costEvalManager.getStructureWithUsedCloudOfferedServices(serviceID);
     }
 
-
     /**
      * @return the service structure containing all virtual machines currently
      * running service units
@@ -479,6 +478,7 @@ public class CostEvalService {
     public MonitoredElement getCompleteStructureOfUsedServices(@PathParam("serviceID") String serviceID) {
         return costEvalManager.getCompleteStructureOfUsedServices(serviceID);
     }
+
     @GET
     @Path("/{serviceID}/cost/structure/xml")
     @Produces("application/xml")

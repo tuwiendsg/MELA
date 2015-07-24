@@ -432,6 +432,97 @@ public class ServiceUnitDAO extends Neo4JDAO {
 //        }
         return serviceUnitFound;
     }
+    
+    
+    /**
+     * DOES NOT return also properties embedded on the resource relationships
+     *
+     * @param resourceToSearchFor
+     * @param database
+     * @return
+     */
+    public static CloudOfferedService searchForCloudServiceUnitUsingUUIDUniqueResult(CloudOfferedService serviceUnitToSearchFor, EmbeddedGraphDatabase database) {
+
+        CloudOfferedService serviceUnitFound = null;
+        boolean transactionAllreadyRunning = false;
+        try {
+            transactionAllreadyRunning = (database.getTxManager().getStatus() == Status.STATUS_ACTIVE);
+        } catch (SystemException ex) {
+            log.error(ex.getMessage(), ex);
+        }
+        Transaction tx = (transactionAllreadyRunning) ? null : database.beginTx();
+
+        try {
+            for (Node node : database.findNodesByLabelAndProperty(LABEL, UUID, serviceUnitToSearchFor.getUuid().toString())) {
+//                ServiceUnit resource = new ServiceUnit();
+//                resource.setId(node.getId());
+
+                if (node.hasProperty(UUID)) {
+                    String name = node.getProperty(UUID).toString();
+                    if (!name.equals(serviceUnitToSearchFor.getUuid().toString())) {
+                        continue;
+                    }
+                } else {
+                    log.warn("Retrieved serviceUnit " + serviceUnitToSearchFor + " has no name");
+                }
+
+                CloudOfferedService serviceUnit = new CloudOfferedService();
+                serviceUnit.setId(node.getId());
+                if (node.hasProperty(KEY)) {
+                    serviceUnit.setName(node.getProperty(KEY).toString());
+                } else {
+                    log.warn("Retrieved serviceUnit " + serviceUnitToSearchFor + " has no " + KEY);
+                }
+
+                if (node.hasProperty(CATEGORY)) {
+                    serviceUnit.setCategory(node.getProperty(CATEGORY).toString());
+                } else {
+                    log.warn("Retrieved serviceUnit " + serviceUnitToSearchFor + " has no " + CATEGORY);
+                }
+
+                if (node.hasProperty(SUBCATEGORY)) {
+                    serviceUnit.setSubcategory(node.getProperty(SUBCATEGORY).toString());
+                } else {
+                    log.warn("Retrieved serviceUnit " + serviceUnitToSearchFor + " has no " + SUBCATEGORY);
+                }
+
+                if (node.hasProperty(UUID)) {
+                    serviceUnit.setUuid(java.util.UUID.fromString(node.getProperty(UUID).toString()));
+                } else {
+                    log.warn("Retrieved CloudProvider " + serviceUnit + " has no " + UUID);
+                }
+
+                //If this happened because you are updating something, disregard this e-mail..addAll(serviceUnitDAO.getMandatoryAssociations(node.getId(), database));
+                //serviceUnit.getOptionalAssociations().addAll(serviceUnitDAO.getOptionalAssociations(node.getId(), database));
+                serviceUnit.getResourceProperties().addAll(ResourceDAO.getResourcePropertiesForNode(node.getId(), database));
+                serviceUnit.getQualityProperties().addAll(QualityDAO.getQualityPropertiesForNode(node.getId(), database));
+                serviceUnit.getCostFunctions().addAll(CostFunctionDAO.getCostFunctionsForNode(node.getId(), database));
+                serviceUnit.getElasticityCapabilities().addAll(ElasticityCapabilityDAO.getELasticityCapabilitiesForNode(node.getId(), database));
+                //serviceUnit.setElasticityQuantification(getElasticityDependency(node.getId(), database));
+                serviceUnitFound = serviceUnit;
+
+                break;
+            }
+            if (!transactionAllreadyRunning) {
+                if (!transactionAllreadyRunning) {
+                    tx.success();
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+
+            e.printStackTrace();
+        } finally {
+            if (!transactionAllreadyRunning) {
+                tx.finish();
+            }
+        }
+
+//        if (serviceUnitFound == null) {
+//            log.warn( "serviceUnit " + serviceUnitToSearchFor + " was not found");
+//        }
+        return serviceUnitFound;
+    }
 
     public static CloudOfferedService getByID(Long nodeID, EmbeddedGraphDatabase database) {
 

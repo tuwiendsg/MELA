@@ -24,10 +24,6 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionR
 import at.ac.tuwien.dsg.mela.costeval.persistence.CostPersistenceDelegate;
 import at.ac.tuwien.dsg.mela.common.utils.outputConverters.XmlConverter;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.ElasticityDependencyCoefficient;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.ElasticityDependencyElement;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.MonitoredElementElasticityDependency;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityDependencies.ServiceElasticityDependencies;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.ServiceElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
@@ -47,11 +43,15 @@ import at.ac.tuwien.dsg.mela.costeval.reporting.CostReportingAsMetricsToMelaData
 import at.ac.tuwien.dsg.mela.costeval.utils.conversion.CostJSONConverter;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudProvider;
 import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CloudOfferedService;
-import at.ac.tuwien.dsg.quelle.descriptionParsers.CloudDescriptionParser;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.DataAccess;
 import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.CloudProviderDAO;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.quelle.cloudDescriptionParsers.impl.CloudFileDescriptionParser;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostElement;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.CostFunction;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.ElasticityCapability;
+import at.ac.tuwien.dsg.quelle.cloudServicesModel.concepts.Unit;
+import at.ac.tuwien.dsg.quelle.extensions.neo4jPersistenceAdapter.daos.ServiceUnitDAO;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -1956,5 +1956,113 @@ public class CostEvalManager {
         }
 
         return sw.toString();
+    }
+
+    /**
+     * Will search for the service with supplied name, and return the minimum
+     * possible cost of using it
+     *
+     * @param cloudService
+     * @return
+     */
+    public Double getMinimumCostEstimationForServiceByName(CloudOfferedService cloudService) {
+        CloudOfferedService description = ServiceUnitDAO.searchForCloudServiceUnitsUniqueResult(cloudService, dataAccess.getGraphDatabaseService());
+
+        if (description == null) {
+            log.error("Service with UUID " + cloudService.getUuid() + " not found in cloud providers description");
+            return Double.POSITIVE_INFINITY;
+        }
+
+        return this.computeCostForService(description);
+
+    }
+
+    /**
+     * Will search for the service with supplied UUID, and return the minimum
+     * possible cost of using it
+     *
+     * @param cloudService
+     * @return
+     */
+    public Double getMinimumCostEstimationForServiceByUUID(CloudOfferedService cloudService) {
+        CloudOfferedService description = ServiceUnitDAO.searchForCloudServiceUnitUsingUUIDUniqueResult(cloudService, dataAccess.getGraphDatabaseService());
+
+        if (description == null) {
+            log.error("Service with UUID " + cloudService.getUuid() + " not found in cloud providers description");
+            return Double.POSITIVE_INFINITY;
+        }
+
+        return this.computeCostForService(description);
+
+    }
+
+    private Double computeCostForService(CloudOfferedService description) {
+
+        Double cost = 0.0d;
+
+        //unfortunately I need to do this recursively, as: service can have optional and mandatory costs, 
+        //and can have mandatory associations to other services, in turn with mandatory cost, so need to eval this all
+        List<CloudOfferedService> toProcess = new ArrayList<>();
+        toProcess.add(description);
+
+        while (!toProcess.isEmpty()) {
+            CloudOfferedService service = toProcess.remove(0);
+
+            List<Unit> mandatoryDeps = new ArrayList<>();
+
+            for (ElasticityCapability capability : service.getResourceAssociations()) {
+                for (Unit u : capability.getMandatoryDependencies()) {
+                    mandatoryDeps.add(u);
+                }
+            }
+
+            for (ElasticityCapability capability : service.getQualityAssociations()) {
+                for (Unit u : capability.getMandatoryDependencies()) {
+                    mandatoryDeps.add(u);
+                }
+            }
+
+            for (ElasticityCapability capability : service.getCostAssociations()) {
+                //cost we just add, as if its mandatory, its mandatory
+                for (Unit u : capability.getMandatoryDependencies()) {
+                    CostFunction cf = (CostFunction) u;
+                    //for each cost element, we add the first cost interval to the overall service cost
+                    for (CostElement ce : cf.getCostElements()) {
+                        Map<MetricValue, Double> costIntervalFunction = ce.getCostIntervalFunction();
+                        cost += costIntervalFunction.get(ce.getCostIntervalsInAscendingOrder().get(0));
+                    }
+                }
+            }
+
+            for (CostFunction cf : service.getCostFunctions()) {
+                //only consider cost functions which are mandatory applicable, or are by default applicable without any IF
+                if (!cf.getAppliedIfServiceInstanceUses().isEmpty()) {
+                    if (mandatoryDeps.containsAll(cf.getAppliedIfServiceInstanceUses())) {
+                        for (CostElement ce : cf.getCostElements()) {
+                            Map<MetricValue, Double> costIntervalFunction = ce.getCostIntervalFunction();
+                            cost += costIntervalFunction.get(ce.getCostIntervalsInAscendingOrder().get(0));
+                        }
+                    }
+                } else {
+
+                    for (CostElement ce : cf.getCostElements()) {
+                        Map<MetricValue, Double> costIntervalFunction = ce.getCostIntervalFunction();
+                        cost += costIntervalFunction.get(ce.getCostIntervalsInAscendingOrder().get(0));
+                    }
+                }
+            }
+
+            for (ElasticityCapability capability : service.getServiceUnitAssociations()) {
+                //cost we just add, as if its mandatory, its mandatory
+                for (Unit u : capability.getMandatoryDependencies()) {
+                    CloudOfferedService cos = (CloudOfferedService) u;
+                    toProcess.add(cos);
+                }
+            }
+
+        }
+
+        return cost;
+
     }
 }
