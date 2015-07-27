@@ -46,7 +46,7 @@ public class CostReportingAsMetricsToMelaDataService {
                         MetricValue value = snapshot.getMetricValue(CostEvalEngine.ELEMENT_COST_METRIC);
                         NumericalCollectedMetricValue costMetric = new NumericalCollectedMetricValue()
                                 .withName("cost")
-                                .withType(CostEvalEngine.ELEMENT_COST_METRIC.getType().toString())
+                                .withType("double")
                                 .withUnits(CostEvalEngine.ELEMENT_COST_METRIC.getMeasurementUnit())
                                 .withValue(Double.parseDouble(value.getValueRepresentation())) //double
                                 .withMonitoredElementLevel(snapshot.getMonitoredElement().getLevel().toString())
