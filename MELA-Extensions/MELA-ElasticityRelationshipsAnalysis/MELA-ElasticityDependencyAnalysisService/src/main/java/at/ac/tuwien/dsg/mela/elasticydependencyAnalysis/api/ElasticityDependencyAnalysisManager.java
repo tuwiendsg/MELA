@@ -63,7 +63,7 @@ import org.springframework.stereotype.Service;
 public class ElasticityDependencyAnalysisManager {
 
     static final org.slf4j.Logger log = LoggerFactory.getLogger(ElasticityDependencyAnalysisManager.class);
-   
+
     @Autowired
     private PersistenceDelegate persistenceDelegate;
 
@@ -163,7 +163,7 @@ public class ElasticityDependencyAnalysisManager {
 
                         for (int i = 0; i < dependentMetricValues.size() && i < filteredCoefficientMetricValues.size(); i++) {
 
-                            Double filteredCoeffValue =  ((Number)filteredCoefficientMetricValues.get(i).getValue()).doubleValue();
+                            Double filteredCoeffValue = ((Number) filteredCoefficientMetricValues.get(i).getValue()).doubleValue();
                             Double originalCoeffValue = ((Number) originalCoefficientMetricValues.get(i).getValue()).doubleValue();
                             coefficientValuesColumns.set(i, coefficientValuesColumns.get(i) + "," + filteredCoeffValue + "," + originalCoeffValue);
 
@@ -187,15 +187,13 @@ public class ElasticityDependencyAnalysisManager {
         try {
             BufferedWriter writer = new BufferedWriter(sw);
 
-            //max nr of records
-            int max = column.stream().max(new Comparator<List<String>>() {
-
-                @Override
-                public int compare(List<String> o1, List<String> o2) {
-                    return ((Integer) o1.size()).compareTo(o2.size());
+            int max = Integer.MIN_VALUE;
+//        List<MetricValue> minList = dataToClassify.values().iterator().next();
+            for (List<String> list : column) {
+                if (max < list.size()) {
+                    max = list.size();
                 }
-
-            }).get().size();
+            }
 
             for (int i = 0; i < max; i++) {
                 for (List<String> values : column) {
@@ -284,12 +282,12 @@ public class ElasticityDependencyAnalysisManager {
 
     public ServiceElasticityDependencies analyzeElasticityDependencies(MonitoredElement monitoredElement) {
         //PersistenceSQLAccess persistenceDelegate = new PersistenceSQLAccess("mela", "mela", "localhost", Configuration.getDataServicePort(), monitoredElement.getId());
-        ElasticitySpace elasticitySpace = persistenceDelegate.extractLatestElasticitySpace(monitoredElement.getId());
+        final ElasticitySpace elasticitySpace = persistenceDelegate.extractLatestElasticitySpace(monitoredElement.getId());
 
         //from this we get composition rules to avoid computing dependencies between metrics created 
         //using composition rules and their source metrics
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(monitoredElement.getId());
-        CompositionRulesConfiguration compositionRulesConfiguration = cfg.getCompositionRulesConfiguration();
+        final CompositionRulesConfiguration compositionRulesConfiguration = cfg.getCompositionRulesConfiguration();
 
         if (elasticitySpace == null) {
             Logger.getLogger(ElasticityDependencyAnalysisManager.class
@@ -500,7 +498,7 @@ public class ElasticityDependencyAnalysisManager {
         }
 
         ConfigurationXMLRepresentation cfg = persistenceDelegate.getLatestConfiguration(monitoredElement.getId());
-        CompositionRulesConfiguration compositionRulesConfiguration = cfg.getCompositionRulesConfiguration();
+        final CompositionRulesConfiguration compositionRulesConfiguration = cfg.getCompositionRulesConfiguration();
 
         ServiceElasticityDependencies determinedDependencies = persistenceDelegate.extractLatestElasticityDependencies(monitoredElement.getId(), startTimestampID, endTimestampID);
 
@@ -697,7 +695,7 @@ public class ElasticityDependencyAnalysisManager {
 
     public ServiceElasticityDependencies analyzeElasticityDependenciesBetweenElasticityMetrics(MonitoredElement monitoredElement) {
         //PersistenceSQLAccess persistenceDelegate = new PersistenceSQLAccess("mela", "mela", "localhost", Configuration.getDataServicePort(), monitoredElement.getId());
-        ElasticitySpace elasticitySpace = persistenceDelegate.extractLatestElasticitySpace(monitoredElement.getId());
+        final ElasticitySpace elasticitySpace = persistenceDelegate.extractLatestElasticitySpace(monitoredElement.getId());
 
         if (elasticitySpace == null) {
             Logger.getLogger(ElasticityDependencyAnalysisManager.class
@@ -921,7 +919,7 @@ public class ElasticityDependencyAnalysisManager {
         }
 
         //PersistenceSQLAccess persistenceDelegate = new PersistenceSQLAccess("mela", "mela", "localhost", Configuration.getDataServicePort(), monitoredElement.getId());
-        ElasticitySpace elasticitySpace = persistenceDelegate.extractLatestElasticitySpace(monitoredElement.getId(), startTimestampID, endTimestampID);
+        final ElasticitySpace elasticitySpace = persistenceDelegate.extractLatestElasticitySpace(monitoredElement.getId(), startTimestampID, endTimestampID);
 
         if (elasticitySpace == null) {
             Logger.getLogger(ElasticityDependencyAnalysisManager.class

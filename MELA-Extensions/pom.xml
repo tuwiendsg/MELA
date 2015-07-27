@@ -17,18 +17,7 @@
     <modules>
         <module>MELA-SpaceAndPathwayAnalysisService</module>
         <module>MELA-ComplexCostEvaluationService</module>
+        <module>MELA-ElasticityRelationshipsAnalysis</module>
     </modules>
-      
-    <profiles>
-        <profile>
-            <id>yesR</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <jdk>1.8</jdk>
-            </activation>
-            <modules>
-                <module>MELA-ElasticityRelationshipsAnalysis</module>
-            </modules>
-        </profile>
-    </profiles>
+ 
 </project>

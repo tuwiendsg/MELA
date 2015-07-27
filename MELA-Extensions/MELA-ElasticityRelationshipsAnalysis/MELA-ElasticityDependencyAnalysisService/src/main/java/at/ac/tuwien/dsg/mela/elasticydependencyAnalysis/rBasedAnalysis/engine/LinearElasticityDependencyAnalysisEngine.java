@@ -122,7 +122,7 @@ public class LinearElasticityDependencyAnalysisEngine {
             }
 
             //get element composition rules
-            Map<Metric, List<Metric>> compositionRulesDependentMetrics = getCompositionRulesDependencies(element, compositionRulesConfiguration);
+            final Map<Metric, List<Metric>> compositionRulesDependentMetrics = getCompositionRulesDependencies(element, compositionRulesConfiguration);
 
             //analyze dependency for each metric and all children
 //            Collection<ElasticityDependencyElement> elasticityElements = new ArrayList<ElasticityDependencyElement>();
@@ -296,7 +296,7 @@ public class LinearElasticityDependencyAnalysisEngine {
             }
 
             //get element composition rules
-            Map<Metric, List<Metric>> compositionRulesDependentMetrics = getCompositionRulesDependencies(parent, compositionRulesConfiguration);
+            final Map<Metric, List<Metric>> compositionRulesDependentMetrics = getCompositionRulesDependencies(parent, compositionRulesConfiguration);
 
             final List<MonitoredElement> siblings = new ArrayList<MonitoredElement>(parent.getContainedElements());
             queue.addAll(siblings);
@@ -462,7 +462,7 @@ public class LinearElasticityDependencyAnalysisEngine {
                 break;
             }
 
-            Map<Metric, List<Metric>> compositionRulesDependentMetrics = getCompositionRulesDependencies(parent, compositionRulesConfiguration);
+            final Map<Metric, List<Metric>> compositionRulesDependentMetrics = getCompositionRulesDependencies(parent, compositionRulesConfiguration);
 
             List<MonitoredElement> children = new ArrayList<MonitoredElement>(parent.getContainedElements());
             queue.addAll(children);
@@ -490,8 +490,8 @@ public class LinearElasticityDependencyAnalysisEngine {
 
             for (int i = 0; i < elementVariables.size(); i++) {
 
-                Variable elementVar = elementVariables.get(i);
-                List<Variable> otherVars = new ArrayList<>();
+                final Variable elementVar = elementVariables.get(i);
+                final List<Variable> otherVars = new ArrayList<>();
                 if (i > 0) {
                     otherVars.addAll(elementVariables.subList(0, i));
                 }
@@ -662,8 +662,8 @@ public class LinearElasticityDependencyAnalysisEngine {
 
         for (int i = 0; i < elementVariables.size(); i++) {
 
-            Variable elementVar = elementVariables.get(i);
-            List<Variable> otherVars = new ArrayList<>();
+            final Variable elementVar = elementVariables.get(i);
+            final List<Variable> otherVars = new ArrayList<>();
             if (i > 0) {
                 otherVars.addAll(elementVariables.subList(0, i));
             }

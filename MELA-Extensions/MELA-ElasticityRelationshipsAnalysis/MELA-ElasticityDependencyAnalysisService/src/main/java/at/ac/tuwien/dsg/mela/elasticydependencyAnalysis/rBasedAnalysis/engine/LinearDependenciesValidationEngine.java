@@ -46,8 +46,7 @@ import java.util.Map;
  * @author Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  */
 public class LinearDependenciesValidationEngine {
-    
-    
+
     //it uses SOM to compute other type of dependencies, and then cross-validates
     //proved to be somewhat useless
     public static void validateDependencies(ServiceElasticityDependencies dependencies, ElasticitySpace space) {
@@ -211,7 +210,12 @@ public class LinearDependenciesValidationEngine {
 
                 }
                 //confidence will be between 0 and 1, 0 no confidence, 1 max confidence
-                Double depencencyConfidence = predictionDistancesInPercentageOfPredicted.stream().mapToDouble(i -> i).sum() / totalEncounteredValues;
+
+                Double predictionDistancesInPercentageOfPredictedSUM = 0.0d;
+                for (Double d : predictionDistancesInPercentageOfPredicted) {
+                    predictionDistancesInPercentageOfPredictedSUM += d;
+                }
+                Double depencencyConfidence = predictionDistancesInPercentageOfPredictedSUM / totalEncounteredValues;
 
 //                if (lackOfConfidence == 0) {
 //                    depencencyConfidence = 1.0; //1 means max confidence

@@ -14,24 +14,40 @@
  
     <packaging>pom</packaging>
 
-   
-    <profiles> 
+    <repositories>
+        <repository>
+            <id>dsg_repo_central</id>
+            <url>http://repo.infosys.tuwien.ac.at/artifactory/comot</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>dsg_repo_snapshots</id>
+            <url>http://repo.infosys.tuwien.ac.at/artifactory/comot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+        
+        
+        <repository>
+            <id>CELAR Nexus repository - SNAPSHOTS</id>
+            <url>http://snf-175960.vm.okeanos.grnet.gr/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>CELAR Nexus repository - RELEASES</id>
+            <url>http://snf-175960.vm.okeanos.grnet.gr/nexus/content/repositories/releases/</url>
+        </repository>
 
-        <profile>
-            <id>yesR</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <file>
-                    <exists>/usr/bin/R</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>RCaller</module>
-                <module>MELA-ElasticityDependencyAnalysisService</module>
-            </modules>
-        </profile>
-   
-    </profiles> 
+    </repositories>
+    
+ 
+    <modules>
+        <module>RCaller</module>
+        <module>MELA-ElasticityDependencyAnalysisService</module>
+    </modules>
+ 
     
 
 </project>

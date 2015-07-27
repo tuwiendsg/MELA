@@ -85,14 +85,23 @@ public class SOMClassifier implements Serializable {
             Logger.getLogger(this.getClass()).log(Level.ERROR, "Empty data to classify as elasticity pathway");
             return;
         }
-        int minIndex = dataToClassify.values().stream().min(new Comparator<List<MetricValue>>() {
 
-            @Override
-            public int compare(List<MetricValue> o1, List<MetricValue> o2) {
-                return ((Integer) o1.size()).compareTo(o2.size());
+        int minIndex = Integer.MAX_VALUE;
+//        List<MetricValue> minList = dataToClassify.values().iterator().next();
+        for (List<MetricValue> metricValue : dataToClassify.values()) {
+            if (minIndex > metricValue.size()) {
+                minIndex = metricValue.size();
             }
-
-        }).get().size();
+        }
+//
+//        int minIndex = dataToClassify.values().stream().min(new Comparator<List<MetricValue>>() {
+//
+//            @Override
+//            public int compare(List<MetricValue> o1, List<MetricValue> o2) {
+//                return ((Integer) o1.size()).compareTo(o2.size());
+//            }
+//
+//        }).get().size();
 
         //trim sequences
         for (List<MetricValue> list : dataToClassify.values()) {
@@ -177,15 +186,13 @@ public class SOMClassifier implements Serializable {
 
         //find minIndex, and then cut from the start of the longer monitored sequences
         //this is because when MELA starts, it might have diff composition rules, then we submit another, etc.
-        int minIndex = dataToClassify.stream().min(new Comparator<List<MetricValue>>() {
-
-            @Override
-            public int compare(List<MetricValue> o1, List<MetricValue> o2) {
-                return ((Integer) o1.size()).compareTo(o2.size());
+        int minIndex = Integer.MAX_VALUE;
+//        List<MetricValue> minList = dataToClassify.values().iterator().next();
+        for (List<MetricValue> metricValue : dataToClassify) {
+            if (minIndex > metricValue.size()) {
+                minIndex = metricValue.size();
             }
-
-        }).get().size();
-
+        }
         //trim sequences
         for (List<MetricValue> list : dataToClassify) {
             int difference = list.size() - minIndex;

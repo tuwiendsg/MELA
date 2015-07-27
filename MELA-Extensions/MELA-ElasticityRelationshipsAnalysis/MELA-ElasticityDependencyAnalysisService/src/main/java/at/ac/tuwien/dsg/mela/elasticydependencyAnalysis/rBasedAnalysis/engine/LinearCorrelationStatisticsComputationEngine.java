@@ -23,8 +23,8 @@ import at.ac.tuwien.dsg.mela.elasticydependencyAnalysis.rBasedAnalysis.concept.V
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.BinaryOperator;
+//import java.util.Optional;
+//import java.util.function.BinaryOperator;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
@@ -64,44 +64,31 @@ public class LinearCorrelationStatisticsComputationEngine {
 
         }
 
-        Optional<Double> maxError = estimationError.stream().max(new Comparator<Double>() {
+        Double maxError = Double.NEGATIVE_INFINITY;
+        Double minError = Double.POSITIVE_INFINITY;
+        Double sum = 0.0d;
+        Double deviationSum = 0.0d;
 
-            @Override
-            public int compare(Double o1, Double o2) {
-                return Double.compare(o1, o2);
+        for (Double d : estimationError) {
+            if (maxError < d) {
+                maxError = d;
             }
 
-        });
-
-        Optional<Double> minError = estimationError.stream().min(new Comparator<Double>() {
-
-            @Override
-            public int compare(Double o1, Double o2) {
-                return Double.compare(o1, o2);
+            if (minError > d) {
+                minError = d;
             }
 
-        });
+            sum += d;
+        }
 
-        Optional<Double> sum = estimationError.stream().reduce(new BinaryOperator<Double>() {
+        for (Double d : deviation) {
+            deviationSum += d;
+        }
 
-            @Override
-            public Double apply(Double t, Double u) {
-                return t + u;
-            }
-        });
-
-        Optional<Double> deviationSum = deviation.stream().reduce(new BinaryOperator<Double>() {
-
-            @Override
-            public Double apply(Double t, Double u) {
-                return t + u;
-            }
-        });
-
-        correlation.setStatistic(LinearCorrelation.ESTIMATION_ERROR_MIN, minError.get());
-        correlation.setStatistic(LinearCorrelation.ESTIMATION_ERROR_MAX, maxError.get());
-        correlation.setStatistic(LinearCorrelation.ESTIMATION_ERROR_AVERAGE, sum.get() / valuesSize);
-        correlation.setStatistic(LinearCorrelation.ESTIMATION_ERROR_STD_DEVIATION, Math.sqrt(deviationSum.get() / deviation.size()));
+        correlation.setStatistic(LinearCorrelation.ESTIMATION_ERROR_MIN, minError);
+        correlation.setStatistic(LinearCorrelation.ESTIMATION_ERROR_MAX, maxError);
+        correlation.setStatistic(LinearCorrelation.ESTIMATION_ERROR_AVERAGE, sum / valuesSize);
+        correlation.setStatistic(LinearCorrelation.ESTIMATION_ERROR_STD_DEVIATION, Math.sqrt(deviationSum / deviation.size()));
 
         return correlation;
     }
@@ -127,44 +114,31 @@ public class LinearCorrelationStatisticsComputationEngine {
 
         }
 
-        Optional<Double> maxError = estimationError.stream().max(new Comparator<Double>() {
+        Double maxError = Double.NEGATIVE_INFINITY;
+        Double minError = Double.POSITIVE_INFINITY;
+        Double sum = 0.0d;
+        Double deviationSum = 0.0d;
 
-            @Override
-            public int compare(Double o1, Double o2) {
-                return Double.compare(o1, o2);
+        for (Double d : estimationError) {
+            if (maxError < d) {
+                maxError = d;
             }
 
-        });
-
-        Optional<Double> minError = estimationError.stream().min(new Comparator<Double>() {
-
-            @Override
-            public int compare(Double o1, Double o2) {
-                return Double.compare(o1, o2);
+            if (minError > d) {
+                minError = d;
             }
 
-        });
+            sum += d;
+        }
 
-        Optional<Double> sum = estimationError.stream().reduce(new BinaryOperator<Double>() {
+        for (Double d : deviation) {
+            deviationSum += d;
+        }
 
-            @Override
-            public Double apply(Double t, Double u) {
-                return t + u;
-            }
-        });
-
-        Optional<Double> deviationSum = deviation.stream().reduce(new BinaryOperator<Double>() {
-
-            @Override
-            public Double apply(Double t, Double u) {
-                return t + u;
-            }
-        });
-
-        dependencyElement.setStatistic(LinearCorrelation.ESTIMATION_ERROR_MIN, minError.get());
-        dependencyElement.setStatistic(LinearCorrelation.ESTIMATION_ERROR_MAX, maxError.get());
-        dependencyElement.setStatistic(LinearCorrelation.ESTIMATION_ERROR_AVERAGE, sum.get() / valuesSize);
-        dependencyElement.setStatistic(LinearCorrelation.ESTIMATION_ERROR_STD_DEVIATION, Math.sqrt(deviationSum.get() / deviation.size()));
+        dependencyElement.setStatistic(LinearCorrelation.ESTIMATION_ERROR_MIN, minError);
+        dependencyElement.setStatistic(LinearCorrelation.ESTIMATION_ERROR_MAX, maxError);
+        dependencyElement.setStatistic(LinearCorrelation.ESTIMATION_ERROR_AVERAGE, sum / valuesSize);
+        dependencyElement.setStatistic(LinearCorrelation.ESTIMATION_ERROR_STD_DEVIATION, Math.sqrt(deviationSum / deviation.size()));
 
         return dependencyElement;
     }
