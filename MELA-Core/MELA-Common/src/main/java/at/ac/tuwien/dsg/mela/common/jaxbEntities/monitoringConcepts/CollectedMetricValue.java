@@ -88,9 +88,9 @@ public class CollectedMetricValue {
         if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
             return false;
         }
-        if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
-            return false;
-        }
+//        if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
+//            return false;
+//        }
         if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
             return false;
         }
