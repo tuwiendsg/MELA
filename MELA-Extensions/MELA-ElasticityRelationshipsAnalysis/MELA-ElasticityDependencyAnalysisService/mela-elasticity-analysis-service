@@ -16,7 +16,7 @@ DAEMONDIR=./
 DAEMON=MELA-ElasticityRelationshipsAnalysisService-3.0-SNAPSHOT-war-exec.jar
 PIDDIR=/tmp/
 PIDFILE=$PIDDIR/mela-elasticity-analysis-service.pid
-MELA_HTTP_PORT=8182
+MELA_HTTP_PORT=8183
 
 #PROFILES=MYSQL
 #PROFILES=H2

@@ -49,6 +49,12 @@ public class ElasticityDependenciesAnalysisService {
     public ElasticityDependenciesAnalysisService() {
     }
 
+    /**
+     * All service services directly with elasticitydependencies (no elasticitymetrics) 
+     * in URL analyze all monitored metrics, while the others analyze only metrics which have requirements associated to them
+     * @param serviceID
+     * @return
+     */
     @GET
     @Path("/{serviceID}/xml/elasticitydependencies")
     @Produces("application/xml")
@@ -125,6 +131,13 @@ public class ElasticityDependenciesAnalysisService {
 
     }
 
+    /**
+     * Any Service which has /elasticitymetrics in URL works only on the metrics
+     * having requirements associated to them
+     *
+     * @param serviceID
+     * @return
+     */
     @GET
     @Path("/{serviceID}/xml/elasticitymetrics/elasticitydependencies")
     @Produces("application/xml")
@@ -207,8 +220,8 @@ public class ElasticityDependenciesAnalysisService {
         element.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
         return elasticityDependencyAnalysisManager.getServiceStructureAndMetricsAsJSON(element);
     }
-    
-     @GET
+
+    @GET
     @Path("/elasticservices")
     @Produces("application/json")
     public String getServices() {
