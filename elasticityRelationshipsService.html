@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+        <!--[if lt IE 9]>
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <title>Mela by tuwiendsg</title>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+        <script
+        src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+        <link rel="stylesheet"
+              href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+        <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+
+        <script>
+            $(function () {
+                $("#pricingSchemeDescription").accordion({
+                    active: false,
+                    collapsible: true
+                });
+            });
+            $(function () {
+                $("#compositionRuleDescription").accordion({
+                    active: false,
+                    collapsible: true
+                });
+            });
+
+
+            $(function () {
+                $("#serviceStructureSpecification").accordion({
+                    active: false,
+                    collapsible: true
+                });
+            });
+
+
+        </script>
+
+<script type="text/javascript">
+    $(function(){
+      $("#apiTable").load("API.htm"); 
+    });
+    </script> 
+
+        <script type="text/javascript">
+
+            $(document).ready(function () {
+                var top = $('#navibar').offset().top - parseFloat($('#navibar').css('marginTop').replace(/auto/, 100));
+                $(window).scroll(function (event) {
+                    // what the y position of the scroll is
+                    var y = $(this).scrollTop();
+
+                    // whether that's below the form
+                    if (y >= top) {
+                        // if so, ad the fixed class
+                        $('#navibar').addClass('fixed');
+                    } else {
+                        // otherwise remove it
+                        $('#navibar').removeClass('fixed');
+                    }
+                });
+            });</script>
+
+        <style>
+            <!--
+            /* Font Definitions */
+            @font-face
+            {font-family:"Cambria Math";
+             panose-1:2 4 5 3 5 4 6 3 2 4;
+             mso-font-charset:0;
+             mso-generic-font-family:roman;
+             mso-font-pitch:variable;
+             mso-font-signature:-1610611985 1107304683 0 0 159 0;}
+            @font-face
+            {font-family:Calibri;
+             panose-1:2 15 5 2 2 2 4 3 2 4;
+             mso-font-charset:0;
+             mso-generic-font-family:swiss;
+             mso-font-pitch:variable;
+             mso-font-signature:-1610611985 1073750139 0 0 159 0;}
+            /* Style Definitions */
+            p.MsoNormal, li.MsoNormal, div.MsoNormal
+            {mso-style-unhide:no;
+             mso-style-qformat:yes;
+             mso-style-parent:"";
+             margin-top:0in;
+             margin-right:0in;
+             margin-bottom:10.0pt;
+             margin-left:0in;
+             line-height:115%;
+             mso-pagination:widow-orphan;
+             font-size:11.0pt;
+             font-family:"Calibri","sans-serif";
+             mso-ascii-font-family:Calibri;
+             mso-ascii-theme-font:minor-latin;
+             mso-fareast-font-family:Calibri;
+             mso-fareast-theme-font:minor-latin;
+             mso-hansi-font-family:Calibri;
+             mso-hansi-theme-font:minor-latin;
+             mso-bidi-font-family:"Times New Roman";
+             mso-bidi-theme-font:minor-bidi;}
+            p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+            {mso-style-priority:34;
+             mso-style-unhide:no;
+             mso-style-qformat:yes;
+             margin-top:0in;
+             margin-right:0in;
+             margin-bottom:10.0pt;
+             margin-left:.5in;
+             mso-add-space:auto;
+             line-height:115%;
+             mso-pagination:widow-orphan;
+             font-size:11.0pt;
+             font-family:"Calibri","sans-serif";
+             mso-ascii-font-family:Calibri;
+             mso-ascii-theme-font:minor-latin;
+             mso-fareast-font-family:Calibri;
+             mso-fareast-theme-font:minor-latin;
+             mso-hansi-font-family:Calibri;
+             mso-hansi-theme-font:minor-latin;
+             mso-bidi-font-family:"Times New Roman";
+             mso-bidi-theme-font:minor-bidi;}
+            p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
+            {mso-style-priority:34;
+             mso-style-unhide:no;
+             mso-style-qformat:yes;
+             mso-style-type:export-only;
+             margin-top:0in;
+             margin-right:0in;
+             margin-bottom:0in;
+             margin-left:.5in;
+             margin-bottom:.0001pt;
+             mso-add-space:auto;
+             line-height:115%;
+             mso-pagination:widow-orphan;
+             font-size:11.0pt;
+             font-family:"Calibri","sans-serif";
+             mso-ascii-font-family:Calibri;
+             mso-ascii-theme-font:minor-latin;
+             mso-fareast-font-family:Calibri;
+             mso-fareast-theme-font:minor-latin;
+             mso-hansi-font-family:Calibri;
+             mso-hansi-theme-font:minor-latin;
+             mso-bidi-font-family:"Times New Roman";
+             mso-bidi-theme-font:minor-bidi;}
+            p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
+            {mso-style-priority:34;
+             mso-style-unhide:no;
+             mso-style-qformat:yes;
+             mso-style-type:export-only;
+             margin-top:0in;
+             margin-right:0in;
+             margin-bottom:0in;
+             margin-left:.5in;
+             margin-bottom:.0001pt;
+             mso-add-space:auto;
+             line-height:115%;
+             mso-pagination:widow-orphan;
+             font-size:11.0pt;
+             font-family:"Calibri","sans-serif";
+             mso-ascii-font-family:Calibri;
+             mso-ascii-theme-font:minor-latin;
+             mso-fareast-font-family:Calibri;
+             mso-fareast-theme-font:minor-latin;
+             mso-hansi-font-family:Calibri;
+             mso-hansi-theme-font:minor-latin;
+             mso-bidi-font-family:"Times New Roman";
+             mso-bidi-theme-font:minor-bidi;}
+            p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
+            {mso-style-priority:34;
+             mso-style-unhide:no;
+             mso-style-qformat:yes;
+             mso-style-type:export-only;
+             margin-top:0in;
+             margin-right:0in;
+             margin-bottom:10.0pt;
+             margin-left:.5in;
+             mso-add-space:auto;
+             line-height:115%;
+             mso-pagination:widow-orphan;
+             font-size:11.0pt;
+             font-family:"Calibri","sans-serif";
+             mso-ascii-font-family:Calibri;
+             mso-ascii-theme-font:minor-latin;
+             mso-fareast-font-family:Calibri;
+             mso-fareast-theme-font:minor-latin;
+             mso-hansi-font-family:Calibri;
+             mso-hansi-theme-font:minor-latin;
+             mso-bidi-font-family:"Times New Roman";
+             mso-bidi-theme-font:minor-bidi;}
+            span.SpellE
+            {mso-style-name:"";
+             mso-spl-e:yes;}
+            .MsoChpDefault
+            {mso-style-type:export-only;
+             mso-default-props:yes;
+             mso-ascii-font-family:Calibri;
+             mso-ascii-theme-font:minor-latin;
+             mso-fareast-font-family:Calibri;
+             mso-fareast-theme-font:minor-latin;
+             mso-hansi-font-family:Calibri;
+             mso-hansi-theme-font:minor-latin;
+             mso-bidi-font-family:"Times New Roman";
+             mso-bidi-theme-font:minor-bidi;}
+            .MsoPapDefault
+            {mso-style-type:export-only;
+             margin-bottom:10.0pt;
+             line-height:115%;}
+            @page Section1
+            {size:8.5in 11.0in;
+             margin:1.0in 1.0in 1.0in 1.0in;
+             mso-header-margin:.5in;
+             mso-footer-margin:.5in;
+             mso-paper-source:0;}
+            div.Section1
+            {page:Section1;}
+            /* List Definitions */
+            @list l0
+            {mso-list-id:1322584609;
+             mso-list-type:hybrid;
+             mso-list-template-ids:-2000402242 67698703 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+            @list l0:level1
+            {mso-level-tab-stop:none;
+             mso-level-number-position:left;
+             margin-left:.25in;
+             text-indent:-.25in;}
+            ol
+            {margin-bottom:0in;}
+            ul
+            {margin-bottom:0in;}
+            -->
+        </style>
+
+    </head>
+
+    <body>
+        <header>
+            <div class="inner">
+                <h1>Documentation and Guides</h1>
+                <h2>MELA </h2>
+                <a href="https://github.com/tuwiendsg/MELA" class="button"><small>View project on</small>GitHub</a>
+            </div>
+        </header>
+
+
+        <div id="horizontalNav"> 
+            <ul>
+                <li><a href="./index.html" id="homenav">Home</a></li>
+                <li><a href="./background.html" id="Background">Background</a>
+                <li><a href="./guide.html" id="guide">Documentation</a>  
+                    <ul>
+                        <li><a href="./guide.html" >MELA Overview</a> </li>
+                        <li><a href="./dataService.html">MELA Data Service</a></li> 
+                        <li><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></li>
+                        <li><div id="currentNav"><a href="./elasticityRelationshipsService.html">MELA Elasticity Relationships Analysis</a> </div>
+                            <div>
+                                <ul> 
+                                    <li><a href="#introduction">Overview</a></li>  
+                                    <li><a href="#service">Elasticity Relationships Analysis service</a></li>  
+                                    <li><a href="#api">API</a></li>  
+                                </ul>	
+                            </div>
+                        </li> 
+                        <li><a href="./costEvaluationService.html">MELA Cost Evaluation</a></li>
+                        <li><a href="./compiling.html">Compiling and deployment</a></li>
+                        <li><a href="./demos.html">Demos and examples</a></li>  
+                        <li><a href="./others.html">Other resources</a></li>
+                    </ul>
+                </li> 
+                <li><a href="./contact.html" id="contactnav">Contact</a></li>
+            </ul>
+
+        </div>
+
+        <div id="content-wrapper">
+
+            <aside id="navibar">
+
+                <div id="nav">
+                     <ul>
+                <li><a href="./index.html" id="homenav">Home</a></li>
+                <li><a href="./background.html" id="Background">Background</a>
+                <li><a href="./guide.html" id="guide">Documentation</a>  
+                    <ul>
+                        <li><a href="./guide.html" >MELA Overview</a> </li>
+                        <li><a href="./dataService.html">MELA Data Service</a></li> 
+                        <li><a href="./spaceAndPathwayAnalysisService.html">MELA Elasticity Analysis</a></li>
+                        <li><div id="currentNav"><a href="./elasticityRelationshipsService.html">MELA Elasticity Relationships Analysis</a> </div>
+                            <div id="subnav">
+                                <ul> 
+                                    <li><a href="#introduction">Overview</a></li>  
+                                    <li><a href="#service">Elasticity Relationships Analysis service</a></li>  
+                                    <li><a href="#api">API</a></li>  
+                                </ul>	
+                            </div>
+                        </li> 
+                        <li><a href="./costEvaluationService.html">MELA Cost Evaluation</a></li>
+                        <li><a href="./compiling.html">Compiling and deployment</a></li>
+                        <li><a href="./demos.html">Demos and examples</a></li>  
+                        <li><a href="./others.html">Other resources</a></li>
+                    </ul>
+                </li> 
+                <li><a href="./contact.html" id="contactnav">Contact</a></li>
+            </ul>
+
+                </div>
+            </aside>
+
+
+            <div class="inner clearfix">
+                <section id="main-content">
+                    <div>
+                        <h1>  <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Overview</h1>
+
+                        <p>
+				Depending on the application’s software stack and cloud deployment, various elasticity relationships can exist at different software layers between components or composite components. Thus, we must be able to analyze multiple application types, from simple applications, to complex application running multiple components in virtual containers distributed among virtual machines hosted in different clouds. 
+                        </p>
+Usually, elasticity of applications is driven by quality, cost, resource usage, or a combination of the three. Moreover, application owners usually view their applications from a perspective driven by cost, quality, or both. As different elasticity relationships can exist between different perspectives, we classify relationships after the two fundamental business dimensions, Cost and Quality, and the three elasticity dimensions, Quality, Cost, and Resources . The relationship category is given by the type of monitoring information used to determine it, different categories being potentially of interest to different stakeholders. Application developers and elasticity controllers might be interested in Quality dependency or Resource quality relationships, which they can use to eliminate bottlenecks or reduce resource underutilization. An application owner might be interested in cost-related relationships, such as Cost effectiveness, Beneﬁt-Cost dependency, or Cost composition. Various parameters of elasticity relationships are interpreted by rSYBL elasticity controller (DMM core), ensuring better control decisions.
+
+                        </p>
+                       
+<p class=MsoCaption align=center style='text-align:center;page-break-after:
+avoid'><a name="_Toc302027912">Table </a><!--[if supportFields]><span
+style='mso-bookmark:_Toc302027912'></span><span style='mso-element:field-begin'></span><span
+style='mso-bookmark:_Toc302027912'><span style='mso-spacerun:yes'>\A0</span>SEQ
+Table \* ARABIC <span style='mso-element:field-separator'></span></span><![endif]--><span
+style='mso-bookmark:_Toc302027912'><span style='mso-no-proof:yes'>1</span></span><!--[if supportFields]><span
+style='mso-bookmark:_Toc302027912'></span><span style='mso-element:field-end'></span><![endif]--><span
+style='mso-bookmark:_Toc302027912'>: Relationship types</span><o:p></o:p></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none;mso-border-alt:solid white 1.0pt;
+ mso-yfti-tbllook:1184;mso-padding-alt:4.25pt 5.4pt 4.25pt 5.4pt;mso-border-insideh:
+ .75pt solid white;mso-border-insidev:.75pt solid white'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='border:solid white 1.0pt;border-bottom:solid white 3.0pt;
+  background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Category</span></b><span
+  style='color:white;mso-fareast-language:JA;mso-bidi-font-weight:bold'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='border-top:solid white 1.0pt;border-left:none;
+  border-bottom:solid white 3.0pt;border-right:solid white 1.0pt;mso-border-left-alt:
+  solid white 1.0pt;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Relationship<o:p></o:p></span></b></p>
+  </td>
+  <td valign=top style='border-top:solid white 1.0pt;border-left:none;
+  border-bottom:solid white 3.0pt;border-right:solid white 1.0pt;mso-border-left-alt:
+  solid white 1.0pt;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Interested<span
+  style='letter-spacing:.6pt'> </span>stakeholder<o:p></o:p></span></b></p>
+  </td>
+  <td width=389 valign=top style='width:291.95pt;border-top:solid white 1.0pt;
+  border-left:none;border-bottom:solid white 3.0pt;border-right:solid white 1.0pt;
+  mso-border-left-alt:solid white 1.0pt;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Usefulness<o:p></o:p></span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='border-top:none;border-left:solid white 1.0pt;
+  border-bottom:solid white 1.0pt;border-right:solid white 3.0pt;mso-border-top-alt:
+  solid white 1.0pt;mso-border-top-alt:1.0pt;mso-border-left-alt:1.0pt;
+  mso-border-bottom-alt:.75pt;mso-border-right-alt:3.0pt;mso-border-color-alt:
+  white;mso-border-style-alt:solid;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Quality<span
+  style='letter-spacing:.55pt'> </span>dependency<o:p></o:p></span></b></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white 1.0pt;
+  mso-border-left-alt:solid white 1.0pt;background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span class=SpellE><i style='mso-bidi-font-style:normal'><span
+  style='mso-fareast-language:JA'>Quality</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial;
+  mso-fareast-language:JA'>&#8594;</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-language:JA'>Quality</span></i></span><span
+  style='mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white 1.0pt;
+  mso-border-left-alt:solid white 1.0pt;background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Developer,<span
+  style='letter-spacing:.05pt'> </span>Controller<o:p></o:p></span></p>
+  </td>
+  <td width=389 valign=top style='width:291.95pt;border-top:none;border-left:
+  none;border-bottom:solid white 1.0pt;border-right:solid white 1.0pt;
+  mso-border-top-alt:solid white 1.0pt;mso-border-left-alt:solid white 1.0pt;
+  background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Indicates potential quality/performance
+  bottlenecks<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='border-top:none;border-left:solid white 1.0pt;
+  border-bottom:solid white 1.0pt;border-right:solid white 3.0pt;mso-border-top-alt:
+  solid white .75pt;mso-border-top-alt:.75pt;mso-border-left-alt:1.0pt;
+  mso-border-bottom-alt:.75pt;mso-border-right-alt:3.0pt;mso-border-color-alt:
+  white;mso-border-style-alt:solid;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Bene&#64257;t-Cost<o:p></o:p></span></b></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white .75pt;
+  mso-border-left-alt:solid white .75pt;mso-border-alt:solid white .75pt;
+  background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span class=SpellE><i style='mso-bidi-font-style:normal'><span
+  style='mso-fareast-language:JA'>Quality</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial;
+  mso-fareast-language:JA'>&#8594;</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-language:JA'>Cost</span></i></span><span
+  style='mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white .75pt;
+  mso-border-left-alt:solid white .75pt;mso-border-alt:solid white .75pt;
+  background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Owner, Developer,<span
+  style='letter-spacing:.45pt'> </span>Controller<o:p></o:p></span></p>
+  </td>
+  <td width=389 valign=top style='width:291.95pt;border-top:none;border-left:
+  none;border-bottom:solid white 1.0pt;border-right:solid white 1.0pt;
+  mso-border-top-alt:solid white .75pt;mso-border-left-alt:solid white .75pt;
+  mso-border-alt:solid white .75pt;mso-border-right-alt:solid white 1.0pt;
+  background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Indicates potential resource
+  bottlenecks<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='border-top:none;border-left:solid white 1.0pt;
+  border-bottom:solid white 1.0pt;border-right:solid white 3.0pt;mso-border-top-alt:
+  solid white 1.0pt;mso-border-top-alt:1.0pt;mso-border-left-alt:1.0pt;
+  mso-border-bottom-alt:.75pt;mso-border-right-alt:3.0pt;mso-border-color-alt:
+  white;mso-border-style-alt:solid;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Resource<span
+  style='letter-spacing:.7pt'> </span>quality<o:p></o:p></span></b></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white 1.0pt;
+  mso-border-left-alt:solid white 1.0pt;background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span class=SpellE><i style='mso-bidi-font-style:normal'><span
+  style='mso-fareast-language:JA'>Quality</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial;
+  mso-fareast-language:JA'>&#8594;</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-language:JA'>Resource</span></i></span><span
+  style='mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white 1.0pt;
+  mso-border-left-alt:solid white 1.0pt;background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Owner,<span
+  style='letter-spacing:.05pt'> </span>Developer<o:p></o:p></span></p>
+  </td>
+  <td width=389 valign=top style='width:291.95pt;border-top:none;border-left:
+  none;border-bottom:solid white 1.0pt;border-right:solid white 1.0pt;
+  mso-border-top-alt:solid white 1.0pt;mso-border-left-alt:solid white 1.0pt;
+  background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Describes expected quality/performance
+  when using certain resources<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='border-top:none;border-left:solid white 1.0pt;
+  border-bottom:solid white 1.0pt;border-right:solid white 3.0pt;mso-border-top-alt:
+  solid white .75pt;mso-border-top-alt:.75pt;mso-border-left-alt:1.0pt;
+  mso-border-bottom-alt:.75pt;mso-border-right-alt:3.0pt;mso-border-color-alt:
+  white;mso-border-style-alt:solid;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Cost<span
+  style='letter-spacing:.15pt'> </span>effectiveness<o:p></o:p></span></b></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white .75pt;
+  mso-border-left-alt:solid white .75pt;mso-border-alt:solid white .75pt;
+  background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span class=SpellE><i style='mso-bidi-font-style:normal'><span
+  style='mso-fareast-language:JA'>Cost</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial;
+  mso-fareast-language:JA'>&#8594;</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-language:JA'>Quality</span></i></span><span
+  style='mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white .75pt;
+  mso-border-left-alt:solid white .75pt;mso-border-alt:solid white .75pt;
+  background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Owner,<span
+  style='letter-spacing:.05pt'> </span>Developer<o:p></o:p></span></p>
+  </td>
+  <td width=389 valign=top style='width:291.95pt;border-top:none;border-left:
+  none;border-bottom:solid white 1.0pt;border-right:solid white 1.0pt;
+  mso-border-top-alt:solid white .75pt;mso-border-left-alt:solid white .75pt;
+  mso-border-alt:solid white .75pt;mso-border-right-alt:solid white 1.0pt;
+  background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Describes expected quality/performance
+  under certain cost scheme<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='border-top:none;border-left:solid white 1.0pt;
+  border-bottom:solid white 1.0pt;border-right:solid white 3.0pt;mso-border-top-alt:
+  solid white 1.0pt;mso-border-top-alt:1.0pt;mso-border-left-alt:1.0pt;
+  mso-border-bottom-alt:.75pt;mso-border-right-alt:3.0pt;mso-border-color-alt:
+  white;mso-border-style-alt:solid;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Cost<span
+  style='letter-spacing:.7pt'> </span>composition<o:p></o:p></span></b></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white 1.0pt;
+  mso-border-left-alt:solid white 1.0pt;background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span class=SpellE><i style='mso-bidi-font-style:normal'><span
+  style='mso-fareast-language:JA'>Cost</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial;
+  mso-fareast-language:JA'>&#8594;</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-language:JA'>Cost</span></i></span><span
+  style='mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white 1.0pt;
+  mso-border-left-alt:solid white 1.0pt;background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Owner,<span
+  style='letter-spacing:.05pt'> </span>Developer<o:p></o:p></span></p>
+  </td>
+  <td width=389 valign=top style='width:291.95pt;border-top:none;border-left:
+  none;border-bottom:solid white 1.0pt;border-right:solid white 1.0pt;
+  mso-border-top-alt:solid white 1.0pt;mso-border-left-alt:solid white 1.0pt;
+  background:#A5D5E2;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Describes<span
+  style='letter-spacing:-.15pt'> </span>the<span style='letter-spacing:-.15pt'>
+  </span>cost<span style='letter-spacing:-.15pt'> </span>elements<span
+  style='letter-spacing:-.15pt'> </span>contributing<span style='letter-spacing:
+  -.15pt'> </span>to<span style='letter-spacing:-.15pt'> </span>overall<span
+  style='letter-spacing:-.15pt'> </span>application's<span style='letter-spacing:
+  -.15pt'> </span>cost,<span style='letter-spacing:-.15pt'> </span>indicating </span><span
+  style='mso-fareast-font-family:Calibri;mso-fareast-language:JA'>potential cost
+  hot spots</span><span style='mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6;mso-yfti-lastrow:yes'>
+  <td valign=top style='border-top:none;border-left:solid white 1.0pt;
+  border-bottom:solid white 1.0pt;border-right:solid white 3.0pt;mso-border-top-alt:
+  solid white .75pt;background:#4BACC6;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Cost<span
+  style='letter-spacing:.7pt'> </span>utility<o:p></o:p></span></b></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white .75pt;
+  mso-border-left-alt:solid white .75pt;mso-border-alt:solid white .75pt;
+  mso-border-bottom-alt:solid white 1.0pt;background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span class=SpellE><i style='mso-bidi-font-style:normal'><span
+  style='mso-fareast-language:JA'>Cost</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial;
+  mso-fareast-language:JA'>&#8594;</span></i><i style='mso-bidi-font-style:
+  normal'><span style='mso-fareast-language:JA'>Resource</span></i></span><span
+  style='mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid white 1.0pt;
+  border-right:solid white 1.0pt;mso-border-top-alt:solid white .75pt;
+  mso-border-left-alt:solid white .75pt;mso-border-alt:solid white .75pt;
+  mso-border-bottom-alt:solid white 1.0pt;background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Owner,<span
+  style='letter-spacing:.05pt'> </span>Developer<o:p></o:p></span></p>
+  </td>
+  <td width=389 valign=top style='width:291.95pt;border-top:none;border-left:
+  none;border-bottom:solid white 1.0pt;border-right:solid white 1.0pt;
+  mso-border-top-alt:solid white .75pt;mso-border-left-alt:solid white .75pt;
+  background:#D2EAF1;padding:4.25pt 5.4pt 4.25pt 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Indicates potential resource
+  bottlenecks under certain cost schemes<o:p></o:p></span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoBodyText style='margin-top:0in;margin-right:0in;margin-bottom:12.0pt;
+margin-left:0in;text-align:justify'><span style='font-size:12.0pt;font-family:
+"Calibri","sans-serif"'><o:p>&nbsp;</o:p></span></p>
+                       
+                 <p>
+                 
+Elasticity of cloud applications is driven by elasticity requirements, which specify boundaries over the application’s metrics. To fulﬁll these requirements, elastic applications change their structure and used virtual resources at run-time through reconﬁguration actions. Due to this reconﬁguration, we should not determine relationships based on absolute monitored values, as such relationships might not hold after a reconﬁguration. Instead, we determine relationships based on the application’s behavior with respect to its elasticity boundaries, which, by abstracting from the absolute monitored values, can be used to describe the application behavior under different conﬁgurations. Thus, based on the previous model and the elasticity boundary concept, we deﬁne an elasticity relationship, as follows:
+An Elasticity relationship between one elastic element and a set of elements describes the change in the behavior of the ﬁrst element w.r.t. its elasticity boundaries, triggered by a change in the behavior of the other elements.
+
+                 </p>
+        </div>
+
+        <div>
+	    <h1>  <a name="service" class="anchor" href="#service"><span class="octicon octicon-link"></span></a>Elasticity Relationships Analysis Service</h1>
+
+                         <p><center>
+                            <figure>
+                                <img src="images/relationshipsService.png" alt="lasticity Relationships Analysis Service interaction with other MELA Services"  width="100%"/>
+                                <figcaption>Figure 1: Elasticity Relationships Analysis Service interaction with other MELA Services</figcaption>
+                            </figure>
+                        </center></p>
+
+             <p> Elasticity analysis is based on monitored information. Thus, to analyze elasticity relationships systems, first the system must be monitored. Using the MELA-DataService, the monitored data collected from the system must be structured and enriched according to needs. To reduce the analysis space, only the metrics important for describing the system behavior should be specified through metric composition rules submitted to MELA-DataService. </p>
+             <p> Using submitted system requirements, the MELA-Elasticity Analysis Service evaluates the application’s elasticity space, recording for all metrics collected by the MELA-Data Service, their “elasticity boundaries”, i.e. their maximum and minimum encountered values while the requirements where fulfilled. MELA- Elasticity Analysis Service also provides the possibility of visualizing and programmatically retrieving the historical monitored data of each application component, with their determined boundaries. </p>
+        </div>        
+
+        <div>
+	    <h1>  <a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>Elasticity Relationships Analysis Service RESTful API</h1>
+           
+            
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoCaption align=center style='text-align:center;page-break-after:
+avoid'><a name="_Toc302027920">Table </a><!--[if supportFields]><span
+style='mso-bookmark:_Toc302027920'></span><span style='mso-element:field-begin'></span><span
+style='mso-bookmark:_Toc302027920'><span style='mso-spacerun:yes'>\A0</span>SEQ
+Table \* ARABIC <span style='mso-element:field-separator'></span></span><![endif]--><span
+style='mso-bookmark:_Toc302027920'><span style='mso-no-proof:yes'>9</span></span><!--[if supportFields]><span
+style='mso-bookmark:_Toc302027920'></span><span style='mso-element:field-end'></span><![endif]--><span
+style='mso-bookmark:_Toc302027920'>: Elasticity Relationships Analysis Service
+API</span><o:p></o:p></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=713
+ style='width:535.1pt;border-collapse:collapse;border:none;mso-border-alt:solid #78C0D4 1.0pt;
+ mso-yfti-tbllook:1184;mso-padding-alt:0in 5.4pt 0in 5.4pt;mso-border-insideh:
+ .75pt solid #78C0D4;mso-border-insidev:.75pt solid #78C0D4'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  mso-border-top-alt:1.0pt;mso-border-left-alt:1.0pt;mso-border-bottom-alt:
+  .75pt;mso-border-right-alt:.75pt;mso-border-color-alt:#78C0D4;mso-border-style-alt:
+  solid;background:#4BACC6;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Method
+  Name<o:p></o:p></span></b></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border:solid #78C0D4 1.0pt;
+  border-left:none;mso-border-left-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-top-alt:solid #78C0D4 1.0pt;background:#4BACC6;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Type<o:p></o:p></span></b></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border:solid #78C0D4 1.0pt;
+  border-left:none;mso-border-left-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-top-alt:solid #78C0D4 1.0pt;background:#4BACC6;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Input
+  Type<o:p></o:p></span></b></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border:solid #78C0D4 1.0pt;
+  border-left:none;mso-border-left-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-top-alt:solid #78C0D4 1.0pt;background:#4BACC6;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Output
+  Type<o:p></o:p></span></b></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border:solid #78C0D4 1.0pt;
+  border-left:none;mso-border-left-alt:solid #78C0D4 .75pt;mso-border-top-alt:
+  1.0pt;mso-border-left-alt:.75pt;mso-border-bottom-alt:.75pt;mso-border-right-alt:
+  1.0pt;mso-border-color-alt:#78C0D4;mso-border-style-alt:solid;background:
+  #4BACC6;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b><span style='color:white;mso-fareast-language:JA'>Description<o:p></o:p></span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/structure/<span
+  class=SpellE>json</span></span><span style='font-size:10.0pt;mso-bidi-font-size:
+  12.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'><o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET</span><span
+  style='font-size:10.0pt;mso-bidi-font-size:12.0pt;mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-bidi-font-size:12.0pt;
+  mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>application/<span
+  class=SpellE>json</span></span><span style='font-size:10.0pt;mso-bidi-font-size:
+  12.0pt;mso-fareast-language:JA'><o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-bidi-font-size:12.0pt;
+  mso-fareast-language:JA'>Returns the application structure in JSON<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/requirements<o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>POST<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>application/xml<o:p></o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-bidi-font-size:12.0pt;
+  mso-fareast-language:JA'>Used to submit the application requirement, used in
+  elasticity analysis.<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/xml/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitydependencies</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'><o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>application/xml<o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Computes and returns
+  the elasticity dependencies between all metrics collected at all levels for
+  the elastic application.<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/<span
+  class=SpellE>json</span>/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitydependencies</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'><o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>application/<span
+  class=SpellE>json</span><o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Same as above but
+  returns in JSON format.<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/csv/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitydependencies</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'><o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>text/csv<o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Same as above but
+  returns in CSV format.<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/<span
+  class=SpellE>json</span>/time/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitydependencies</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'>/<o:p></o:p></span></p>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>{<span class=SpellE>startTime</span>}/{<span
+  class=SpellE>endTime</span>}<o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>application/<span
+  class=SpellE>json</span><o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Computes the
+  dependencies using a subset of the monitoring data between specified start
+  and end timestamps.<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/csv/time/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitydependencies</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'>/<o:p></o:p></span></p>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>{<span class=SpellE>startTime</span>}/{<span
+  class=SpellE>endTime</span>}<o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>text/csv<o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Same as above but returns
+  in CSV format.<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/xml/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitymetrics</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'>/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitydependencies</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'><o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>application/xml<o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Computes the
+  elasticity dependencies only between the metrics which have requirements set
+  on them.<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-alt:solid #78C0D4 .75pt;
+  mso-border-left-alt:solid #78C0D4 1.0pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/<span
+  class=SpellE>json</span> /<span class=SpellE>elasticitymetrics</span>/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitydependencies</span></span><b><span
+  style='font-size:10.0pt;mso-fareast-language:JA'><o:p></o:p></span></b></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>application/<span
+  class=SpellE>json</span><o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-right-alt:solid #78C0D4 1.0pt;
+  background:#D2EAF1;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Same as above but
+  returns in JSON format.<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10;mso-yfti-lastrow:yes'>
+  <td width=190 valign=top style='width:142.45pt;border:solid #78C0D4 1.0pt;
+  border-top:none;mso-border-top-alt:solid #78C0D4 .75pt;mso-border-top-alt:
+  .75pt;mso-border-left-alt:1.0pt;mso-border-bottom-alt:1.0pt;mso-border-right-alt:
+  .75pt;mso-border-color-alt:#78C0D4;mso-border-style-alt:solid;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA;
+  mso-bidi-font-weight:bold'>/{<span class=SpellE>serviceID</span>}/csv/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitymetrics</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'>/<o:p></o:p></span></p>
+  <p class=MsoNormal><span class=SpellE><span style='font-size:10.0pt;
+  mso-fareast-language:JA;mso-bidi-font-weight:bold'>elasticitydependencies</span></span><span
+  style='font-size:10.0pt;mso-fareast-language:JA;mso-bidi-font-weight:bold'><o:p></o:p></span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-bottom-alt:solid #78C0D4 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>GET<o:p></o:p></span></p>
+  </td>
+  <td width=100 valign=top style='width:74.65pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-bottom-alt:solid #78C0D4 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=103 valign=top style='width:77.4pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  mso-border-alt:solid #78C0D4 .75pt;mso-border-bottom-alt:solid #78C0D4 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt;mso-fareast-language:JA'>text/csv<o:p></o:p></span></p>
+  </td>
+  <td width=273 valign=top style='width:204.6pt;border-top:none;border-left:
+  none;border-bottom:solid #78C0D4 1.0pt;border-right:solid #78C0D4 1.0pt;
+  mso-border-top-alt:solid #78C0D4 .75pt;mso-border-left-alt:solid #78C0D4 .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span style='mso-fareast-language:JA'>Same as above but
+  returns in CSV format.<o:p></o:p></span></p>
+  </td>
+ </tr>
+</table>
+        </div> 
+
+             
+        </section>
+
+        <aside id="sidebar">
+            <a href="http://www.tuwien.ac.at/" class="button" style="background: url(./images/TU_logo.png) 0 0 no-repeat; height:70px;  width:300px">
+            </a>
+
+            <a href="http://www.infosys.tuwien.ac.at/" class="button" style="background: url(./images/dsgComplet.png) 0 0 no-repeat; background-size:100%; width:300px; height:70px">
+            </a>
+
+            <p class="repo-owner" style="width:300px"><a href="https://github.com/tuwiendsg/MELA"></a> Maintained and distributed by <a href="http://www.infosys.tuwien.ac.at/staff/dmoldovan/"> Daniel Moldovan </a>
+                </br> </br><a href="http://www.infosys.tuwien.ac.at/">Distributed Systems Group</a>
+                , <a href="http://www.tuwien.ac.at/">Vienna University of Technology</a>.</p>
+        </aside>
+
+
+        <aside id="sidebar">
+            <a href="https://github.com/tuwiendsg/MELA/zipball/master" class="button">
+                <small>Download</small>
+                .zip file
+            </a>
+            <a href="https://github.com/tuwiendsg/MELA/tarball/master" class="button">
+                <small>Download</small>
+                .tar.gz file
+            </a>
+
+            <p class="repo-owner"><a href="https://github.com/tuwiendsg/MELA"></a> is maintained by <a href="https://github.com/tuwiendsg">tuwiendsg</a>.</p>
+
+        </aside>
+
+
+
+    </div>
+</div>
+
+
+</body>
+</html>
