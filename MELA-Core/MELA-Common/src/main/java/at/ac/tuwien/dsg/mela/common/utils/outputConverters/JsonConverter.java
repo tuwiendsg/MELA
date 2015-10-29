@@ -38,6 +38,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -148,6 +149,9 @@ public class JsonConverter {
                 }
                 {
                     JSONObject metricUpperBoundaryJSON = new JSONObject();
+                    if (boundaries[1] == null) {
+                        continue;
+                    }
                     String repr = boundaries[1].getValueRepresentation();
                     if (Double.isNaN(((Number) boundaries[1].getValue()).doubleValue())) {
                         continue;
@@ -157,6 +161,9 @@ public class JsonConverter {
                 }
                 {
                     JSONObject metricLowerBoundaryJSON = new JSONObject();
+                    if (boundaries[0] == null) {
+                        continue;
+                    }
                     String repr = boundaries[0].getValueRepresentation();
                     if (Double.isNaN(((Number) boundaries[0].getValue()).doubleValue())) {
                         continue;
@@ -167,8 +174,28 @@ public class JsonConverter {
                 }
             }
 
+            if (metricUpperBoundaryValuesJSON.size() == 0) {
+                Iterator it = metricValuesJSON.iterator();
+                while (it.hasNext()) {
+                    it.next();
+                    //add first encountered value for all boundaries if no boundary was determined
+                    //boundaries might not be determined if the system has never been in a state fulfilling all reqs
+                    metricUpperBoundaryValuesJSON.add(metricValuesJSON.get(0));
+                }
+            }
+
+            if (metricLowerBoundaryValuesJSON.size() == 0) {
+                Iterator it = metricValuesJSON.iterator();
+                while (it.hasNext()) {
+                    it.next();
+                    //add first encountered value for all boundaries if no boundary was determined
+                    //boundaries might not be determined if the system has never been in a state fulfilling all reqs
+                    metricLowerBoundaryValuesJSON.add(metricValuesJSON.get(0));
+                }
+            }
+
             spaceDimensionJSON.put("values", metricValuesJSON);
-            spaceDimensionJSON.put("upperBoundary", metricUpperBoundaryValuesJSON);
+            spaceDimensionJSON.put("upperBoundary", metricLowerBoundaryValuesJSON);
             spaceDimensionJSON.put("lowerBoundary", metricLowerBoundaryValuesJSON);
 
             spaceDimensions.add(spaceDimensionJSON);
@@ -579,7 +606,7 @@ public class JsonConverter {
                 //add children
                 for (MonitoredElement child : element.getContainedElements()) {
                     JSONObject childElement = new JSONObject();
-                    childElement.put("name",  (child.getLevel().equals(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE)) ? child.getName() : child.getId());
+                    childElement.put("name", (child.getLevel().equals(MonitoredElement.MonitoredElementLevel.CLOUD_OFFERED_SERVICE)) ? child.getName() : child.getId());
                     childElement.put("type", "" + child.getLevel());
                     JSONArray childrenChildren = new JSONArray();
                     childElement.put("children", childrenChildren);
