@@ -97,6 +97,7 @@ public class ElasticitySpace implements Serializable {
             MonitoredElementMonitoringSnapshot snapshot = serviceMonitoringSnapshot.getMonitoredData(element);
             Map<Metric, List<MetricValue>> data = monitoringData.get(element);
             for (Metric metric : snapshot.getMetrics()) {
+                try{
                 if (Double.isNaN(((Number) snapshot.getMetricValue(metric).getValue()).doubleValue()) || snapshot.getMetricValue(metric).getValueRepresentation().contains("NaN")) {
                     continue;
                 }
@@ -106,6 +107,11 @@ public class ElasticitySpace implements Serializable {
                     List<MetricValue> values = new ArrayList<MetricValue>();
                     values.add(snapshot.getMetricValue(metric));
                     data.put(metric, values);
+                }
+                }catch(java.lang.ClassCastException e){
+                    System.out.println(e.toString());
+                    System.out.println(snapshot.getMetricValue(metric).getValue());
+                    
                 }
             }
         }

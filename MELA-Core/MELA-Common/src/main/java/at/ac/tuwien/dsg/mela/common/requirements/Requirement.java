@@ -26,6 +26,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -135,7 +136,9 @@ public class Requirement implements Serializable {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 41 * hash + (this.metric != null ? this.metric.hashCode() : 0);
+        hash = 67 * hash + Objects.hashCode(this.metric);
+        hash = 67 * hash + Objects.hashCode(this.conditions);
+        hash = 67 * hash + Objects.hashCode(this.targetMonitoredElementIDs);
         return hash;
     }
 
@@ -148,11 +151,19 @@ public class Requirement implements Serializable {
             return false;
         }
         final Requirement other = (Requirement) obj;
-        if (this.metric != other.metric && (this.metric == null || !this.metric.equals(other.metric))) {
+        if (!Objects.equals(this.metric, other.metric)) {
+            return false;
+        }
+        if (!Objects.equals(this.conditions, other.conditions)) {
+            return false;
+        }
+        if (!Objects.equals(this.targetMonitoredElementIDs, other.targetMonitoredElementIDs)) {
             return false;
         }
         return true;
     }
+
+   
 
     public Requirement clone() {
         Requirement r = new Requirement(name);
