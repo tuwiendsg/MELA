@@ -181,6 +181,8 @@
             function drawGraphs(elasticityDepencies) {
 
                 var links = [];
+                
+                
 
                 elasticityDepencies.forEach(function(dependency) {
 
@@ -548,6 +550,10 @@
 //                    elasticityDepencies = JSON.parse(json);
 
                     elasticityDepencies = JSON.parse(reqMetricCompositionRulesObj.responseText)
+                    
+                    if (elasticityDepencies.length == 0){
+                        alert("No dependencies determined!");
+                    }
 
                     drawGraphs(elasticityDepencies);
                     loadingSpinner.stop();
