@@ -109,11 +109,11 @@ public class LinearCorrelationAnalysisEngine {
         allvars.add(dependent);
 
         for (final Variable v : allvars) {
+//removed threading for this because if we have a lot of metrics to compute relationships, then R is CPU intensive, and as it hangs waiting on CPU, it will flood the RAM with pending threads 
+//            Thread outliersRemovalThread = new Thread() {
 //
-            Thread outliersRemovalThread = new Thread() {
-
-                @Override
-                public void run() {
+//                @Override
+//                public void run() {
                     RCaller lagCaller = new RCaller();
                     Globals.detect_current_rscript();
                     lagCaller.setRscriptExecutable(Globals.Rscript_current);
@@ -223,22 +223,23 @@ public class LinearCorrelationAnalysisEngine {
                     }
 
                 }
-            };
-
-            outliersRemovalThreads.add(outliersRemovalThread);
-        }
-
-        for (Thread t : outliersRemovalThreads) {
-            t.setDaemon(true);
-            t.start();
-        }
-        for (Thread t : outliersRemovalThreads) {
-            try {
-                t.join();
-            } catch (InterruptedException ex) {
-                java.util.logging.Logger.getLogger(LinearCorrelationAnalysisEngine.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            }
-        }
+//            };
+//
+//            outliersRemovalThreads.add(outliersRemovalThread);
+//        }
+//
+//        for (Thread t : outliersRemovalThreads) {
+//            t.setDaemon(true);
+//            t.start();
+//        }
+//        for (Thread t : outliersRemovalThreads) {
+//            try {
+//                t.join();
+//            } catch (InterruptedException ex) {
+//                java.util.logging.Logger.getLogger(LinearCorrelationAnalysisEngine.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//            }
+//        }
+        
 
         //for each dependent variable, I compute time lag with respect to dependent
         //then i shift it with this lag such that linear modelling is more accurate
@@ -247,11 +248,11 @@ public class LinearCorrelationAnalysisEngine {
         final int trimmedLength = minimLength;
 
         for (final Variable predictor : predictors) {
-
-            Thread lagComputationThread = new Thread() {
-
-                @Override
-                public void run() {
+//
+//            Thread lagComputationThread = new Thread() {
+//
+//                @Override
+//                public void run() {
 
                     RCaller lagCaller = new RCaller();
                     Globals.detect_current_rscript();
@@ -313,23 +314,23 @@ public class LinearCorrelationAnalysisEngine {
                     }
 
                 }
-            };
-
-            lagComputationThreads.add(lagComputationThread);
-
-        }
-
-        for (Thread t : lagComputationThreads) {
-            t.setDaemon(true);
-            t.start();
-        }
-        for (Thread t : lagComputationThreads) {
-            try {
-                t.join();
-            } catch (InterruptedException ex) {
-                java.util.logging.Logger.getLogger(LinearCorrelationAnalysisEngine.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            }
-        }
+//            };
+//
+//            lagComputationThreads.add(lagComputationThread);
+//
+//        }
+//
+//        for (Thread t : lagComputationThreads) {
+//            t.setDaemon(true);
+//            t.start();
+//        }
+//        for (Thread t : lagComputationThreads) {
+//            try {
+//                t.join();
+//            } catch (InterruptedException ex) {
+//                java.util.logging.Logger.getLogger(LinearCorrelationAnalysisEngine.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//            }
+//        }
         //copy values only until minimLength, thus do data trimmingg 
         //extract values such they can be trimmed to same length without affecting the input
         double[] dependentValues = new double[minimLength];
