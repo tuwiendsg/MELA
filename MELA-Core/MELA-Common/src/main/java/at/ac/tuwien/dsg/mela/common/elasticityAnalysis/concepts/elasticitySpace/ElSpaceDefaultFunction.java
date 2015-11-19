@@ -90,6 +90,10 @@ public class ElSpaceDefaultFunction extends ElasticitySpaceFunction {
 
                 for (Metric metric : elementData.getMetrics()) {
                     MetricValue elementValue = elementData.getMetricValue(metric);
+                    if (!elementValue.getValueType().equals(MetricValue.ValueType.NUMERIC)) {
+                        //if value is not numeric, do not train boundaries with strings and stuff
+                        continue;
+                    }
                     //we ignore NaN when computing boundaries
                     if (Double.isNaN(((Number) elementValue.getValue()).doubleValue())) {
                         continue;
