@@ -35,6 +35,9 @@ import org.apache.log4j.Logger;
 @XmlRootElement(name = "MetricValue")
 public class MetricValue implements Comparable<MetricValue>, Serializable {
 
+    //CloudCom 2014 experiments
+    //private static final long serialVersionUID = -2661411865624134343l;
+    
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(name = "ValueType")
     @XmlEnum

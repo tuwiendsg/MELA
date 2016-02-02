@@ -186,13 +186,13 @@ public class FlexiantCloudDescriptionGenerationTest {
                         .withUuid(UUID.fromString("30000000-0000-0000-0000-000000000002"));
                 unit.withCostFunction(new CostFunction(unit.getName())
                         .withCostElement(new CostElement("diskSizeCost")
-                                .withCostMetric(new Metric("diskSize", "GB", Metric.MetricType.RESOURCE)) // needs to be converted from disk_total in Ganglia
+                                .withCostMetric(new Metric("diskSize", "GB", Metric.MetricType.RESOURCE)) 
                                 .withBillingCycle(CostElement.BillingCycle.HOUR)
                                 .withType(CostElement.Type.PERIODIC)
                                 //5 units per month => 5 /30 units per day per GB no mather how many GBs no mather how many hours
                                 .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 5d / 30 / 24))
                         .withCostElement(new CostElement("diskUsageCost")
-                                .withCostMetric(new Metric("IODataSize", "GB", Metric.MetricType.RESOURCE)) //todo Write Ganglia Plug-in for IOStat
+                                .withCostMetric(new Metric("IODataSize", "GB", Metric.MetricType.RESOURCE)) 
                                 .withType(CostElement.Type.USAGE)
                                 .withBillingInterval(new MetricValue(Double.POSITIVE_INFINITY), 2d)));
                 provider.addCloudOfferedService(unit);

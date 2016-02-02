@@ -30,8 +30,8 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement(name = "Metric")
 public class Metric implements Serializable {
 
-    //CloudCom experiments
-//    private static final long serialVersionUID = -5336963724951155706l;
+    //CloudCom 2014 experiments
+    //private static final long serialVersionUID = -5336963724951155706l;
     @XmlAttribute(name = "name", required = true)
     private String name;
     @XmlAttribute(name = "measurementUnit", required = true)
